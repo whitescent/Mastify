@@ -8,8 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
-import cafe.adriel.voyager.navigator.Navigator
-import com.github.whitescent.mastify.screen.login.LoginScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import com.github.whitescent.mastify.ui.theme.MastifyTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,13 +24,17 @@ class MainActivity : ComponentActivity() {
       MastifyTheme {
         val systemUiController = rememberSystemUiController()
         val useDarkIcons = !isSystemInDarkTheme()
+        val mainNavController = rememberNavController()
         SideEffect {
           systemUiController.setSystemBarsColor(
             color = Color.Transparent,
             darkIcons = useDarkIcons
           )
         }
-        Navigator(LoginScreen())
+        NavHost(navController = mainNavController, startDestination = "app") {
+          loginGraph(mainNavController)
+          appGraph(mainNavController)
+        }
       }
     }
   }

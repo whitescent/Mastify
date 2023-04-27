@@ -5,9 +5,10 @@ androidxLifecycle = "2.6.0-alpha02"
 androidxActivity = "1.6.0"
 androidxTestExt = "1.1.3"
 androidxTestEspresso = "3.4.0"
-androidxNavigation = "2.5.2"
+androidxNavigation = "2.5.3"
 androidxHilt = "1.0.0"
 androidxStartup = "1.1.1"
+androidxBrowser = "1.4.0"
 
 compose = "1.4.2"
 composeCompiler = "1.4.6"
@@ -21,8 +22,7 @@ loggingInterceptor = "4.10.0"
 kotlinxDatetime = "0.4.0"
 kotlinxSerializationJson = "1.4.1"
 kotlin = "1.8.20"
-
-voyagerVersion = "1.0.0-rc04"
+ktor = "2.3.0"
 
 agp = "7.3.1"
 accompanist = "0.25.1"
@@ -36,6 +36,7 @@ junit = "4.13.2"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidx-browser = { module = "androidx.browser:browser", version.ref = "androidxBrowser" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
 androidx-compose-ui-util = { module = "androidx.compose.ui:ui-util", version.ref = "compose" }
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "material" }
@@ -73,11 +74,12 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coil" }
 coil-svg = { module = "io.coil-kt:coil-svg", version.ref = "coil" }
 
-voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.ref = "voyagerVersion" }
-voyager-tab-navigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyagerVersion" }
-voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyagerVersion" }
-voyager-androidx = { module = "cafe.adriel.voyager:voyager-androidx", version.ref = "voyagerVersion" }
-voyager-hilt = { module = "cafe.adriel.voyager:voyager-hilt", version.ref = "voyagerVersion" }
+ktor-client-core = {module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 
 com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxHilt" }

@@ -3,8 +3,9 @@
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
-  id("org.jetbrains.kotlin.plugin.serialization") version "1.7.20"
+  id("org.jetbrains.kotlin.plugin.serialization") version "1.8.20"
   id("kotlin-kapt")
+  id("kotlin-parcelize")
   id("dagger.hilt.android.plugin")
 }
 
@@ -53,6 +54,7 @@ android {
 dependencies {
 
   implementation(libs.androidx.core.ktx)
+  implementation(libs.androidx.browser)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.material)
   implementation(libs.androidx.compose.material3)
@@ -62,6 +64,8 @@ dependencies {
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.activity.compose)
+  implementation(libs.androidx.startup.runtime)
+  implementation(libs.androidx.navigation.compose)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.espresso.core)
@@ -75,8 +79,21 @@ dependencies {
   implementation(libs.androidx.hilt.navigation.compose)
   kapt(libs.com.google.dagger.hilt.compiler)
 
-  implementation(libs.voyager.navigator)
-  implementation(libs.voyager.hilt)
-  implementation(libs.voyager.tab.navigator)
+  implementation(libs.retrofit2)
+  implementation(libs.okhttp3)
+  implementation(libs.org.jetbrains.kotlinx.serialization.json)
+  implementation(libs.kotlinx.serialization.converter)
+  implementation(libs.logging.interceptor)
+
+  implementation(libs.ktor.client.core)
+  implementation(libs.ktor.client.logging)
+  implementation(libs.ktor.client.cio)
+  implementation(libs.ktor.client.okhttp)
+  implementation(libs.ktor.serialization.json)
+  implementation(libs.ktor.client.content.negotiation)
+
+  implementation(libs.coil.compose)
+
+  implementation(libs.mmkv)
 
 }
