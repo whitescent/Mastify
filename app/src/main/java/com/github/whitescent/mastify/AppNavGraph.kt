@@ -13,10 +13,8 @@ fun NavGraphBuilder.loginGraph(mainNavController: NavHostController) {
   composable(
     route = "oauth",
     deepLinks = listOf(navDeepLink { uriPattern = "mastify://oauth?code={code}" })
-  ) { backStackEntry ->
-    OauthScreen(
-      navController = mainNavController
-    )
+  ) {
+    OauthScreen(navController = mainNavController)
   }
 }
 

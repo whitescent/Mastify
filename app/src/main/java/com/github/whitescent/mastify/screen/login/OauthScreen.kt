@@ -9,8 +9,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -18,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
@@ -28,7 +26,6 @@ fun OauthScreen(
   navController: NavController,
   viewModel: OauthViewModel = hiltViewModel()
 ) {
-  val token by viewModel.token.collectAsStateWithLifecycle()
   val activity = (LocalContext.current as? Activity)
   Dialog(
     onDismissRequest = { },
@@ -50,11 +47,29 @@ fun OauthScreen(
       }
     }
   }
-  LaunchedEffect(token) {
-    token?.let {
-      navController.popBackStack()
+
+  DisposableEffect(Unit) {
+    viewModel.code?.let {
+      viewModel.getAccessToken {
+        navController.navigate("app") {
+          popUpTo("oauth") {
+            inclusive = true
+          }
+          popUpTo("login") {
+            inclusive = true
+          }
+        }
+      }
+    } ?: run {
+      navController.navigate("login") {
+        popUpTo("oauth") {
+          inclusive = true
+        }
+      }
     }
+    onDispose {  }
   }
+
   BackHandler(true) {
     activity?.finish()
   }

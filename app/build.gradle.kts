@@ -74,6 +74,7 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.test.manifest)
 
   implementation(libs.accompanist.systemuicontroller)
+  implementation(libs.constraintlayout.compose)
 
   implementation(libs.com.google.dagger.hilt.android)
   implementation(libs.androidx.hilt.navigation.compose)
@@ -93,7 +94,9 @@ dependencies {
   implementation(libs.ktor.client.content.negotiation)
 
   implementation(libs.coil.compose)
-
+  implementation(libs.compose.html)
   implementation(libs.mmkv)
+
+  implementation(libs.kotlinx.datetime)
 
 }

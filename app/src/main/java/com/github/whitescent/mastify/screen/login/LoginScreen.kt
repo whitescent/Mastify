@@ -12,6 +12,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,14 +49,13 @@ fun LoginScreen(
   val activity = (context as? Activity)
   val backgroundColor = MaterialTheme.colorScheme.background.toArgb()
   val state by viewModel.uiState.collectAsStateWithLifecycle()
-  val client by viewModel.clientId.collectAsStateWithLifecycle()
 
   Box(
     modifier = Modifier
       .fillMaxSize()
+      .background(AppTheme.colorScheme.background)
       .statusBarsPadding()
-      .padding(30.dp)
-      .imePadding(),
+      .padding(30.dp),
   ) {
     Column(
       modifier = Modifier.fillMaxWidth()
@@ -73,23 +73,27 @@ fun LoginScreen(
         WidthSpacer(value = 12.dp)
         Text(
           text = stringResource(id = R.string.app_name),
-          style = AppTheme.typography.headlineLarge
+          style = AppTheme.typography.headlineLarge,
+          color = AppTheme.colorScheme.onBackground
         )
       }
       HeightSpacer(value = 12.dp)
       Text(
         text = "登录",
-        style = AppTheme.typography.titleLarge
+        style = AppTheme.typography.titleLarge,
+        color = AppTheme.colorScheme.onBackground
       )
       HeightSpacer(value = 6.dp)
       Text(
         text = "请先输入您的实例服务器",
-        style = AppTheme.typography.titleMedium
+        style = AppTheme.typography.titleMedium,
+        color = AppTheme.colorScheme.onBackground
       )
       HeightSpacer(value = 16.dp)
       Text(
         text = "实例地址",
-        style = AppTheme.typography.titleMedium
+        style = AppTheme.typography.titleMedium,
+        color = AppTheme.colorScheme.onBackground
       )
       HeightSpacer(value = 4.dp)
       OutlinedTextField(
@@ -147,7 +151,23 @@ fun LoginScreen(
                     title = state.instanceTitle,
                     description = state.instanceDescription,
                     imageUrl = state.instanceImageUrl,
-                    onClick = viewModel::getClientInfo
+                    onClick = { name ->
+                      viewModel.getClientInfo(
+                        appName = name,
+                        navigateToOauth = { clientId ->
+                          launchCustomChromeTab(
+                            context = context,
+                            uri = Uri.parse(
+                              "https://${state.text}/oauth/authorize?client_id=${clientId}" +
+                                "&scope=read+write+push" +
+                                "&redirect_uri=mastify://oauth" +
+                                "&response_type=code"
+                            ),
+                            toolbarColor = backgroundColor
+                          )
+                        }
+                      )
+                    }
                   )
                 }
               }
@@ -160,161 +180,10 @@ fun LoginScreen(
 
   if (state.openDialog) ProcessDialog()
 
-  LaunchedEffect(client) {
-    if (client.clientId.isNotEmpty()) {
-      launchCustomChromeTab(
-        context = context,
-        uri = Uri.parse(
-          "https://${state.text}/oauth/authorize?client_id=${client.clientId}" +
-            "&scope=read+write+push" +
-            "&redirect_uri=mastify://oauth" +
-            "&response_type=code"
-        ),
-        toolbarColor = backgroundColor
-      )
-    }
-  }
   BackHandler(true) {
     activity?.finish()
   }
 }
-
-//class LoginScreen(val code: String?) : AndroidScreen() {
-//  @OptIn(ExperimentalMaterial3Api::class)
-//  @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-//  @Composable
-//  override fun Content() {
-//
-//    val navigator = LocalNavigator.currentOrThrow
-//    val context = LocalContext.current
-//    val backgroundColor = MaterialTheme.colorScheme.background.toArgb()
-//    val viewModel = getViewModel<LoginViewModel>()
-//    val state by viewModel.uiState.collectAsStateWithLifecycle()
-//
-//    Box(
-//      modifier = Modifier
-//        .fillMaxSize()
-//        .statusBarsPadding()
-//        .padding(30.dp)
-//        .imePadding(),
-//    ) {
-//      Column(
-//        modifier = Modifier.fillMaxWidth()
-//      ) {
-//        CenterRow {
-//          Surface(
-//            shape = CircleShape,
-//            modifier = Modifier.size(48.dp)
-//          ) {
-//            Image(
-//              painter = painterResource(id = R.drawable.logo),
-//              contentDescription = null
-//            )
-//          }
-//          WidthSpacer(value = 12.dp)
-//          Text(
-//            text = stringResource(id = R.string.app_name),
-//            style = AppTheme.typography.headlineLarge
-//          )
-//        }
-//        HeightSpacer(value = 12.dp)
-//        Text(
-//          text = "登录",
-//          style = AppTheme.typography.titleLarge
-//        )
-//        HeightSpacer(value = 6.dp)
-//        Text(
-//          text = "请先输入您的实例服务器",
-//          style = AppTheme.typography.titleMedium
-//        )
-//        HeightSpacer(value = 16.dp)
-//        Text(
-//          text = "实例地址",
-//          style = AppTheme.typography.titleMedium
-//        )
-//        HeightSpacer(value = 4.dp)
-//        OutlinedTextField(
-//          value = state.text,
-//          onValueChange = viewModel::onValueChange,
-//          leadingIcon = {
-//            Text(
-//              text = "https://",
-//              modifier = Modifier.padding(start = 8.dp)
-//            )
-//          },
-//          trailingIcon = {
-//            AnimatedVisibility (state.text.isNotEmpty()) {
-//              IconButton(
-//                onClick = viewModel::clearInputText
-//              ) {
-//                Icon(
-//                  imageVector = Icons.Rounded.Close,
-//                  contentDescription = null,
-//                  tint = AppTheme.colorScheme.primary
-//                )
-//              }
-//            }
-//          },
-//          modifier = Modifier.fillMaxWidth(),
-//          colors = TextFieldDefaults.textFieldColors(
-//            containerColor = Color.Transparent
-//          ),
-//          isError = state.instanceError && !state.isTyping
-//        )
-//        HeightSpacer(value = 8.dp)
-//        AnimatedVisibility(
-//          visible = state.text.isNotEmpty(),
-//          enter = fadeIn(),
-//          exit = fadeOut()
-//        ) {
-//          when (state.isTyping) {
-//            true -> {
-//              CircularProgressIndicator(
-//                color = AppTheme.colorScheme.primary,
-//                modifier = Modifier.size(24.dp)
-//              )
-//            }
-//            else -> {
-//              when (state.instanceError) {
-//                true -> Text(
-//                  text = "当前实例不存在",
-//                  style = AppTheme.typography.bodyMedium,
-//                  color = AppTheme.colorScheme.error
-//                )
-//                else -> InstanceCard(
-//                  title = state.instanceTitle,
-//                  description = state.instanceDescription,
-//                  imageUrl = state.instanceImageUrl,
-//                  onClick = viewModel::getClientInfo
-//                )
-//              }
-//            }
-//          }
-//        }
-//      }
-//    }
-//
-//    if (state.openDialog) ProcessDialog(viewModel::onDismissRequest)
-//
-//    LaunchedEffect(state.navigateToOauth) {
-//      if (state.navigateToOauth) {
-//        val uriString = "https://${state.text}/oauth/authorize?client_id=${viewModel.clientId}" +
-//                "&scope=read+write+push" +
-//                "&redirect_uri=mastify://oauth" +
-//                "&response_type=code"
-//        println("uri $uriString")
-//        launchCustomChromeTab(
-//          context = context,
-//          uri = Uri.parse(uriString),
-//          toolbarColor = backgroundColor
-//        )
-//      }
-//    }
-//
-//    println("code $code")
-//
-//  }
-//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -388,7 +257,6 @@ fun launchCustomChromeTab(context: Context, uri: Uri, @ColorInt toolbarColor: In
   val customTabsIntent = CustomTabsIntent.Builder()
     .setDefaultColorSchemeParams(customTabBarColor)
     .build()
-
   customTabsIntent.launchUrl(context, uri)
 }
 

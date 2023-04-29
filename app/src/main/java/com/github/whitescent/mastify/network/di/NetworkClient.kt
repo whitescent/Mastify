@@ -11,7 +11,6 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
-import okhttp3.Interceptor
 
 object NetworkClient {
   @OptIn(ExperimentalSerializationApi::class)
@@ -23,13 +22,14 @@ object NetworkClient {
       })
     }
     install(Logging) {
-//      logger = object : Logger {
-//        override fun log(message: String) {
-//          Log.d("tag", message)
-//        }
-//      }
-      logger = Logger.DEFAULT
-      level = LogLevel.HEADERS
+      logger = object : Logger {
+        override fun log(message: String) {
+          Log.d("tag", message)
+        }
+      }
+      level = LogLevel.BODY
+//      logger = Logger.DEFAULT
+//      level = LogLevel.HEADERS
     }
     install(HttpTimeout) {
       requestTimeoutMillis = 30_000

@@ -1,7 +1,6 @@
 package com.github.whitescent.mastify.utils
 
 import androidx.annotation.DrawableRes
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.github.whitescent.R
 
 enum class BottomBarItem(
@@ -9,6 +8,7 @@ enum class BottomBarItem(
   @DrawableRes val selectedIcon: Int,
   val route: String
 ) {
-  Home(R.drawable.home, R.drawable.home_fill, "home"),
-  Notification(R.drawable.notification, R.drawable.notification_fill, "notifications"),
+  Home(R.drawable.home, R.drawable.home_selected, "home"),
+  Notification(R.drawable.notification, R.drawable.notification_selected, "notifications"),
+  Profile(R.drawable.profile, R.drawable.profile_selected, "profile")
 }

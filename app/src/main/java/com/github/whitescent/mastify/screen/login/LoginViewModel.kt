@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.screen.login
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.data.repository.ApiRepository
@@ -14,7 +13,6 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-  private val savedStateHandle: SavedStateHandle,
   private val apiRepository: ApiRepository,
   private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
@@ -24,11 +22,10 @@ class LoginViewModel @Inject constructor(
   private var _uiState = MutableStateFlow(LoginUiState())
   val uiState = _uiState.asStateFlow()
 
-  val clientId = preferenceRepository.instance.asStateFlow()
   init {
     viewModelScope.launch(Dispatchers.IO) {
       inputText
-        .debounce(750)
+        .sample(750)
         .filterNot(String::isEmpty)
         .mapLatest { input -> apiRepository.getServerInfo(input) }
         .buffer(0)
@@ -61,7 +58,7 @@ class LoginViewModel @Inject constructor(
     _uiState.value = _uiState.value.copy(text = "", isTyping = false)
   }
 
-  fun getClientInfo(appName: String) {
+  fun getClientInfo(appName: String, navigateToOauth: (String) -> Unit) {
     _uiState.value = _uiState.value.copy(openDialog = true)
     viewModelScope.launch(Dispatchers.IO) {
       val result = apiRepository.getClientInfo(
@@ -75,7 +72,8 @@ class LoginViewModel @Inject constructor(
       result?.let {
         withContext(Dispatchers.Main) {
           _uiState.value = _uiState.value.copy(openDialog = false)
-          preferenceRepository.saveClientData(_uiState.value.text, it.clientId, it.clientSecret)
+          preferenceRepository.saveInstanceData(_uiState.value.text, it.clientId, it.clientSecret)
+          navigateToOauth(it.clientId)
         }
       }
     }
