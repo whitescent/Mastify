@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class OauthViewModel @Inject constructor(
+class OauthScreenModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   private val apiRepository: ApiRepository,
   private val preferenceRepository: PreferenceRepository

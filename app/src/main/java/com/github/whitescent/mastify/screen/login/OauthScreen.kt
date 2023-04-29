@@ -24,7 +24,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 @Composable
 fun OauthScreen(
   navController: NavController,
-  viewModel: OauthViewModel = hiltViewModel()
+  viewModel: OauthScreenModel = hiltViewModel()
 ) {
   val activity = (LocalContext.current as? Activity)
   Dialog(

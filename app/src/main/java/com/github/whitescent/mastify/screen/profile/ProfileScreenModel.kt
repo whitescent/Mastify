@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class ProfileScreenModel @Inject constructor(
   private val apiRepository: ApiRepository,
   preferenceRepository: PreferenceRepository
 ) : ViewModel() {

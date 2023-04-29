@@ -7,7 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
+class HomeScreenModel @Inject constructor(
   private val apiRepository: ApiRepository,
   preferenceRepository: PreferenceRepository
 ) : ViewModel() {

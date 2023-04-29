@@ -46,7 +46,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProfileScreen(
-  viewModel: ProfileViewModel = hiltViewModel()
+  viewModel: ProfileScreenModel = hiltViewModel()
 ) {
 
   BoxWithConstraints {
