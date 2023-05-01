@@ -2,6 +2,8 @@ package com.github.whitescent.mastify.utils
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration
 
 
@@ -23,4 +25,10 @@ object FormatFactory {
       else -> "$secDiff 秒前"
     }
   }
+  fun getTimeYear(time: String): Int =
+    Instant.parse(time).toLocalDateTime(TimeZone.UTC).year
+  fun getTimeMouth(time: String): Int =
+    Instant.parse(time).toLocalDateTime(TimeZone.UTC).monthNumber
+  fun getTimeDayOfMonth(time: String): Int =
+    Instant.parse(time).toLocalDateTime(TimeZone.UTC).dayOfMonth
 }

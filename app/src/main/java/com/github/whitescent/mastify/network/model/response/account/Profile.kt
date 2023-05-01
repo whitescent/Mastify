@@ -15,10 +15,19 @@ data class Profile(
   @SerialName("following_count") val followingCount: Long,
   @SerialName("statuses_count") val statusesCount: Long,
   @SerialName("created_at") val createdAt: String,
-  val source: Source
+  val source: Source,
+  val fields: List<Fields>
 )
 
 @Serializable
 data class Source(
-  val note: String
+  val note: String,
+  val fields: List<Fields>
+)
+
+@Serializable
+data class Fields(
+  val name: String,
+  val value: String,
+  @SerialName("verified_at") val verifiedAt: String?
 )

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.data.repository.ApiRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
+import com.github.whitescent.mastify.network.model.response.account.Profile
 import com.github.whitescent.mastify.network.model.response.account.Status
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,8 @@ class ProfileScreenModel @Inject constructor(
   val account = preferenceRepository.account
   var statuses by mutableStateOf<List<Status>>(emptyList())
     private set
+  var profile by mutableStateOf<Profile?>(null)
+    private set
 
   fun initProfilePage() = viewModelScope.launch(Dispatchers.Main) {
     val list = apiRepository.getAccountStatuses(
@@ -30,6 +33,11 @@ class ProfileScreenModel @Inject constructor(
     list?.let {
       statuses = it
     }
+    apiRepository.getProfile(
+      instanceName = account.instanceName,
+      token = account.accessToken
+    )?.let {
+      profile = it
+    }
   }
-
 }

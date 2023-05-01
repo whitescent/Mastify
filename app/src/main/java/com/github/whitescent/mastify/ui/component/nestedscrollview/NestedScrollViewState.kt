@@ -41,7 +41,7 @@ fun rememberNestedScrollViewState(): NestedScrollViewState {
 class NestedScrollViewState(
   private val scope: CoroutineScope,
   initialOffset: Float = 0f,
-  initialMaxOffset: Float = 0f,
+  initialMaxOffset: Float = 0f
 ) {
   companion object {
     fun Saver(
@@ -73,6 +73,8 @@ class NestedScrollViewState(
   @get:FloatRange(from = 0.0)
   val offset: Float
     get() = _offset.value
+
+  var topBarHeight: Int? = null
 
   internal val nestedScrollConnectionHolder = object : NestedScrollConnection {
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -145,7 +147,6 @@ class NestedScrollViewState(
       0f
     }
   }
-
   internal fun updateBounds(maxOffset: Float) {
     _maxOffset.value = maxOffset
     _offset.updateBounds(maxOffset, 0f)

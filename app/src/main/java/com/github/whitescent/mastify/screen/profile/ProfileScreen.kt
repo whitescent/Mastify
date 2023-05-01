@@ -1,18 +1,17 @@
 package com.github.whitescent.mastify.screen.profile
 
+import android.annotation.SuppressLint
 import android.util.TypedValue
 import android.widget.TextView
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -23,83 +22,88 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppTheme
 import com.github.whitescent.mastify.data.model.AccountModel
-import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
-import com.github.whitescent.mastify.network.model.response.account.Status
+import com.github.whitescent.mastify.network.model.response.account.Profile
+import com.github.whitescent.mastify.screen.profile.pager.ProfilePager
 import com.github.whitescent.mastify.ui.component.*
 import com.github.whitescent.mastify.ui.component.nestedscrollview.VerticalNestedScrollView
 import com.github.whitescent.mastify.ui.component.nestedscrollview.rememberNestedScrollViewState
 import com.github.whitescent.mastify.utils.FormatFactory
-import com.github.whitescent.mastify.utils.getInstanceName
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
-@OptIn(ExperimentalFoundationApi::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
   viewModel: ProfileScreenModel = hiltViewModel()
 ) {
-
-  BoxWithConstraints {
-    Crossfade(targetState = viewModel.account) {
-      when (it) {
-        null -> CenterCircularProgressIndicator()
-        else -> {
-          val nestedScrollViewState = rememberNestedScrollViewState()
-
-          VerticalNestedScrollView(
-            state = nestedScrollViewState,
-            header = {
-              ProfileHeader(
-                account = viewModel.account!!
-              )
-            },
-            content = {
-              Column {
-                val tabs = listOf(ProfileTab.POST, ProfileTab.ABOUT)
-                val pagerState = rememberPagerState()
-                val scope = rememberCoroutineScope()
-                ProfileTabView(
-                  tabs = tabs,
-                  selectedTabIndex = pagerState.currentPage,
-                  onTabClick = { index ->
-                    scope.launch {
-                      pagerState.animateScrollToPage(index)
-                    }
-                  }
-                )
-                ProfilePager(
-                  state = pagerState,
-                  statuses = viewModel.statuses,
-                  instanceName = viewModel.account!!.instanceName,
-                )
-              }
-            }
-          )
+  Crossfade(targetState = viewModel.account) {
+    when (it) {
+      null -> CenterCircularProgressIndicator()
+      else -> {
+        val nestedScrollViewState = rememberNestedScrollViewState()
+        val topBarAlpha by remember {
+          derivedStateOf {
+            abs(nestedScrollViewState.offset / nestedScrollViewState.maxOffset)
+          }
         }
+        VerticalNestedScrollView(
+          state = nestedScrollViewState,
+          topBar = {
+            ProfileScreenTopBar(
+              header = viewModel.account!!.header,
+              account = viewModel.account,
+              alpha = topBarAlpha
+            )
+          },
+          header = {
+            ProfileHeader(account = viewModel.account!!, profile = viewModel.profile)
+          },
+          content = {
+            Column {
+              val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.ABOUT)
+              val pagerState = rememberPagerState()
+              val scope = rememberCoroutineScope()
+              ProfileTab(
+                tabs = tabs,
+                selectedTabIndex = pagerState.currentPage,
+                onTabClick = { index ->
+                  scope.launch {
+                    pagerState.animateScrollToPage(index)
+                  }
+                }
+              )
+              ProfilePager(
+                state = pagerState,
+                statuses = viewModel.statuses,
+                aboutModel = viewModel.profile,
+                instanceName = viewModel.account!!.instanceName,
+              )
+            }
+          }
+        )
       }
     }
   }
-
   DisposableEffect(Unit) {
     viewModel.initProfilePage()
     onDispose { }
   }
-
 }
 
 @Composable
 fun ProfileHeader(
-  account: AccountModel
+  account: AccountModel,
+  profile: Profile?
 ) {
   Column(
     modifier = Modifier.fillMaxWidth()
@@ -110,20 +114,20 @@ fun ProfileHeader(
         contentDescription = null,
         modifier = Modifier
           .fillMaxWidth()
-          .height(265.dp),
+          .height(200.dp),
         contentScale = ContentScale.Crop
       )
       Column {
         Box(
-          Modifier
+          modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(135.dp)
         )
         Box(
           modifier = Modifier
             .fillMaxWidth()
-            .height(130.dp),
-          contentAlignment = Alignment.Center
+            .padding(start = 14.dp)
+            .height(130.dp)
         ) {
           CircleShapeAsyncImage(
             model = account.avatar,
@@ -131,326 +135,90 @@ fun ProfileHeader(
             contentScale = ContentScale.Crop,
             border = BorderStroke(4.dp, Color.White)
           )
+          CenterRow(
+            modifier = Modifier
+              .padding(end = 24.dp)
+              .align(Alignment.BottomEnd),
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
+          ) {
+            AccountInfo(number = account.statusesCount, description = "嘟文")
+            AccountInfo(number = account.followersCount, description = "关注者")
+            AccountInfo(number = account.followingCount, description = "正在关注")
+          }
         }
       }
     }
-    Column {
-      HeightSpacer(value = 6.dp)
-      CenterRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
-      ) {
-        Text(
-          text = account.username,
-          style = AppTheme.typography.headlineSmall,
-          color = AppTheme.colorScheme.onBackground
-        )
-        WidthSpacer(value = 6.dp)
-        Text(
-          text = "@${account.username}@${account.instanceName}",
-          style = AppTheme.typography.bodyMedium,
-          color = AppTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-        )
+    Column(modifier = Modifier
+      .padding(start = 14.dp)
+      .fillMaxWidth()) {
+      CenterRow(modifier = Modifier.fillMaxWidth()) {
+        Column {
+          Text(
+            text = account.username,
+            style = AppTheme.typography.headlineSmall,
+            color = AppTheme.colorScheme.onBackground
+          )
+          HeightSpacer(value = 2.dp)
+          Text(
+            text = "@${account.username}@${account.instanceName}",
+            style = AppTheme.typography.bodyMedium,
+            color = AppTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+          )
+        }
+        Box(
+          modifier = Modifier.fillMaxWidth(),
+          contentAlignment = Alignment.CenterEnd
+        ) {
+          Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier.padding(12.dp)
+          ) {
+            Icon(Icons.Rounded.Edit, null)
+            WidthSpacer(value = 4.dp)
+            Text(text = "编辑资料")
+          }
+        }
       }
-      HeightSpacer(value = 6.dp)
+      HeightSpacer(value = 2.dp)
       Text(
         text = account.note,
         style = AppTheme.typography.bodyLarge.copy(
           color = AppTheme.colorScheme.onBackground.copy(alpha = 0.7f),
         ),
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-        overflow = TextOverflow.Ellipsis,
-        textAlign = TextAlign.Center
+        overflow = TextOverflow.Ellipsis
       )
-      HeightSpacer(value = 6.dp)
-      CenterRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+      AnimatedVisibility(
+        visible = profile != null,
+        enter = fadeIn(tween(easing = LinearEasing))
       ) {
-        Button(
-          onClick = { /*TODO*/ }
-        ) {
-          Icon(Icons.Rounded.Edit, null)
-          WidthSpacer(value = 4.dp)
-          Text(text = "编辑资料")
-        }
-        Button(
-          onClick = { /*TODO*/ }
-        ) {
-          Icon(Icons.Rounded.Share, null)
-        }
-      }
-      HeightSpacer(value = 6.dp)
-      Column {
-        Divider(modifier = Modifier.fillMaxWidth(), thickness = (0.5).dp)
-        CenterRow(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp),
-          horizontalArrangement = Arrangement.SpaceAround
-        ) {
-          AccountInfo(number = account.statusesCount, description = "嘟文")
-          AccountInfo(number = account.followersCount, description = "关注者")
-          AccountInfo(number = account.followingCount, description = "正在关注")
-        }
-        Divider(modifier = Modifier.fillMaxWidth(), thickness = (0.5).dp)
-      }
-    }
-  }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun ProfilePager(
-  state: PagerState,
-  statuses: List<Status>,
-  instanceName: String
-) {
-  HorizontalPager(
-    pageCount = 2,
-    modifier = Modifier
-      .fillMaxHeight(),
-    state = state
-  ) { page ->
-    Crossfade(targetState = page) {
-      when (it) {
-        0 -> {
-          Crossfade(targetState = statuses) { list ->
-            when (list.size) {
-              0 -> CenterCircularProgressIndicator()
-              else -> {
-                LazyColumn(
-                  modifier = Modifier.fillMaxSize()
-                ) {
-                  itemsIndexed(statuses) { _, status ->
-                    if (status.content.isNotEmpty() || status.mediaAttachments.isNotEmpty() ||
-                      status.reblog != null
-                      ) {
-                      StatusListItem(
-                        status = status,
-                        instanceName = instanceName
-                      )
-                    }
-                    Divider(modifier = Modifier.fillMaxWidth(), thickness = (0.6).dp)
-                  }
-                }
-              }
-            }
-          }
-        }
-        1 -> {
-          Box(
-            modifier = Modifier
-              .fillMaxSize()
-              .background(Color.Gray),
-            contentAlignment = Alignment.Center
-          ) {
-            Text(text = "关于")
-          }
-        }
-      }
-    }
-  }
-}
-
-@Composable
-fun StatusListItem(
-  status: Status,
-  instanceName: String
-) {
-  Column(
-    modifier = Modifier.fillMaxWidth()
-  ) {
-    status.reblog?.let {
-      CenterRow(
-        modifier = Modifier.padding(start = 24.dp, top = 6.dp)
-      ) {
-        Icon(
-          imageVector = Icons.Rounded.Repeat,
-          contentDescription = null,
-          tint = Color.Gray
-        )
-        WidthSpacer(value = 4.dp)
-        Text(
-          text = "${status.account.username} 转了这篇嘟文",
-          style = AppTheme.typography.titleSmall,
-          color = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-        )
-      }
-    }
-    when (status.reblog) {
-      null -> {
-        StatusContent(
-          avatar = status.account.avatar,
-          username = status.account.username,
-          instanceName = instanceName,
-          createdAt = status.createdAt,
-          content = status.content,
-          mediaAttachments = status.mediaAttachments,
-          repliesCount = status.repliesCount,
-          reblogsCount = status.reblogsCount,
-          favouritesCount = status.favouritesCount
-        )
-      }
-      else -> {
-        StatusContent(
-          avatar = status.reblog.account.avatar,
-          username = status.reblog.account.username,
-          instanceName = getInstanceName(status.account.url)!!,
-          createdAt = status.reblog.createdAt,
-          content = status.reblog.content,
-          mediaAttachments = status.reblog.mediaAttachments,
-          repliesCount = status.reblog.repliesCount,
-          reblogsCount = status.reblog.reblogsCount,
-          favouritesCount = status.reblog.favouritesCount
-        )
-      }
-    }
-  }
-}
-
-@Composable
-fun StatusContent(
-  avatar: String,
-  username: String,
-  instanceName: String,
-  createdAt: String,
-  content: String,
-  mediaAttachments: List<MediaAttachments>,
-  repliesCount: Int,
-  reblogsCount: Int,
-  favouritesCount: Int
-) {
-  val actionList = mapOf(
-    Icons.Rounded.Reply to repliesCount,
-    Icons.Rounded.Repeat to reblogsCount,
-    Icons.Rounded.Favorite to favouritesCount
-  )
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .padding(12.dp)
-  ) {
-    CircleShapeAsyncImage(
-      model = avatar,
-      modifier = Modifier.size(50.dp)
-    )
-    WidthSpacer(value = 6.dp)
-    Column {
-      CenterRow(Modifier.fillMaxWidth()) {
-        Text(
-          text = username,
-          style = AppTheme.typography.titleMedium,
-          fontWeight = FontWeight.Bold
-        )
-        WidthSpacer(value = 4.dp)
-        Text(
-          text = "@$username@$instanceName",
-          style = AppTheme.typography.titleSmall,
-          color = AppTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-        )
-        Box(
-          Modifier
-            .padding(horizontal = 8.dp)
-            .size(2.dp)
-            .background(Color.Gray, CircleShape)
-        )
-        Text(
-          text = FormatFactory.getTimeDiff(createdAt),
-          style = AppTheme.typography.titleSmall,
-          color = AppTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-        )
-        Box(
-          modifier = Modifier.fillMaxWidth(),
-          contentAlignment = Alignment.CenterEnd
-        ) {
-          ClickableIcon(
-            imageVector = Icons.Rounded.MoreVert,
-            tint = Color.Gray
-          )
-        }
-      }
-      MyHtmlText(
-        text = content,
-        style = AppTheme.typography.titleMedium
-      )
-      mediaAttachments.forEach {
-        if (it.type == "image") {
-          Surface(
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.padding(bottom = 4.dp)
-          ) {
-            AsyncImage(
-              model = it.url,
+        Column {
+          HeightSpacer(value = 4.dp)
+          CenterRow {
+            Icon(
+              imageVector = Icons.Rounded.CalendarMonth,
               contentDescription = null,
-              modifier = Modifier.fillMaxSize()
+              tint = Color.Gray,
+              modifier = Modifier.size(22.dp)
             )
-          }
-        }
-      }
-      HeightSpacer(value = 3.dp)
-      ConstraintLayout(
-        modifier = Modifier
-          .padding(end = 24.dp)
-          .fillMaxWidth()
-      ) {
-        val (replyIcon, repeatIcon, favoriteIcon,
-          replyCount, repeatCount, favoriteCount) = createRefs()
-        actionList.forEach {
-          ClickableIcon(
-            imageVector = it.key,
-            tint = Color.Gray,
-            modifier = Modifier
-              .size(22.dp)
-              .constrainAs(
-                ref = when (it.key) {
-                  Icons.Rounded.Reply -> replyIcon
-                  Icons.Rounded.Repeat -> repeatIcon
-                  else -> favoriteIcon
-                }
-              ) {
-                start.linkTo(
-                  anchor = when (it.key) {
-                    Icons.Rounded.Reply -> parent.start
-                    Icons.Rounded.Repeat -> replyIcon.end
-                    else -> repeatIcon.end
-                  },
-                  margin = if (it.key == Icons.Rounded.Reply) 0.dp else 80.dp
-                )
-              }
-          )
-          if (it.value != 0) {
+            WidthSpacer(value = 4.dp)
             Text(
-              text = it.value.toString(),
-              style = AppTheme.typography.bodyMedium,
-              color = Color.Gray,
-              modifier = Modifier.constrainAs(
-                ref = when (it.key) {
-                  Icons.Rounded.Reply -> replyCount
-                  Icons.Rounded.Repeat -> repeatCount
-                  else -> favoriteCount
-                },
-              ) {
-                start.linkTo(
-                  anchor = when (it.key) {
-                    Icons.Rounded.Reply -> replyIcon.end
-                    Icons.Rounded.Repeat -> repeatIcon.end
-                    else -> favoriteIcon.end
-                  },
-                  margin = 6.dp
-                )
-              }
+              text = "${FormatFactory.getTimeYear(profile!!.createdAt)}年" +
+                "${FormatFactory.getTimeMouth(profile.createdAt)}月加入",
+              style = AppTheme.typography.bodyMedium.copy(
+                color = AppTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+              )
             )
           }
         }
       }
     }
+    HeightSpacer(value = 4.dp)
   }
 }
 
 @Composable
-fun ProfileTabView(
-  tabs: List<ProfileTab>,
+fun ProfileTab(
+  tabs: List<ProfileTabItem>,
   selectedTabIndex: Int,
   onTabClick: (Int) -> Unit
 ) {
@@ -467,8 +235,8 @@ fun ProfileTabView(
         },
         text = {
           when (title) {
-            ProfileTab.POST -> {
-              CenterRow(modifier = Modifier.padding(12.dp)) {
+            ProfileTabItem.POST -> {
+              CenterRow(modifier = Modifier.padding(4.dp)) {
                 Icon(
                   painter = painterResource(
                     id = when (selectedTabIndex == index) {
@@ -488,8 +256,8 @@ fun ProfileTabView(
                 )
               }
             }
-            ProfileTab.ABOUT -> {
-              CenterRow(modifier = Modifier.padding(12.dp)) {
+            ProfileTabItem.ABOUT -> {
+              CenterRow(modifier = Modifier.padding(4.dp)) {
                 Icon(
                   painter = painterResource(
                     id = when (selectedTabIndex == index) {
@@ -561,6 +329,6 @@ fun MyHtmlText(
   )
 }
 
-enum class ProfileTab {
+enum class ProfileTabItem {
   POST, ABOUT
 }

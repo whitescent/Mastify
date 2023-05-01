@@ -36,7 +36,6 @@ class PreferenceRepository @Inject constructor() {
   fun anyAccountLoggedIn(): Boolean {
     mmkv.allKeys()?.forEach {
       if (it.startsWith("account_")) {
-        println("account $it")
         val savedAccount = mmkv.decodeParcelable(it, AccountModel::class.java)
         if (savedAccount?.isLoggedIn == true) {
           account = savedAccount
