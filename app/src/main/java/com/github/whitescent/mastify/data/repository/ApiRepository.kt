@@ -47,12 +47,28 @@ class ApiRepository @Inject constructor() {
     }.getOrNull()
   }
 
-  suspend fun getAccountStatuses(instanceName: String, token: String, id: String) = withContext(Dispatchers.IO) {
-    runCatching {
-      NetworkClient.httpClient.get("https://$instanceName/api/v1/accounts/$id/statuses") {
-        header("Authorization", "Bearer $token")
-      }.body<List<Status>>()
-    }.getOrNull()
-  }
+  suspend fun getAccountStatuses(instanceName: String, token: String, id: String) =
+    withContext(Dispatchers.IO) {
+      runCatching {
+        NetworkClient.httpClient.get("https://$instanceName/api/v1/accounts/$id/statuses") {
+          header("Authorization", "Bearer $token")
+        }.body<List<Status>>()
+      }.getOrNull()
+    }
+
+  suspend fun getHomeTimeline(
+    instanceName:String,
+    token: String,
+    maxId: String? = null,
+    minId: String? = null
+  ) =
+    NetworkClient.httpClient.get("https://$instanceName/api/v1/timelines/home") {
+      header("Authorization", "Bearer $token")
+      maxId?.let {
+        url {
+          parameters.append("max_id", maxId)
+        }
+      }
+    }.body<List<Status>>()
 
 }

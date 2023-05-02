@@ -56,6 +56,7 @@ dependencies {
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.browser)
   implementation(libs.androidx.compose.ui)
+  implementation(libs.androidx.compose.ui.util)
   implementation(libs.androidx.compose.material)
   implementation(libs.androidx.compose.material3)
   implementation(libs.androidx.compose.material.icons.extended)
@@ -66,6 +67,8 @@ dependencies {
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.startup.runtime)
   implementation(libs.androidx.navigation.compose)
+  implementation(libs.androidx.paging.compose)
+  implementation(libs.androidx.paging.runtime)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.espresso.core)
@@ -96,6 +99,8 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.compose.html)
   implementation(libs.mmkv)
+  implementation(libs.jsoup)
+  implementation(libs.zoomable)
 
   implementation(libs.kotlinx.datetime)
 

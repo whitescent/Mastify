@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.ui.theme.MastifyTheme
+import com.github.whitescent.mastify.utils.LocalSystemUiController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -36,12 +37,14 @@ class MainActivity : ComponentActivity() {
             darkIcons = useDarkIcons
           )
         }
-        NavHost(
-          navController = mainNavController,
-          startDestination = if (isLoggedIn) "app" else "login"
-        ) {
-          loginGraph(mainNavController)
-          appGraph(mainNavController)
+        CompositionLocalProvider(LocalSystemUiController provides systemUiController) {
+          NavHost(
+            navController = mainNavController,
+            startDestination = if (isLoggedIn) "app" else "login"
+          ) {
+            loginGraph(mainNavController)
+            appGraph(mainNavController)
+          }
         }
       }
     }

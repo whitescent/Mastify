@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.network.di
 
+import android.util.Log
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*

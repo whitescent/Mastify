@@ -11,7 +11,7 @@ data class Status(
   @SerialName("spoiler_text") val spoilerText: String,
   val visibility: String,
   val uri: String,
-  val url: String,
+  val url: String?,
   @SerialName("replies_count") val repliesCount: Int,
   @SerialName("reblogs_count") val reblogsCount: Int,
   @SerialName("favourites_count") val favouritesCount: Int,
@@ -46,6 +46,7 @@ data class MediaAttachments(
 @Serializable
 data class Account(
   val id: String,
+  @SerialName("display_name") val displayName: String,
   val username: String,
   val avatar: String,
   val url: String

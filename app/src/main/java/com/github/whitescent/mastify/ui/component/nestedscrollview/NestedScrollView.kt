@@ -21,7 +21,6 @@ import kotlin.math.roundToInt
 fun VerticalNestedScrollView(
   modifier: Modifier = Modifier,
   state: NestedScrollViewState,
-  topBar: @Composable () -> Unit,
   header: @Composable () -> Unit = {},
   content: @Composable () -> Unit = {},
 ) {
@@ -29,7 +28,6 @@ fun VerticalNestedScrollView(
     modifier = modifier,
     state = state,
     orientation = Orientation.Vertical,
-    topBar = topBar,
     header = header,
     content = content,
   )
@@ -64,7 +62,6 @@ private fun NestedScrollView(
   modifier: Modifier = Modifier,
   state: NestedScrollViewState,
   orientation: Orientation,
-  topBar: @Composable (() -> Unit)? = null,
   header: @Composable () -> Unit,
   content: @Composable () -> Unit,
 ) {
@@ -84,9 +81,6 @@ private fun NestedScrollView(
       Box {
         content.invoke()
       }
-      Box {
-        topBar?.invoke()
-      }
     },
   ) { measurables, constraints ->
     layout(constraints.maxWidth, constraints.maxHeight) {
@@ -94,21 +88,14 @@ private fun NestedScrollView(
         Orientation.Vertical -> {
           val headerPlaceable =
             measurables[0].measure(constraints.copy(maxHeight = Constraints.Infinity))
-
-          val topBarPlaceable = measurables[2].measure(constraints)
-          state.topBarHeight = topBarPlaceable.height
-
           headerPlaceable.place(0, state.offset.roundToInt())
-          state.updateBounds(-(headerPlaceable.height.toFloat() - topBarPlaceable.height))
-
+          state.updateBounds(-(headerPlaceable.height.toFloat()))
           val contentPlaceable =
             measurables[1].measure(constraints.copy(maxHeight = constraints.maxHeight))
-
           contentPlaceable.place(
             x = 0,
             y = state.offset.roundToInt() + headerPlaceable.height
           )
-          topBarPlaceable.place(0, 0)
         }
         Orientation.Horizontal -> {
           val headerPlaceable =

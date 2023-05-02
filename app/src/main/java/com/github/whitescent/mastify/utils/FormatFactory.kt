@@ -8,6 +8,11 @@ import kotlin.time.Duration
 
 
 object FormatFactory {
+  fun getInstanceName(url: String): String {
+    val regex = Regex("^(?:https?:\\/\\/)?(?:www\\.)?([\\w.-]+)")
+    val matchResult = regex.find(url)
+    return matchResult?.groups?.get(1)?.value ?: ""
+  }
   fun getTimeDiff(time: String): String {
     val now = Clock.System.now()
     val instantInThePast: Instant = Instant.parse(time)

@@ -1,8 +1,6 @@
 package com.github.whitescent.mastify.screen.profile
 
 import android.annotation.SuppressLint
-import android.util.TypedValue
-import android.widget.TextView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
@@ -24,8 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.github.whitescent.R
@@ -38,7 +34,6 @@ import com.github.whitescent.mastify.ui.component.nestedscrollview.VerticalNeste
 import com.github.whitescent.mastify.ui.component.nestedscrollview.rememberNestedScrollViewState
 import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -51,20 +46,8 @@ fun ProfileScreen(
       null -> CenterCircularProgressIndicator()
       else -> {
         val nestedScrollViewState = rememberNestedScrollViewState()
-        val topBarAlpha by remember {
-          derivedStateOf {
-            abs(nestedScrollViewState.offset / nestedScrollViewState.maxOffset)
-          }
-        }
         VerticalNestedScrollView(
           state = nestedScrollViewState,
-          topBar = {
-            ProfileScreenTopBar(
-              header = viewModel.account!!.header,
-              account = viewModel.account,
-              alpha = topBarAlpha
-            )
-          },
           header = {
             ProfileHeader(account = viewModel.account!!, profile = viewModel.profile)
           },
@@ -85,11 +68,11 @@ fun ProfileScreen(
               ProfilePager(
                 state = pagerState,
                 statuses = viewModel.statuses,
-                aboutModel = viewModel.profile,
-                instanceName = viewModel.account!!.instanceName,
+                aboutModel = viewModel.profile
               )
             }
-          }
+          },
+          modifier = Modifier.statusBarsPadding()
         )
       }
     }
@@ -310,23 +293,6 @@ fun AccountInfo(
       color = AppTheme.colorScheme.onBackground.copy(alpha = 0.6f)
     )
   }
-}
-
-@Composable
-fun MyHtmlText(
-  text: String,
-  modifier: Modifier = Modifier,
-  style: androidx.compose.ui.text.TextStyle = LocalTextStyle.current
-) {
-  AndroidView(
-    modifier = modifier,
-    factory = { context -> TextView(context) },
-    update = { view ->
-      view.text = HtmlCompat.fromHtml(text, HtmlCompat.FROM_HTML_MODE_COMPACT)
-      view.setTextColor(android.graphics.Color.rgb(style.color.red, style.color.green, style.color.blue))
-      view.setTextSize(TypedValue.COMPLEX_UNIT_SP, style.fontSize.value)
-    }
-  )
 }
 
 enum class ProfileTabItem {

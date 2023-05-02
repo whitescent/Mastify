@@ -35,6 +35,8 @@ pagingRuntime = "3.1.1"
 pagingCompose = "1.0.0-alpha18"
 splashScreen = "1.0.1"
 junit = "4.13.2"
+jsoup = "1.16.1"
+zoomable = "1.6.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -92,6 +94,8 @@ com-google-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", 
 
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "androidxStartup" }
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+zoomable = { module = "com.mxalbert.zoomable:zoomable", version.ref = "zoomable" }
 
 org-jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
