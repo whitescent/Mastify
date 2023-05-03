@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 class HomeTimelinePagingSource @Inject constructor(
   private val apiRepository: ApiRepository,
-  private val preferenceRepository: PreferenceRepository
+  preferenceRepository: PreferenceRepository
 ) : PagingSource<String, Status>() {
 
   private var nextPageId: String? = null
@@ -28,15 +28,15 @@ class HomeTimelinePagingSource @Inject constructor(
         token = account.accessToken,
         maxId = if (nextPageId != null) nextPageId else null
       )
-      if (data.isNotEmpty()) {
-        LoadResult.Page(
-          data = data,
-          prevKey = nextPageId,
-          nextKey = data[data.size - 1].id
-        ).also {
-          nextPageId = data[data.size - 1].id
+      LoadResult.Page(
+        data = data,
+        prevKey = nextPageId,
+        nextKey = if (data.isEmpty()) null else data[data.size - 1].id
+      ).also {
+        it.nextKey?.let {id ->
+          nextPageId = id
         }
-      } else return LoadResult.Error(NullPointerException())
+      }
     } catch (exception: IOException) {
       exception.printStackTrace()
       return LoadResult.Error(exception)

@@ -8,7 +8,7 @@ enum class BottomBarItem(
   @DrawableRes val selectedIcon: Int,
   val route: String
 ) {
-  Home(R.drawable.home, R.drawable.home_selected, "home"),
-  Notification(R.drawable.notification, R.drawable.notification_selected, "notifications"),
-  Profile(R.drawable.profile, R.drawable.profile_selected, "profile")
+  Home(R.drawable.home_2_line, R.drawable.home_2_fill, "home"),
+  Notification(R.drawable.notification_4_line, R.drawable.notification_4_fill, "notifications"),
+  Profile(R.drawable.user_3_line, R.drawable.user_3_fill, "profile")
 }

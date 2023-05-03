@@ -6,11 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Favorite
-import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material.icons.rounded.Repeat
-import androidx.compose.material.icons.rounded.Reply
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,10 +15,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import com.github.whitescent.R
 import com.github.whitescent.mastify.AppTheme
 import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -47,10 +44,11 @@ fun StatusContent(
   reblogsCount: Int,
   favouritesCount: Int
 ) {
+  
   val actionList = mapOf(
-    Icons.Rounded.Reply to repliesCount,
-    Icons.Rounded.Repeat to reblogsCount,
-    Icons.Rounded.Favorite to favouritesCount
+    R.drawable.chat_3_line to repliesCount,
+    R.drawable.repeat_2_line to reblogsCount,
+    R.drawable.heart_3_line to favouritesCount
   )
 
   var openDialog by rememberSaveable { mutableStateOf(false) }
@@ -95,8 +93,9 @@ fun StatusContent(
           )
           WidthSpacer(value = 4.dp)
           ClickableIcon(
-            imageVector = Icons.Rounded.MoreVert,
-            tint = Color.Gray
+            painter = painterResource(id = R.drawable.more_2_fill),
+            tint = Color.Gray,
+            modifier = Modifier.size(24.dp)
           )
         }
       }
@@ -125,24 +124,24 @@ fun StatusContent(
           replyCount, repeatCount, favoriteCount) = createRefs()
         actionList.forEach {
           ClickableIcon(
-            imageVector = it.key,
+            painter = painterResource(id = it.key),
             tint = Color.Gray,
             modifier = Modifier
               .size(22.dp)
               .constrainAs(
                 ref = when (it.key) {
-                  Icons.Rounded.Reply -> replyIcon
-                  Icons.Rounded.Repeat -> repeatIcon
+                  R.drawable.chat_3_line-> replyIcon
+                  R.drawable.repeat_2_line -> repeatIcon
                   else -> favoriteIcon
                 }
               ) {
                 start.linkTo(
                   anchor = when (it.key) {
-                    Icons.Rounded.Reply -> parent.start
-                    Icons.Rounded.Repeat -> replyIcon.end
+                    R.drawable.chat_3_line -> parent.start
+                    R.drawable.repeat_2_line -> replyIcon.end
                     else -> repeatIcon.end
                   },
-                  margin = if (it.key == Icons.Rounded.Reply) 0.dp else 120.dp
+                  margin = if (it.key == R.drawable.chat_3_line) 0.dp else 100.dp
                 )
               }
           )
@@ -153,15 +152,15 @@ fun StatusContent(
               color = Color.Gray,
               modifier = Modifier.constrainAs(
                 ref = when (it.key) {
-                  Icons.Rounded.Reply -> replyCount
-                  Icons.Rounded.Repeat -> repeatCount
+                  R.drawable.chat_3_line -> replyCount
+                  R.drawable.repeat_2_line -> repeatCount
                   else -> favoriteCount
                 },
               ) {
                 start.linkTo(
                   anchor = when (it.key) {
-                    Icons.Rounded.Reply -> replyIcon.end
-                    Icons.Rounded.Repeat -> repeatIcon.end
+                    R.drawable.chat_3_line -> replyIcon.end
+                    R.drawable.repeat_2_line -> repeatIcon.end
                     else -> favoriteIcon.end
                   },
                   margin = 6.dp

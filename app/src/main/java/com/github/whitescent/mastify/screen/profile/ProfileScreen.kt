@@ -223,8 +223,8 @@ fun ProfileTab(
                 Icon(
                   painter = painterResource(
                     id = when (selectedTabIndex == index) {
-                      true -> R.drawable.grid_view_selected
-                      false -> R.drawable.grid_view
+                      true -> R.drawable.layout_grid_fill
+                      false -> R.drawable.layout_grid_line
                     }
                   ),
                   contentDescription = null,
@@ -244,8 +244,8 @@ fun ProfileTab(
                 Icon(
                   painter = painterResource(
                     id = when (selectedTabIndex == index) {
-                      true -> R.drawable.profile_selected
-                      false -> R.drawable.profile
+                      true -> R.drawable.user_3_fill
+                      false -> R.drawable.user_3_line
                     }
                   ),
                   contentDescription = null,
