@@ -14,7 +14,7 @@ compose = "1.5.0-alpha03"
 composeCompiler = "1.4.6"
 composeHtml = "1.3.1"
 constraintlayoutCompose = "1.0.1"
-material = "1.4.2"
+material = "1.4.3"
 material3 = "1.0.1"
 okhttp3 = "4.10.0"
 retrofit2 = "2.9.0"
@@ -28,11 +28,13 @@ ktor = "2.3.0"
 
 agp = "7.4.2"
 accompanist = "0.25.1"
-coil = "2.2.1"
+coil = "2.3.0"
 mmkv = "1.2.14"
+ksp = "1.8.20-1.0.11"
+composeDestinations = "1.9.42-beta"
 hilt = "2.44"
 pagingRuntime = "3.1.1"
-pagingCompose = "1.0.0-alpha18"
+pagingCompose = "1.0.0-alpha19"
 splashScreen = "1.0.1"
 junit = "4.13.2"
 jsoup = "1.16.1"
@@ -74,9 +76,11 @@ retrofit2 = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofi
 kotlinx-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "kotlinxSerializationConverter" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 
+coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coil" }
 coil-svg = { module = "io.coil-kt:coil-svg", version.ref = "coil" }
+coil-video = { module = "io.coil-kt:coil-video", version.ref = "coil" }
 
 compose-html = { module = "de.charlex.compose:html-text", version.ref = "composeHtml" }
 constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
@@ -96,6 +100,8 @@ androidx-startup-runtime = { module = "androidx.startup:startup-runtime", versio
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 zoomable = { module = "com.mxalbert.zoomable:zoomable", version.ref = "zoomable" }
+compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "composeDestinations" }
+compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composeDestinations" }
 
 org-jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
@@ -106,3 +112,6 @@ androidx-paging-compose = { module = "androidx.paging:paging-compose", version.r
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+
+[plugins]
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

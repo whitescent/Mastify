@@ -23,22 +23,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppTheme
+import com.github.whitescent.mastify.BottomBarNavGraph
 import com.github.whitescent.mastify.data.model.AccountModel
+import com.github.whitescent.mastify.destinations.EditProfileScreenDestination
 import com.github.whitescent.mastify.network.model.response.account.Profile
 import com.github.whitescent.mastify.screen.profile.pager.ProfilePager
 import com.github.whitescent.mastify.ui.component.*
 import com.github.whitescent.mastify.ui.component.nestedscrollview.VerticalNestedScrollView
 import com.github.whitescent.mastify.ui.component.nestedscrollview.rememberNestedScrollViewState
 import com.github.whitescent.mastify.utils.FormatFactory
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.navigate
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalFoundationApi::class)
+@BottomBarNavGraph
+@Destination
 @Composable
 fun ProfileScreen(
+  navController: NavController,
   viewModel: ProfileScreenModel = hiltViewModel()
 ) {
   Crossfade(targetState = viewModel.account) {
@@ -49,7 +57,7 @@ fun ProfileScreen(
         VerticalNestedScrollView(
           state = nestedScrollViewState,
           header = {
-            ProfileHeader(account = viewModel.account!!, profile = viewModel.profile)
+            ProfileHeader(account = viewModel.account!!, profile = viewModel.profile, navController)
           },
           content = {
             Column {
@@ -72,7 +80,6 @@ fun ProfileScreen(
               )
             }
           },
-          modifier = Modifier.statusBarsPadding()
         )
       }
     }
@@ -86,7 +93,8 @@ fun ProfileScreen(
 @Composable
 fun ProfileHeader(
   account: AccountModel,
-  profile: Profile?
+  profile: Profile?,
+  navController: NavController
 ) {
   Column(
     modifier = Modifier.fillMaxWidth()
@@ -153,7 +161,7 @@ fun ProfileHeader(
           contentAlignment = Alignment.CenterEnd
         ) {
           Button(
-            onClick = { /*TODO*/ },
+            onClick = { navController.navigate(EditProfileScreenDestination) },
             modifier = Modifier.padding(12.dp)
           ) {
             Icon(Icons.Rounded.Edit, null)
@@ -195,7 +203,7 @@ fun ProfileHeader(
         }
       }
     }
-    HeightSpacer(value = 4.dp)
+    HeightSpacer(value = 12.dp)
   }
 }
 
@@ -223,8 +231,8 @@ fun ProfileTab(
                 Icon(
                   painter = painterResource(
                     id = when (selectedTabIndex == index) {
-                      true -> R.drawable.layout_grid_fill
-                      false -> R.drawable.layout_grid_line
+                      true -> R.drawable.rows_fill
+                      false -> R.drawable.rows
                     }
                   ),
                   contentDescription = null,
@@ -244,8 +252,8 @@ fun ProfileTab(
                 Icon(
                   painter = painterResource(
                     id = when (selectedTabIndex == index) {
-                      true -> R.drawable.user_3_fill
-                      false -> R.drawable.user_3_line
+                      true -> R.drawable.user_fill
+                      false -> R.drawable.user
                     }
                   ),
                   contentDescription = null,

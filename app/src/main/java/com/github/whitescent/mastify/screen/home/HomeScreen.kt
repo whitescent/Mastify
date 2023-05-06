@@ -24,14 +24,18 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
+import com.github.whitescent.mastify.BottomBarNavGraph
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.CenterCircularProgressIndicator
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
+import com.ramcosta.composedestinations.annotation.Destination
 
+@BottomBarNavGraph(start = true)
+@Destination
 @Composable
 fun HomeScreen(
-  mainNavController: NavController,
   lazyState: LazyListState,
+  navController: NavController,
   viewModel: HomeScreenModel = hiltViewModel()
 ) {
 
@@ -43,8 +47,9 @@ fun HomeScreen(
       LazyColumn(
         state = lazyState,
         modifier = Modifier
-          .statusBarsPadding()
           .fillMaxSize()
+          .statusBarsPadding()
+          .background(Color.White)
           .drawVerticalScrollbar(lazyState)
       ) {
         items(homeTimeline) { status ->

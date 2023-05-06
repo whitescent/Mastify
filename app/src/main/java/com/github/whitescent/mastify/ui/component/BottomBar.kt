@@ -13,23 +13,27 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
+import com.github.whitescent.mastify.NavGraphs
+import com.github.whitescent.mastify.appCurrentDestinationAsState
+import com.github.whitescent.mastify.destinations.Destination
+import com.github.whitescent.mastify.startAppDestination
 import com.github.whitescent.mastify.utils.BottomBarItem
+import com.ramcosta.composedestinations.navigation.navigate
 
 @Composable
 fun BottomBar(
   navController: NavController,
   onClickHome: () -> Unit
 ) {
-  val navBackStackEntry by navController.currentBackStackEntryAsState()
-  val currentDestination = navBackStackEntry?.destination
+
+  val currentDestination: Destination = navController.appCurrentDestinationAsState().value
+    ?: NavGraphs.bottomBar.startAppDestination
 
   Box(
     modifier = Modifier
@@ -46,13 +50,11 @@ fun BottomBar(
               .weight(1f)
               .clickable(
                 onClick = {
-                  if (screen.route == BottomBarItem.Home.route &&
-                    currentDestination!!.route == BottomBarItem.Home.route
-                  ) {
+                  if (currentDestination.route == screen.direction.route) {
                     onClickHome()
                   }
-                  navController.navigate(screen.route) {
-                    popUpTo(currentDestination!!.route!!) {
+                  navController.navigate(screen.direction) {
+                    popUpTo(currentDestination.route) {
                       saveState = true
                       inclusive = true
                     }
@@ -69,7 +71,7 @@ fun BottomBar(
             BottomBarIcon(
               unselectedIcon = screen.unselectedIcon,
               selectedIcon = screen.selectedIcon,
-              selected = currentDestination?.route == screen.route,
+              selected = currentDestination == screen.direction,
               modifier = Modifier
             )
           }

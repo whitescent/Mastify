@@ -39,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextLayoutResult
@@ -276,40 +275,22 @@ private fun RenderContent(
       text = value,
       onTextLayout = {
         layoutResult.value = it
-      }
+      },
+      inlineContent = mapOf(
+//        ID_IMAGE to InlineTextContent(
+//          Placeholder(
+//            width = LocalTextStyle.current.fontSize,
+//            height = LocalTextStyle.current.fontSize,
+//            placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter,
+//          ),
+//        ) { target ->
+//          AsyncImage(
+//            model = target,
+//            contentDescription = null
+//          )
+//        },
+      ),
     )
-  }
-}
-
-class PositionWrapper {
-  var action: ((Offset) -> Unit)? = null
-  fun onchange(offset: Offset) {
-    action?.invoke(offset)
-  }
-}
-
-// FIXME: 2021/11/26  workaround for https://github.com/JetBrains/compose-jb/issues/1450
-@Composable
-fun SelectionContainer(
-  modifier: Modifier = Modifier,
-  enable: Boolean = true,
-  content: @Composable (PositionWrapper?) -> Unit,
-) {
-  if (!enable) {
-    content.invoke(null)
-    return
-  }
-  val focusManager = LocalFocusManager.current
-  DisposableEffect(Unit) {
-    onDispose {
-      // clear focus after ui hide, otherwise:
-      // java.lang.IllegalStateException: KeyEvent can't be processed because this key input node is not active.
-      focusManager.clearFocus()
-    }
-  }
-  val positionWrapper = remember { null }
-  androidx.compose.foundation.text.selection.SelectionContainer {
-    content.invoke(positionWrapper)
   }
 }
 
@@ -478,5 +459,12 @@ private fun AnnotatedString.Builder.renderLink(
         }
       }
     }
+  }
+}
+
+class PositionWrapper {
+  var action: ((Offset) -> Unit)? = null
+  fun onchange(offset: Offset) {
+    action?.invoke(offset)
   }
 }

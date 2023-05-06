@@ -7,6 +7,7 @@ plugins {
   id("kotlin-kapt")
   id("kotlin-parcelize")
   id("dagger.hilt.android.plugin")
+  alias(libs.plugins.ksp)
 }
 
 android {
@@ -48,6 +49,11 @@ android {
     resources {
       excludes.add("/META-INF/{AL2.0,LGPL2.1}")
     }
+  }
+  applicationVariants.all {
+    addJavaSourceFoldersToModel(
+      File(buildDir, "generated/ksp/$name/kotlin")
+    )
   }
 }
 
@@ -96,8 +102,13 @@ dependencies {
   implementation(libs.ktor.serialization.json)
   implementation(libs.ktor.client.content.negotiation)
 
+  implementation(libs.coil)
   implementation(libs.coil.compose)
+  implementation(libs.coil.gif)
+  implementation(libs.coil.video)
   implementation(libs.compose.html)
+  implementation(libs.compose.destinations.core)
+  ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
   implementation(libs.jsoup)
   implementation(libs.zoomable)

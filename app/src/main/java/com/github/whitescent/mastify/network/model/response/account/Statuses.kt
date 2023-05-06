@@ -21,6 +21,9 @@ data class Status(
   val reblog: Reblog?,
   val content: String,
   val account: Account,
+  val tags: List<Tag>,
+  val mentions: List<Mention>,
+  val application: Application?,
   @SerialName("media_attachments") val mediaAttachments: List<MediaAttachments>
 )
 
@@ -33,6 +36,7 @@ data class Reblog(
   @SerialName("favourites_count") val favouritesCount: Int,
   val content: String,
   val account: Account,
+  val application: Application?,
   @SerialName("media_attachments") val mediaAttachments: List<MediaAttachments>
 )
 
@@ -53,7 +57,21 @@ data class Account(
 )
 
 @Serializable
+data class Mention(
+  val id: String,
+  val username: String,
+  val url: String,
+  val acct: String
+)
+
+@Serializable
+data class Tag(
+  val name: String,
+  val url: String
+)
+
+@Serializable
 data class Application(
   val name: String,
-  val website: String
+  val website: String?
 )

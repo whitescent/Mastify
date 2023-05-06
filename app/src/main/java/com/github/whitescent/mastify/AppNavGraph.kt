@@ -1,23 +1,28 @@
 package com.github.whitescent.mastify
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.navDeepLink
-import com.github.whitescent.mastify.screen.login.LoginScreen
-import com.github.whitescent.mastify.screen.login.OauthScreen
-import com.github.whitescent.mastify.ui.component.AppScaffold
+import com.ramcosta.composedestinations.annotation.NavGraph
+import com.ramcosta.composedestinations.annotation.RootNavGraph
 
-fun NavGraphBuilder.loginGraph(mainNavController: NavHostController) {
-  composable(route = "login") { LoginScreen() }
-  composable(
-    route = "oauth",
-    deepLinks = listOf(navDeepLink { uriPattern = "mastify://oauth?code={code}" })
-  ) {
-    OauthScreen(navController = mainNavController)
-  }
-}
+@RootNavGraph(start = true)
+@NavGraph
+annotation class LoginNavGraph(
+  val start: Boolean = false
+)
 
-fun NavGraphBuilder.appGraph(mainNavController: NavHostController) {
-  composable("app") { AppScaffold(mainNavController) }
-}
+@RootNavGraph
+@NavGraph
+annotation class AppNavGraph(
+  val start: Boolean = false
+)
+
+@AppNavGraph
+@NavGraph
+annotation class NonBottomBarNavGraph(
+  val start: Boolean = false
+)
+
+@AppNavGraph
+@NavGraph
+annotation class BottomBarNavGraph(
+  val start: Boolean = false
+)

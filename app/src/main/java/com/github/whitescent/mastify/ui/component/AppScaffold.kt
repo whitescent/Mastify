@@ -7,20 +7,27 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.BottomBarNavGraph
+import com.github.whitescent.mastify.NavGraphs
+import com.github.whitescent.mastify.destinations.HomeScreenDestination
+import com.github.whitescent.mastify.destinations.ProfileScreenDestination
 import com.github.whitescent.mastify.screen.home.HomeScreen
-import com.github.whitescent.mastify.screen.notification.NotificationScreen
 import com.github.whitescent.mastify.screen.profile.ProfileScreen
-import com.github.whitescent.mastify.utils.BottomBarItem
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import kotlinx.coroutines.launch
 
-@OptIn( ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@AppNavGraph(start = true)
+@BottomBarNavGraph
+@Destination
 @Composable
 fun AppScaffold(
-  mainNavHostController: NavHostController
+  primaryNavController: NavController,
 ) {
 
   val navController = rememberNavController()
@@ -37,15 +44,16 @@ fun AppScaffold(
       )
     }
   ) {
-    NavHost(navController, startDestination = "home", Modifier.padding(bottom = it.calculateBottomPadding())) {
-      composable(BottomBarItem.Home.route) {
-        HomeScreen(mainNavHostController, lazyState)
+    DestinationsNavHost(
+      navController = navController,
+      modifier = Modifier.padding(bottom = it.calculateBottomPadding()),
+      navGraph = NavGraphs.bottomBar
+    ) {
+      composable(HomeScreenDestination) {
+        HomeScreen(lazyState = lazyState, navController = primaryNavController)
       }
-      composable(BottomBarItem.Notification.route) {
-        NotificationScreen()
-      }
-      composable(BottomBarItem.Profile.route) {
-        ProfileScreen()
+      composable(ProfileScreenDestination) {
+        ProfileScreen(primaryNavController)
       }
     }
   }

@@ -4,7 +4,7 @@ import com.github.whitescent.mastify.network.di.NetworkClient
 import com.github.whitescent.mastify.network.model.request.ClientInfoBody
 import com.github.whitescent.mastify.network.model.request.OauthTokenBody
 import com.github.whitescent.mastify.network.model.response.instance.ClientInfo
-import com.github.whitescent.mastify.network.model.response.instance.ServerInfo
+import com.github.whitescent.mastify.network.model.response.instance.InstanceInfo
 import com.github.whitescent.mastify.network.model.response.account.Token
 import com.github.whitescent.mastify.network.model.response.account.Profile
 import com.github.whitescent.mastify.network.model.response.account.Status
@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class ApiRepository @Inject constructor() {
   suspend fun getServerInfo(instanceName: String) =
     runCatching {
-      NetworkClient.httpClient.get("https://$instanceName/api/v2/instance").body<ServerInfo>()
+      NetworkClient.httpClient.get("https://$instanceName/api/v2/instance").body<InstanceInfo>()
     }.getOrNull()
 
   suspend fun getClientInfo(instanceName: String, postBody: ClientInfoBody) =
@@ -41,26 +41,27 @@ class ApiRepository @Inject constructor() {
 
   suspend fun getProfile(instanceName: String, token: String) = withContext(Dispatchers.IO) {
     runCatching {
-      NetworkClient.httpClient.get("https://$instanceName/api/v1/accounts/verify_credentials") {
-        header("Authorization", "Bearer $token")
-      }.body<Profile>()
+      NetworkClient.httpClient
+        .get("https://$instanceName/api/v1/accounts/verify_credentials") {
+          header("Authorization", "Bearer $token")
+        }.body<Profile>()
     }.getOrNull()
   }
 
   suspend fun getAccountStatuses(instanceName: String, token: String, id: String) =
     withContext(Dispatchers.IO) {
       runCatching {
-        NetworkClient.httpClient.get("https://$instanceName/api/v1/accounts/$id/statuses") {
-          header("Authorization", "Bearer $token")
-        }.body<List<Status>>()
+        NetworkClient.httpClient
+          .get("https://$instanceName/api/v1/accounts/$id/statuses") {
+            header("Authorization", "Bearer $token")
+          }.body<List<Status>>()
       }.getOrNull()
     }
 
   suspend fun getHomeTimeline(
     instanceName:String,
     token: String,
-    maxId: String? = null,
-    minId: String? = null
+    maxId: String? = null
   ) =
     NetworkClient.httpClient.get("https://$instanceName/api/v1/timelines/home") {
       header("Authorization", "Bearer $token")
@@ -70,5 +71,4 @@ class ApiRepository @Inject constructor() {
         }
       }
     }.body<List<Status>>()
-
 }

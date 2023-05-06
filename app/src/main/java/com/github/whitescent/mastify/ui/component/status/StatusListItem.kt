@@ -1,12 +1,9 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -23,25 +20,6 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.utils.FormatFactory
 
 @Composable
-fun StatusList(
-  statuses: List<Status>,
-  modifier: Modifier = Modifier
-) {
-  LazyColumn(
-    modifier = modifier.fillMaxSize()
-  ) {
-    itemsIndexed(statuses) { _, status ->
-      if (status.content.isNotEmpty() || status.mediaAttachments.isNotEmpty() ||
-        status.reblog != null
-      ) {
-        StatusListItem(status)
-      }
-      Divider(modifier = Modifier.fillMaxWidth(), thickness = (0.6).dp)
-    }
-  }
-}
-
-@Composable
 fun StatusListItem(
   status: Status
 ) {
@@ -53,7 +31,7 @@ fun StatusListItem(
         modifier = Modifier.padding(start = 24.dp, top = 8.dp)
       ) {
         Icon(
-          painter = painterResource(id = R.drawable.repeat_2_line),
+          painter = painterResource(id = R.drawable.repeat_fill),
           contentDescription = null,
           tint = Color.Gray,
           modifier = Modifier.size(22.dp)
@@ -75,6 +53,11 @@ fun StatusListItem(
           instanceName = FormatFactory.getInstanceName(status.account.url),
           createdAt = status.createdAt,
           content = status.content,
+          application = status.application,
+          sensitive = status.sensitive,
+          spoilerText = status.spoilerText,
+          mentions = status.mentions,
+          tags = status.tags,
           mediaAttachments = status.mediaAttachments,
           repliesCount = status.repliesCount,
           reblogsCount = status.reblogsCount,
@@ -89,6 +72,11 @@ fun StatusListItem(
           instanceName = FormatFactory.getInstanceName(status.reblog.account.url),
           createdAt = status.reblog.createdAt,
           content = status.reblog.content,
+          application = status.reblog.application,
+          sensitive = status.sensitive,
+          mentions = status.mentions,
+          tags = status.tags,
+          spoilerText = status.spoilerText,
           mediaAttachments = status.reblog.mediaAttachments,
           repliesCount = status.reblog.repliesCount,
           reblogsCount = status.reblog.reblogsCount,

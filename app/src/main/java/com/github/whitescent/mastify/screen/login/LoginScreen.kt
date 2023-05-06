@@ -1,12 +1,8 @@
 package com.github.whitescent.mastify.screen.login
 
 import android.app.Activity
-import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.BackHandler
-import androidx.annotation.ColorInt
-import androidx.browser.customtabs.CustomTabColorSchemeParams
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
@@ -35,11 +31,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppTheme
+import com.github.whitescent.mastify.LoginNavGraph
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.ramcosta.composedestinations.annotation.Destination
 
 @OptIn(ExperimentalMaterial3Api::class)
+@LoginNavGraph(start = true)
+@Destination
 @Composable
 fun LoginScreen(
   viewModel: LoginViewModel = hiltViewModel()
@@ -250,13 +251,3 @@ fun ProcessDialog() {
     }
   }
 }
-
-fun launchCustomChromeTab(context: Context, uri: Uri, @ColorInt toolbarColor: Int) {
-  val customTabBarColor = CustomTabColorSchemeParams.Builder()
-    .setToolbarColor(toolbarColor).build()
-  val customTabsIntent = CustomTabsIntent.Builder()
-    .setDefaultColorSchemeParams(customTabBarColor)
-    .build()
-  customTabsIntent.launchUrl(context, uri)
-}
-

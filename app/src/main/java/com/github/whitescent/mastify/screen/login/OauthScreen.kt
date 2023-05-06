@@ -17,13 +17,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
+import com.github.whitescent.mastify.LoginNavGraph
+import com.github.whitescent.mastify.destinations.AppScaffoldDestination
+import com.github.whitescent.mastify.destinations.LoginScreenDestination
+import com.github.whitescent.mastify.destinations.OauthScreenDestination
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.ramcosta.composedestinations.annotation.DeepLink
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.navigation.popUpTo
 
 @Composable
+@LoginNavGraph
+@Destination(
+  deepLinks = [
+    DeepLink(uriPattern = "mastify://oauth?code={code}")
+  ]
+)
 fun OauthScreen(
-  navController: NavController,
+  navigator: DestinationsNavigator,
   viewModel: OauthScreenModel = hiltViewModel()
 ) {
   val activity = (LocalContext.current as? Activity)
@@ -47,22 +60,22 @@ fun OauthScreen(
       }
     }
   }
-
   DisposableEffect(Unit) {
     viewModel.code?.let {
       viewModel.getAccessToken {
-        navController.navigate("app") {
-          popUpTo("oauth") {
+        navigator.navigate(AppScaffoldDestination) {
+          popUpTo(OauthScreenDestination) {
             inclusive = true
           }
-          popUpTo("login") {
+          popUpTo(LoginScreenDestination) {
             inclusive = true
           }
         }
       }
     } ?: run {
-      navController.navigate("login") {
-        popUpTo("oauth") {
+      // If the user refuses OAuth, we need to navigate to the login screen
+      navigator.navigate(LoginScreenDestination) {
+        popUpTo(OauthScreenDestination) {
           inclusive = true
         }
       }

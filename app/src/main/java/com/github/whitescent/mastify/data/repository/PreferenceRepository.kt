@@ -12,7 +12,6 @@ class PreferenceRepository @Inject constructor() {
   private val mmkv = MMKV.defaultMMKV()
 
   // Cache the client ID and client secret during login
-  // and delete this cached data after obtaining the user's access token
   var instance: InstanceModel? = null
     private set
 
