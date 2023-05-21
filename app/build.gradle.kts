@@ -112,6 +112,7 @@ dependencies {
   implementation(libs.mmkv)
   implementation(libs.jsoup)
   implementation(libs.zoomable)
+  implementation(libs.lottie)
 
   implementation(libs.kotlinx.datetime)
 

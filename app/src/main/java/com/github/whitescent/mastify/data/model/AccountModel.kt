@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class AccountModel(
   val username: String,
+  val displayName: String,
   val instanceName: String,
   val note: String,
   val accessToken: String,

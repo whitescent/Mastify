@@ -20,7 +20,8 @@ import javax.inject.Singleton
 class ApiRepository @Inject constructor() {
   suspend fun getServerInfo(instanceName: String) =
     runCatching {
-      NetworkClient.httpClient.get("https://$instanceName/api/v2/instance").body<InstanceInfo>()
+      NetworkClient.httpClient.get("https://$instanceName/api/v2/instance")
+        .body<InstanceInfo>()
     }.getOrNull()
 
   suspend fun getClientInfo(instanceName: String, postBody: ClientInfoBody) =

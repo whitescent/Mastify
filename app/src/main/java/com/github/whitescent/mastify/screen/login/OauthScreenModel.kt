@@ -41,7 +41,8 @@ class OauthScreenModel @Inject constructor(
         accountProfile?.let { profile ->
           preferenceRepository.saveAccount(
             AccountModel(
-              username = profile.name,
+              username = profile.username,
+              displayName = profile.displayName,
               instanceName = instance.name,
               note = profile.source.note,
               accessToken = it.accessToken,

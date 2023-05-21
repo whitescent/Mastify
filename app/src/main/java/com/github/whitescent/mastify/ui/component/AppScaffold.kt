@@ -12,10 +12,14 @@ import androidx.navigation.compose.rememberNavController
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.BottomBarNavGraph
 import com.github.whitescent.mastify.NavGraphs
+import com.github.whitescent.mastify.destinations.DirectMessageScreenDestination
+import com.github.whitescent.mastify.destinations.ExplorerScreenDestination
 import com.github.whitescent.mastify.destinations.HomeScreenDestination
-import com.github.whitescent.mastify.destinations.ProfileScreenDestination
+import com.github.whitescent.mastify.destinations.NotificationScreenDestination
+import com.github.whitescent.mastify.screen.directMessage.DirectMessageScreen
+import com.github.whitescent.mastify.screen.explorer.ExplorerScreen
 import com.github.whitescent.mastify.screen.home.HomeScreen
-import com.github.whitescent.mastify.screen.profile.ProfileScreen
+import com.github.whitescent.mastify.screen.notification.NotificationScreen
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
@@ -52,8 +56,14 @@ fun AppScaffold(
       composable(HomeScreenDestination) {
         HomeScreen(lazyState = lazyState, navController = primaryNavController)
       }
-      composable(ProfileScreenDestination) {
-        ProfileScreen(primaryNavController)
+      composable(ExplorerScreenDestination) {
+        ExplorerScreen()
+      }
+      composable(NotificationScreenDestination) {
+        NotificationScreen()
+      }
+      composable(DirectMessageScreenDestination) {
+        DirectMessageScreen()
       }
     }
   }

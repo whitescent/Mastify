@@ -30,11 +30,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.github.whitescent.R
-import com.github.whitescent.mastify.AppTheme
 import com.github.whitescent.mastify.LoginNavGraph
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.ramcosta.composedestinations.annotation.Destination
 
@@ -54,7 +54,7 @@ fun LoginScreen(
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .background(AppTheme.colorScheme.background)
+      .background(AppTheme.colors.background)
       .statusBarsPadding()
       .padding(30.dp),
   ) {
@@ -74,27 +74,23 @@ fun LoginScreen(
         WidthSpacer(value = 12.dp)
         Text(
           text = stringResource(id = R.string.app_name),
-          style = AppTheme.typography.headlineLarge,
-          color = AppTheme.colorScheme.onBackground
+          color = AppTheme.colors.primaryContent
         )
       }
       HeightSpacer(value = 12.dp)
       Text(
         text = "登录",
-        style = AppTheme.typography.titleLarge,
-        color = AppTheme.colorScheme.onBackground
+        color = AppTheme.colors.primaryContent
       )
       HeightSpacer(value = 6.dp)
       Text(
         text = "请先输入您的实例服务器",
-        style = AppTheme.typography.titleMedium,
-        color = AppTheme.colorScheme.onBackground
+        color = AppTheme.colors.primaryContent
       )
       HeightSpacer(value = 16.dp)
       Text(
         text = "实例地址",
-        style = AppTheme.typography.titleMedium,
-        color = AppTheme.colorScheme.onBackground
+        color = AppTheme.colors.primaryContent
       )
       HeightSpacer(value = 4.dp)
       OutlinedTextField(
@@ -114,7 +110,7 @@ fun LoginScreen(
               Icon(
                 imageVector = Icons.Rounded.Close,
                 contentDescription = null,
-                tint = AppTheme.colorScheme.primary
+//                tint = AppTheme.colorScheme.primary
               )
             }
           }
@@ -136,7 +132,7 @@ fun LoginScreen(
           when (it) {
             true -> {
               CircularProgressIndicator(
-                color = AppTheme.colorScheme.primary,
+                color = AppTheme.colors.primaryContent,
                 modifier = Modifier.size(24.dp)
               )
             }
@@ -145,8 +141,6 @@ fun LoginScreen(
                 when (error) {
                   true -> Text(
                     text = "当前实例不存在",
-                    style = AppTheme.typography.bodyMedium,
-                    color = AppTheme.colorScheme.error
                   )
                   else -> InstanceCard(
                     title = state.instanceTitle,
@@ -217,12 +211,12 @@ fun InstanceCard(
       HeightSpacer(value = 12.dp)
       Text(
         text = title,
-        style = AppTheme.typography.titleLarge
+//        style = AppTheme.typography.titleLarge
       )
       HeightSpacer(value = 12.dp)
       Text(
         text = description,
-        style = AppTheme.typography.titleSmall
+//        style = AppTheme.typography.titleSmall
       )
     }
   }

@@ -31,6 +31,7 @@ accompanist = "0.25.1"
 coil = "2.3.0"
 mmkv = "1.2.14"
 ksp = "1.8.20-1.0.11"
+lottie = "6.0.0"
 composeDestinations = "1.9.42-beta"
 hilt = "2.44"
 pagingRuntime = "3.1.1"
@@ -100,6 +101,7 @@ androidx-startup-runtime = { module = "androidx.startup:startup-runtime", versio
 mmkv = { module = "com.tencent:mmkv", version.ref = "mmkv" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 zoomable = { module = "com.mxalbert.zoomable:zoomable", version.ref = "zoomable" }
+lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
 compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "composeDestinations" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composeDestinations" }
 

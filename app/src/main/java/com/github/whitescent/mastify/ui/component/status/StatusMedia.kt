@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,13 +24,12 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.github.whitescent.R
-import com.github.whitescent.mastify.AppTheme
 import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 
 val imageGridSpacing = 2.dp
-const val defaultAspectRatio = 16f / 9f
+const val defaultAspectRatio = 20f / 9f
 
 @Composable
 fun StatusMedia(
@@ -37,13 +37,10 @@ fun StatusMedia(
   onClick: ((Int) -> Unit)? = null
 ) {
   val mediaCount = mediaAttachments.size
-  val aspectRatio = if (mediaCount != 0) defaultAspectRatio else null
   Box(
     modifier = Modifier
-      .let { m ->
-        aspectRatio?.let { m.aspectRatio(it) } ?: m
-      }
-      .clip(AppTheme.shapes.medium)
+      .aspectRatio(defaultAspectRatio)
+      .clip(RoundedCornerShape(12.dp))
   ) {
     when (mediaCount) {
       3 -> {

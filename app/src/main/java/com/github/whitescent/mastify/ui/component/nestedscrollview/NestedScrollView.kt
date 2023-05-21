@@ -70,7 +70,8 @@ private fun NestedScrollView(
       .scrollable(
         orientation = orientation,
         state = rememberScrollableState {
-          state.drag(it)
+//          state.drag(it)
+          it
         }
       )
       .nestedScroll(state.nestedScrollConnectionHolder),

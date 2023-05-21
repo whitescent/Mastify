@@ -11,8 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -22,7 +23,6 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
-import com.github.whitescent.mastify.AppTheme
 import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
 import com.github.whitescent.mastify.ui.component.BarStyle
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -32,7 +32,7 @@ import com.github.whitescent.mastify.ui.component.MyHtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.mxalbert.zoomable.Zoomable
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun StatusMediaDialog(
   avatar: String,
@@ -78,11 +78,12 @@ fun StatusMediaDialog(
           }
         }
       }
-      CenterRow(modifier = Modifier
-        .align(Alignment.BottomStart)
-        .background(Color.Black.copy(0.7f))
-        .fillMaxWidth()
-        .padding(24.dp)
+      CenterRow(
+        modifier = Modifier
+          .align(Alignment.BottomStart)
+          .background(Color.Black.copy(0.7f))
+          .fillMaxWidth()
+          .padding(24.dp)
       ) {
         CircleShapeAsyncImage(
           model = avatar,
@@ -92,7 +93,7 @@ fun StatusMediaDialog(
         MyHtmlText(
           text = content,
           color = Color.White,
-          style = AppTheme.typography.titleMedium,
+//          style = AppTheme.typography.titleMedium,
           maxLines = 2,
           overflow = TextOverflow.Ellipsis
         )
