@@ -20,6 +20,7 @@ import com.github.whitescent.mastify.screen.directMessage.DirectMessageScreen
 import com.github.whitescent.mastify.screen.explorer.ExplorerScreen
 import com.github.whitescent.mastify.screen.home.HomeScreen
 import com.github.whitescent.mastify.screen.notification.NotificationScreen
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
@@ -46,7 +47,8 @@ fun AppScaffold(
           scope.launch { lazyState.scrollToItem(0) }
         }
       )
-    }
+    },
+    containerColor = AppTheme.colors.background
   ) {
     DestinationsNavHost(
       navController = navController,

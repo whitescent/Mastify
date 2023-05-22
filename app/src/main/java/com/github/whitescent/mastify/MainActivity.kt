@@ -3,12 +3,12 @@ package com.github.whitescent.mastify
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
+import com.github.whitescent.mastify.ui.theme.LocalMastifyColors
 import com.github.whitescent.mastify.ui.theme.MastifyTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.ramcosta.composedestinations.DestinationsNavHost
@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
     setContent {
       MastifyTheme {
         val systemUiController = rememberSystemUiController()
-        val useDarkIcons = !isSystemInDarkTheme()
+        val useDarkIcons = LocalMastifyColors.current.isLight
         val primaryNavController = rememberNavController()
         val isLoggedIn = preference.anyAccountLoggedIn()
         SideEffect {

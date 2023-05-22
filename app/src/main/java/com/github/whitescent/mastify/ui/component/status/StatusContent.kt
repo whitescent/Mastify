@@ -80,7 +80,7 @@ fun StatusContent(
       .fillMaxWidth()
       .padding(horizontal = 24.dp),
     shape = RoundedCornerShape(18.dp),
-    color = Color.White
+    color = AppTheme.colors.cardBackground
   ) {
     Column {
       if (reblogStatus.reblog) {
@@ -88,7 +88,7 @@ fun StatusContent(
           CenterRow(
             Modifier
               .fillMaxWidth()
-              .padding(12.dp)) {
+              .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 24.dp)) {
             CircleShapeAsyncImage(
               model = reblogStatus.originalAccountAvatar,
               modifier = Modifier.size(24.dp)
@@ -148,7 +148,9 @@ fun StatusContent(
             )
             Text(
               text = "@$username@$instanceName ${FormatFactory.getTimeDiff(createdAt)}",
-              style = AppTheme.typography.statusUsername,
+              style = AppTheme.typography.statusUsername.copy(
+                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+              ),
               overflow = TextOverflow.Ellipsis,
               maxLines = 1
             )
@@ -237,7 +239,7 @@ fun ActionsRow(
       )
       WidthSpacer(value = 2.dp)
       Text(
-        text = reblogsCount.toString(),
+        text = favouritesCount.toString(),
         style = AppTheme.typography.statusActions,
       )
       WidthSpacer(value = 24.dp)
@@ -249,16 +251,16 @@ fun ActionsRow(
       )
       WidthSpacer(value = 2.dp)
       Text(
-        text = favouritesCount.toString(),
+        text = reblogsCount.toString(),
         color = AppTheme.colors.cardAction,
       )
     }
     CenterRow {
       Surface(
         modifier = Modifier
-          .size(height = 16.dp, width = (0.5).dp)
+          .size(height = 16.dp, width = 1.dp)
           .clip(RoundedCornerShape(100.dp)),
-        color = AppTheme.colors.cardAction
+        color = AppTheme.colors.cardAction.copy(alpha = 0.12f)
       ) { }
       WidthSpacer(value = 16.dp)
       ClickableIcon(

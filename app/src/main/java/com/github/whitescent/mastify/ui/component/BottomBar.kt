@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -25,6 +24,7 @@ import com.github.whitescent.mastify.NavGraphs
 import com.github.whitescent.mastify.appCurrentDestinationAsState
 import com.github.whitescent.mastify.destinations.Destination
 import com.github.whitescent.mastify.startAppDestination
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.BottomBarItem
 import com.ramcosta.composedestinations.navigation.navigate
 
@@ -36,14 +36,14 @@ fun BottomBar(
 
   val currentDestination: Destination = navController.appCurrentDestinationAsState().value
     ?: NavGraphs.bottomBar.startAppDestination
-
+  
   Surface(
     modifier = Modifier
       .fillMaxWidth()
       .heightIn(54.dp)
       .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-    color = Color.White,
+    color = AppTheme.colors.bottomBarBackground,
   ) {
     CenterRow {
       BottomBarItem.values().forEachIndexed { _, screen ->
@@ -94,6 +94,7 @@ private fun BottomBarIcon(
       .size(24.dp)
       .let {
         if (!selected) it.alpha(0.2f) else it
-      }
+      },
+    tint = AppTheme.colors.primaryContent
   )
 }

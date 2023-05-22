@@ -51,19 +51,15 @@ fun HomeScreen(
 
   val homeTimeline = viewModel.pager.collectAsLazyPagingItems()
   val context = LocalContext.current
-  Column(
-    modifier = Modifier
-      .fillMaxSize()
-      .background(Color(0xFFF8F8FB))
-  ) {
+  Column {
     HomeScreenTopBar(avatar = viewModel.account.avatar)
     when (homeTimeline.loadState.refresh) {
       is LoadState.NotLoading -> {
-        Box(Modifier.fillMaxSize()) {
+        Box {
           LazyColumn(
             state = lazyState,
             modifier = Modifier.drawVerticalScrollbar(lazyState),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
           ) {
             items(
               count = homeTimeline.itemCount,
@@ -96,10 +92,9 @@ fun HomeScreen(
                       .fillMaxWidth()
                       .padding(24.dp),
                     contentAlignment = Alignment.Center
-                  ) { Box(
-                    Modifier
-                      .size(8.dp)
-                      .background(Color.Gray, CircleShape)) }
+                  ) {
+                    Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
+                  }
                 }
                 is LoadState.Error -> {
                   Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()

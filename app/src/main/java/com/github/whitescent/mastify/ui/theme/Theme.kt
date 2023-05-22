@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-
 @Composable
 fun MastifyTheme(
   darkTheme: Boolean = isSystemInDarkTheme(),
