@@ -102,6 +102,11 @@ dependencies {
   implementation(libs.ktor.serialization.json)
   implementation(libs.ktor.client.content.negotiation)
 
+  implementation(libs.room.runtime)
+  ksp(libs.room.compiler)
+  implementation(libs.room.ktx)
+  implementation(libs.room.paging)
+
   implementation(libs.coil)
   implementation(libs.coil.compose)
   implementation(libs.coil.gif)

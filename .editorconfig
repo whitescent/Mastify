@@ -1,0 +1,45 @@
+# Refers: https://EditorConfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+max_line_length = 100
+tab_width = 2
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+ij_continuation_indent_size = 2
+ij_any_keep_indents_on_empty_lines = false
+
+[{gradle.properties,*.versions.toml}]
+max_line_length = off
+
+[*.{kt,kts}]
+ij_kotlin_align_multiline_extends_list = true
+ij_kotlin_align_multiline_parameters = true
+ij_kotlin_align_multiline_parameters_in_calls = true
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+ij_kotlin_call_parameters_new_line_after_left_paren = false
+ij_kotlin_call_parameters_right_paren_on_new_line = false
+ij_kotlin_call_parameters_wrap = on_every_item
+ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
+ij_kotlin_enum_constants_wrap = normal
+ij_kotlin_extends_list_wrap = normal
+ij_kotlin_field_annotation_wrap = normal
+ij_kotlin_if_rparen_on_new_line = true
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
+ij_kotlin_insert_whitespaces_in_simple_one_line_method = true
+ij_kotlin_keep_line_breaks = true
+ij_kotlin_line_comment_add_space = true
+ij_kotlin_line_comment_add_space_on_reformat = true
+ij_kotlin_line_comment_at_first_column = false
+ij_kotlin_method_annotation_wrap = normal
+ij_kotlin_method_call_chain_wrap = normal
+ij_kotlin_method_parameters_new_line_after_left_paren = true
+ij_kotlin_method_parameters_right_paren_on_new_line = true
+ij_kotlin_method_parameters_wrap = on_every_item
+ij_kotlin_variable_annotation_wrap = normal
+ij_kotlin_wrap_first_method_in_call_chain = false

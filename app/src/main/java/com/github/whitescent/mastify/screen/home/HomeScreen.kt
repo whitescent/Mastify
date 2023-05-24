@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -40,6 +41,7 @@ import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.annotation.Destination
 
+@OptIn(ExperimentalMaterialApi::class)
 @BottomBarNavGraph(start = true)
 @Destination
 @Composable
@@ -48,9 +50,9 @@ fun HomeScreen(
   navController: NavController,
   viewModel: HomeScreenModel = hiltViewModel()
 ) {
-
   val homeTimeline = viewModel.pager.collectAsLazyPagingItems()
   val context = LocalContext.current
+
   Column {
     HomeScreenTopBar(avatar = viewModel.account.avatar)
     when (homeTimeline.loadState.refresh) {
@@ -58,7 +60,9 @@ fun HomeScreen(
         Box {
           LazyColumn(
             state = lazyState,
-            modifier = Modifier.drawVerticalScrollbar(lazyState),
+            modifier = Modifier
+              .fillMaxSize()
+              .drawVerticalScrollbar(lazyState),
             verticalArrangement = Arrangement.spacedBy(24.dp)
           ) {
             items(
@@ -86,6 +90,7 @@ fun HomeScreen(
                     )
                   }
                 }
+
                 is LoadState.NotLoading -> {
                   Box(
                     modifier = Modifier
@@ -96,6 +101,7 @@ fun HomeScreen(
                     Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
                   }
                 }
+
                 is LoadState.Error -> {
                   Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
                   homeTimeline.retry()
@@ -113,12 +119,13 @@ fun HomeScreen(
               .shadow(6.dp, CircleShape)
               .clickable { }
               .padding(16.dp)
-            
           )
         }
       }
       is LoadState.Loading -> Loading()
-      is LoadState.Error -> Error { homeTimeline.retry() }
+      is LoadState.Error -> {
+        Toast.makeText(context, "暂时无法获取动态，请重试", Toast.LENGTH_SHORT).show()
+      }
       else -> Unit
     }
   }
