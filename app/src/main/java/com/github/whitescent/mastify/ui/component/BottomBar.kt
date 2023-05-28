@@ -31,12 +31,12 @@ import com.ramcosta.composedestinations.navigation.navigate
 @Composable
 fun BottomBar(
   navController: NavController,
-  onClickHome: () -> Unit
+  scrollToTop: () -> Unit
 ) {
 
   val currentDestination: Destination = navController.appCurrentDestinationAsState().value
     ?: NavGraphs.bottomBar.startAppDestination
-  
+
   Surface(
     modifier = Modifier
       .fillMaxWidth()
@@ -52,9 +52,7 @@ fun BottomBar(
             .weight(1f)
             .clickable(
               onClick = {
-                if (currentDestination.route == screen.direction.route) {
-                  onClickHome()
-                }
+                if (currentDestination.route == screen.direction.route) scrollToTop()
                 navController.navigate(screen.direction) {
                   popUpTo(currentDestination.route) {
                     saveState = true

@@ -24,7 +24,7 @@ import coil.compose.rememberAsyncImagePainter
 import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.github.whitescent.R
-import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
+import com.github.whitescent.mastify.network.model.response.account.Status.Attachment
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 
@@ -33,10 +33,10 @@ const val defaultAspectRatio = 20f / 9f
 
 @Composable
 fun StatusMedia(
-  mediaAttachments: List<MediaAttachments>,
+  attachments: List<Attachment>,
   onClick: ((Int) -> Unit)? = null
 ) {
-  val mediaCount = mediaAttachments.size
+  val mediaCount = attachments.size
   Box(
     modifier = Modifier
       .aspectRatio(defaultAspectRatio)
@@ -46,7 +46,7 @@ fun StatusMedia(
       3 -> {
         Row {
           StatusMediaItem(
-            media = mediaAttachments[0],
+            media = attachments[0],
             modifier = Modifier
               .weight(1f)
               .fillMaxSize(),
@@ -56,7 +56,7 @@ fun StatusMedia(
           )
           WidthSpacer(value = imageGridSpacing)
           Column(modifier = Modifier.weight(1f)) {
-            mediaAttachments.drop(1).forEachIndexed { index, it ->
+            attachments.drop(1).forEachIndexed { index, it ->
               StatusMediaItem(
                 media = it,
                 modifier = Modifier
@@ -66,7 +66,7 @@ fun StatusMedia(
                   onClick?.invoke(index + 1)
                 }
               )
-              if (it != mediaAttachments.last()) {
+              if (it != attachments.last()) {
                 HeightSpacer(value = imageGridSpacing)
               }
             }
@@ -75,7 +75,7 @@ fun StatusMedia(
       }
       else -> {
         StatusMediaGrid(spacing = 2.dp) {
-          mediaAttachments.forEachIndexed { index, it ->
+          attachments.forEachIndexed { index, it ->
             StatusMediaItem(
               media = it,
               modifier = Modifier,
@@ -92,7 +92,7 @@ fun StatusMedia(
 
 @Composable
 fun StatusMediaItem(
-  media: MediaAttachments,
+  media: Attachment,
   modifier: Modifier = Modifier,
   onClick: (() -> Unit)? = null
 ) {

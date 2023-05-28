@@ -6,7 +6,7 @@ import com.github.whitescent.mastify.network.model.request.OauthTokenBody
 import com.github.whitescent.mastify.network.model.response.instance.ClientInfo
 import com.github.whitescent.mastify.network.model.response.instance.InstanceInfo
 import com.github.whitescent.mastify.network.model.response.account.Token
-import com.github.whitescent.mastify.network.model.response.account.Profile
+import com.github.whitescent.mastify.network.model.response.account.Account
 import com.github.whitescent.mastify.network.model.response.account.Status
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -45,7 +45,7 @@ class ApiRepository @Inject constructor() {
       NetworkClient.httpClient
         .get("https://$instanceName/api/v1/accounts/verify_credentials") {
           header("Authorization", "Bearer $token")
-        }.body<Profile>()
+        }.body<Account>()
     }.getOrNull()
   }
 
@@ -62,14 +62,17 @@ class ApiRepository @Inject constructor() {
   suspend fun getHomeTimeline(
     instanceName:String,
     token: String,
-    maxId: String? = null
+    maxId: String? = null,
+    minId: String? = null
   ) =
     NetworkClient.httpClient.get("https://$instanceName/api/v1/timelines/home") {
       header("Authorization", "Bearer $token")
       maxId?.let {
-        url {
-          parameters.append("max_id", maxId)
-        }
+        url { parameters.append("max_id", maxId) }
+      }
+      minId?.let {
+        url { parameters.append("min_id", minId) }
       }
     }.body<List<Status>>()
+
 }

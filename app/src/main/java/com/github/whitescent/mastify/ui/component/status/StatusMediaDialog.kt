@@ -23,7 +23,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
-import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
+import com.github.whitescent.mastify.network.model.response.account.Status.Attachment
 import com.github.whitescent.mastify.ui.component.BarStyle
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -37,11 +37,14 @@ import com.mxalbert.zoomable.Zoomable
 fun StatusMediaDialog(
   avatar: String,
   content: String,
-  media: List<MediaAttachments>,
+  media: List<Attachment>,
   targetMediaIndex: Int,
   onDismissRequest: () -> Unit
 ) {
-  val pagerState = rememberPagerState(initialPage = targetMediaIndex)
+  val pagerState = rememberPagerState(
+    initialPage = targetMediaIndex,
+    pageCount = { media.size }
+  )
   FullScreenDialog(
     onDismissRequest = onDismissRequest,
     previousBarStyle = BarStyle(
@@ -51,33 +54,33 @@ fun StatusMediaDialog(
   ) {
     Box {
       HorizontalPager(
-        state = pagerState,
-        pageCount = media.size,
         modifier = Modifier
           .fillMaxSize()
-          .background(Color.Black)
-      ) { page ->
-        Zoomable(
-          modifier = Modifier.fillMaxSize()
-        ) {
-          val painter = rememberAsyncImagePainter(
-            model = ImageRequest.Builder(LocalContext.current)
-              .data(media[page].url)
-              .size(Size.ORIGINAL)
-              .build()
-          )
-          if (painter.state is AsyncImagePainter.State.Success) {
-            val size = painter.intrinsicSize
-            Image(
-              painter = painter,
-              contentDescription = null,
-              modifier = Modifier
-                .aspectRatio(size.width / size.height)
-                .fillMaxSize()
+          .background(Color.Black),
+        state = pagerState,
+        pageContent = {
+          Zoomable(
+            modifier = Modifier.fillMaxSize()
+          ) {
+            val painter = rememberAsyncImagePainter(
+              model = ImageRequest.Builder(LocalContext.current)
+                .data(media[it].url)
+                .size(Size.ORIGINAL)
+                .build()
             )
+            if (painter.state is AsyncImagePainter.State.Success) {
+              val size = painter.intrinsicSize
+              Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = Modifier
+                  .aspectRatio(size.width / size.height)
+                  .fillMaxSize()
+              )
+            }
           }
         }
-      }
+      )
       CenterRow(
         modifier = Modifier
           .align(Alignment.BottomStart)

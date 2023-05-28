@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
       MastifyTheme {
         val systemUiController = rememberSystemUiController()
         val useDarkIcons = LocalMastifyColors.current.isLight
-        val primaryNavController = rememberNavController()
+        val topNavController = rememberNavController()
         val isLoggedIn = preference.anyAccountLoggedIn()
         SideEffect {
           systemUiController.setSystemBarsColor(
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
           dependenciesContainerBuilder = {
             // Provide primaryNavController to AppNavGraph to enable
             // navigation from a screen with BottomBar to a screen without BottomBar
-            dependency(NavGraphs.app) { primaryNavController }
+            dependency(NavGraphs.app) { topNavController }
           }
         )
       }

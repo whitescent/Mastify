@@ -18,8 +18,11 @@ class PreferenceRepository @Inject constructor() {
   var account: AccountModel? = null
     private set
 
+  var timelineScrollPosition: Int? = null
+
   init {
     anyAccountLoggedIn()
+    timelineScrollPosition = mmkv.decodeInt("timeline_scroll_position")
   }
 
   fun saveInstanceData(instanceName: String, clientId: String, clientSecret: String) {
@@ -30,6 +33,10 @@ class PreferenceRepository @Inject constructor() {
     this.account = account
     mmkv.remove("instance")
     mmkv.encode("account_${account.username}@${account.instanceName}", account)
+  }
+
+  fun saveTimelineScrollPosition(index: Int) {
+    mmkv.encode("timeline_scroll_position", index)
   }
 
   fun anyAccountLoggedIn(): Boolean {

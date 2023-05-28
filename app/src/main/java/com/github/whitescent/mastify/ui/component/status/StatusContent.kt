@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,10 +30,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
-import com.github.whitescent.mastify.network.model.response.account.Application
-import com.github.whitescent.mastify.network.model.response.account.MediaAttachments
-import com.github.whitescent.mastify.network.model.response.account.Mention
-import com.github.whitescent.mastify.network.model.response.account.Tag
+import com.github.whitescent.mastify.network.model.response.account.Status
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
@@ -45,6 +43,7 @@ import com.github.whitescent.mastify.utils.launchCustomChromeTab
 
 @Composable
 fun StatusContent(
+  modifier: Modifier = Modifier,
   reblogStatus: ReblogStatus,
   avatar: String,
   displayName: String,
@@ -52,31 +51,25 @@ fun StatusContent(
   instanceName: String,
   createdAt: String,
   content: String,
-  application: Application?,
+  application: Status.Application?,
   sensitive: Boolean,
   spoilerText: String,
-  mentions: List<Mention>,
-  tags: List<Tag>,
-  mediaAttachments: List<MediaAttachments>,
+  mentions: List<Status.Mention>,
+  tags: List<Status.Tag>,
+  attachments: List<Status.Attachment>,
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int
 ) {
-  
-  val actionList = mapOf(
-    R.drawable.chat to repliesCount,
-    R.drawable.repost to reblogsCount,
-    R.drawable.heart to favouritesCount
-  )
-  
+
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   var openDialog by rememberSaveable { mutableStateOf(false) }
-  var media by remember { mutableStateOf<List<MediaAttachments>>(listOf()) }
-  var targetMediaIndex by remember { mutableStateOf(0) }
-  
+  var media by remember { mutableStateOf<List<Status.Attachment>>(listOf()) }
+  var targetMediaIndex by remember { mutableIntStateOf(0) }
+
   Surface(
-    modifier = Modifier
+    modifier = modifier
       .fillMaxWidth()
       .padding(horizontal = 24.dp),
     shape = RoundedCornerShape(18.dp),
@@ -177,12 +170,12 @@ fun StatusContent(
             )
           }
         }
-        if (mediaAttachments.isNotEmpty()) {
+        if (attachments.isNotEmpty()) {
           HeightSpacer(value = 4.dp)
           StatusMedia(
-            mediaAttachments = mediaAttachments,
+            attachments = attachments,
             onClick = {
-              media = mediaAttachments
+              media = attachments
               targetMediaIndex = it
               openDialog = true
             }

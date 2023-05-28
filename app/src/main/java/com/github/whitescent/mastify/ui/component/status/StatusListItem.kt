@@ -1,16 +1,19 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.github.whitescent.mastify.network.model.response.account.Status
 import com.github.whitescent.mastify.utils.FormatFactory
 
 @Composable
 fun StatusListItem(
+  modifier: Modifier = Modifier,
   status: Status
 ) {
   when (status.reblog) {
     null -> {
       StatusContent(
+        modifier = modifier,
         reblogStatus = ReblogStatus(false, status.account.avatar, status.account.displayName),
         avatar = status.account.avatar,
         displayName = status.account.displayName,
@@ -23,7 +26,7 @@ fun StatusListItem(
         spoilerText = status.spoilerText,
         mentions = status.mentions,
         tags = status.tags,
-        mediaAttachments = status.mediaAttachments,
+        attachments = status.attachments,
         repliesCount = status.repliesCount,
         reblogsCount = status.reblogsCount,
         favouritesCount = status.favouritesCount
@@ -31,6 +34,7 @@ fun StatusListItem(
     }
     else -> {
       StatusContent(
+        modifier = modifier,
         reblogStatus = ReblogStatus(true, status.account.avatar, status.account.displayName),
         avatar = status.reblog.account.avatar,
         displayName = status.reblog.account.displayName,
@@ -43,7 +47,7 @@ fun StatusListItem(
         mentions = status.mentions,
         tags = status.tags,
         spoilerText = status.spoilerText,
-        mediaAttachments = status.reblog.mediaAttachments,
+        attachments = status.reblog.attachments,
         repliesCount = status.reblog.repliesCount,
         reblogsCount = status.reblog.reblogsCount,
         favouritesCount = status.reblog.favouritesCount
