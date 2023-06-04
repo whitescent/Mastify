@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -25,8 +27,12 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 @AppNavGraph(start = true)
 @BottomBarNavGraph
 @Destination
@@ -38,7 +44,9 @@ fun AppScaffold(
 
   val navController = rememberNavController()
   val scope = rememberCoroutineScope()
-  val lazyState = rememberLazyListState()
+  val lazyState = rememberLazyListState(
+    initialFirstVisibleItemIndex = homeViewModel.timelineScrollPosition ?: 0
+  )
 
   Scaffold(
     bottomBar = {
@@ -73,6 +81,14 @@ fun AppScaffold(
         DirectMessageScreen()
       }
     }
+  }
+
+  LaunchedEffect(lazyState) {
+    snapshotFlow { lazyState.firstVisibleItemIndex }
+      .debounce(500L)
+      .collectLatest {
+        homeViewModel.saveTimelineScrollPosition(it)
+      }
   }
 
 }

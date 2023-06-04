@@ -65,8 +65,8 @@ fun StatusContent(
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   var openDialog by rememberSaveable { mutableStateOf(false) }
-  var media by remember { mutableStateOf<List<Status.Attachment>>(listOf()) }
   var targetMediaIndex by remember { mutableIntStateOf(0) }
+  var media by remember { mutableStateOf<List<Status.Attachment>>(listOf()) }
 
   Surface(
     modifier = modifier

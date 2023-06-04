@@ -19,6 +19,7 @@ class PreferenceRepository @Inject constructor() {
     private set
 
   var timelineScrollPosition: Int? = null
+    private set
 
   init {
     anyAccountLoggedIn()

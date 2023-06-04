@@ -34,6 +34,7 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -79,72 +80,84 @@ fun HomeScreen(
   Box(
     Modifier
       .statusBarsPadding()
-      .pullRefresh(state)) {
+      .pullRefresh(state)
+  ) {
     Column {
       HomeScreenTopBar(avatar = viewModel.account.avatar)
-      Box {
-        LazyColumn(
-          state = lazyState,
-          modifier = Modifier
-            .fillMaxSize()
-            .drawVerticalScrollbar(lazyState),
-          verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-          items(
-            count = homeTimeline.itemCount,
-            contentType = homeTimeline.itemContentType()
-          ) { index ->
-            val item = homeTimeline[index]
-            item?.let { status ->
-              StatusListItem(status = status, modifier = Modifier.animateItemPlacement())
-            }
-          }
-          item {
-            when (homeTimeline.loadState.append) {
-              is LoadState.Loading -> {
-                Box(
-                  modifier = Modifier
-                    .padding(24.dp)
-                    .fillMaxWidth(),
-                  contentAlignment = Alignment.Center
-                ) {
-                  CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = AppTheme.colors.primaryContent
-                  )
-                }
-              }
-              is LoadState.NotLoading -> {
-                Box(
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                  contentAlignment = Alignment.Center
-                ) {
-                  Box(
-                    Modifier
-                      .size(8.dp)
-                      .background(Color.Gray, CircleShape))
-                }
-              }
-              is LoadState.Error -> {
-                Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                homeTimeline.retry()
-              }
-            }
+      when (homeTimeline.itemCount) {
+        0 -> {
+          when (homeTimeline.loadState.refresh) {
+            is LoadState.Error -> Error { homeTimeline.retry() }
+            else -> Loading()
           }
         }
-        Image(
-          painter = painterResource(id = R.drawable.edit),
-          contentDescription = null,
-          modifier = Modifier
-            .padding(24.dp)
-            .align(Alignment.BottomEnd)
-            .background(AppTheme.colors.primaryGradient, CircleShape)
-            .shadow(6.dp, CircleShape)
-            .clickable { }
-            .padding(16.dp)
-        )
+        else -> {
+          Box {
+            LazyColumn(
+              state = lazyState,
+              modifier = Modifier
+                .fillMaxSize()
+                .drawVerticalScrollbar(lazyState),
+              verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+              items(
+                count = homeTimeline.itemCount,
+                key = homeTimeline.itemKey(),
+                contentType = homeTimeline.itemContentType()
+              ) { index ->
+                val item = homeTimeline[index]
+                item?.let { status ->
+                  StatusListItem(status = status, modifier = Modifier.animateItemPlacement())
+                }
+              }
+              item {
+                when (homeTimeline.loadState.append) {
+                  is LoadState.Loading -> {
+                    Box(
+                      modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                      contentAlignment = Alignment.Center
+                    ) {
+                      CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = AppTheme.colors.primaryContent
+                      )
+                    }
+                  }
+                  is LoadState.NotLoading -> {
+                    Box(
+                      modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                      contentAlignment = Alignment.Center
+                    ) {
+                      Box(
+                        Modifier
+                          .size(8.dp)
+                          .background(Color.Gray, CircleShape))
+                    }
+                  }
+                  is LoadState.Error -> {
+                    Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
+                    homeTimeline.retry()
+                  }
+                }
+              }
+            }
+            Image(
+              painter = painterResource(id = R.drawable.edit),
+              contentDescription = null,
+              modifier = Modifier
+                .padding(24.dp)
+                .align(Alignment.BottomEnd)
+                .background(AppTheme.colors.primaryGradient, CircleShape)
+                .shadow(6.dp, CircleShape)
+                .clickable { }
+                .padding(16.dp)
+            )
+          }
+        }
       }
     }
     PullRefreshIndicator(refreshing, state, Modifier.align(Alignment.TopCenter))
