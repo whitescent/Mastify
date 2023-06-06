@@ -3,7 +3,7 @@ package com.github.whitescent.mastify.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.github.whitescent.mastify.network.model.response.account.Status
+import com.github.whitescent.mastify.network.model.account.Status
 
 @Entity
 data class TimelineEntity(

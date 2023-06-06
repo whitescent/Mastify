@@ -1,7 +1,7 @@
 package com.github.whitescent.mastify.data.repository
 
-import com.github.whitescent.mastify.data.model.AccountModel
 import com.github.whitescent.mastify.data.model.InstanceModel
+import com.github.whitescent.mastify.data.model.TimelineModel
 import com.tencent.mmkv.MMKV
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,41 +15,21 @@ class PreferenceRepository @Inject constructor() {
   var instance: InstanceModel? = null
     private set
 
-  var account: AccountModel? = null
-    private set
-
-  var timelineScrollPosition: Int? = null
+  // Cache the last viewed timeline position of the user
+  var timelineModel: TimelineModel? = null
     private set
 
   init {
-    anyAccountLoggedIn()
-    timelineScrollPosition = mmkv.decodeInt("timeline_scroll_position")
+    timelineModel =
+      mmkv.decodeParcelable("timeline_scroll_position", TimelineModel::class.java)
   }
 
-  fun saveInstanceData(instanceName: String, clientId: String, clientSecret: String) {
-    instance = InstanceModel(instanceName, clientId, clientSecret)
+  fun saveInstanceData(domain: String, clientId: String, clientSecret: String) {
+    instance = InstanceModel(domain, clientId, clientSecret)
   }
 
-  fun saveAccount(account: AccountModel) {
-    this.account = account
-    mmkv.remove("instance")
-    mmkv.encode("account_${account.username}@${account.instanceName}", account)
+  fun saveTimelineScrollPosition(index: Int, offset: Int) {
+    mmkv.encode("timeline_scroll_position", TimelineModel(index, offset))
   }
 
-  fun saveTimelineScrollPosition(index: Int) {
-    mmkv.encode("timeline_scroll_position", index)
-  }
-
-  fun anyAccountLoggedIn(): Boolean {
-    mmkv.allKeys()?.forEach {
-      if (it.startsWith("account_")) {
-        val savedAccount = mmkv.decodeParcelable(it, AccountModel::class.java)
-        if (savedAccount?.isLoggedIn == true) {
-          account = savedAccount
-          return true
-        }
-      }
-    }
-    return false
-  }
 }

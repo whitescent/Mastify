@@ -1,9 +1,7 @@
 package com.github.whitescent.mastify.database.util
 
 import androidx.room.TypeConverter
-import com.github.whitescent.mastify.network.model.response.account.Status
-import kotlinx.datetime.Instant
-import kotlinx.datetime.toInstant
+import com.github.whitescent.mastify.network.model.account.Status
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

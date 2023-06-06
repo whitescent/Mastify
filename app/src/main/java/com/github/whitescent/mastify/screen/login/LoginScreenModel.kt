@@ -1,10 +1,13 @@
 package com.github.whitescent.mastify.screen.login
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.whitescent.mastify.data.repository.ApiRepository
+import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
-import com.github.whitescent.mastify.network.model.request.ClientInfoBody
+import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -13,69 +16,79 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-  private val apiRepository: ApiRepository,
+  private val api: MastodonApi,
   private val preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 
   private val inputText = MutableStateFlow("")
 
-  private var _uiState = MutableStateFlow(LoginUiState())
-  val uiState = _uiState.asStateFlow()
+  var uiState by mutableStateOf(LoginUiState())
+    private set
 
   init {
     viewModelScope.launch(Dispatchers.IO) {
       inputText
-        .sample(750)
+        .debounce(750)
         .filterNot(String::isEmpty)
-        .mapLatest { input -> apiRepository.getServerInfo(input) }
+        .mapLatest { input -> api.fetchInstanceInfo(input) }
         .buffer(0)
-        .collect { serverInfo ->
-          serverInfo?.let {
-            _uiState.value = _uiState.value.copy(
-              isTyping = false,
-              instanceError = false,
-              instanceTitle = it.title,
-              instanceImageUrl = it.thumbnail.url,
-              instanceDescription = it.description
-            )
-          } ?: run {
-            _uiState.value = _uiState.value.copy(
-              isTyping = false,
-              instanceError = true
-            )
-          }
+        .collect { apiResult ->
+          apiResult.fold(
+            { instance ->
+              uiState = uiState.copy(
+                isTyping = false,
+                instanceError = false,
+                instanceTitle = instance.title,
+                instanceImageUrl = instance.thumbnail.url,
+                instanceDescription = instance.description
+              )
+            },
+            {
+              uiState = uiState.copy(
+                isTyping = false,
+                instanceError = true
+              )
+            }
+          )
         }
     }
   }
 
   fun onValueChange(text: String) {
     inputText.update { text }
-    _uiState.value = _uiState.value.copy(text = text, isTyping = true)
+    uiState = uiState.copy(text = text, isTyping = true)
   }
 
   fun clearInputText() {
     inputText.value = ""
-    _uiState.value = _uiState.value.copy(text = "", isTyping = false)
+    uiState = uiState.copy(text = "", isTyping = false)
   }
 
-  fun getClientInfo(appName: String, navigateToOauth: (String) -> Unit) {
-    _uiState.value = _uiState.value.copy(openDialog = true)
+  fun authenticateApp(appName: String, navigateToOauth: (String) -> Unit) {
+    uiState = uiState.copy(openDialog = true)
     viewModelScope.launch(Dispatchers.IO) {
-      val result = apiRepository.getClientInfo(
-        instanceName = _uiState.value.text,
-        postBody = ClientInfoBody(
-          clientName = appName,
-          redirectUris = "mastify://oauth",
-          scopes = "read write push"
-        )
-      )
-      result?.let {
-        withContext(Dispatchers.Main) {
-          _uiState.value = _uiState.value.copy(openDialog = false)
-          preferenceRepository.saveInstanceData(_uiState.value.text, it.clientId, it.clientSecret)
-          navigateToOauth(it.clientId)
+      api.authenticateApp(
+        domain = uiState.text,
+        clientName = appName,
+        redirectUris = "mastify://oauth",
+        scopes = "read write push",
+        website = "https://github.com/whitescent/Mastify",
+      ).fold(
+        {
+          withContext(Dispatchers.Main) {
+            uiState = uiState.copy(openDialog = false)
+            preferenceRepository.saveInstanceData(
+              uiState.text,
+              it.clientId,
+              it.clientSecret
+            )
+            navigateToOauth(it.clientId)
+          }
+        },
+        {
+          // TODO Handling error
         }
-      }
+      )
     }
   }
 }

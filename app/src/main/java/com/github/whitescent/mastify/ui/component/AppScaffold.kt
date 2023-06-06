@@ -45,7 +45,8 @@ fun AppScaffold(
   val navController = rememberNavController()
   val scope = rememberCoroutineScope()
   val lazyState = rememberLazyListState(
-    initialFirstVisibleItemIndex = homeViewModel.timelineScrollPosition ?: 0
+    initialFirstVisibleItemIndex = homeViewModel.timelineScrollPosition ?: 0,
+    initialFirstVisibleItemScrollOffset = homeViewModel.timelineScrollPositionOffset ?: 0
   )
 
   Scaffold(
@@ -87,7 +88,7 @@ fun AppScaffold(
     snapshotFlow { lazyState.firstVisibleItemIndex }
       .debounce(500L)
       .collectLatest {
-        homeViewModel.saveTimelineScrollPosition(it)
+        homeViewModel.saveTimelineScrollPosition(it, lazyState.firstVisibleItemScrollOffset)
       }
   }
 

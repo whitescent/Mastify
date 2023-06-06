@@ -83,7 +83,7 @@ fun HomeScreen(
       .pullRefresh(state)
   ) {
     Column {
-      HomeScreenTopBar(avatar = viewModel.account.avatar)
+      HomeScreenTopBar(avatar = viewModel.account.profilePictureUrl)
       when (homeTimeline.itemCount) {
         0 -> {
           when (homeTimeline.loadState.refresh) {
@@ -107,7 +107,7 @@ fun HomeScreen(
               ) { index ->
                 val item = homeTimeline[index]
                 item?.let { status ->
-                  StatusListItem(status = status, modifier = Modifier.animateItemPlacement())
+                  StatusListItem(status = status)
                 }
               }
               item {

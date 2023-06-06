@@ -5,22 +5,22 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
-import com.github.whitescent.mastify.data.repository.ApiRepository
-import com.github.whitescent.mastify.data.repository.PreferenceRepository
-import com.github.whitescent.mastify.database.MastifyDatabase
-import com.github.whitescent.mastify.network.model.response.account.Status
+import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.account.Status
 import okio.IOException
 import retrofit2.HttpException
 
 @OptIn(ExperimentalPagingApi::class)
-class TimelineRemoteMediator (
-  private val db: MastifyDatabase,
-  private val api: ApiRepository,
-  preferenceRepository: PreferenceRepository
+class TimelineRemoteMediator(
+  accountRepository: AccountRepository,
+  private val db: AppDatabase,
+  private val api: MastodonApi
 ) : RemoteMediator<Int, Status>() {
 
   private val timelineDao = db.timelineDao()
-  private val account = preferenceRepository.account!!
+  private val activeAccount = accountRepository.activeAccount!!
 
   private var initialRefresh = false
 
@@ -29,50 +29,42 @@ class TimelineRemoteMediator (
     state: PagingState<Int, Status>
   ): MediatorResult {
 
+    if (!activeAccount.isLoggedIn()) {
+      return MediatorResult.Success(endOfPaginationReached = true)
+    }
+
     return try {
 
       val topId = timelineDao.getTopId()
 
       if (!initialRefresh && loadType == LoadType.REFRESH) {
         topId?.let {
-          val statuses = api.getHomeTimeline(
-            maxId = it,
-            instanceName = account.instanceName,
-            token = account.accessToken
-          )
-          db.withTransaction {
-            replaceStatusRange(statuses)
+          val statusResponse = api.homeTimeline(maxId = it)
+          val statuses = statusResponse.body()
+          if (statusResponse.isSuccessful && statuses != null) {
+            db.withTransaction {
+              replaceStatusRange(statuses)
+            }
           }
         }
         initialRefresh = true
       }
-      val statuses = when (loadType) {
-        LoadType.REFRESH -> {
-          api.getHomeTimeline(
-            instanceName = account.instanceName,
-            token = account.accessToken
-          )
-        }
-        LoadType.PREPEND -> {
-          return MediatorResult.Success(endOfPaginationReached = true)
-        }
+      val statusResponse = when (loadType) {
+        LoadType.REFRESH -> api.homeTimeline()
+        LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
         LoadType.APPEND -> {
           val maxId = state.pages.findLast { it.data.isNotEmpty() }?.data?.lastOrNull()?.id
-          api.getHomeTimeline(
-            maxId = maxId,
-            instanceName = account.instanceName,
-            token = account.accessToken
-          )
+          api.homeTimeline(maxId = maxId)
         }
       }
-      val endOfPaginationReached = statuses.isEmpty()
-
+      val statuses = statusResponse.body()
+      if (!statusResponse.isSuccessful || statuses == null) {
+        return MediatorResult.Error(HttpException(statusResponse))
+      }
       db.withTransaction {
         replaceStatusRange(statuses)
       }
-
-      return MediatorResult.Success(endOfPaginationReached)
-
+      return MediatorResult.Success(endOfPaginationReached = statuses.isEmpty())
     } catch (e: IOException) {
       MediatorResult.Error(e)
     } catch (e: HttpException) {

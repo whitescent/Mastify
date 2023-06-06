@@ -2,7 +2,7 @@ package com.github.whitescent.mastify.ui.component.status
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.github.whitescent.mastify.network.model.response.account.Status
+import com.github.whitescent.mastify.network.model.account.Status
 import com.github.whitescent.mastify.utils.FormatFactory
 
 @Composable

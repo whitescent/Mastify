@@ -16,9 +16,10 @@ object DatabaseModule {
   @Singleton
   fun providesNiaDatabase(
     @ApplicationContext context: Context,
-  ): MastifyDatabase = Room.databaseBuilder(
+  ): AppDatabase = Room.databaseBuilder(
     context,
-    MastifyDatabase::class.java,
+    AppDatabase::class.java,
     "mastify-database",
-  ).build()
+  ).allowMainThreadQueries()
+    .build()
 }

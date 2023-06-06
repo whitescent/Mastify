@@ -49,7 +49,7 @@ fun LoginScreen(
   val context = LocalContext.current
   val activity = (context as? Activity)
   val backgroundColor = MaterialTheme.colorScheme.background.toArgb()
-  val state by viewModel.uiState.collectAsStateWithLifecycle()
+  val state = viewModel.uiState
 
   Box(
     modifier = Modifier
@@ -147,7 +147,7 @@ fun LoginScreen(
                     description = state.instanceDescription,
                     imageUrl = state.instanceImageUrl,
                     onClick = { name ->
-                      viewModel.getClientInfo(
+                      viewModel.authenticateApp(
                         appName = name,
                         navigateToOauth = { clientId ->
                           launchCustomChromeTab(

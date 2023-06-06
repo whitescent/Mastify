@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.network.model.response.instance
+package com.github.whitescent.mastify.network.model.instance
 
 import kotlinx.serialization.Serializable
 

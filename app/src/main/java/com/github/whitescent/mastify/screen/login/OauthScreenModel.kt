@@ -3,10 +3,11 @@ package com.github.whitescent.mastify.screen.login
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.whitescent.mastify.data.model.AccountModel
-import com.github.whitescent.mastify.data.repository.ApiRepository
+import at.connyduck.calladapter.networkresult.fold
+import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
-import com.github.whitescent.mastify.network.model.request.OauthTokenBody
+import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.account.AccessToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,51 +17,65 @@ import javax.inject.Inject
 @HiltViewModel
 class OauthScreenModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
-  private val apiRepository: ApiRepository,
-  private val preferenceRepository: PreferenceRepository
+  preferenceRepository: PreferenceRepository,
+  private val api: MastodonApi,
+  private val accountRepository: AccountRepository
 ) : ViewModel() {
 
   val instance = preferenceRepository.instance
   val code: String? = savedStateHandle["code"]
 
-  fun getAccessToken(navigateToApp: () -> Unit) {
+  fun fetchAccessToken(navigateToApp: () -> Unit) {
+
+    val domain = instance!!.name
+    val clientId = instance.clientId
+    val clientSecret = instance.clientSecret
+
     viewModelScope.launch(Dispatchers.IO) {
-      val result = apiRepository.getAccessToken(
-        instanceName = instance!!.name,
-        postBody = OauthTokenBody(
-          clientId = instance.clientId,
-          clientSecret = instance.clientSecret,
-          redirectUri = "mastify://oauth",
-          grantType = "authorization_code",
-          code = code!!,
-          scope = "read write push"
-        )
+      api.fetchOAuthToken(
+        domain = domain,
+        clientId = clientId,
+        clientSecret = clientSecret,
+        redirectUri = "mastify://oauth",
+        code = code!!,
+        grantType = "authorization_code"
+      ).fold(
+        { accessToken ->
+          fetchAccountDetails(accessToken, domain, clientId, clientSecret)
+          withContext(Dispatchers.Main) {
+            navigateToApp()
+          }
+        },
+        {
+
+        }
       )
-      result?.let {
-        val accountProfile = apiRepository.getProfile(instance.name, it.accessToken)
-        accountProfile?.let { profile ->
-          preferenceRepository.saveAccount(
-            AccountModel(
-              username = profile.username,
-              displayName = profile.displayName,
-              instanceName = instance.name,
-              note = profile.source.note,
-              accessToken = it.accessToken,
-              avatar = profile.avatar,
-              header = profile.header,
-              id = profile.id,
-              followersCount = profile.followersCount,
-              followingCount = profile.followingCount,
-              statusesCount = profile.statusesCount,
-              isLoggedIn = true
-            )
-          )
-        }
-        withContext(Dispatchers.Main) {
-          navigateToApp()
-        }
-      }
     }
+  }
+
+  private suspend fun fetchAccountDetails(
+    accessToken: AccessToken,
+    domain: String,
+    clientId: String,
+    clientSecret: String
+  ) {
+    api.accountVerifyCredentials(
+      domain = domain,
+      auth = "Bearer ${accessToken.accessToken}"
+    ).fold(
+      { newAccount ->
+         accountRepository.addAccount(
+           accessToken = accessToken.accessToken,
+           domain = domain,
+           clientId = clientId,
+           clientSecret = clientSecret,
+           newAccount = newAccount
+         )
+      },
+      { e ->
+
+      }
+    )
   }
 
 }

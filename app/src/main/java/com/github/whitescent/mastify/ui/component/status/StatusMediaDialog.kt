@@ -23,7 +23,7 @@ import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import coil.size.Size
-import com.github.whitescent.mastify.network.model.response.account.Status.Attachment
+import com.github.whitescent.mastify.network.model.account.Status.Attachment
 import com.github.whitescent.mastify.ui.component.BarStyle
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage

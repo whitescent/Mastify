@@ -7,7 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
-import com.github.whitescent.mastify.data.repository.PreferenceRepository
+import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.ui.theme.LocalMastifyColors
 import com.github.whitescent.mastify.ui.theme.MastifyTheme
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -20,7 +20,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
   @Inject
-  lateinit var preference: PreferenceRepository
+  lateinit var accountRepository: AccountRepository
+
   override fun onCreate(savedInstanceState: Bundle?) {
     WindowCompat.setDecorFitsSystemWindows(window, false)
     super.onCreate(savedInstanceState)
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
         val systemUiController = rememberSystemUiController()
         val useDarkIcons = LocalMastifyColors.current.isLight
         val topNavController = rememberNavController()
-        val isLoggedIn = preference.anyAccountLoggedIn()
+        val isLoggedIn = accountRepository.activeAccount != null
         SideEffect {
           systemUiController.setSystemBarsColor(
             color = Color.Transparent,

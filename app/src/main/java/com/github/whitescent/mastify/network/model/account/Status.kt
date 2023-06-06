@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.network.model.response.account
+package com.github.whitescent.mastify.network.model.account
 
 import com.github.whitescent.mastify.database.model.TimelineEntity
 import kotlinx.serialization.SerialName
