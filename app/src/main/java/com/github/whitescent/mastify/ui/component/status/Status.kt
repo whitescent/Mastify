@@ -1,6 +1,9 @@
+@file:Suppress("AnimateAsStateLabel")
+
 package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +22,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Status
+import com.github.whitescent.mastify.ui.component.AnimatedCountText
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
@@ -42,25 +45,35 @@ import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 
 @Composable
-fun StatusContent(
+fun Status(
   modifier: Modifier = Modifier,
-  reblogStatus: ReblogStatus,
-  avatar: String,
-  displayName: String,
-  username: String,
-  instanceName: String,
-  createdAt: String,
-  content: String,
-  application: Status.Application?,
-  sensitive: Boolean,
-  spoilerText: String,
-  mentions: List<Status.Mention>,
-  tags: List<Status.Tag>,
-  attachments: List<Status.Attachment>,
-  repliesCount: Int,
-  reblogsCount: Int,
-  favouritesCount: Int
+  status: Status,
+  favouriteStatus: () -> Unit,
+  unfavouriteStatus: () -> Unit
 ) {
+  val avatar = status.reblog?.account?.avatar ?: status.account.avatar
+  val reblogAvatar = status.account.avatar
+
+  val displayName = status.reblog?.account?.displayName ?: status.account.displayName
+  val reblogDisplayName = status.account.displayName
+
+  val username = status.reblog?.account?.username ?: status.account.username
+  val instanceName = FormatFactory.getInstanceName(
+    url = status.reblog?.account?.url ?: status.account.url
+  )
+  val createdAt = status.reblog?.createdAt ?: status.createdAt
+  val content = status.reblog?.content ?: status.content
+  val application = status.reblog?.application ?: status.application
+  val sensitive = status.reblog?.sensitive ?: status.sensitive
+  val spoilerText = status.reblog?.spoilerText ?: status.spoilerText
+  val mentions = status.reblog?.mentions ?: status.mentions
+  val tags = status.reblog?.tags ?: status.tags
+  val attachments = status.reblog?.attachments ?: status.attachments
+  val repliesCount = status.reblog?.repliesCount ?: status.repliesCount
+  val reblogsCount = status.reblog?.reblogsCount ?: status.reblogsCount
+  val favouritesCount = status.reblog?.favouritesCount ?: status.favouritesCount
+  val favourited = status.reblog?.favourited ?: status.favourited
+
 
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
@@ -76,14 +89,14 @@ fun StatusContent(
     color = AppTheme.colors.cardBackground
   ) {
     Column {
-      if (reblogStatus.reblog) {
+      status.reblog?.let {
         Column {
           CenterRow(
             Modifier
               .fillMaxWidth()
               .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 24.dp)) {
             CircleShapeAsyncImage(
-              model = reblogStatus.originalAccountAvatar,
+              model = reblogAvatar,
               modifier = Modifier.size(24.dp)
             )
             WidthSpacer(value = 4.dp)
@@ -103,7 +116,7 @@ fun StatusContent(
                     fontSize = AppTheme.typography.statusRepost.fontSize,
                   )
                 ) {
-                  append(reblogStatus.originalAccountName)
+                  append(reblogDisplayName)
                 }
                 withStyle(
                   SpanStyle(
@@ -150,7 +163,7 @@ fun StatusContent(
           }
           ClickableIcon(
             painter = painterResource(id = R.drawable.more),
-            tint = Color.Gray,
+            tint = AppTheme.colors.cardMenu,
             modifier = Modifier.size(18.dp)
           )
         }
@@ -182,10 +195,13 @@ fun StatusContent(
           )
         }
         HeightSpacer(value = 6.dp)
-        ActionsRow(
+        StatusActionsRow(
           repliesCount = repliesCount,
           reblogsCount = reblogsCount,
-          favouritesCount = favouritesCount
+          favouritesCount = favouritesCount,
+          favourited = favourited,
+          favouriteStatus = favouriteStatus,
+          unfavouriteStatus = unfavouriteStatus
         )
       }
     }
@@ -203,11 +219,24 @@ fun StatusContent(
 }
 
 @Composable
-fun ActionsRow(
+fun StatusActionsRow(
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,
+  favourited: Boolean,
+  favouriteStatus: () -> Unit,
+  unfavouriteStatus: () -> Unit
 ) {
+
+  val favouritedColor = AppTheme.colors.cardLike
+  val unfavouritedColor = AppTheme.colors.cardAction
+
+  var favState by remember(favourited) { mutableStateOf(favourited) }
+  var animatedFavCount by remember(favouritesCount) { mutableIntStateOf(favouritesCount) }
+  val animatedFavIconColor by animateColorAsState(
+    targetValue = if (favState) favouritedColor else unfavouritedColor,
+  )
+
   CenterRow(
     modifier = Modifier.padding(12.dp)
   ) {
@@ -228,11 +257,20 @@ fun ActionsRow(
         painter = painterResource(id = R.drawable.heart),
         modifier = Modifier
           .size(20.dp),
-        tint = AppTheme.colors.cardAction
-      )
+        tint = animatedFavIconColor
+      ) {
+        favState = !favState
+        if (favState) {
+          animatedFavCount += 1
+          favouriteStatus()
+        } else {
+          animatedFavCount -=1
+          unfavouriteStatus()
+        }
+      }
       WidthSpacer(value = 2.dp)
-      Text(
-        text = favouritesCount.toString(),
+      AnimatedCountText(
+        count = animatedFavCount,
         style = AppTheme.typography.statusActions,
       )
       WidthSpacer(value = 24.dp)

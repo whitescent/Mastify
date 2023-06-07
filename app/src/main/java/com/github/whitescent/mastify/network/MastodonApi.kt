@@ -12,6 +12,7 @@ import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MastodonApi {
@@ -59,5 +60,15 @@ interface MastodonApi {
     @Query("max_id") maxId: String? = null,
     @Query("min_id") minId: String? = null
   ): Response<List<Status>>
+
+  @POST("api/v1/statuses/{id}/favourite")
+  suspend fun favouriteStatus(
+    @Path("id") statusId: String
+  ): NetworkResult<Status>
+
+  @POST("api/v1/statuses/{id}/unfavourite")
+  suspend fun unfavouriteStatus(
+    @Path("id") statusId: String
+  ): NetworkResult<Status>
 
 }

@@ -12,13 +12,14 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.paging.TimelineRemoteMediator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeScreenModel @Inject constructor(
   db: AppDatabase,
   accountRepository: AccountRepository,
-  api: MastodonApi,
+  private val api: MastodonApi,
   private val preferenceRepository: PreferenceRepository,
 ) : ViewModel() {
 
@@ -40,5 +41,13 @@ class HomeScreenModel @Inject constructor(
 
   fun saveTimelineScrollPosition(index: Int, offset: Int) =
     preferenceRepository.saveTimelineScrollPosition(index, offset)
+
+  fun favoriteStatus(id: String) = viewModelScope.launch {
+    api.favouriteStatus(id)
+  }
+
+  fun unfavoriteStatus(id: String) = viewModelScope.launch {
+    api.unfavouriteStatus(id)
+  }
 
 }

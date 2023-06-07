@@ -42,7 +42,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.BottomBarNavGraph
-import com.github.whitescent.mastify.ui.component.status.StatusListItem
+import com.github.whitescent.mastify.ui.component.status.Status
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -107,7 +107,11 @@ fun HomeScreen(
               ) { index ->
                 val item = homeTimeline[index]
                 item?.let { status ->
-                  StatusListItem(status = status)
+                  Status(
+                    status = status,
+                    favouriteStatus = { viewModel.favoriteStatus(status.id) },
+                    unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) }
+                  )
                 }
               }
               item {

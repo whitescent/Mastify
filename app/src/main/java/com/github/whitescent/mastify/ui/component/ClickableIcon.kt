@@ -15,14 +15,15 @@ import androidx.compose.ui.unit.dp
 fun ClickableIcon(
   painter: Painter,
   modifier: Modifier = Modifier,
-  tint: Color = LocalContentColor.current
+  tint: Color = LocalContentColor.current,
+  onClick: (() -> Unit)? = null
 ) {
   Icon(
     painter = painter,
     contentDescription = null,
     modifier = modifier.clickable(
       onClick = {
-
+        onClick?.invoke()
       },
       interactionSource = MutableInteractionSource(),
       indication = rememberRipple(
