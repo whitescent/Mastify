@@ -1,7 +1,8 @@
-package com.github.whitescent.mastify.database
+package com.github.whitescent.mastify.di
 
 import android.content.Context
 import androidx.room.Room
+import com.github.whitescent.mastify.database.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

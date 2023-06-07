@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.jetbrains.kotlin.resolve.compatibilityTypeMap
+
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
@@ -37,7 +39,11 @@ android {
     }
   }
   kotlinOptions {
-    jvmTarget = "1.8"
+    jvmTarget = "11"
+  }
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
   }
   composeOptions {
     kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
@@ -91,6 +97,7 @@ dependencies {
 
   implementation(libs.retrofit2)
   implementation(libs.okhttp3)
+  testImplementation(libs.okhttp3.mockwebserver)
   implementation(libs.org.jetbrains.kotlinx.serialization.json)
   implementation(libs.kotlinx.serialization.converter)
   implementation(libs.okhttp3.logging.interceptor)

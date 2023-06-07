@@ -16,6 +16,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttp
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.create
 import java.util.concurrent.TimeUnit
@@ -42,6 +43,14 @@ class NetworkModule {
     return OkHttpClient.Builder()
       .readTimeout(30, TimeUnit.SECONDS)
       .writeTimeout(30, TimeUnit.SECONDS)
+      .addInterceptor(
+        HttpLoggingInterceptor()
+          .apply {
+            if (BuildConfig.DEBUG) {
+              setLevel(HttpLoggingInterceptor.Level.BASIC)
+            }
+          }
+      )
       .addInterceptor { chain ->
         // Add a custom User-Agent
         val requestWithUserAgent = chain.request().newBuilder()
