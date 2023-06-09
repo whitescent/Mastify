@@ -32,7 +32,7 @@ class HomeScreenModel @Inject constructor(
   @OptIn(ExperimentalPagingApi::class)
   val pager = Pager(
     config = PagingConfig(
-      pageSize = 30
+      pageSize = 20
     ),
     remoteMediator = TimelineRemoteMediator(accountRepository, db, api)
   ) {

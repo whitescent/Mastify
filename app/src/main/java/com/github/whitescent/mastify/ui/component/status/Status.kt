@@ -186,6 +186,8 @@ fun Status(
         if (attachments.isNotEmpty()) {
           HeightSpacer(value = 4.dp)
           StatusMedia(
+            sensitive = sensitive,
+            spoilerText = spoilerText,
             attachments = attachments,
             onClick = {
               media = attachments

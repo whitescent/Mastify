@@ -7,38 +7,47 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
-import coil.decode.VideoFrameDecoder
 import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Status.Attachment
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.utils.BlurTransformation
 
 val imageGridSpacing = 2.dp
 const val defaultAspectRatio = 20f / 9f
 
 @Composable
 fun StatusMedia(
+  sensitive: Boolean,
+  spoilerText: String,
+  modifier: Modifier = Modifier,
   attachments: List<Attachment>,
   onClick: ((Int) -> Unit)? = null
 ) {
   val mediaCount = attachments.size
+  var mutableSensitive by remember(sensitive) { mutableStateOf(sensitive) }
   Box(
-    modifier = Modifier
+    modifier = modifier
       .aspectRatio(defaultAspectRatio)
       .clip(RoundedCornerShape(12.dp))
   ) {
@@ -46,24 +55,26 @@ fun StatusMedia(
       3 -> {
         Row {
           StatusMediaItem(
+            sensitive = mutableSensitive,
             media = attachments[0],
             modifier = Modifier
               .weight(1f)
               .fillMaxSize(),
             onClick = {
-              onClick?.invoke(0)
+              if (!mutableSensitive) onClick?.invoke(0) else mutableSensitive = false
             }
           )
           WidthSpacer(value = imageGridSpacing)
           Column(modifier = Modifier.weight(1f)) {
             attachments.drop(1).forEachIndexed { index, it ->
               StatusMediaItem(
+                sensitive = mutableSensitive,
                 media = it,
                 modifier = Modifier
                   .weight(1f)
                   .fillMaxSize(),
                 onClick = {
-                  onClick?.invoke(index + 1)
+                  if (!mutableSensitive) onClick?.invoke(index + 1) else mutableSensitive = false
                 }
               )
               if (it != attachments.last()) {
@@ -77,14 +88,29 @@ fun StatusMedia(
         StatusMediaGrid(spacing = 2.dp) {
           attachments.forEachIndexed { index, it ->
             StatusMediaItem(
+              sensitive = mutableSensitive,
               media = it,
               modifier = Modifier,
               onClick = {
-                onClick?.invoke(index)
+                if (!mutableSensitive) onClick?.invoke(index) else mutableSensitive = false
               }
             )
           }
         }
+      }
+    }
+    if (mutableSensitive) {
+      Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xFF3f3131),
+        modifier = Modifier.align(Alignment.Center).clickable { mutableSensitive = false },
+        elevation = 12.dp
+      ) {
+        Text(
+          text = spoilerText.ifEmpty { "敏感内容" },
+          modifier = Modifier.padding(12.dp),
+          color = Color.White
+        )
       }
     }
   }
@@ -92,17 +118,23 @@ fun StatusMedia(
 
 @Composable
 fun StatusMediaItem(
+  sensitive: Boolean,
   media: Attachment,
   modifier: Modifier = Modifier,
   onClick: (() -> Unit)? = null
 ) {
   val context = LocalContext.current
-  when (MediaType.type(media.type)) {
-    is MediaType.Image -> {
+  when (MediaType.fromString(media.type)) {
+    MediaType.IMAGE, MediaType.GIF -> {
       AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current)
+        model = ImageRequest.Builder(context)
           .data(media.url)
           .crossfade(true)
+          .let {
+            if (sensitive)
+              it.transformations(BlurTransformation(context, radius = 25f, sampling = 3f))
+            else it
+          }
           .build(),
         contentDescription = null,
         contentScale = ContentScale.Crop,
@@ -113,21 +145,20 @@ fun StatusMediaItem(
           }
       )
     }
-    is MediaType.Video -> {
+    MediaType.VIDEO -> {
       Box {
-        val painter = rememberAsyncImagePainter(
-          model = ImageRequest.Builder(LocalContext.current)
+        AsyncImage(
+          model = ImageRequest.Builder(context)
             .data(media.url)
             .crossfade(true)
-            .build(),
-          imageLoader = ImageLoader.Builder(context)
-            .components {
-              add(VideoFrameDecoder.Factory())
+            .let {
+              if (sensitive)
+                it.transformations(
+                  BlurTransformation(LocalContext.current, radius = 25f, sampling = 3f)
+                )
+              else it
             }
             .build(),
-        )
-        Image(
-         painter = painter,
           contentDescription = null,
           contentScale = ContentScale.Crop,
           modifier = modifier
@@ -136,33 +167,29 @@ fun StatusMediaItem(
               onClick?.invoke()
             },
         )
-        if (painter.state is AsyncImagePainter.State.Success) {
-          Image(
-            painter = painterResource(id = R.drawable.play_circle_fill),
-            contentDescription = null,
-            modifier = Modifier.size(48.dp).align(Alignment.Center)
-          )
-        }
+        Image(
+          painter = painterResource(id = R.drawable.play_circle_fill),
+          contentDescription = null,
+          modifier = Modifier
+            .size(48.dp)
+            .align(Alignment.Center)
+        )
       }
     }
     else -> Unit
   }
 }
 
-sealed class MediaType {
-
-  object Image: MediaType()
-  object Video: MediaType()
-  object Null: MediaType()
-
+enum class MediaType {
+  IMAGE, VIDEO, GIF, NULL;
   companion object {
-    fun type(type: String): MediaType {
-      return when(type) {
-        "image" -> Image
-        "video" -> Video
-        else -> Null
+    fun fromString(type: String): MediaType {
+      return when (type) {
+        "image" -> IMAGE
+        "video" -> VIDEO
+        "gifv" -> GIF
+        else -> NULL
       }
     }
   }
-
 }

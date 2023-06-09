@@ -77,6 +77,7 @@ fun HomeScreen(
       }
     },
   )
+
   Box(
     Modifier
       .statusBarsPadding()
@@ -206,13 +207,11 @@ fun Error(retry: () -> Unit) {
       HeightSpacer(value = 4.dp)
       Text(
         text = "获取嘟文失败... :(",
-//        style = AppTheme.typography.titleLarge,
         fontWeight = FontWeight.Bold
       )
       HeightSpacer(value = 4.dp)
       Button(
         onClick = retry,
-//        shape = AppTheme.shapes.medium
       ) {
         Text(
           text = "重新获取",

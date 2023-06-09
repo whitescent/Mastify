@@ -1,3 +1,5 @@
+@file:Suppress("CrossfadeLabel")
+
 package com.github.whitescent.mastify.screen.login
 
 import android.app.Activity
@@ -27,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.LoginNavGraph
@@ -38,7 +39,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.ramcosta.composedestinations.annotation.Destination
 
-@OptIn(ExperimentalMaterial3Api::class)
 @LoginNavGraph(start = true)
 @Destination
 @Composable
@@ -116,8 +116,10 @@ fun LoginScreen(
           }
         },
         modifier = Modifier.fillMaxWidth(),
-        colors = TextFieldDefaults.textFieldColors(
-          containerColor = Color.Transparent
+        colors = TextFieldDefaults.colors(
+          focusedContainerColor = Color.Transparent,
+          unfocusedContainerColor = Color.Transparent,
+          disabledContainerColor = Color.Transparent
         ),
         isError = state.instanceError && !state.isTyping,
         singleLine = true

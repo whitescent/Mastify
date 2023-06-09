@@ -44,6 +44,9 @@ fun AppScaffold(
 
   val navController = rememberNavController()
   val scope = rememberCoroutineScope()
+
+  // issue: In many cases, initializing the first visible item index
+  // still cannot accurately locate the saved position
   val lazyState = rememberLazyListState(
     initialFirstVisibleItemIndex = homeViewModel.timelineScrollPosition ?: 0,
     initialFirstVisibleItemScrollOffset = homeViewModel.timelineScrollPositionOffset ?: 0

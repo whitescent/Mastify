@@ -66,6 +66,7 @@ fun StatusMediaDialog(
               model = ImageRequest.Builder(LocalContext.current)
                 .data(media[it].url)
                 .size(Size.ORIGINAL)
+                .transformations()
                 .build()
             )
             if (painter.state is AsyncImagePainter.State.Success) {
