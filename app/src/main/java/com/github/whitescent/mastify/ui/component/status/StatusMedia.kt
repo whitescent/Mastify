@@ -40,8 +40,8 @@ const val defaultAspectRatio = 20f / 9f
 fun StatusMedia(
   sensitive: Boolean,
   spoilerText: String,
-  modifier: Modifier = Modifier,
   attachments: List<Attachment>,
+  modifier: Modifier = Modifier,
   onClick: ((Int) -> Unit)? = null
 ) {
   val mediaCount = attachments.size

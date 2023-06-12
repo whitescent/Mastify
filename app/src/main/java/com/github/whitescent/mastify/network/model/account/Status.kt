@@ -1,10 +1,13 @@
 package com.github.whitescent.mastify.network.model.account
 
+import androidx.compose.runtime.Immutable
 import com.github.whitescent.mastify.database.model.TimelineEntity
+import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Immutable
 data class Status(
   val id: String,
   @SerialName("created_at") val createdAt: String,
@@ -48,7 +51,10 @@ data class Status(
     val username: String,
     val avatar: String,
     val url: String
-  )
+  ) {
+    val fullName: String
+      get() = "@$username@${FormatFactory.getInstanceName(url)}"
+  }
 
   @Serializable
   data class Mention(

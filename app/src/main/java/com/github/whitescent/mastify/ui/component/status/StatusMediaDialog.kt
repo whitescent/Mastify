@@ -30,6 +30,7 @@ import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.FullScreenDialog
 import com.github.whitescent.mastify.ui.component.MyHtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.theme.LocalMastifyColors
 import com.mxalbert.zoomable.Zoomable
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
@@ -49,7 +50,7 @@ fun StatusMediaDialog(
     onDismissRequest = onDismissRequest,
     previousBarStyle = BarStyle(
       color = Color.Transparent,
-      useDarkIcons = true
+      useDarkIcons = LocalMastifyColors.current.isLight
     )
   ) {
     Box {

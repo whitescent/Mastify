@@ -3,14 +3,17 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -57,10 +61,7 @@ fun Status(
   val displayName = status.reblog?.account?.displayName ?: status.account.displayName
   val reblogDisplayName = status.account.displayName
 
-  val username = status.reblog?.account?.username ?: status.account.username
-  val instanceName = FormatFactory.getInstanceName(
-    url = status.reblog?.account?.url ?: status.account.url
-  )
+  val fullname = status.reblog?.account?.fullName ?: status.account.fullName
   val createdAt = status.reblog?.createdAt ?: status.createdAt
   val content = status.reblog?.content ?: status.content
   val application = status.reblog?.application ?: status.application
@@ -153,7 +154,7 @@ fun Status(
               maxLines = 1
             )
             Text(
-              text = "@$username@$instanceName ${FormatFactory.getTimeDiff(createdAt)}",
+              text = fullname,
               style = AppTheme.typography.statusUsername.copy(
                 color = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
               ),
@@ -161,26 +162,66 @@ fun Status(
               maxLines = 1
             )
           }
-          ClickableIcon(
-            painter = painterResource(id = R.drawable.more),
-            tint = AppTheme.colors.cardMenu,
-            modifier = Modifier.size(18.dp)
-          )
+          CenterRow {
+            Text(
+              text = FormatFactory.getTimeDiff(createdAt),
+              style = AppTheme.typography.statusUsername.copy(
+                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+              ),
+              overflow = TextOverflow.Ellipsis,
+              maxLines = 1
+            )
+            WidthSpacer(value = 4.dp)
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.more),
+              tint = AppTheme.colors.cardMenu,
+              modifier = Modifier.size(18.dp)
+            )
+          }
         }
         if (content.isNotEmpty()) {
+          var mutableSensitive by remember(sensitive) { mutableStateOf(sensitive) }
           HeightSpacer(value = 4.dp)
-          MyHtmlText(
-            text = content,
-            fontSize = 14.sp,
-            maxLines = 11,
-            overflow = TextOverflow.Ellipsis,
-            color = AppTheme.colors.primaryContent,
-          ) { span ->
-            launchCustomChromeTab(
-              context = context,
-              uri = Uri.parse(span),
-              toolbarColor = primaryColor.toArgb()
-            )
+          if (mutableSensitive) {
+            Surface(
+              shape = RoundedCornerShape(16.dp),
+              color = Color(0xFF3f3131)
+            ) {
+              CenterRow(
+                modifier = Modifier
+                  .clickable {
+                    mutableSensitive = !mutableSensitive
+                  }
+                  .padding(8.dp)
+              ) {
+                Icon(
+                  painter = painterResource(id = R.drawable.warning_circle),
+                  contentDescription = null,
+                  tint = Color.White,
+                  modifier = Modifier.size(24.dp)
+                )
+                WidthSpacer(value = 4.dp)
+                Text(
+                  text = spoilerText.ifEmpty { "敏感内容" },
+                  color = Color.White
+                )
+              }
+            }
+          }
+          AnimatedVisibility(visible = !mutableSensitive) {
+            MyHtmlText(
+              text = content,
+              fontSize = 14.sp,
+              maxLines = 11,
+              overflow = TextOverflow.Ellipsis,
+              color = AppTheme.colors.primaryContent,
+            ) { span ->
+              launchCustomChromeTab(
+                context = context,
+                uri = Uri.parse(span),
+                toolbarColor = primaryColor.toArgb()
+              )
+            }
           }
         }
         if (attachments.isNotEmpty()) {
