@@ -13,7 +13,6 @@ import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.paging.TimelineRemoteMediator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,6 +30,8 @@ class HomeScreenModel @Inject constructor(
   private val timelineDao = db.timelineDao()
 
   var activeAccount by mutableStateOf(accountRepository.activeAccount!!)
+  var refreshing by mutableStateOf(false)
+
   val accounts = accountRepository.accounts
   val timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex
   val timelineScrollPositionOffset = preferenceRepository.timelineModel?.offset
@@ -38,11 +39,13 @@ class HomeScreenModel @Inject constructor(
   init {
     viewModelScope.launch {
       // fetch the latest account info
+      refreshing = true
       api.accountVerifyCredentials(activeAccount.domain, "Bearer ${activeAccount.accessToken}")
         .fold(
           {
             accountRepository.updateActiveAccount(it)
             activeAccount = accountRepository.activeAccount!!
+            refreshing = false
           },
           {
 

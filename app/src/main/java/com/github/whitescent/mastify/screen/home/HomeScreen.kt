@@ -17,10 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -61,21 +58,19 @@ fun HomeScreen(
 ) {
   val homeTimeline = viewModel.pager.collectAsLazyPagingItems()
   val context = LocalContext.current
-
-  var refreshing by remember { mutableStateOf(false) }
-
   val scope = rememberCoroutineScope()
   val state = rememberPullRefreshState(
-    refreshing = refreshing,
+    refreshing = viewModel.refreshing,
     onRefresh = {
       scope.launch {
-        refreshing = true
+        viewModel.refreshing = true
         delay(500)
         homeTimeline.refresh()
-        refreshing = false
+        viewModel.refreshing = false
       }
     },
   )
+
   Box(
     Modifier
       .statusBarsPadding()
@@ -163,7 +158,7 @@ fun HomeScreen(
         }
       }
     }
-    PullRefreshIndicator(refreshing, state, Modifier.align(Alignment.TopCenter))
+    PullRefreshIndicator(viewModel.refreshing, state, Modifier.align(Alignment.TopCenter))
   }
 }
 
