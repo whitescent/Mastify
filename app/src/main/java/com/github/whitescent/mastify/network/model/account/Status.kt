@@ -64,9 +64,10 @@ data class Status(
     val acct: String
   )
 
-  fun toEntity(): TimelineEntity {
+  fun toEntity(timelineUserId: Long): TimelineEntity {
     return TimelineEntity(
       id = id,
+      timelineUserId = timelineUserId,
       createdAt = createdAt,
       sensitive = sensitive,
       spoilerText = spoilerText,

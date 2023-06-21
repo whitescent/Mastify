@@ -1,5 +1,7 @@
 package com.github.whitescent.mastify.network.model.account
 
+import com.github.whitescent.mastify.database.model.AccountEntity
+import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -18,7 +20,36 @@ data class Account(
   @SerialName("created_at") val createdAt: String,
   val source: Source,
   val fields: List<Fields>
-)
+) {
+
+  val domain get() = FormatFactory.getInstanceName(url)
+
+  fun toAccountEntity(
+    dbId: Long,
+    accessToken: String,
+    clientId: String?,
+    clientSecret: String?,
+    isActive: Boolean,
+  ): AccountEntity {
+    return AccountEntity(
+      id = dbId,
+      domain = domain,
+      accessToken = accessToken,
+      clientId = clientId,
+      clientSecret = clientSecret,
+      isActive = isActive,
+      accountId = id,
+      username = username,
+      displayName = displayName,
+      profilePictureUrl = avatar,
+      followingCount = followersCount,
+      followersCount = followersCount,
+      header = header,
+      statusesCount = statusesCount
+    )
+  }
+
+}
 
 @Serializable
 data class Source(

@@ -118,6 +118,7 @@ dependencies {
   implementation(libs.coil.video)
   implementation(libs.compose.html)
   implementation(libs.compose.destinations.core)
+  implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
   testImplementation(libs.mockito.kotlin)

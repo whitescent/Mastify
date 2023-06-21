@@ -4,12 +4,10 @@ package com.github.whitescent.mastify.screen.login
 
 import android.app.Activity
 import android.net.Uri
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -23,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -36,11 +33,12 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.ui.transitions.LoginTransitions
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.ramcosta.composedestinations.annotation.Destination
 
 @LoginNavGraph(start = true)
-@Destination
+@Destination(style = LoginTransitions::class)
 @Composable
 fun LoginScreen(
   viewModel: LoginViewModel = hiltViewModel()
@@ -66,10 +64,10 @@ fun LoginScreen(
           shape = CircleShape,
           modifier = Modifier.size(48.dp)
         ) {
-          Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = null
-          )
+          // Image(
+          //   painter = painterResource(id = R.drawable.logo),
+          //   contentDescription = null
+          // )
         }
         WidthSpacer(value = 12.dp)
         Text(
@@ -177,9 +175,6 @@ fun LoginScreen(
 
   if (state.openDialog) ProcessDialog()
 
-  BackHandler(true) {
-    activity?.finish()
-  }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -14,23 +14,34 @@ interface TimelineDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insert(vararg timelineEntity: TimelineEntity)
 
-  @Query("SELECT * FROM timelineentity ORDER BY LENGTH(id) DESC, id DESC")
-  fun getStatuses(): PagingSource<Int, Status>
+  @Query(
+    """
+      SELECT * FROM timelineentity WHERE timelineUserId = :accountId ORDER BY LENGTH(id) DESC, id DESC
+    """
+  )
+  fun getStatuses(accountId: Long): PagingSource<Int, Status>
 
-  @Query("SELECT id FROM timelineentity ORDER BY LENGTH(id) DESC, id DESC LIMIT 1")
-  suspend fun getTopId(): String?
+  @Query(
+    """
+      SELECT id FROM timelineentity WHERE timelineUserId = :accountId
+      ORDER BY LENGTH(id) DESC, id DESC LIMIT 1
+    """
+  )
+  suspend fun getTopId(accountId: Long): String?
 
   @Query(
     """
     DELETE FROM timelineentity WHERE
+    timelineUserId = :accountId
+    AND
     (LENGTH(id) < LENGTH(:maxId) OR LENGTH(id) == LENGTH(:maxId) AND id <= :maxId)
     AND
     (LENGTH(id) > LENGTH(:minId) OR LENGTH(id) == LENGTH(:minId) AND id >= :minId)
     """
   )
-  suspend fun deleteRange(minId: String, maxId: String)
+  suspend fun deleteRange(accountId: Long, minId: String, maxId: String)
 
-  @Query("DELETE FROM timelineentity")
-  suspend fun clearAll()
+  @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId")
+  suspend fun clearAll(accountId: Long)
 
 }

@@ -16,7 +16,7 @@
         android:name=".mastify.MastifyApp"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication"
+        android:theme="@style/Theme.Mastify"
         tools:targetApi="33">
 
         <provider
@@ -32,7 +32,7 @@
         <activity
             android:name=".mastify.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.MyApplication">
+            android:theme="@style/Theme.Mastify">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

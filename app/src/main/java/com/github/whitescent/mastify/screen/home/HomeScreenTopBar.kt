@@ -1,6 +1,8 @@
 package com.github.whitescent.mastify.screen.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,7 +21,8 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
 fun HomeScreenTopBar(
-  avatar: String
+  avatar: String,
+  openDrawer: () -> Unit
 ) {
   CenterRow(
     modifier = Modifier
@@ -42,7 +45,13 @@ fun HomeScreenTopBar(
       WidthSpacer(value = 8.dp)
       CircleShapeAsyncImage(
         model = avatar,
-        modifier = Modifier.size(42.dp)
+        modifier = Modifier
+          .size(42.dp)
+          .clickable(
+            onClick = openDrawer,
+            indication = null,
+            interactionSource = MutableInteractionSource()
+          )
       )
     }
   }

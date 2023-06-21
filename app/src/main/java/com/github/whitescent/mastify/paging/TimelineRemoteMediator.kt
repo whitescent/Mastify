@@ -35,7 +35,7 @@ class TimelineRemoteMediator(
 
     return try {
 
-      val topId = timelineDao.getTopId()
+      val topId = timelineDao.getTopId(activeAccount.id)
 
       if (!initialRefresh && loadType == LoadType.REFRESH) {
         topId?.let {
@@ -76,10 +76,10 @@ class TimelineRemoteMediator(
     statuses: List<Status>
   ) {
     if (statuses.isNotEmpty()) {
-      timelineDao.deleteRange(statuses.last().id, statuses.first().id)
+      timelineDao.deleteRange(activeAccount.id, statuses.last().id, statuses.first().id)
     }
     for (status in statuses) {
-      timelineDao.insert(status.toEntity())
+      timelineDao.insert(status.toEntity(activeAccount.id))
     }
   }
 }

@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -23,6 +22,7 @@ import com.github.whitescent.mastify.destinations.LoginScreenDestination
 import com.github.whitescent.mastify.destinations.OauthScreenDestination
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -49,7 +49,7 @@ fun OauthScreen(
   ) {
     Surface(
       shape = RoundedCornerShape(12.dp),
-      color = Color.White,
+      color = AppTheme.colors.background,
       shadowElevation = 6.dp
     ) {
       CenterRow(

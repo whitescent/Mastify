@@ -1,16 +1,13 @@
 package com.github.whitescent.mastify.database.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.github.whitescent.mastify.database.model.AccountEntity
 
 @Dao
 interface AccountDao {
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
-  fun insertOrReplace(account: AccountEntity): Long
+
+  @Upsert(entity = AccountEntity::class)
+  fun insertOrReplace(account: AccountEntity)
 
   @Delete
   fun delete(account: AccountEntity)

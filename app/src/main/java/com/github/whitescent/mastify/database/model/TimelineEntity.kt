@@ -2,12 +2,24 @@ package com.github.whitescent.mastify.database.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.github.whitescent.mastify.network.model.account.Status
 
-@Entity
+@Entity(
+  foreignKeys = [
+    ForeignKey(
+      entity = AccountEntity::class,
+      parentColumns = ["id"],
+      childColumns = ["timelineUserId"]
+    )
+  ],
+  indices = [Index("timelineUserId")]
+)
 data class TimelineEntity(
   @PrimaryKey val id: String,
+  @ColumnInfo val timelineUserId: Long,
   @ColumnInfo val createdAt: String,
   @ColumnInfo val sensitive: Boolean,
   @ColumnInfo val spoilerText: String,

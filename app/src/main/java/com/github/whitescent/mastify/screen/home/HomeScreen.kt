@@ -1,7 +1,6 @@
 package com.github.whitescent.mastify.screen.home
 
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -47,18 +46,18 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.annotation.Destination
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class, FlowPreview::class)
+@OptIn(ExperimentalMaterialApi::class)
 @BottomBarNavGraph(start = true)
 @Destination
 @Composable
 fun HomeScreen(
   lazyState: LazyListState,
   topNavController: NavController,
-  viewModel: HomeScreenModel
+  viewModel: HomeScreenModel,
+  openDrawer: () -> Unit
 ) {
   val homeTimeline = viewModel.pager.collectAsLazyPagingItems()
   val context = LocalContext.current
@@ -77,14 +76,13 @@ fun HomeScreen(
       }
     },
   )
-
   Box(
     Modifier
       .statusBarsPadding()
       .pullRefresh(state)
   ) {
     Column {
-      HomeScreenTopBar(avatar = viewModel.account.profilePictureUrl)
+      HomeScreenTopBar(avatar = viewModel.activeAccount.profilePictureUrl, openDrawer = openDrawer)
       when (homeTimeline.itemCount) {
         0 -> {
           when (homeTimeline.loadState.refresh) {

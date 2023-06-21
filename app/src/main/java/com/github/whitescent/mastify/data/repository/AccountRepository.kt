@@ -20,7 +20,6 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
 
   init {
     accounts = accountDao.loadAll().toMutableList()
-
     activeAccount = accounts.find { acc -> acc.isActive }
       ?: accounts.firstOrNull()?.also { acc -> acc.isActive = true }
   }
@@ -36,18 +35,32 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
       it.isActive = false
       accountDao.insertOrReplace(it)
     }
-    AccountEntity(
-      id = 0L,
-      domain = domain.lowercase(Locale.ROOT),
-      accessToken = accessToken,
-      clientId = clientId,
-      clientSecret = clientSecret,
-      isActive = true,
-      accountId = newAccount.id
-    ).also {
-      accounts.add(it)
-      activeAccount = it
+    // check if this is a relogin with an existing account,
+    // if yes update it, otherwise create a new one
+    val existingAccountIndex = accounts.indexOfFirst { account ->
+      domain == account.domain && newAccount.id == account.accountId
     }
+    val newAccountEntity = if (existingAccountIndex != -1) {
+      accounts[existingAccountIndex].copy(
+        accessToken = accessToken,
+        clientId = clientId,
+        clientSecret = clientSecret,
+        isActive = true
+      ).also { accounts[existingAccountIndex] = it }
+    } else {
+      val maxAccountId = accounts.maxByOrNull { it.id }?.id ?: 0
+      val newAccountId = maxAccountId + 1
+      AccountEntity(
+        id = newAccountId,
+        domain = domain.lowercase(Locale.ROOT),
+        accessToken = accessToken,
+        clientId = clientId,
+        clientSecret = clientSecret,
+        isActive = true,
+        accountId = newAccount.id
+      ).also { accounts.add(it) }
+    }
+    activeAccount = newAccountEntity
     updateActiveAccount(newAccount)
   }
 
@@ -67,6 +80,39 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
       it.header = account.header
       it.statusesCount = account.statusesCount
       accountDao.insertOrReplace(it)
+    }
+  }
+
+  /**
+   * changes the active account
+   * @param accountId the database id of the new active account
+   */
+  fun setActiveAccount(accountId: Long) {
+    val newActiveAccount = accounts.find { (id) ->
+      id == accountId
+    } ?: return // invalid accountId passed, do nothing
+
+    activeAccount?.let {
+      it.isActive = false
+      saveAccount(it)
+    }
+
+    activeAccount = newActiveAccount
+
+    activeAccount?.let {
+      it.isActive = true
+      accountDao.insertOrReplace(it)
+    }
+  }
+
+  /**
+   * Saves an already known account to the database.
+   * New accounts must be created with [addAccount]
+   * @param account the account to save
+   */
+  fun saveAccount(account: AccountEntity) {
+    if (account.id != 0L) {
+      accountDao.insertOrReplace(account)
     }
   }
 
