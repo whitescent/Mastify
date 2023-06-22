@@ -28,7 +28,7 @@ kotlinxSerializationJson = "1.5.0"
 kotlinxCoroutines = "1.7.1"
 kotlin = "1.8.20"
 
-agp = "7.4.2"
+agp = "8.2.0-alpha06"
 accompanist = "0.30.1"
 coil = "2.4.0"
 mmkv = "1.2.15"
