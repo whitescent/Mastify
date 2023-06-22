@@ -1,7 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.kotlin.resolve.compatibilityTypeMap
-
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
@@ -15,7 +13,7 @@ plugins {
 android {
 
   namespace = "com.github.whitescent"
-  compileSdk = 33
+  compileSdk = 34
 
   defaultConfig {
     applicationId = "com.github.whitescent.mastify"

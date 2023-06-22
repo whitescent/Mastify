@@ -14,7 +14,7 @@ class MastifyApp : Application(), ImageLoaderFactory {
   override fun newImageLoader(): ImageLoader {
     val context = this.applicationContext
     return ImageLoader.Builder(context)
-      .crossfade(true)
+      .crossfade(300)
       .components {
         if (SDK_INT >= 28) {
           add(ImageDecoderDecoder.Factory())

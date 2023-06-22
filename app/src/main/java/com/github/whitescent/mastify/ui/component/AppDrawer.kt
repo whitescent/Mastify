@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.BlurTransformation
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -50,6 +52,7 @@ fun AppDrawer(
   navigateToLogin: () -> Unit,
 ) {
   val context = LocalContext.current
+  val scope = rememberCoroutineScope()
   var expanded by rememberSaveable { mutableStateOf(false) }
   val rotate by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
   val transition = updateTransition(targetState = expanded)
@@ -140,7 +143,14 @@ fun AppDrawer(
                   bounded = true,
                   radius = 250.dp,
                 ),
-                onClick = { changeAccount(account.id) },
+                onClick = {
+                  if (account != activeAccount) changeAccount(account.id)
+                  else {
+                    scope.launch {
+                      drawerState.close()
+                    }
+                  }
+                },
               )
               .padding(16.dp),
           ) {
@@ -174,7 +184,7 @@ fun AppDrawer(
           modifier = Modifier
             .fillMaxWidth()
             .clickable(
-              interactionSource = MutableInteractionSource(),
+              interactionSource = remember { MutableInteractionSource() },
               indication = rememberRipple(
                 bounded = true,
                 radius = 250.dp,
