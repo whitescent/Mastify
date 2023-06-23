@@ -39,6 +39,7 @@ class LoginViewModel @Inject constructor(
                 isTyping = false,
                 instanceError = false,
                 instanceTitle = instance.title,
+                activeMonth = instance.usage.users.activeMonth,
                 instanceImageUrl = instance.thumbnail.url,
                 instanceDescription = instance.description
               )
@@ -65,7 +66,6 @@ class LoginViewModel @Inject constructor(
   }
 
   fun authenticateApp(appName: String, navigateToOauth: (String) -> Unit) {
-    uiState = uiState.copy(openDialog = true)
     viewModelScope.launch(Dispatchers.IO) {
       api.authenticateApp(
         domain = uiState.text,
@@ -75,18 +75,18 @@ class LoginViewModel @Inject constructor(
         website = "https://github.com/whitescent/Mastify",
       ).fold(
         {
+          preferenceRepository.saveInstanceData(
+            uiState.text,
+            it.clientId,
+            it.clientSecret
+          )
           withContext(Dispatchers.Main) {
-            uiState = uiState.copy(openDialog = false)
-            preferenceRepository.saveInstanceData(
-              uiState.text,
-              it.clientId,
-              it.clientSecret
-            )
+            uiState = uiState.copy(authenticateError = false)
             navigateToOauth(it.clientId)
           }
         },
         {
-          // TODO Handling error
+          uiState = uiState.copy(authenticateError = true)
         }
       )
     }
@@ -98,7 +98,8 @@ data class LoginUiState(
   val isTyping: Boolean = false,
   val instanceError: Boolean = false,
   val instanceTitle: String = "",
+  val activeMonth: Int = 0,
   val instanceImageUrl: String = "",
   val instanceDescription: String = "",
-  val openDialog: Boolean = false
+  val authenticateError: Boolean = false
 )

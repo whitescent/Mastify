@@ -29,6 +29,7 @@ import com.github.whitescent.mastify.screen.home.HomeScreenModel
 import com.github.whitescent.mastify.screen.notification.NotificationScreen
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
+import com.google.accompanist.systemuicontroller.SystemUiController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
@@ -45,6 +46,7 @@ import kotlinx.coroutines.launch
 @Destination(style = AppTransitions::class)
 @Composable
 fun AppScaffold(
+  systemUiController: SystemUiController,
   topNavController: NavController,
   homeViewModel: HomeScreenModel = hiltViewModel()
 ) {
@@ -64,6 +66,7 @@ fun AppScaffold(
     drawerState = drawerState,
     drawerContent = {
       AppDrawer(
+        isSystemBarVisible = systemUiController.isSystemBarsVisible,
         drawerState = drawerState,
         activeAccount = homeViewModel.activeAccount,
         accounts = homeViewModel.accounts,

@@ -17,9 +17,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.whitescent.mastify.LoginNavGraph
+import com.github.whitescent.mastify.NavGraphs
 import com.github.whitescent.mastify.destinations.AppScaffoldDestination
-import com.github.whitescent.mastify.destinations.LoginScreenDestination
-import com.github.whitescent.mastify.destinations.OauthScreenDestination
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -27,6 +26,7 @@ import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
+import kotlinx.coroutines.delay
 
 @Composable
 @LoginNavGraph
@@ -55,21 +55,19 @@ fun OauthScreen(
       CenterRow(
         modifier = Modifier.padding(24.dp)
       ) {
-        Text(text = "正在完成身份认证...")
+        Text(text = "正在完成身份认证...", color = AppTheme.colors.primaryContent)
         WidthSpacer(value = 10.dp)
         CircularProgressIndicator(modifier = Modifier.size(24.dp))
       }
     }
   }
   LaunchedEffect(Unit) {
+    delay(300)
     viewModel.code?.let {
       viewModel.fetchAccessToken(
         navigateToApp = {
           navigator.navigate(AppScaffoldDestination) {
-            popUpTo(OauthScreenDestination) {
-              inclusive = true
-            }
-            popUpTo(LoginScreenDestination) {
+            popUpTo(NavGraphs.root) {
               inclusive = true
             }
           }
@@ -77,11 +75,7 @@ fun OauthScreen(
       )
     } ?: run {
       // If the user refuses OAuth, we need to navigate to the login screen
-      navigator.navigate(LoginScreenDestination) {
-        popUpTo(OauthScreenDestination) {
-          inclusive = true
-        }
-      }
+      navigator.popBackStack()
     }
   }
   BackHandler {

@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AppDrawer(
+  isSystemBarVisible: Boolean,
   drawerState: DrawerState,
   activeAccount: AccountEntity,
   accounts: MutableList<AccountEntity>,
@@ -53,189 +54,176 @@ fun AppDrawer(
     windowInsets = WindowInsets(0, 0, 0,0),
     drawerContainerColor = AppTheme.colors.background
   ) {
-    Header(
-      drawerIsOpened = drawerState.isOpen,
-      activeAccount = activeAccount,
-      accounts = accounts,
-      changeAccount = changeAccount,
-      navigateToLogin = navigateToLogin,
-      closeDrawer = {
-        scope.launch {
-          drawerState.close()
+
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val rotate by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
+    val transition = updateTransition(targetState = expanded)
+    var accountListHeight by remember { mutableIntStateOf(0) }
+    val animatedHeight by transition.animateInt {
+      when (it) {
+        true -> 0
+        else -> -accountListHeight
+      }
+    }
+    Box(
+      Modifier.heightIn(max = 200.dp)
+    ) {
+      AsyncImage(
+        model = activeAccount.header,
+        contentDescription = null,
+        modifier = Modifier
+          .fillMaxSize()
+          .alpha(0.6f),
+        contentScale = ContentScale.Crop,
+      )
+      Column(
+        modifier = Modifier
+          .let {
+            if (isSystemBarVisible) {
+              // Ensure correct padding is maintained
+              // when using this app in environments similar to WSA
+              it.statusBarsPadding().padding(horizontal = 24.dp, vertical = 8.dp)
+            } else {
+              it.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 8.dp)
+            }
+          },
+      ) {
+        CircleShapeAsyncImage(
+          model = activeAccount.profilePictureUrl,
+          modifier = Modifier.size(72.dp)
+        )
+        HeightSpacer(value = 6.dp)
+        CenterRow {
+          Column(
+            modifier = Modifier.weight(1f)
+          ) {
+            Text(
+              text = activeAccount.displayName,
+              fontSize = 24.sp,
+              color = AppTheme.colors.primaryContent
+            )
+            Text(
+              text = activeAccount.fullName,
+              fontSize = 16.sp,
+              color = AppTheme.colors.primaryContent
+            )
+          }
+          IconButton(
+            onClick = { expanded = !expanded }
+          ) {
+            Icon(
+              painter = painterResource(R.drawable.more_arrow),
+              contentDescription = null,
+              modifier = Modifier.rotate(rotate),
+              tint = AppTheme.colors.primaryContent
+            )
+          }
         }
       }
-    )
-  }
-
-}
-
-@Composable
-fun Header(
-  drawerIsOpened: Boolean,
-  activeAccount: AccountEntity,
-  accounts: MutableList<AccountEntity>,
-  changeAccount: (Long) -> Unit,
-  navigateToLogin: () -> Unit,
-  closeDrawer: () -> Unit
-) {
-
-  var expanded by rememberSaveable { mutableStateOf(false) }
-  val rotate by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
-  val transition = updateTransition(targetState = expanded)
-  var accountListHeight by remember { mutableIntStateOf(0) }
-  val animatedHeight by transition.animateInt {
-    when (it) {
-      true -> 0
-      else -> -accountListHeight
     }
-  }
-  Box(
-    Modifier.heightIn(max = 200.dp)
-  ) {
-    AsyncImage(
-      model = activeAccount.header,
-      contentDescription = null,
-      modifier = Modifier
-        .fillMaxSize()
-        .alpha(0.6f),
-      contentScale = ContentScale.Crop,
-    )
+
     Column(
       modifier = Modifier
-        .statusBarsPadding()
-        .padding(horizontal = 24.dp, vertical = 8.dp)
+        .clipToBounds()
+        .offset { IntOffset(0, animatedHeight) }
     ) {
-      CircleShapeAsyncImage(
-        model = activeAccount.profilePictureUrl,
-        modifier = Modifier.size(72.dp)
-      )
-      HeightSpacer(value = 6.dp)
-      CenterRow {
-        Column(
-          modifier = Modifier.weight(1f)
-        ) {
-          Text(
-            text = activeAccount.displayName,
-            fontSize = 24.sp,
-            color = AppTheme.colors.primaryContent
-          )
-          Text(
-            text = activeAccount.fullName,
-            fontSize = 16.sp,
-            color = AppTheme.colors.primaryContent
-          )
-        }
-        IconButton(
-          onClick = { expanded = !expanded }
-        ) {
-          Icon(
-            painter = painterResource(R.drawable.more_arrow),
-            contentDescription = null,
-            modifier = Modifier.rotate(rotate),
-            tint = AppTheme.colors.primaryContent
-          )
-        }
-      }
-    }
-  }
-
-  Column(
-    modifier = Modifier
-      .clipToBounds()
-      .offset { IntOffset(0, animatedHeight) }
-  ) {
-    Surface(
-      shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
-      modifier = Modifier
-        .onGloballyPositioned {
-          accountListHeight = it.size.height
-        },
-      color = AppTheme.colors.background
-    ) {
-      Column {
-        accounts.forEach { account ->
+      Surface(
+        shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
+        modifier = Modifier
+          .onGloballyPositioned {
+            accountListHeight = it.size.height
+          },
+        color = AppTheme.colors.background
+      ) {
+        Column {
+          accounts.forEach { account ->
+            CenterRow(
+              modifier = Modifier
+                .clickable(
+                  interactionSource = MutableInteractionSource(),
+                  indication = rememberRipple(
+                    bounded = true,
+                    radius = 250.dp,
+                  ),
+                  onClick = {
+                    if (account != activeAccount) changeAccount(account.id)
+                    else {
+                      scope.launch {
+                        drawerState.close()
+                      }
+                    }
+                  },
+                )
+                .padding(12.dp),
+            ) {
+              CircleShapeAsyncImage(
+                model = account.profilePictureUrl,
+                modifier = Modifier.size(40.dp)
+              )
+              WidthSpacer(value = 8.dp)
+              Text(
+                text = account.fullName,
+                fontSize = 16.sp,
+                color = AppTheme.colors.primaryContent,
+                modifier = Modifier.weight(1f),
+                fontWeight = FontWeight(500),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+              )
+              if (account == activeAccount) {
+                Image(
+                  painter = painterResource(id = R.drawable.check_circle_fill),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .size(32.dp)
+                    .padding(start = 4.dp)
+                )
+              }
+            }
+          }
           CenterRow(
             modifier = Modifier
+              .fillMaxWidth()
               .clickable(
-                interactionSource = MutableInteractionSource(),
+                interactionSource = remember { MutableInteractionSource() },
                 indication = rememberRipple(
                   bounded = true,
                   radius = 250.dp,
                 ),
-                onClick = {
-                  if (account != activeAccount) changeAccount(account.id)
-                  else closeDrawer()
-                },
+                onClick = navigateToLogin
               )
-              .padding(12.dp),
+              .drawerListItemPadding()
           ) {
-            CircleShapeAsyncImage(
-              model = account.profilePictureUrl,
-              modifier = Modifier.size(40.dp)
-            )
-            WidthSpacer(value = 8.dp)
-            Text(
-              text = account.fullName,
-              fontSize = 16.sp,
-              color = AppTheme.colors.primaryContent,
-              modifier = Modifier.weight(1f),
-              fontWeight = FontWeight(500),
-              overflow = TextOverflow.Ellipsis,
-              maxLines = 1
-            )
-            if (account == activeAccount) {
-              Image(
-                painter = painterResource(id = R.drawable.check_circle_fill),
+            Box(
+              modifier = Modifier.size(40.dp),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(
+                painter = painterResource(id = R.drawable.plus),
                 contentDescription = null,
-                modifier = Modifier
-                  .size(32.dp)
-                  .padding(start = 4.dp)
+                modifier = Modifier.size(24.dp),
+                tint = AppTheme.colors.primaryContent
               )
             }
-          }
-        }
-        CenterRow(
-          modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-              interactionSource = remember { MutableInteractionSource() },
-              indication = rememberRipple(
-                bounded = true,
-                radius = 250.dp,
-              ),
-              onClick = navigateToLogin
-            )
-            .drawerListItemPadding()
-        ) {
-          Box(
-            modifier = Modifier.size(40.dp),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              painter = painterResource(id = R.drawable.plus),
-              contentDescription = null,
-              modifier = Modifier.size(24.dp),
-              tint = AppTheme.colors.primaryContent
+            WidthSpacer(value = 8.dp)
+            Text(
+              text = "添加账号",
+              fontSize = 16.sp,
+              fontWeight = FontWeight(500),
+              color = AppTheme.colors.primaryContent,
             )
           }
-          WidthSpacer(value = 8.dp)
-          Text(
-            text = "添加账号",
-            fontSize = 16.sp,
-            fontWeight = FontWeight(500),
-            color = AppTheme.colors.primaryContent,
-          )
+          Divider(thickness = 0.5.dp)
         }
-        Divider(thickness = 0.5.dp)
       }
+      HeightSpacer(value = 8.dp)
+      DrawerMenu()
     }
-    HeightSpacer(value = 8.dp)
-    DrawerMenu()
-  }
 
-  LaunchedEffect(drawerIsOpened) {
-    if (!drawerIsOpened) {
-      expanded = false
+    LaunchedEffect(drawerState.isOpen) {
+      if (!drawerState.isOpen) {
+        expanded = false
+      }
     }
   }
 

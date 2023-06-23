@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
             // Provide primaryNavController to AppNavGraph to enable
             // navigation from a screen with BottomBar to a screen without BottomBar
             dependency(NavGraphs.app) { topNavController }
+            dependency(NavGraphs.app) { systemUiController }
           },
           engine = rememberAnimatedNavHostEngine()
         )
