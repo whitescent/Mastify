@@ -61,7 +61,7 @@ class LoginViewModel @Inject constructor(
   }
 
   fun clearInputText() {
-    inputText.value = ""
+    inputText.update { "" }
     uiState = uiState.copy(text = "", isTyping = false)
   }
 

@@ -126,7 +126,6 @@ fun AppDrawer(
         .offset { IntOffset(0, animatedHeight) }
     ) {
       Surface(
-        // shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
         modifier = Modifier
           .onGloballyPositioned {
             accountListHeight = it.size.height
