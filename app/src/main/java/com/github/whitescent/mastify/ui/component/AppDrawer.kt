@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -266,17 +265,18 @@ fun DrawerMenuItem(painter: Painter, name: String) {
         modifier = Modifier.size(40.dp),
         contentAlignment = Alignment.Center
       ) {
-        Image(
+        Icon(
           painter = painter,
           contentDescription = null,
-          modifier = Modifier.size(24.dp)
+          modifier = Modifier.size(24.dp),
+          tint = AppTheme.colors.primaryContent
         )
       }
       WidthSpacer(value = 8.dp)
       Text(
         text = name,
         fontSize = 18.sp,
-        color = Color(0xFF223548)
+        color = AppTheme.colors.primaryContent
       )
     }
   }
