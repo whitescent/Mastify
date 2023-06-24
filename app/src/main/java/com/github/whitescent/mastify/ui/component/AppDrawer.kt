@@ -7,7 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -127,7 +126,7 @@ fun AppDrawer(
         .offset { IntOffset(0, animatedHeight) }
     ) {
       Surface(
-        shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
+        // shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
         modifier = Modifier
           .onGloballyPositioned {
             accountListHeight = it.size.height
