@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,8 +46,11 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.MyHtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.utils.FormatFactory
+import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toInstant
+
 
 @Composable
 fun Status(
@@ -87,7 +91,7 @@ fun Status(
       .fillMaxWidth()
       .padding(horizontal = 24.dp),
     shape = RoundedCornerShape(18.dp),
-    color = AppTheme.colors.cardBackground
+    color = AppTheme.colors.cardBackground,
   ) {
     Column {
       status.reblog?.let {
@@ -95,27 +99,20 @@ fun Status(
           CenterRow(
             Modifier
               .fillMaxWidth()
-              .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 24.dp)) {
+              .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 24.dp),
+          ) {
             CircleShapeAsyncImage(
               model = reblogAvatar,
-              modifier = Modifier.size(24.dp)
+              modifier = Modifier.size(24.dp),
             )
             WidthSpacer(value = 4.dp)
             Text(
               buildAnnotatedString {
                 withStyle(
                   SpanStyle(
-                    color = AppTheme.colors.cardCaption60,
-                    fontSize = AppTheme.typography.statusRepost.fontSize,
-                  )
-                ) {
-                  append("由 ")
-                }
-                withStyle(
-                  SpanStyle(
                     color = AppTheme.colors.cardCaption,
                     fontSize = AppTheme.typography.statusRepost.fontSize,
-                  )
+                  ),
                 ) {
                   append(reblogDisplayName)
                 }
@@ -123,17 +120,17 @@ fun Status(
                   SpanStyle(
                     color = AppTheme.colors.cardCaption60,
                     fontSize = AppTheme.typography.statusRepost.fontSize,
-                  )
+                  ),
                 ) {
-                  append(" 转发")
+                  append(" "+stringResource(id = R.string.post_boosted_format_suffix))
                 }
               },
-              modifier = Modifier.weight(1f)
+              modifier = Modifier.weight(1f),
             )
             Image(
               painter = painterResource(id = R.drawable.reblog),
               contentDescription = null,
-              modifier = Modifier.size(16.dp)
+              modifier = Modifier.size(16.dp),
             )
           }
           Divider(thickness = 1.dp, color = AppTheme.colors.background)
@@ -143,7 +140,7 @@ fun Status(
         CenterRow(modifier = Modifier.fillMaxWidth()) {
           CircleShapeAsyncImage(
             model = avatar,
-            modifier = Modifier.size(36.dp)
+            modifier = Modifier.size(36.dp),
           )
           WidthSpacer(value = 7.dp)
           Column(modifier = Modifier.weight(1f)) {
@@ -151,31 +148,36 @@ fun Status(
               text = displayName,
               style = AppTheme.typography.statusDisplayName,
               overflow = TextOverflow.Ellipsis,
-              maxLines = 1
+              maxLines = 1,
             )
             Text(
               text = fullname,
               style = AppTheme.typography.statusUsername.copy(
-                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
               ),
               overflow = TextOverflow.Ellipsis,
-              maxLines = 1
+              maxLines = 1,
             )
           }
           CenterRow {
+            val now = Clock.System.now().toEpochMilliseconds()
             Text(
-              text = FormatFactory.getTimeDiff(createdAt),
+              text = getRelativeTimeSpanString(
+                context,
+                createdAt.toInstant().toEpochMilliseconds(),
+                now
+              ),
               style = AppTheme.typography.statusUsername.copy(
-                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
               ),
               overflow = TextOverflow.Ellipsis,
-              maxLines = 1
+              maxLines = 1,
             )
             WidthSpacer(value = 4.dp)
             ClickableIcon(
               painter = painterResource(id = R.drawable.more),
               tint = AppTheme.colors.cardMenu,
-              modifier = Modifier.size(18.dp)
+              modifier = Modifier.size(18.dp),
             )
           }
         }
@@ -185,25 +187,25 @@ fun Status(
           if (mutableSensitive) {
             Surface(
               shape = RoundedCornerShape(16.dp),
-              color = Color(0xFF3f3131)
+              color = Color(0xFF3f3131),
             ) {
               CenterRow(
                 modifier = Modifier
                   .clickable {
                     mutableSensitive = !mutableSensitive
                   }
-                  .padding(8.dp)
+                  .padding(8.dp),
               ) {
                 Icon(
                   painter = painterResource(id = R.drawable.warning_circle),
                   contentDescription = null,
                   tint = Color.White,
-                  modifier = Modifier.size(24.dp)
+                  modifier = Modifier.size(24.dp),
                 )
                 WidthSpacer(value = 4.dp)
                 Text(
                   text = spoilerText.ifEmpty { "敏感内容" },
-                  color = Color.White
+                  color = Color.White,
                 )
               }
             }
@@ -219,7 +221,7 @@ fun Status(
               launchCustomChromeTab(
                 context = context,
                 uri = Uri.parse(span),
-                toolbarColor = primaryColor.toArgb()
+                toolbarColor = primaryColor.toArgb(),
               )
             }
           }
@@ -234,7 +236,7 @@ fun Status(
               media = attachments
               targetMediaIndex = it
               openDialog = true
-            }
+            },
           )
         }
         HeightSpacer(value = 6.dp)
@@ -244,7 +246,7 @@ fun Status(
           favouritesCount = favouritesCount,
           favourited = favourited,
           favouriteStatus = favouriteStatus,
-          unfavouriteStatus = unfavouriteStatus
+          unfavouriteStatus = unfavouriteStatus,
         )
       }
     }
@@ -254,7 +256,7 @@ fun Status(
       avatar = avatar,
       content = content,
       media = media,
-      targetMediaIndex = targetMediaIndex
+      targetMediaIndex = targetMediaIndex,
     ) {
       openDialog = false
     }
@@ -281,26 +283,26 @@ fun StatusActionsRow(
   )
 
   CenterRow(
-    modifier = Modifier.padding(12.dp)
+    modifier = Modifier.padding(12.dp),
   ) {
     CenterRow(modifier = Modifier.weight(1f)) {
       ClickableIcon(
         painter = painterResource(id = R.drawable.chat),
         modifier = Modifier
           .size(20.dp),
-        tint = AppTheme.colors.cardAction
+        tint = AppTheme.colors.cardAction,
       )
       WidthSpacer(value = 2.dp)
       Text(
         text = repliesCount.toString(),
-        style = AppTheme.typography.statusActions
+        style = AppTheme.typography.statusActions,
       )
       WidthSpacer(value = 24.dp)
       ClickableIcon(
         painter = painterResource(id = R.drawable.heart),
         modifier = Modifier
           .size(20.dp),
-        tint = animatedFavIconColor
+        tint = animatedFavIconColor,
       ) {
         favState = !favState
         if (favState) {
@@ -321,7 +323,7 @@ fun StatusActionsRow(
         painter = painterResource(id = R.drawable.repost),
         modifier = Modifier
           .size(20.dp),
-        tint = AppTheme.colors.cardAction
+        tint = AppTheme.colors.cardAction,
       )
       WidthSpacer(value = 2.dp)
       Text(
@@ -334,14 +336,14 @@ fun StatusActionsRow(
         modifier = Modifier
           .size(height = 16.dp, width = 1.dp)
           .clip(RoundedCornerShape(100.dp)),
-        color = AppTheme.colors.cardAction.copy(alpha = 0.12f)
+        color = AppTheme.colors.cardAction.copy(alpha = 0.12f),
       ) { }
       WidthSpacer(value = 16.dp)
       ClickableIcon(
         painter = painterResource(id = R.drawable.share),
         modifier = Modifier
           .size(20.dp),
-        tint = AppTheme.colors.cardAction
+        tint = AppTheme.colors.cardAction,
       )
     }
   }

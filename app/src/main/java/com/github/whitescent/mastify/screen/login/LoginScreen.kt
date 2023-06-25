@@ -64,15 +64,9 @@ fun LoginScreen(
       Icon(
         painter = painterResource(id = R.drawable.text_logo),
         contentDescription = null,
-        modifier = Modifier.size(100.dp),
+        modifier = Modifier.size(180.dp),
         tint = AppTheme.colors.primaryContent
       )
-      Text(
-        text = "登录到您的实例",
-        fontSize = 18.sp,
-        color = AppTheme.colors.primaryContent
-      )
-      HeightSpacer(value = 16.dp)
       BasicTextField(
         value = state.text,
         onValueChange = viewModel::onValueChange,
@@ -88,10 +82,10 @@ fun LoginScreen(
         ) {
           Column(Modifier.padding(12.dp)) {
             Text(
-              text = "实例地址",
+              text = stringResource(id = R.string.Instance_address),
               color = AppTheme.colors.primaryContent,
               fontSize = 12.sp,
-              modifier = Modifier.padding(horizontal = 6.dp)
+              modifier = Modifier.padding(horizontal = 6.dp),
             )
             HeightSpacer(value = 6.dp)
             CenterRow(Modifier.fillMaxWidth()) {
@@ -108,7 +102,7 @@ fun LoginScreen(
                   when (it) {
                     true -> {
                       Text(
-                        text = "您所在的实例地址是什么？",
+                        text = stringResource(id = R.string.Instance_address_tip),
                         color = Color.Gray
                       )
                     }
@@ -150,13 +144,13 @@ fun LoginScreen(
                 )
               }
               else -> {
-                Crossfade(state.instanceError) { error ->
+                Crossfade(state.errorMessageId != 0) { error ->
                   when (error) {
                     true -> {
                       Text(
-                        text = "获取实例失败",
+                        text = state.errorMessage(),
                         fontSize = 14.sp,
-                        color = Color(0xFFFF3838)
+                        color = Color(0xFFFF3838),
                       )
                     }
                     else -> {
@@ -195,7 +189,11 @@ fun LoginScreen(
   }
 
   if(state.authenticateError) {
-    Toast.makeText(context, "验证实例时出现错误", Toast.LENGTH_LONG).show()
+    Toast.makeText(
+      context,
+      stringResource(id = R.string.instance_verification_error),
+      Toast.LENGTH_LONG
+    ).show()
   }
 
 }
@@ -252,8 +250,8 @@ fun InstanceCard(
             .padding(12.dp)
         ) {
           Text(
-            text = "月活跃人数",
-            color = AppTheme.colors.primaryContent
+            text = stringResource(id = R.string.Monthly_active_users),
+            color = Color.Gray
           )
           WidthSpacer(value = 4.dp)
           Surface(

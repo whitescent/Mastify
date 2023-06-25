@@ -1,5 +1,7 @@
 package com.github.whitescent.mastify.ui.component
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateInt
 import androidx.compose.animation.core.updateTransition
@@ -23,10 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -80,7 +82,9 @@ fun AppDrawer(
             if (isSystemBarVisible) {
               // Ensure correct padding is maintained
               // when using this app in environments similar to WSA
-              it.statusBarsPadding().padding(horizontal = 24.dp, vertical = 8.dp)
+              it
+                .statusBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 8.dp)
             } else {
               it.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 8.dp)
             }
@@ -204,7 +208,7 @@ fun AppDrawer(
             }
             WidthSpacer(value = 8.dp)
             Text(
-              text = "添加账号",
+              text = stringResource(id = R.string.title_add_account),
               fontSize = 16.sp,
               fontWeight = FontWeight(500),
               color = AppTheme.colors.primaryContent,
@@ -229,28 +233,17 @@ fun AppDrawer(
 @Composable
 fun DrawerMenu() {
 
-  val menuList = listOf(
-    Menu(painterResource(id = R.drawable.user), "个人资料"),
-    Menu(painterResource(id = R.drawable.bookmark_simple), "书签"),
-    Menu(painterResource(id = R.drawable.heart_2), "喜欢"),
-    Menu(painterResource(id = R.drawable.list_bullets), "列表"),
-    Menu(painterResource(id = R.drawable.scroll), "草稿"),
-    Menu(painterResource(id = R.drawable.gear), "设置"),
-    Menu(painterResource(id = R.drawable.info), "关于 Mastify"),
-    Menu(painterResource(id = R.drawable.sign_out), "注销")
-  )
-
-  menuList.forEach {
-    if (it.name == "设置") {
+  AppDrawerMenu.values().forEach {
+    if (it.route == AppDrawerMenu.Settings.route) {
       Divider(thickness = 0.5.dp, modifier = Modifier.padding(vertical = 8.dp))
     }
-    DrawerMenuItem(it.painter, it.name)
+    DrawerMenuItem(it.icon, it.redId)
   }
 
 }
 
 @Composable
-fun DrawerMenuItem(painter: Painter, name: String) {
+fun DrawerMenuItem(icon: Int, name: Int) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -264,26 +257,36 @@ fun DrawerMenuItem(painter: Painter, name: String) {
         contentAlignment = Alignment.Center
       ) {
         Icon(
-          painter = painter,
+          painter = painterResource(id = icon),
           contentDescription = null,
           modifier = Modifier.size(24.dp),
-          tint = AppTheme.colors.primaryContent
+          tint = AppTheme.colors.primaryContent,
         )
       }
       WidthSpacer(value = 8.dp)
       Text(
-        text = name,
+        text = stringResource(id = name),
         fontSize = 18.sp,
-        color = AppTheme.colors.primaryContent
+        color = AppTheme.colors.primaryContent,
       )
     }
   }
 }
 
-private data class Menu(
-  val painter: Painter,
-  val name: String
-)
+enum class AppDrawerMenu(
+  @DrawableRes val icon: Int,
+  @StringRes val redId: Int,
+  val route: String,
+) {
+  Profile(R.drawable.user, R.string.title_profile, "profile"),
+  Bookmarks(R.drawable.bookmark_simple, R.string.title_bookmarks, "bookmarks"),
+  Favorites(R.drawable.heart_2, R.string.title_favorites, "favorites"),
+  Lists(R.drawable.list_bullets, R.string.title_lists, "lists"),
+  Drafts(R.drawable.scroll, R.string.title_draft, "draft"),
+  Settings(R.drawable.gear, R.string.title_settings, "settings"),
+  About(R.drawable.info, R.string.title_about, "about"),
+  Logout(R.drawable.sign_out, R.string.title_logout, "logout")
+}
 
 private fun Modifier.drawerListItemPadding(): Modifier =
   this.padding(horizontal = 16.dp, vertical = 6.dp)

@@ -1,16 +1,21 @@
 package com.github.whitescent.mastify.screen.login
 
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
+import com.github.whitescent.R
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import okhttp3.HttpUrl
 import javax.inject.Inject
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -30,14 +35,25 @@ class LoginViewModel @Inject constructor(
       inputText
         .debounce(750)
         .filterNot(String::isEmpty)
-        .mapLatest { input -> api.fetchInstanceInfo(input) }
+        .mapNotNull { input ->
+          try {
+            HttpUrl.Builder().host(input).scheme("https").build()
+            api.fetchInstanceInfo(input)
+          } catch (e: IllegalArgumentException) {
+            uiState = uiState.copy(
+              isTyping = false,
+              errorMessageId = R.string.error_invalid_domain,
+            )
+            null
+          }
+        }
         .buffer(0)
         .collect { apiResult ->
           apiResult.fold(
             { instance ->
               uiState = uiState.copy(
                 isTyping = false,
-                instanceError = false,
+                errorMessageId = 0,
                 instanceTitle = instance.title,
                 activeMonth = instance.usage.users.activeMonth,
                 instanceImageUrl = instance.thumbnail.url,
@@ -47,7 +63,7 @@ class LoginViewModel @Inject constructor(
             {
               uiState = uiState.copy(
                 isTyping = false,
-                instanceError = true
+                errorMessageId = R.string.failed_to_retrieve_instance
               )
             }
           )
@@ -96,10 +112,13 @@ class LoginViewModel @Inject constructor(
 data class LoginUiState(
   val text: String = "",
   val isTyping: Boolean = false,
-  val instanceError: Boolean = false,
+  @StringRes val errorMessageId: Int = 0,
   val instanceTitle: String = "",
   val activeMonth: Int = 0,
   val instanceImageUrl: String = "",
   val instanceDescription: String = "",
   val authenticateError: Boolean = false
-)
+) {
+  @Composable
+  fun errorMessage(): String = stringResource(id = errorMessageId)
+}

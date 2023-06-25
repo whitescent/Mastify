@@ -1,5 +1,38 @@
 <resources>
-    <string name="app_name">Mastify</string>
-    <string name="home">主页</string>
-    <string name="notification">通知</string>
+  <!-- login screen -->
+  <string name="app_name">Mastify</string>
+  <string name="Instance_address">实例地址</string>
+  <string name="Instance_address_tip">您所在的实例地址是什么？</string>
+  <string name="Monthly_active_users">月活跃用户</string>
+  <string name="failed_to_retrieve_instance">获取实例信息失败</string>
+  <string name="instance_verification_error">验证实例时出现错误</string>
+
+  <!-- oauth screen -->
+  <string name="Connecting">正在连接中…</string>
+  <string name="error_invalid_domain">无效的域名</string>
+
+  <!-- home screen -->
+  <string name="post_boosted_format_suffix">转嘟了</string>
+  <string name="title_add_account">添加账号</string>
+  <string name="title_profile">个人资料</string>
+  <string name="title_bookmarks">书签</string>
+  <string name="title_favorites">喜欢</string>
+  <string name="title_lists">列表</string>
+  <string name="title_draft">草稿</string>
+  <string name="title_settings">设置</string>
+  <string name="title_about">关于 Mastify</string>
+  <string name="title_logout">注销</string>
+
+  <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
+  <string name="status_created_at_now">刚刚</string>
+  <string name="abbreviated_in_years">%d 年内</string>
+  <string name="abbreviated_in_days">%d 天内</string>
+  <string name="abbreviated_in_hours">%d 小时内</string>
+  <string name="abbreviated_in_minutes">%d 分钟内</string>
+  <string name="abbreviated_in_seconds">%d 秒内</string>
+  <string name="abbreviated_years_ago">%d 年前</string>
+  <string name="abbreviated_days_ago">%d 天前</string>
+  <string name="abbreviated_hours_ago">%d 小时前</string>
+  <string name="abbreviated_minutes_ago">%d 分钟前</string>
+  <string name="abbreviated_seconds_ago">%d 秒前</string>
 </resources>

@@ -12,10 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.whitescent.R
 import com.github.whitescent.mastify.LoginNavGraph
 import com.github.whitescent.mastify.NavGraphs
 import com.github.whitescent.mastify.destinations.AppScaffoldDestination
@@ -55,7 +57,7 @@ fun OauthScreen(
       CenterRow(
         modifier = Modifier.padding(24.dp)
       ) {
-        Text(text = "正在完成身份认证...", color = AppTheme.colors.primaryContent)
+        Text(text = stringResource(id = R.string.Connecting), color = AppTheme.colors.primaryContent)
         WidthSpacer(value = 10.dp)
         CircularProgressIndicator(modifier = Modifier.size(24.dp))
       }

@@ -1,5 +1,39 @@
 <resources>
-    <string name="app_name">Mastify</string>
-    <string name="home">主页</string>
-    <string name="notification">通知</string>
+  <!-- login screen -->
+  <string name="app_name">Mastify</string>
+  <string name="Instance_address">Instance Address</string>
+  <string name="Instance_address_tip">what is your instance server address?</string>
+  <string name="Monthly_active_users">Monthly Active Users</string>
+  <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
+  <string name="instance_verification_error">Error occurred during instance verification</string>
+
+  <!-- oauth screen -->
+  <string name="Connecting">Connecting…</string>
+  <string name="error_invalid_domain">Invalid domain entered</string>
+
+  <!-- home screen -->
+  <string name="post_boosted_format_suffix">boosted</string>
+  <string name="title_add_account">Add Account</string>
+  <string name="title_profile">Profile</string>
+  <string name="title_bookmarks">Bookmarks</string>
+  <string name="title_favorites">Favorites</string>
+  <string name="title_lists">Lists</string>
+  <string name="title_draft">Drafts</string>
+  <string name="title_settings">Settings</string>
+  <string name="title_about">About</string>
+  <string name="title_logout">Log out</string>
+
+  <!--These are for timestamps on posts. For example: "16s" or "2d"-->
+  <string name="status_created_at_now">now</string>
+  <string name="abbreviated_in_years">in %dy</string>
+  <string name="abbreviated_in_days">in %dd</string>
+  <string name="abbreviated_in_hours">in %dh</string>
+  <string name="abbreviated_in_minutes">in %dm</string>
+  <string name="abbreviated_in_seconds">in %ds</string>
+  <string name="abbreviated_years_ago">%dy</string>
+  <string name="abbreviated_days_ago">%dd</string>
+  <string name="abbreviated_hours_ago">%dh</string>
+  <string name="abbreviated_minutes_ago">%dm</string>
+  <string name="abbreviated_seconds_ago">%ds</string>
+
 </resources>
