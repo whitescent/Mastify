@@ -33,8 +33,8 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.utils.BlurTransformation
 
-val imageGridSpacing = 2.dp
-const val defaultAspectRatio = 20f / 9f
+private val imageGridSpacing = 2.dp
+private const val defaultAspectRatio = 20f / 9f
 
 @Composable
 fun StatusMedia(
