@@ -9,7 +9,7 @@ Mastify is an open-source [Mastodon](https://joinmastodon.org/) Android client c
 
 IDE: [Android Studio Canary](https://developer.android.com/studio/preview)
 
-[Figma File](https://www.figma.com/file/xZWZpOyAPZtS6coZ4GKIMk/Mastify?type=design&node-id=0%3A1&mode=design&t=A1l7kozIJ80iyQPw-1)(only view) 
+[Figma File](https://www.figma.com/file/xZWZpOyAPZtS6coZ4GKIMk/Mastify?type=design&node-id=0%3A1&mode=design&t=A1l7kozIJ80iyQPw-1)(readonly) 
 
 This project is still in the early development stage, and many parts of the code are likely to be modified again. If you are interested in this project and ready to submit code, please raise an [issue](https://github.com/whitescent/Mastify/issues/new) first so that I know where you plan to contribute. This can help avoid code conflicts. 😉
 
