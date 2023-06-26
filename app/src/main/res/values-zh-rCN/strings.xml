@@ -1,14 +1,14 @@
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
-  <string name="Instance_address">实例地址</string>
-  <string name="Instance_address_tip">您所在的实例地址是什么？</string>
-  <string name="Monthly_active_users">月活跃用户</string>
+  <string name="instance_address">实例地址</string>
+  <string name="instance_address_tip">您所在的实例地址是什么？</string>
+  <string name="monthly_active_users">月活跃用户</string>
   <string name="failed_to_retrieve_instance">获取实例信息失败</string>
   <string name="instance_verification_error">验证实例时出现错误</string>
 
   <!-- oauth screen -->
-  <string name="Connecting">正在连接中…</string>
+  <string name="title_connecting">正在连接中…</string>
   <string name="error_invalid_domain">无效的域名</string>
 
   <!-- home screen -->
@@ -22,6 +22,7 @@
   <string name="title_settings">设置</string>
   <string name="title_about">关于 Mastify</string>
   <string name="title_logout">注销</string>
+  <string name="sensitive_content">敏感内容</string>
 
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
   <string name="status_created_at_now">刚刚</string>

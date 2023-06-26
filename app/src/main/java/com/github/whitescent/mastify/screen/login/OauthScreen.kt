@@ -57,7 +57,7 @@ fun OauthScreen(
       CenterRow(
         modifier = Modifier.padding(24.dp)
       ) {
-        Text(text = stringResource(id = R.string.Connecting), color = AppTheme.colors.primaryContent)
+        Text(text = stringResource(id = R.string.title_connecting), color = AppTheme.colors.primaryContent)
         WidthSpacer(value = 10.dp)
         CircularProgressIndicator(modifier = Modifier.size(24.dp))
       }

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -103,13 +104,15 @@ fun StatusMedia(
       Surface(
         shape = RoundedCornerShape(16.dp),
         color = Color(0xFF3f3131),
-        modifier = Modifier.align(Alignment.Center).clickable { mutableSensitive = false },
+        modifier = Modifier
+          .align(Alignment.Center)
+          .clickable { mutableSensitive = false },
         elevation = 12.dp
       ) {
         Text(
-          text = spoilerText.ifEmpty { "敏感内容" },
+          text = spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },
           modifier = Modifier.padding(12.dp),
-          color = Color.White
+          color = Color.White,
         )
       }
     }

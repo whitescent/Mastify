@@ -82,7 +82,7 @@ fun LoginScreen(
         ) {
           Column(Modifier.padding(12.dp)) {
             Text(
-              text = stringResource(id = R.string.Instance_address),
+              text = stringResource(id = R.string.instance_address),
               color = AppTheme.colors.primaryContent,
               fontSize = 12.sp,
               modifier = Modifier.padding(horizontal = 6.dp),
@@ -102,7 +102,7 @@ fun LoginScreen(
                   when (it) {
                     true -> {
                       Text(
-                        text = stringResource(id = R.string.Instance_address_tip),
+                        text = stringResource(id = R.string.instance_address_tip),
                         color = Color.Gray
                       )
                     }
@@ -250,7 +250,7 @@ fun InstanceCard(
             .padding(12.dp)
         ) {
           Text(
-            text = stringResource(id = R.string.Monthly_active_users),
+            text = stringResource(id = R.string.monthly_active_users),
             color = Color.Gray
           )
           WidthSpacer(value = 4.dp)
