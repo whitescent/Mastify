@@ -237,17 +237,24 @@ fun DrawerMenu() {
     if (it.route == AppDrawerMenu.Settings.route) {
       Divider(thickness = 0.5.dp, modifier = Modifier.padding(vertical = 8.dp))
     }
-    DrawerMenuItem(it.icon, it.redId)
+    DrawerMenuItem(it.icon, it.redId) { }
   }
 
 }
 
 @Composable
-fun DrawerMenuItem(icon: Int, name: Int) {
+fun DrawerMenuItem(icon: Int, name: Int, onClick: () -> Unit) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable { }
+      .clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = rememberRipple(
+          bounded = true,
+          radius = 250.dp,
+        ),
+        onClick = onClick,
+      )
   ) {
     CenterRow(
       modifier = Modifier.drawerListItemPadding()

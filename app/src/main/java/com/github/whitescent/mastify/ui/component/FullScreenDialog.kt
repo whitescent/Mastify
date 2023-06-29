@@ -81,7 +81,7 @@ fun FullScreenDialog(
           dialogSystemUiController.isSystemBarsVisible = true
         }
       }
-      
+
       Surface(modifier = Modifier.fillMaxSize(), color = Color.Transparent) {
         content()
       }

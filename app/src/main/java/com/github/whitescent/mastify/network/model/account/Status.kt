@@ -21,6 +21,8 @@ data class Status(
   @SerialName("favourites_count") val favouritesCount: Int,
   @SerialName("edited_at") val editedAt: String?,
   val favourited: Boolean,
+  @SerialName("in_reply_to_id") val inReplyToId: String?,
+  @SerialName("in_reply_to_account_id") val inReplyToAccountId: String?,
   val reblogged: Boolean,
   val reblog: Status?,
   val content: String,
@@ -30,6 +32,9 @@ data class Status(
   val application: Application?,
   @SerialName("media_attachments") val attachments: List<Attachment>
 ) {
+
+  val isSubStatus: Boolean
+    get() = (inReplyToId != null) || (reblog?.inReplyToId != null)
 
   @Serializable
   data class Tag(val name: String, val url: String, val following: Boolean? = null)
@@ -79,6 +84,8 @@ data class Status(
       favouritesCount = favouritesCount,
       editedAt = editedAt,
       favourited = favourited,
+      inReplyToId = inReplyToId,
+      inReplyToAccountId = inReplyToAccountId,
       reblogged = reblogged,
       reblog = reblog,
       content = content,

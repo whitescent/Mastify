@@ -1,5 +1,7 @@
 package com.github.whitescent.mastify.ui.component.status
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,6 +44,7 @@ fun StatusMediaDialog(
   targetMediaIndex: Int,
   onDismissRequest: () -> Unit
 ) {
+  var hideInfo by remember { mutableStateOf(false) }
   val pagerState = rememberPagerState(
     initialPage = targetMediaIndex,
     pageCount = { media.size }
@@ -51,7 +54,8 @@ fun StatusMediaDialog(
     previousBarStyle = BarStyle(
       color = Color.Transparent,
       useDarkIcons = LocalMastifyColors.current.isLight
-    )
+    ),
+    isImmersive = hideInfo
   ) {
     Box {
       HorizontalPager(
@@ -61,7 +65,10 @@ fun StatusMediaDialog(
         state = pagerState,
         pageContent = {
           Zoomable(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            onTap = {
+              hideInfo = !hideInfo
+            }
           ) {
             val painter = rememberAsyncImagePainter(
               model = ImageRequest.Builder(LocalContext.current)
@@ -83,25 +90,30 @@ fun StatusMediaDialog(
           }
         }
       )
-      CenterRow(
+      Crossfade(
+        targetState = hideInfo,
         modifier = Modifier
           .align(Alignment.BottomStart)
           .background(Color.Black.copy(0.7f))
           .fillMaxWidth()
-          .padding(24.dp)
+          .padding(24.dp),
+        animationSpec = tween(500)
       ) {
-        CircleShapeAsyncImage(
-          model = avatar,
-          modifier = Modifier.size(48.dp)
-        )
-        WidthSpacer(value = 6.dp)
-        MyHtmlText(
-          text = content,
-          color = Color.White,
-//          style = AppTheme.typography.titleMedium,
-          maxLines = 2,
-          overflow = TextOverflow.Ellipsis
-        )
+        if (!it) {
+          CenterRow {
+            CircleShapeAsyncImage(
+              model = avatar,
+              modifier = Modifier.size(48.dp)
+            )
+            WidthSpacer(value = 6.dp)
+            MyHtmlText(
+              text = content,
+              color = Color.White,
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis
+            )
+          }
+        }
       }
     }
   }

@@ -23,6 +23,7 @@
   <string name="title_about">About</string>
   <string name="title_logout">Log out</string>
   <string name="sensitive_content">Sensitive Content</string>
+  <string name="reply_a_post">replied a post</string>
 
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
   <string name="status_created_at_now">now</string>

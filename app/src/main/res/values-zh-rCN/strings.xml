@@ -23,6 +23,7 @@
   <string name="title_about">关于 Mastify</string>
   <string name="title_logout">注销</string>
   <string name="sensitive_content">敏感内容</string>
+  <string name="reply_a_post">回复了一个嘟文</string>
 
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
   <string name="status_created_at_now">刚刚</string>

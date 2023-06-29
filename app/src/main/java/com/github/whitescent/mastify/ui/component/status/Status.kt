@@ -1,5 +1,3 @@
-@file:Suppress("AnimateAsStateLabel")
-
 package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
@@ -51,7 +49,6 @@ import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
-
 @Composable
 fun Status(
   modifier: Modifier = Modifier,
@@ -64,6 +61,8 @@ fun Status(
 
   val displayName = status.reblog?.account?.displayName ?: status.account.displayName
   val reblogDisplayName = status.account.displayName
+
+  val isSubStatus = status.isSubStatus
 
   val fullname = status.reblog?.account?.fullName ?: status.account.fullName
   val createdAt = status.reblog?.createdAt ?: status.createdAt
@@ -79,9 +78,6 @@ fun Status(
   val favouritesCount = status.reblog?.favouritesCount ?: status.favouritesCount
   val favourited = status.reblog?.favourited ?: status.favourited
 
-
-  val context = LocalContext.current
-  val primaryColor = AppTheme.colors.primaryContent
   var openDialog by rememberSaveable { mutableStateOf(false) }
   var targetMediaIndex by remember { mutableIntStateOf(0) }
   var media by remember { mutableStateOf<List<Status.Attachment>>(listOf()) }
@@ -95,160 +91,48 @@ fun Status(
   ) {
     Column {
       status.reblog?.let {
-        Column {
-          CenterRow(
-            Modifier
-              .fillMaxWidth()
-              .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 24.dp),
-          ) {
-            CircleShapeAsyncImage(
-              model = reblogAvatar,
-              modifier = Modifier.size(24.dp),
-            )
-            WidthSpacer(value = 4.dp)
-            Text(
-              buildAnnotatedString {
-                withStyle(
-                  SpanStyle(
-                    color = AppTheme.colors.cardCaption,
-                    fontSize = AppTheme.typography.statusRepost.fontSize,
-                  ),
-                ) {
-                  append(reblogDisplayName)
-                }
-                withStyle(
-                  SpanStyle(
-                    color = AppTheme.colors.cardCaption60,
-                    fontSize = AppTheme.typography.statusRepost.fontSize,
-                  ),
-                ) {
-                  append(" "+stringResource(id = R.string.post_boosted_format_suffix))
-                }
-              },
-              modifier = Modifier.weight(1f),
-            )
-            Image(
-              painter = painterResource(id = R.drawable.reblog),
-              contentDescription = null,
-              modifier = Modifier.size(16.dp),
-            )
-          }
-          Divider(thickness = 1.dp, color = AppTheme.colors.background)
-        }
-      }
-      Column(modifier = Modifier.padding(12.dp)) {
-        CenterRow(modifier = Modifier.fillMaxWidth()) {
-          CircleShapeAsyncImage(
-            model = avatar,
-            modifier = Modifier.size(36.dp),
-          )
-          WidthSpacer(value = 7.dp)
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = displayName,
-              style = AppTheme.typography.statusDisplayName,
-              overflow = TextOverflow.Ellipsis,
-              maxLines = 1,
-            )
-            Text(
-              text = fullname,
-              style = AppTheme.typography.statusUsername.copy(
-                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-              ),
-              overflow = TextOverflow.Ellipsis,
-              maxLines = 1,
-            )
-          }
-          CenterRow {
-            val now = Clock.System.now().toEpochMilliseconds()
-            Text(
-              text = getRelativeTimeSpanString(
-                context,
-                createdAt.toInstant().toEpochMilliseconds(),
-                now
-              ),
-              style = AppTheme.typography.statusUsername.copy(
-                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-              ),
-              overflow = TextOverflow.Ellipsis,
-              maxLines = 1,
-            )
-            WidthSpacer(value = 4.dp)
-            ClickableIcon(
-              painter = painterResource(id = R.drawable.more),
-              tint = AppTheme.colors.cardMenu,
-              modifier = Modifier.size(18.dp),
-            )
-          }
-        }
-        if (content.isNotEmpty()) {
-          var mutableSensitive by remember(sensitive) { mutableStateOf(sensitive) }
-          HeightSpacer(value = 4.dp)
-          if (mutableSensitive) {
-            Surface(
-              shape = RoundedCornerShape(16.dp),
-              color = Color(0xFF3f3131),
-            ) {
-              CenterRow(
-                modifier = Modifier
-                  .clickable {
-                    mutableSensitive = !mutableSensitive
-                  }
-                  .padding(8.dp),
-              ) {
-                Icon(
-                  painter = painterResource(id = R.drawable.warning_circle),
-                  contentDescription = null,
-                  tint = Color.White,
-                  modifier = Modifier.size(24.dp),
-                )
-                WidthSpacer(value = 4.dp)
-                Text(
-                  text = spoilerText.ifEmpty { "敏感内容" },
-                  color = Color.White,
-                )
-              }
-            }
-          }
-          AnimatedVisibility(visible = !mutableSensitive) {
-            MyHtmlText(
-              text = content,
-              fontSize = 14.sp,
-              maxLines = 11,
-              overflow = TextOverflow.Ellipsis,
-              color = AppTheme.colors.primaryContent,
-            ) { span ->
-              launchCustomChromeTab(
-                context = context,
-                uri = Uri.parse(span),
-                toolbarColor = primaryColor.toArgb(),
-              )
-            }
-          }
-        }
-        if (attachments.isNotEmpty()) {
-          HeightSpacer(value = 4.dp)
-          StatusMedia(
-            sensitive = sensitive,
-            spoilerText = spoilerText,
-            attachments = attachments,
-            onClick = {
-              media = attachments
-              targetMediaIndex = it
-              openDialog = true
-            },
-          )
-        }
-        HeightSpacer(value = 6.dp)
-        StatusActionsRow(
-          repliesCount = repliesCount,
-          reblogsCount = reblogsCount,
-          favouritesCount = favouritesCount,
-          favourited = favourited,
-          favouriteStatus = favouriteStatus,
-          unfavouriteStatus = unfavouriteStatus,
+        StatusSource(
+          reblogAvatar = reblogAvatar,
+          reblogDisplayName = reblogDisplayName
         )
       }
+      if (isSubStatus) {
+        CenterRow(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 6.dp)) {
+          Icon(
+            painter = painterResource(id = R.drawable.reply),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = Color(0xFF1C94DF)
+          )
+          WidthSpacer(value = 6.dp)
+          Text(
+            text = stringResource(id = R.string.reply_a_post),
+            color = Color(0xFF1C94DF),
+            fontSize = 14.sp,
+          )
+        }
+      }
+      StatusContent(
+        avatar = avatar,
+        displayName = displayName,
+        fullname = fullname,
+        createdAt = createdAt,
+        content = content,
+        sensitive = sensitive,
+        spoilerText = spoilerText,
+        attachments = attachments,
+        repliesCount = repliesCount,
+        reblogsCount = reblogsCount,
+        favouritesCount = favouritesCount,
+        favourited = favourited,
+        favouriteStatus = favouriteStatus,
+        unfavouriteStatus = unfavouriteStatus,
+        onClickMedia = {
+          media = attachments
+          targetMediaIndex = it
+          openDialog = true
+        },
+      )
     }
   }
   if (openDialog) {
@@ -260,6 +144,181 @@ fun Status(
     ) {
       openDialog = false
     }
+  }
+}
+
+@Composable
+fun StatusSource(reblogAvatar: String, reblogDisplayName: String) {
+  Column {
+    CenterRow(
+      Modifier
+        .fillMaxWidth()
+        .padding(top = 8.dp, bottom = 8.dp, start = 14.dp, end = 24.dp),
+    ) {
+      CircleShapeAsyncImage(
+        model = reblogAvatar,
+        modifier = Modifier.size(24.dp),
+      )
+      WidthSpacer(value = 4.dp)
+      Text(
+        buildAnnotatedString {
+          withStyle(
+            SpanStyle(
+              color = AppTheme.colors.cardCaption,
+              fontSize = AppTheme.typography.statusRepost.fontSize,
+            ),
+          ) {
+            append(reblogDisplayName)
+          }
+          withStyle(
+            SpanStyle(
+              color = AppTheme.colors.cardCaption60,
+              fontSize = AppTheme.typography.statusRepost.fontSize,
+            ),
+          ) {
+            append(" "+stringResource(id = R.string.post_boosted_format_suffix))
+          }
+        },
+        modifier = Modifier.weight(1f),
+      )
+      Image(
+        painter = painterResource(id = R.drawable.reblog),
+        contentDescription = null,
+        modifier = Modifier.size(16.dp),
+      )
+    }
+    Divider(thickness = 1.dp, color = AppTheme.colors.background)
+  }
+}
+
+@Composable
+fun StatusContent(
+  avatar: String,
+  displayName: String,
+  fullname: String,
+  createdAt: String,
+  content: String,
+  sensitive: Boolean,
+  spoilerText: String,
+  attachments: List<Status.Attachment>,
+  repliesCount: Int,
+  reblogsCount: Int,
+  favouritesCount: Int,
+  favourited: Boolean,
+  favouriteStatus: () -> Unit,
+  unfavouriteStatus: () -> Unit,
+  onClickMedia: (Int) -> Unit
+) {
+  val context = LocalContext.current
+  val primaryColor = AppTheme.colors.primaryContent
+  Column(modifier = Modifier.padding(12.dp)) {
+    CenterRow(modifier = Modifier.fillMaxWidth()) {
+      CircleShapeAsyncImage(
+        model = avatar,
+        modifier = Modifier.size(36.dp),
+      )
+      WidthSpacer(value = 7.dp)
+      Column(modifier = Modifier.weight(1f)) {
+        Text(
+          text = displayName,
+          style = AppTheme.typography.statusDisplayName,
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 1,
+        )
+        Text(
+          text = fullname,
+          style = AppTheme.typography.statusUsername.copy(
+            color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+          ),
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 1,
+        )
+      }
+      WidthSpacer(value = 4.dp)
+      CenterRow {
+        Text(
+          text = getRelativeTimeSpanString(
+            context,
+            createdAt.toInstant().toEpochMilliseconds(),
+            Clock.System.now().toEpochMilliseconds()
+          ),
+          style = AppTheme.typography.statusUsername.copy(
+            color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+          ),
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 1,
+        )
+        WidthSpacer(value = 4.dp)
+        ClickableIcon(
+          painter = painterResource(id = R.drawable.more),
+          tint = AppTheme.colors.cardMenu,
+          modifier = Modifier.size(18.dp),
+        )
+      }
+    }
+    if (content.isNotEmpty()) {
+      var mutableSensitive by remember(sensitive) { mutableStateOf(sensitive) }
+      HeightSpacer(value = 4.dp)
+      if (mutableSensitive) {
+        Surface(
+          shape = RoundedCornerShape(16.dp),
+          color = Color(0xFF3f3131),
+        ) {
+          CenterRow(
+            modifier = Modifier
+              .clickable {
+                mutableSensitive = !mutableSensitive
+              }
+              .padding(8.dp),
+          ) {
+            Icon(
+              painter = painterResource(id = R.drawable.warning_circle),
+              contentDescription = null,
+              tint = Color.White,
+              modifier = Modifier.size(24.dp),
+            )
+            WidthSpacer(value = 4.dp)
+            Text(
+              text = spoilerText.ifEmpty { "敏感内容" },
+              color = Color.White,
+            )
+          }
+        }
+      }
+      AnimatedVisibility(visible = !mutableSensitive) {
+        MyHtmlText(
+          text = content,
+          fontSize = 14.sp,
+          maxLines = 11,
+          overflow = TextOverflow.Ellipsis,
+          color = AppTheme.colors.primaryContent,
+        ) { span ->
+          launchCustomChromeTab(
+            context = context,
+            uri = Uri.parse(span),
+            toolbarColor = primaryColor.toArgb(),
+          )
+        }
+      }
+    }
+    if (attachments.isNotEmpty()) {
+      HeightSpacer(value = 4.dp)
+      StatusMedia(
+        sensitive = sensitive,
+        spoilerText = spoilerText,
+        attachments = attachments,
+        onClick = onClickMedia,
+      )
+    }
+    HeightSpacer(value = 6.dp)
+    StatusActionsRow(
+      repliesCount = repliesCount,
+      reblogsCount = reblogsCount,
+      favouritesCount = favouritesCount,
+      favourited = favourited,
+      favouriteStatus = favouriteStatus,
+      unfavouriteStatus = unfavouriteStatus,
+    )
   }
 }
 
