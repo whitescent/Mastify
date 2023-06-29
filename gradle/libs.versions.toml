@@ -12,19 +12,19 @@ androidxBrowser = "1.5.0"
 
 compose = "1.6.0-alpha01"
 composeCompiler = "1.4.6"
-composeHtml = "1.3.1"
 constraintlayoutCompose = "1.0.1"
 material = "1.6.0-alpha01"
 material3 = "1.2.0-alpha03"
 okhttp3 = "4.11.0"
 retrofit2 = "2.9.0"
-room = "2.5.1"
-kotlinxSerializationConverter = "0.8.0"
+room = "2.5.2"
+kotlinxSerializationConverter = "1.0.0"
 loggingInterceptor = "4.11.0"
 networkresultCalladapter = "1.0.0"
 
 kotlinxDatetime = "0.4.0"
-kotlinxSerializationJson = "1.5.0"
+kotlinxSerializationJson = "1.5.1"
+kotlinxCollections = "0.3.5"
 kotlinxCoroutines = "1.7.1"
 kotlin = "1.8.20"
 
@@ -37,9 +37,9 @@ mockitoKotlin = "5.0.0"
 ksp = "1.8.20-1.0.11"
 lottie = "6.0.0"
 composeDestinations = "1.9.42-beta"
-hilt = "2.45"
-pagingRuntime = "3.2.0-beta01"
-pagingCompose = "3.2.0-beta01"
+hilt = "2.46.1"
+pagingRuntime = "3.2.0-rc01"
+pagingCompose = "3.2.0-rc01"
 splashScreen = "1.0.1"
 junit = "4.13.2"
 jsoup = "1.16.1"
@@ -87,7 +87,6 @@ coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coil" }
 coil-svg = { module = "io.coil-kt:coil-svg", version.ref = "coil" }
 coil-video = { module = "io.coil-kt:coil-video", version.ref = "coil" }
 
-compose-html = { module = "de.charlex.compose:html-text", version.ref = "composeHtml" }
 constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -115,6 +114,7 @@ compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:
 org-jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollections" }
 
 androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "pagingRuntime" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingCompose" }

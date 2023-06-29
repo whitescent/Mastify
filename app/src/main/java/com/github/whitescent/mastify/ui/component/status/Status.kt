@@ -46,6 +46,8 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -120,7 +122,7 @@ fun Status(
         content = content,
         sensitive = sensitive,
         spoilerText = spoilerText,
-        attachments = attachments,
+        attachments = attachments.toImmutableList(),
         repliesCount = repliesCount,
         reblogsCount = reblogsCount,
         favouritesCount = favouritesCount,
@@ -200,7 +202,7 @@ fun StatusContent(
   content: String,
   sensitive: Boolean,
   spoilerText: String,
-  attachments: List<Status.Attachment>,
+  attachments: ImmutableList<Status.Attachment>,
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,
@@ -290,7 +292,6 @@ fun StatusContent(
           text = content,
           fontSize = 14.sp,
           maxLines = 11,
-          overflow = TextOverflow.Ellipsis,
           color = AppTheme.colors.primaryContent,
         ) { span ->
           launchCustomChromeTab(

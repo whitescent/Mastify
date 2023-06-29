@@ -19,7 +19,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
@@ -109,8 +108,7 @@ fun StatusMediaDialog(
             MyHtmlText(
               text = content,
               color = Color.White,
-              maxLines = 2,
-              overflow = TextOverflow.Ellipsis
+              maxLines = 2
             )
           }
         }

@@ -114,7 +114,6 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.coil.gif)
   implementation(libs.coil.video)
-  implementation(libs.compose.html)
   implementation(libs.compose.destinations.core)
   implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
@@ -125,5 +124,6 @@ dependencies {
   implementation(libs.lottie)
 
   implementation(libs.kotlinx.datetime)
+  implementation(libs.kotlinx.collections)
 
 }
