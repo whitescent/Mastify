@@ -41,8 +41,8 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
-import com.github.whitescent.mastify.ui.component.MyHtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
@@ -288,18 +288,19 @@ fun StatusContent(
         }
       }
       AnimatedVisibility(visible = !mutableSensitive) {
-        MyHtmlText(
-          text = content,
+        HtmlText(
+          text = content.trimEnd(),
           fontSize = 14.sp,
           maxLines = 11,
-          color = AppTheme.colors.primaryContent,
-        ) { span ->
-          launchCustomChromeTab(
-            context = context,
-            uri = Uri.parse(span),
-            toolbarColor = primaryColor.toArgb(),
-          )
-        }
+          linkClicked = { span ->
+            launchCustomChromeTab(
+              context = context,
+              uri = Uri.parse(span),
+              toolbarColor = primaryColor.toArgb(),
+            )
+          },
+          overflow = TextOverflow.Ellipsis
+        )
       }
     }
     if (attachments.isNotEmpty()) {
