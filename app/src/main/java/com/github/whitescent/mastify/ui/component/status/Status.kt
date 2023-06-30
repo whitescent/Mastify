@@ -281,7 +281,7 @@ fun StatusContent(
             )
             WidthSpacer(value = 4.dp)
             Text(
-              text = spoilerText.ifEmpty { "敏感内容" },
+              text = spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },
               color = Color.White,
             )
           }
