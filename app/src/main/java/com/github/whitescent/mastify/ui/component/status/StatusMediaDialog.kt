@@ -29,8 +29,8 @@ import com.github.whitescent.mastify.ui.component.BarStyle
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.FullScreenDialog
-import com.github.whitescent.mastify.ui.component.MyHtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
 import com.github.whitescent.mastify.ui.theme.LocalMastifyColors
 import com.mxalbert.zoomable.Zoomable
 
@@ -105,9 +105,8 @@ fun StatusMediaDialog(
               modifier = Modifier.size(48.dp)
             )
             WidthSpacer(value = 6.dp)
-            MyHtmlText(
+            HtmlText(
               text = content,
-              color = Color.White,
               maxLines = 2
             )
           }

@@ -259,7 +259,7 @@ fun StatusContent(
       }
     }
     if (content.isNotEmpty()) {
-      var mutableSensitive by remember(sensitive) { mutableStateOf(sensitive) }
+      var mutableSensitive by rememberSaveable(sensitive) { mutableStateOf(sensitive) }
       HeightSpacer(value = 4.dp)
       if (mutableSensitive) {
         Surface(

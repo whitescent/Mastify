@@ -1,13 +1,11 @@
 package com.github.whitescent.mastify.ui.component.htmlText
 
 import android.text.style.*
-import android.widget.TextView
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -18,6 +16,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
 import androidx.core.text.toSpanned
+import com.github.whitescent.mastify.ui.theme.AppTheme
 
 // copyright from https://github.com/ireward/compose-html
 
@@ -27,7 +26,8 @@ private const val URL_TAG = "url_tag"
 fun HtmlText(
   text: String,
   modifier: Modifier = Modifier,
-  style: TextStyle = TextStyle.Default,
+  color: Color = AppTheme.colors.primaryContent,
+  style: TextStyle = TextStyle.Default.copy(color = color),
   softWrap: Boolean = true,
   overflow: TextOverflow = TextOverflow.Clip,
   maxLines: Int = Int.MAX_VALUE,
