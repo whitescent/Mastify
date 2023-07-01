@@ -20,10 +20,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.github.whitescent.mastify.NavGraphs
-import com.github.whitescent.mastify.appCurrentDestinationAsState
-import com.github.whitescent.mastify.destinations.Destination
-import com.github.whitescent.mastify.startAppDestination
+import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.BottomBarItem
 import com.ramcosta.composedestinations.navigation.navigate
@@ -31,12 +28,9 @@ import com.ramcosta.composedestinations.navigation.navigate
 @Composable
 fun BottomBar(
   navController: NavController,
+  destination: Destination,
   scrollToTop: () -> Unit
 ) {
-
-  val currentDestination: Destination = navController.appCurrentDestinationAsState().value
-    ?: NavGraphs.bottomBar.startAppDestination
-
   Surface(
     modifier = Modifier
       .fillMaxWidth()
@@ -52,9 +46,9 @@ fun BottomBar(
             .weight(1f)
             .clickable(
               onClick = {
-                if (currentDestination.route == screen.direction.route) scrollToTop()
+                if (destination.route == screen.direction.route) scrollToTop()
                 navController.navigate(screen.direction) {
-                  popUpTo(currentDestination.route) {
+                  popUpTo(destination.route) {
                     saveState = true
                     inclusive = true
                   }
@@ -70,7 +64,7 @@ fun BottomBar(
         ) {
           BottomBarIcon(
             icon = screen.icon,
-            selected = currentDestination == screen.direction,
+            selected = destination == screen.direction,
             modifier = Modifier
           )
         }

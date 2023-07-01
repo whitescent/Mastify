@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.screen.login
+package com.github.whitescent.mastify.viewModel
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class OauthScreenModel @Inject constructor(
+class OauthViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   preferenceRepository: PreferenceRepository,
   private val api: MastodonApi,
@@ -47,7 +47,7 @@ class OauthScreenModel @Inject constructor(
           }
         },
         {
-
+          it.printStackTrace()
         }
       )
     }
@@ -72,8 +72,8 @@ class OauthScreenModel @Inject constructor(
            newAccount = newAccount
          )
       },
-      { e ->
-
+      {
+        it.printStackTrace()
       }
     )
   }

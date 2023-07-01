@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.screen.login
+package com.github.whitescent.mastify.viewModel
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable

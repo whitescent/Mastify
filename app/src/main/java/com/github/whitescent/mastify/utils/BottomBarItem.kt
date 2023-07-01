@@ -2,18 +2,18 @@ package com.github.whitescent.mastify.utils
 
 import androidx.annotation.DrawableRes
 import com.github.whitescent.R
-import com.github.whitescent.mastify.destinations.DirectMessageScreenDestination
-import com.github.whitescent.mastify.destinations.ExplorerScreenDestination
-import com.github.whitescent.mastify.destinations.HomeScreenDestination
-import com.github.whitescent.mastify.destinations.NotificationScreenDestination
+import com.github.whitescent.mastify.screen.destinations.DirectMessageDestination
+import com.github.whitescent.mastify.screen.destinations.ExplorerDestination
+import com.github.whitescent.mastify.screen.destinations.HomeDestination
+import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 
 enum class BottomBarItem(
   @DrawableRes val icon: Int,
   val direction: DirectionDestinationSpec,
 ) {
-  Home(R.drawable.home, HomeScreenDestination),
-  Explorer(R.drawable.explore, ExplorerScreenDestination),
-  Notification(R.drawable.notification, NotificationScreenDestination),
-  DirectMessage(R.drawable.directmessage, DirectMessageScreenDestination)
+  Home(R.drawable.home, HomeDestination),
+  Explorer(R.drawable.explore, ExplorerDestination),
+  Notification(R.drawable.notification, NotificationDestination),
+  DirectMessage(R.drawable.directmessage, DirectMessageDestination)
 }

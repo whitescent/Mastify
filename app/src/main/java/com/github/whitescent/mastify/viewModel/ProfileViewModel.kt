@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.screen.profile
+package com.github.whitescent.mastify.viewModel
 
 import androidx.lifecycle.ViewModel
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileScreenModel @Inject constructor(
+class ProfileViewModel @Inject constructor(
   preferenceRepository: PreferenceRepository
 ) : ViewModel() {
 

@@ -56,7 +56,8 @@ fun Status(
   modifier: Modifier = Modifier,
   status: Status,
   favouriteStatus: () -> Unit,
-  unfavouriteStatus: () -> Unit
+  unfavouriteStatus: () -> Unit,
+  navigateToDetail: () -> Unit,
 ) {
   val avatar = status.reblog?.account?.avatar ?: status.account.avatar
   val reblogAvatar = status.account.avatar
@@ -91,7 +92,9 @@ fun Status(
     shape = RoundedCornerShape(18.dp),
     color = AppTheme.colors.cardBackground,
   ) {
-    Column {
+    Column(
+      modifier = Modifier.clickable { navigateToDetail() }
+    ) {
       status.reblog?.let {
         StatusSource(
           reblogAvatar = reblogAvatar,

@@ -19,11 +19,12 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.whitescent.R
 import com.github.whitescent.mastify.LoginNavGraph
-import com.github.whitescent.mastify.NavGraphs
-import com.github.whitescent.mastify.destinations.AppScaffoldDestination
+import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.ui.transitions.OauthTransitions
+import com.github.whitescent.mastify.viewModel.OauthViewModel
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -35,11 +36,12 @@ import kotlinx.coroutines.delay
 @Destination(
   deepLinks = [
     DeepLink(uriPattern = "mastify://oauth?code={code}")
-  ]
+  ],
+  style = OauthTransitions::class
 )
-fun OauthScreen(
+fun Oauth(
   navigator: DestinationsNavigator,
-  viewModel: OauthScreenModel = hiltViewModel()
+  viewModel: OauthViewModel = hiltViewModel()
 ) {
   val activity = (LocalContext.current as? Activity)
 
@@ -68,7 +70,7 @@ fun OauthScreen(
     viewModel.code?.let {
       viewModel.fetchAccessToken(
         navigateToApp = {
-          navigator.navigate(AppScaffoldDestination) {
+          navigator.navigate(NavGraphs.app) {
             popUpTo(NavGraphs.root) {
               inclusive = true
             }

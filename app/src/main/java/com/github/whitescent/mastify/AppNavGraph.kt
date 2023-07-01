@@ -14,15 +14,3 @@ annotation class LoginNavGraph(
 annotation class AppNavGraph(
   val start: Boolean = false
 )
-
-@AppNavGraph
-@NavGraph
-annotation class NonBottomBarNavGraph(
-  val start: Boolean = false
-)
-
-@AppNavGraph
-@NavGraph
-annotation class BottomBarNavGraph(
-  val start: Boolean = false
-)

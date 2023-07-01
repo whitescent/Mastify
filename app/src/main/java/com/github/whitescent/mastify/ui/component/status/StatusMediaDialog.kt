@@ -107,7 +107,8 @@ fun StatusMediaDialog(
             WidthSpacer(value = 6.dp)
             HtmlText(
               text = content,
-              maxLines = 2
+              maxLines = 2,
+              color = Color.White
             )
           }
         }

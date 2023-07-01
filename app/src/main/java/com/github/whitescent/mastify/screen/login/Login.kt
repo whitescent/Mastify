@@ -1,5 +1,3 @@
-@file:Suppress("CrossfadeLabel")
-
 package com.github.whitescent.mastify.screen.login
 
 import android.net.Uri
@@ -38,12 +36,13 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.LoginTransitions
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.viewModel.LoginViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
 @LoginNavGraph(start = true)
-@Destination(style = LoginTransitions::class)
+@Destination(style = LoginTransitions::class, route = "login_route")
 @Composable
-fun LoginScreen(
+fun Login(
   viewModel: LoginViewModel = hiltViewModel()
 ) {
 

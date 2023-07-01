@@ -114,7 +114,6 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.coil.gif)
   implementation(libs.coil.video)
-  implementation(libs.compose.destinations.core)
   implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)

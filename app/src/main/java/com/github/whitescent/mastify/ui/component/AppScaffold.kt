@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
@@ -16,111 +17,114 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.github.whitescent.mastify.AppNavGraph
-import com.github.whitescent.mastify.BottomBarNavGraph
-import com.github.whitescent.mastify.NavGraphs
-import com.github.whitescent.mastify.destinations.*
-import com.github.whitescent.mastify.screen.directMessage.DirectMessageScreen
-import com.github.whitescent.mastify.screen.explorer.ExplorerScreen
-import com.github.whitescent.mastify.screen.home.HomeScreen
-import com.github.whitescent.mastify.screen.home.HomeScreenModel
-import com.github.whitescent.mastify.screen.notification.NotificationScreen
+import com.github.whitescent.mastify.viewModel.AppViewModel
+import com.github.whitescent.mastify.screen.NavGraphs
+import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
+import com.github.whitescent.mastify.screen.destinations.Destination
+import com.github.whitescent.mastify.screen.destinations.LoginDestination
+import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.AppTransitions
+import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.SystemUiController
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.manualcomposablecalls.composable
+import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
+import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
+import com.ramcosta.composedestinations.spec.Route
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
-@OptIn(FlowPreview::class, ExperimentalLayoutApi::class)
-@AppNavGraph(start = true)
-@BottomBarNavGraph
-@Destination(style = AppTransitions::class)
+@OptIn(
+  FlowPreview::class,
+  ExperimentalLayoutApi::class,
+  ExperimentalMaterialNavigationApi::class,
+  ExperimentalAnimationApi::class
+)
 @Composable
 fun AppScaffold(
+  startRoute: Route,
   systemUiController: SystemUiController,
-  topNavController: NavController,
-  homeViewModel: HomeScreenModel = hiltViewModel()
+  viewModel: AppViewModel = hiltViewModel()
 ) {
 
-  val navController = rememberNavController()
+  val engine = rememberAnimatedNavHostEngine()
+  val navController = rememberAnimatedNavController()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)
 
   // issue: In many cases, initializing the first visible item index
   // still cannot accurately locate the saved position
   val lazyState = rememberLazyListState(
-    initialFirstVisibleItemIndex = homeViewModel.timelineScrollPosition ?: 0,
-    initialFirstVisibleItemScrollOffset = homeViewModel.timelineScrollPositionOffset ?: 0
+    initialFirstVisibleItemIndex = viewModel.timelineScrollPosition ?: 0,
+    initialFirstVisibleItemScrollOffset = viewModel.timelineScrollPositionOffset ?: 0
   )
+
+  val destination: Destination = navController.appCurrentDestinationAsState().value
+    ?: startRoute.startAppDestination
+
+  println("active account ${viewModel.activeAccount}")
 
   ModalNavigationDrawer(
     drawerState = drawerState,
     drawerContent = {
-      AppDrawer(
-        isSystemBarVisible = systemUiController.isSystemBarsVisible,
-        drawerState = drawerState,
-        activeAccount = homeViewModel.activeAccount,
-        accounts = homeViewModel.accounts,
-        changeAccount = {
-          homeViewModel.changeActiveAccount(it)
-          topNavController.navigate(AppScaffoldDestination) {
-            popUpTo(NavGraphs.app)
+      if (destination.shouldShowScaffoldElements()) {
+        AppDrawer(
+          isSystemBarVisible = systemUiController.isSystemBarsVisible,
+          drawerState = drawerState,
+          activeAccount = viewModel.activeAccount!!,
+          accounts = viewModel.accounts,
+          changeAccount = {
+            viewModel.changeActiveAccount(it)
+            navController.navigate(NavGraphs.app) {
+              scope.launch {
+                drawerState.close()
+                lazyState.scrollToItem(0)
+              }
+              popUpTo(NavGraphs.root)
+            }
+          },
+          navigateToLogin = {
+            navController.navigate(LoginDestination) {
+              scope.launch {
+                drawerState.close()
+              }
+            }
           }
-        },
-        navigateToLogin = {
-          topNavController.navigate(NavGraphs.login)
-        }
-      )
+        )
+      }
     }
   ) {
     Scaffold(
       bottomBar = {
-        BottomBar(
-          navController = navController,
-          scrollToTop = {
-            scope.launch { lazyState.scrollToItem(0) }
-          }
-        )
+        if (destination.shouldShowScaffoldElements()) {
+          BottomBar(
+            navController = navController,
+            destination = destination,
+            scrollToTop = {
+              scope.launch { lazyState.scrollToItem(0) }
+            }
+          )
+        }
       },
       containerColor = AppTheme.colors.background,
       contentWindowInsets = WindowInsets.systemBarsIgnoringVisibility
     ) {
       DestinationsNavHost(
+        engine = engine,
         navController = navController,
         modifier = Modifier.padding(bottom = it.calculateBottomPadding()),
-        navGraph = NavGraphs.bottomBar
-      ) {
-        composable(HomeScreenDestination) {
-          HomeScreen(
-            viewModel = homeViewModel,
-            lazyState = lazyState,
-            topNavController = topNavController,
-            openDrawer = {
-              scope.launch {
-                drawerState.open()
-              }
-            }
-          )
+        navGraph = NavGraphs.root,
+        startRoute = startRoute,
+        dependenciesContainerBuilder = {
+          dependency(NavGraphs.app) { lazyState }
+          dependency(NavGraphs.app) { drawerState }
         }
-        composable(ExplorerScreenDestination) {
-          ExplorerScreen()
-        }
-        composable(NotificationScreenDestination) {
-          NotificationScreen()
-        }
-        composable(DirectMessageScreenDestination) {
-          DirectMessageScreen()
-        }
-      }
+      )
     }
   }
 
@@ -128,7 +132,7 @@ fun AppScaffold(
     snapshotFlow { lazyState.firstVisibleItemIndex }
       .debounce(500L)
       .collectLatest {
-        homeViewModel.saveTimelineScrollPosition(it, lazyState.firstVisibleItemScrollOffset)
+        viewModel.saveTimelineScrollPosition(it, lazyState.firstVisibleItemScrollOffset)
       }
   }
 
