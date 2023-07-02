@@ -67,8 +67,6 @@ fun AppScaffold(
   val destination: Destination = navController.appCurrentDestinationAsState().value
     ?: startRoute.startAppDestination
 
-  println("active account ${viewModel.activeAccount}")
-
   ModalNavigationDrawer(
     drawerState = drawerState,
     drawerContent = {
@@ -97,7 +95,8 @@ fun AppScaffold(
           }
         )
       }
-    }
+    },
+    gesturesEnabled = destination.shouldShowScaffoldElements()
   ) {
     Scaffold(
       bottomBar = {

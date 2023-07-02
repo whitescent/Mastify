@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -62,8 +63,14 @@ fun Status(
   val avatar = status.reblog?.account?.avatar ?: status.account.avatar
   val reblogAvatar = status.account.avatar
 
-  val displayName = status.reblog?.account?.displayName ?: status.account.displayName
-  val reblogDisplayName = status.account.displayName
+  // status author display name
+  val displayName = status.reblog?.account?.displayName?.ifEmpty {
+    status.reblog.account.username
+  } ?:
+    status.account.displayName.ifEmpty { status.account.username }
+
+  // The display name of the person who forwarded this status
+  val reblogDisplayName = status.account.displayName.ifEmpty { status.account.username }
 
   val isSubStatus = status.isSubStatus
 
@@ -93,7 +100,11 @@ fun Status(
     color = AppTheme.colors.cardBackground,
   ) {
     Column(
-      modifier = Modifier.clickable { navigateToDetail() }
+      modifier = Modifier.clickable(
+        onClick = navigateToDetail,
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() }
+      )
     ) {
       status.reblog?.let {
         StatusSource(
@@ -126,10 +137,12 @@ fun Status(
         sensitive = sensitive,
         spoilerText = spoilerText,
         attachments = attachments.toImmutableList(),
+        mentions = mentions.toImmutableList(),
         repliesCount = repliesCount,
         reblogsCount = reblogsCount,
         favouritesCount = favouritesCount,
         favourited = favourited,
+        navigateToDetail = { navigateToDetail() },
         favouriteStatus = favouriteStatus,
         unfavouriteStatus = unfavouriteStatus,
         onClickMedia = {
@@ -206,10 +219,12 @@ fun StatusContent(
   sensitive: Boolean,
   spoilerText: String,
   attachments: ImmutableList<Status.Attachment>,
+  mentions: ImmutableList<Status.Mention>,
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,
   favourited: Boolean,
+  navigateToDetail: () -> Unit,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   onClickMedia: (Int) -> Unit
@@ -302,7 +317,8 @@ fun StatusContent(
               toolbarColor = primaryColor.toArgb(),
             )
           },
-          overflow = TextOverflow.Ellipsis
+          overflow = TextOverflow.Ellipsis,
+          nonLinkClicked = { navigateToDetail() }
         )
       }
     }
