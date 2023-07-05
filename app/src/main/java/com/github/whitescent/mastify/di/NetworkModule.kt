@@ -67,7 +67,6 @@ object NetworkModule {
       .build()
   }
 
-  @OptIn(ExperimentalSerializationApi::class)
   @Provides
   @Singleton
   fun providesRetrofit(

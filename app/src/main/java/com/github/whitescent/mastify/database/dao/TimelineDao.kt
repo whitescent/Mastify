@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.database.dao
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -16,10 +15,11 @@ interface TimelineDao {
 
   @Query(
     """
-      SELECT * FROM timelineentity WHERE timelineUserId = :accountId ORDER BY LENGTH(id) DESC, id DESC
+      SELECT * FROM timelineentity WHERE timelineUserId = :accountId
+      ORDER BY LENGTH(id) DESC, id DESC
     """
   )
-  fun getStatuses(accountId: Long): PagingSource<Int, Status>
+  fun getStatuses(accountId: Long): List<Status>
 
   @Query(
     """

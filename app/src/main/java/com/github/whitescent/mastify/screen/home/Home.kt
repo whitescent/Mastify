@@ -1,13 +1,17 @@
 package com.github.whitescent.mastify.screen.home
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -18,6 +22,7 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,11 +32,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.LoadState
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.itemContentType
-import androidx.paging.compose.itemKey
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -39,6 +41,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.ui.component.status.Status
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -51,7 +54,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @AppNavGraph(start = true)
 @Destination(style = AppTransitions::class)
 @Composable
@@ -61,16 +64,19 @@ fun Home(
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
-  val homeTimeline = viewModel.pager.collectAsLazyPagingItems()
+
   val context = LocalContext.current
+  val uiState = viewModel.uiState
+  val homeTimeline = uiState.statusList
+
   val scope = rememberCoroutineScope()
-  val state = rememberPullRefreshState(
+  val pullRefreshState = rememberPullRefreshState(
     refreshing = viewModel.refreshing,
     onRefresh = {
       scope.launch {
         viewModel.refreshing = true
         delay(500)
-        homeTimeline.refresh()
+        viewModel.refreshTimeline()
         viewModel.refreshing = false
       }
     },
@@ -79,7 +85,7 @@ fun Home(
   Box(
     Modifier
       .statusBarsPadding()
-      .pullRefresh(state)
+      .pullRefresh(pullRefreshState)
   ) {
     Column {
       HomeTopBar(
@@ -90,10 +96,11 @@ fun Home(
           }
         }
       )
-      when (homeTimeline.itemCount) {
+      when(homeTimeline.size) {
         0 -> {
-          when (homeTimeline.loadState.refresh) {
-            is LoadState.Error -> Error { homeTimeline.retry() }
+          when (uiState.timelineLoadState) {
+            LoadState.Error -> Error { viewModel.refreshTimeline() }
+            LoadState.NotLoading -> EmptyTimeline()
             else -> Loading()
           }
         }
@@ -103,27 +110,31 @@ fun Home(
               state = lazyState,
               modifier = Modifier
                 .fillMaxSize()
-                .drawVerticalScrollbar(lazyState),
-              verticalArrangement = Arrangement.spacedBy(24.dp),
+                .drawVerticalScrollbar(lazyState)
             ) {
-              items(
-                count = homeTimeline.itemCount,
-                key = homeTimeline.itemKey(),
-                contentType = homeTimeline.itemContentType()
-              ) { index ->
-                val item = homeTimeline[index]
-                item?.let { status ->
+              items(homeTimeline) { status ->
+                val loadThreshold = uiState.statusList.size - uiState.statusList.size / 4
+                key(status.id) {
+                  if (
+                    status.id <= uiState.statusList[loadThreshold].id &&
+                    !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
+                  ) {
+                    viewModel.loadMore()
+                  }
                   Status(
                     status = status,
                     favouriteStatus = { viewModel.favoriteStatus(status.id) },
                     unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
                     navigateToDetail = { navigator.navigate(StatusDetailDestination) }
                   )
+                  if (!status.hasReplyStatus && !status.betweenInReplyStatus) {
+                    HeightSpacer(12.dp)
+                  }
                 }
               }
               item {
-                when (homeTimeline.loadState.append) {
-                  is LoadState.Loading -> {
+                when (uiState.timelineLoadState) {
+                  LoadState.Append -> {
                     Box(
                       modifier = Modifier
                         .padding(24.dp)
@@ -136,22 +147,23 @@ fun Home(
                       )
                     }
                   }
-                  is LoadState.NotLoading -> {
-                    Box(
-                      modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
-                      contentAlignment = Alignment.Center
-                    ) {
-                      Box(
-                        Modifier
-                          .size(8.dp)
-                          .background(Color.Gray, CircleShape))
-                    }
-                  }
-                  is LoadState.Error -> {
+                  LoadState.Error -> {
                     Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                    homeTimeline.retry()
+                    viewModel.loadMore() // retry
+                  }
+                  else -> Unit
+                }
+                if (uiState.endReached) {
+                  Box(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                  ) {
+                    Box(
+                      Modifier
+                        .size(8.dp)
+                        .background(Color.Gray, CircleShape))
                   }
                 }
               }
@@ -171,8 +183,18 @@ fun Home(
         }
       }
     }
-    PullRefreshIndicator(viewModel.refreshing, state, Modifier.align(Alignment.TopCenter))
+    PullRefreshIndicator(viewModel.refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
   }
+}
+
+@Composable
+fun EmptyTimeline() {
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .verticalScroll(rememberScrollState()),
+    contentAlignment = Alignment.Center
+  ) { Text("你似乎还没关注其他人哦", fontSize = 18.sp) }
 }
 
 @Composable

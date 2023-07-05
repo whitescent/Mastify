@@ -1,7 +1,11 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
@@ -24,6 +28,7 @@ import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.ui.transitions.slideAnimationOffset
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
@@ -100,18 +105,24 @@ fun AppScaffold(
   ) {
     Scaffold(
       bottomBar = {
-        if (destination.shouldShowScaffoldElements()) {
-          BottomBar(
-            navController = navController,
-            destination = destination,
-            scrollToTop = {
-              scope.launch { lazyState.scrollToItem(0) }
-            }
-          )
+        AnimatedVisibility(
+          visible = destination.shouldShowScaffoldElements(),
+          enter = fadeIn(tween(slideAnimationOffset)),
+          exit = fadeOut(tween(slideAnimationOffset))
+        ) {
+          if (destination.shouldShowScaffoldElements()) {
+            BottomBar(
+              navController = navController,
+              destination = destination,
+              scrollToTop = {
+                scope.launch { lazyState.scrollToItem(0) }
+              }
+            )
+          }
         }
       },
       containerColor = AppTheme.colors.background,
-      contentWindowInsets = WindowInsets.systemBarsIgnoringVisibility
+      contentWindowInsets = WindowInsets.systemBarsIgnoringVisibility,
     ) {
       DestinationsNavHost(
         engine = engine,

@@ -40,5 +40,9 @@ data class TimelineEntity(
   @ColumnInfo val tags: List<Status.Tag>,
   @ColumnInfo val mentions: List<Status.Mention>,
   @ColumnInfo val application: Status.Application?,
-  @ColumnInfo val attachments: List<Status.Attachment>
+  @ColumnInfo val attachments: List<Status.Attachment>,
+  @ColumnInfo val hasReplyStatus: Boolean,
+  @ColumnInfo val betweenInReplyStatus: Boolean,
+  @ColumnInfo val isLastReplyStatus: Boolean,
+  @ColumnInfo val hasUnloadedReplyStatus: Boolean
 )

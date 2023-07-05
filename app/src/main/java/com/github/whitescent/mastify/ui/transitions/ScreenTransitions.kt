@@ -121,5 +121,5 @@ object StatusTransitions : DestinationStyleAnimated {
   }
 }
 
-private const val slideAnimationOffset = 1000
-private const val slideAnimationTween = 300
+const val slideAnimationOffset = 1000
+const val slideAnimationTween = 300

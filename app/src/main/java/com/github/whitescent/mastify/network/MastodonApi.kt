@@ -22,7 +22,7 @@ interface MastodonApi {
     const val PLACEHOLDER_DOMAIN = "domain.placeholder"
   }
 
-  @GET("api/v2/instance")
+  @GET("api/v1/instance")
   suspend fun fetchInstanceInfo(
     @Header(DOMAIN_HEADER) domain: String
   ): NetworkResult<InstanceInfo>
@@ -58,7 +58,8 @@ interface MastodonApi {
   @Throws(Exception::class)
   suspend fun homeTimeline(
     @Query("max_id") maxId: String? = null,
-    @Query("min_id") minId: String? = null
+    @Query("min_id") minId: String? = null,
+    @Query("limit") limit: Int? = null
   ): Response<List<Status>>
 
   @POST("api/v1/statuses/{id}/favourite")

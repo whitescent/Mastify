@@ -30,11 +30,14 @@ data class Status(
   val tags: List<Tag>,
   val mentions: List<Mention>,
   val application: Application?,
-  @SerialName("media_attachments") val attachments: List<Attachment>
+  @SerialName("media_attachments") val attachments: List<Attachment>,
+  val hasReplyStatus: Boolean = false,
+  val betweenInReplyStatus: Boolean = false,
+  val isLastReplyStatus: Boolean = false,
+  val hasUnloadedReplyStatus: Boolean = false
 ) {
 
-  val isSubStatus: Boolean
-    get() = (inReplyToId != null) || (reblog?.inReplyToId != null)
+  val isInReplyTo get() = inReplyToId != null
 
   @Serializable
   data class Tag(val name: String, val url: String, val following: Boolean? = null)
@@ -46,7 +49,7 @@ data class Status(
   data class Attachment(
     val url: String,
     val type: String,
-    @SerialName("preview_url") val previewUrl: String
+    @SerialName("preview_url") val previewUrl: String?
   )
 
   @Serializable
@@ -93,7 +96,11 @@ data class Status(
       mentions = mentions,
       account = account,
       application = application,
-      attachments = attachments
+      attachments = attachments,
+      hasReplyStatus = hasReplyStatus,
+      betweenInReplyStatus = betweenInReplyStatus,
+      isLastReplyStatus = isLastReplyStatus,
+      hasUnloadedReplyStatus = hasUnloadedReplyStatus,
     )
   }
 }

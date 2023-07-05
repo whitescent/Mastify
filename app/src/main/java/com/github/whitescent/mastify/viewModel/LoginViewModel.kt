@@ -55,12 +55,13 @@ class LoginViewModel @Inject constructor(
                 isTyping = false,
                 errorMessageId = 0,
                 instanceTitle = instance.title,
-                activeMonth = instance.usage.users.activeMonth,
-                instanceImageUrl = instance.thumbnail.url,
-                instanceDescription = instance.description
+                activeMonth = instance.stats.userCount,
+                instanceImageUrl = instance.thumbnail,
+                instanceDescription = instance.shortDescription
               )
             },
             {
+              it.printStackTrace()
               uiState = uiState.copy(
                 isTyping = false,
                 errorMessageId = R.string.failed_to_retrieve_instance

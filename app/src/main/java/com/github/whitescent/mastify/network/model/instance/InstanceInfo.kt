@@ -6,22 +6,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class InstanceInfo(
   val title: String,
-  val description: String,
-  val thumbnail: Thumbnail,
-  val usage: UsageData
-)
-
-@Serializable
-data class Thumbnail(
-  val url: String
+  @SerialName("short_description") val shortDescription: String,
+  val thumbnail: String,
+  val stats: UsageData
 )
 
 @Serializable
 data class UsageData(
-  val users: ActiveUsersData
-)
-
-@Serializable
-data class ActiveUsersData(
-  @SerialName("active_month") val activeMonth: Int
+  @SerialName("user_count") val userCount: Int
 )
