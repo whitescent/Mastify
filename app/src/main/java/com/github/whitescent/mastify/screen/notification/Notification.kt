@@ -8,5 +8,4 @@ import com.ramcosta.composedestinations.annotation.Destination
 @AppNavGraph
 @Composable
 fun Notification() {
-
 }

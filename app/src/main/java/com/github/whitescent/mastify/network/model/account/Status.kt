@@ -38,6 +38,7 @@ data class Status(
 ) {
 
   val isInReplyTo inline get() = inReplyToId != null
+  val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
 
   @Serializable
   data class Tag(val name: String, val url: String, val following: Boolean? = null)
@@ -106,5 +107,4 @@ data class Status(
   enum class ReplyChainType {
     Start, Continue, End, Null
   }
-
 }

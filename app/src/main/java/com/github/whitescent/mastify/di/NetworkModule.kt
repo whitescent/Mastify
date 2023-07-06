@@ -83,5 +83,4 @@ object NetworkModule {
   @Provides
   @Singleton
   fun providesApi(retrofit: Retrofit): MastodonApi = retrofit.create()
-
 }

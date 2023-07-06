@@ -22,7 +22,6 @@ import com.github.whitescent.mastify.screen.destinations.OauthDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.ramcosta.composedestinations.spec.DestinationStyleAnimated
 
-
 @OptIn(ExperimentalAnimationApi::class)
 object AppTransitions : DestinationStyleAnimated {
 

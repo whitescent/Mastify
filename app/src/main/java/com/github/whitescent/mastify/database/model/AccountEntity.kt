@@ -49,5 +49,4 @@ data class AccountEntity(
     result = 31 * result + accountId.hashCode()
     return result
   }
-
 }

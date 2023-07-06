@@ -12,7 +12,7 @@ class AppViewModel @Inject constructor(
   private val preferenceRepository: PreferenceRepository,
 ) : ViewModel() {
 
-  val activeAccount get () = accountRepository.activeAccount
+  val activeAccount get() = accountRepository.activeAccount
 
   val accounts = accountRepository.accounts
   val timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex
@@ -24,5 +24,4 @@ class AppViewModel @Inject constructor(
 
   fun saveTimelineScrollPosition(index: Int, offset: Int) =
     preferenceRepository.saveTimelineScrollPosition(index, offset)
-
 }

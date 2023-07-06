@@ -11,6 +11,10 @@ import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Status
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Continue
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Start
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -109,14 +113,14 @@ class HomeViewModel @Inject constructor(
         domain = activeAccount.domain,
         auth = "Bearer ${activeAccount.accessToken}"
       )
-      .fold(
-        {
-          accountRepository.updateActiveAccount(it)
-        },
-        {
-
-        }
-      )
+        .fold(
+          {
+            accountRepository.updateActiveAccount(it)
+          },
+          {
+            it.printStackTrace()
+          }
+        )
     }
   }
 
@@ -138,7 +142,6 @@ class HomeViewModel @Inject constructor(
   }
 
   private fun reorderedStatuses(statuses: List<Status>): List<Status> {
-
     fun findReplyStatusById(id: String?) = id?.let {
       statuses.find { status -> status.id == it }
     }
@@ -168,14 +171,12 @@ class HomeViewModel @Inject constructor(
           reorderedStatuses[unloadReplyStatusIndex] =
             reorderedStatuses[unloadReplyStatusIndex].copy(
               hasUnloadedReplyStatus = true,
-              replyChainType =
-                if (reorderedStatuses[unloadReplyStatusIndex].replyChainType == Status.ReplyChainType.Null)
-                  Status.ReplyChainType.End
-                else reorderedStatuses[unloadReplyStatusIndex].replyChainType
+              replyChainType = reorderedStatuses[unloadReplyStatusIndex].replyChainType
+                .takeIf { it != Null } ?: End
             )
         } else {
           val finalReplyStatusList = ArrayDeque<Status>().apply {
-            add(replyStatusList.first().copy(replyChainType = Status.ReplyChainType.Start))
+            add(replyStatusList.first().copy(replyChainType = Start))
           }
           // 给组合完成的回复链更新指定的属性，并且标记不需要重复获取回复链的 status
           replyStatusList.forEachIndexed { replyIndex, status ->
@@ -183,18 +184,18 @@ class HomeViewModel @Inject constructor(
               in 1 until replyStatusList.lastIndex -> {
                 finalReplyStatusList.add(
                   // 将回复数量大于等于 4 的帖子中，隐藏第一个到倒数第二个中间的帖子
-                  /// 并在倒数第二个帖子标记这是一个多回复链的帖子，方便 UI 层更新对应的 line
+                  // 并在倒数第二个帖子标记这是一个多回复链的帖子，方便 UI 层更新对应的 line
                   status.copy(
-                    replyChainType = Status.ReplyChainType.Continue,
-                    hasMultiReplyStatus =
-                      replyIndex == replyStatusList.lastIndex - 1 && replyStatusList.size >= 4,
+                    replyChainType = Continue,
+                    hasMultiReplyStatus = replyStatusList.size >= 4 &&
+                      replyIndex == replyStatusList.lastIndex - 1,
                     shouldShow = !(replyStatusList.size >= 4 && replyIndex < replyStatusList.size - 2)
                   )
                 )
                 id2index[status.id] = true
               }
               replyStatusList.lastIndex -> {
-                finalReplyStatusList.add(status.copy(replyChainType = Status.ReplyChainType.End))
+                finalReplyStatusList.add(status.copy(replyChainType = End))
               }
             }
           }
@@ -231,7 +232,6 @@ class HomeViewModel @Inject constructor(
       timelineDao.insert(status.toEntity(activeAccount.id))
     }
   }
-
 }
 
 data class HomeUiState(

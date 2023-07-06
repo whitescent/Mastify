@@ -71,5 +71,4 @@ interface MastodonApi {
   suspend fun unfavouriteStatus(
     @Path("id") statusId: String
   ): NetworkResult<Status>
-
 }

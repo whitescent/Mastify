@@ -8,7 +8,7 @@ class Paginator<Key, Item>(
   private inline val onError: suspend (Throwable?) -> Unit,
   private inline val onAppend: suspend (items: List<Item>, newKey: Key) -> Unit,
   private inline val onRefresh: suspend (items: List<Item>) -> Unit
-): PaginatorInterface<Key, Item> {
+) : PaginatorInterface<Key, Item> {
 
   private var currentKey = initialKey
   private var loadState = LoadState.NotLoading
@@ -59,7 +59,6 @@ class Paginator<Key, Item>(
       return
     }
   }
-
 }
 
 enum class LoadState {

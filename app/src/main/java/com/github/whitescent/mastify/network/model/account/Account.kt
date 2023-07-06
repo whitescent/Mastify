@@ -48,7 +48,6 @@ data class Account(
       statusesCount = statusesCount
     )
   }
-
 }
 
 @Serializable

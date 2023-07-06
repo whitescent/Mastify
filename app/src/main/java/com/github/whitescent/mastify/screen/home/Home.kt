@@ -4,7 +4,13 @@ import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -40,15 +46,16 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.github.whitescent.mastify.ui.component.status.Status
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
+import com.github.whitescent.mastify.ui.component.status.Status
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.viewModel.HomeViewModel
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
@@ -64,7 +71,6 @@ fun Home(
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
-
   val context = LocalContext.current
   val uiState = viewModel.uiState
   val homeTimeline = uiState.statusList
@@ -96,7 +102,7 @@ fun Home(
           }
         }
       )
-      when(homeTimeline.size) {
+      when (homeTimeline.size) {
         0 -> {
           when (uiState.timelineLoadState) {
             LoadState.Error -> Error { viewModel.refreshTimeline() }
@@ -129,9 +135,7 @@ fun Home(
                       navigateToDetail = { navigator.navigate(StatusDetailDestination) }
                     )
                   }
-                  if (status.replyChainType == ReplyChainType.Null ||
-                    status.replyChainType == ReplyChainType.End
-                  ) {
+                  if (status.replyChainType == Null || status.replyChainType == End) {
                     HeightSpacer(12.dp)
                   }
                 }

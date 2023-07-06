@@ -31,5 +31,4 @@ class PreferenceRepository @Inject constructor() {
   fun saveTimelineScrollPosition(index: Int, offset: Int) {
     mmkv.encode("timeline_scroll_position", TimelineModel(index, offset))
   }
-
 }

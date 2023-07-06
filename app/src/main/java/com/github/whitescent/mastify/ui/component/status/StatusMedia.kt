@@ -35,7 +35,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.utils.BlurTransformation
 
 private val imageGridSpacing = 2.dp
-private const val defaultAspectRatio = 20f / 9f
+private const val DefaultAspectRatio = 20f / 9f
 
 @Composable
 fun StatusMedia(
@@ -49,7 +49,7 @@ fun StatusMedia(
   var mutableSensitive by rememberSaveable(sensitive) { mutableStateOf(sensitive) }
   Box(
     modifier = modifier
-      .aspectRatio(defaultAspectRatio)
+      .aspectRatio(DefaultAspectRatio)
       .clip(RoundedCornerShape(12.dp))
   ) {
     when (mediaCount) {

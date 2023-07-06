@@ -115,5 +115,4 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
       accountDao.insertOrReplace(account)
     }
   }
-
 }

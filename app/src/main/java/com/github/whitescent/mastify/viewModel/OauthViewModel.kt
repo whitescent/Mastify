@@ -26,7 +26,6 @@ class OauthViewModel @Inject constructor(
   val code: String? = savedStateHandle["code"]
 
   fun fetchAccessToken(navigateToApp: () -> Unit) {
-
     val domain = instance!!.name
     val clientId = instance.clientId
     val clientSecret = instance.clientSecret
@@ -64,18 +63,17 @@ class OauthViewModel @Inject constructor(
       auth = "Bearer ${accessToken.accessToken}"
     ).fold(
       { newAccount ->
-         accountRepository.addAccount(
-           accessToken = accessToken.accessToken,
-           domain = domain,
-           clientId = clientId,
-           clientSecret = clientSecret,
-           newAccount = newAccount
-         )
+        accountRepository.addAccount(
+          accessToken = accessToken.accessToken,
+          domain = domain,
+          clientId = clientId,
+          clientSecret = clientSecret,
+          newAccount = newAccount
+        )
       },
       {
         it.printStackTrace()
       }
     )
   }
-
 }

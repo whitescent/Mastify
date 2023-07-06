@@ -3,7 +3,7 @@
   <string name="app_name">Mastify</string>
   <string name="instance_address">Instance Address</string>
   <string name="instance_address_tip">what is your instance server address?</string>
-  <string name="monthly_active_users">Monthly Active Users</string>
+  <string name="users_of_instance">Users</string>
   <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
   <string name="instance_verification_error">Error occurred during instance verification</string>
 

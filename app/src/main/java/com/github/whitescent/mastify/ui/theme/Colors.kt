@@ -33,7 +33,7 @@ interface MastifyColorsInterface {
   val replyLine: Color
 }
 
-private object LightColors: MastifyColorsInterface {
+private object LightColors : MastifyColorsInterface {
   override val primaryContent: Color
     get() = Color(0xFF081B34)
 
@@ -65,7 +65,7 @@ private object LightColors: MastifyColorsInterface {
     get() = Color(0xFFcfd9de)
 }
 
-private object DarkColors: MastifyColorsInterface {
+private object DarkColors : MastifyColorsInterface {
   override val primaryContent: Color
     get() = Color.White
 

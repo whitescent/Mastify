@@ -46,10 +46,15 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Status
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Continue
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Start
 import com.github.whitescent.mastify.ui.component.AnimatedCountText
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -79,8 +84,8 @@ fun Status(
   // status author display name
   val displayName = status.reblog?.account?.displayName?.ifEmpty {
     status.reblog.account.username
-  } ?:
-    status.account.displayName.ifEmpty { status.account.username }
+  }
+    ?: status.account.displayName.ifEmpty { status.account.username }
 
   // The display name of the person who forwarded this status
   val reblogDisplayName = status.account.displayName.ifEmpty { status.account.username }
@@ -118,73 +123,47 @@ fun Status(
     modifier = modifier
       .fillMaxWidth()
       .padding(horizontal = 24.dp),
-    shape =
-      when(status.hasUnloadedReplyStatus) {
-        true -> normalShape
-        else -> {
-          when(status.replyChainType) {
-            Status.ReplyChainType.Start -> replyShape
-            Status.ReplyChainType.End -> lastReplyShape
-            Status.ReplyChainType.Continue -> RectangleShape
-            Status.ReplyChainType.Null -> normalShape
-          }
+    shape = when (status.hasUnloadedReplyStatus) {
+      true -> normalShape
+      else -> {
+        when (status.replyChainType) {
+          Start -> replyShape
+          End -> lastReplyShape
+          Continue -> RectangleShape
+          Null -> normalShape
         }
-      },
+      }
+    },
     color = AppTheme.colors.cardBackground,
   ) {
     Column {
-      when {
-        status.hasMultiReplyStatus -> {
-          CenterRow {
-            Box(
-              modifier = Modifier
-                .padding(horizontal = statusContentPadding)
-                .size(statusAvatarSize),
-              contentAlignment = Alignment.Center
-            ) {
-              Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                repeat(3) {
-                  Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
-                }
-              }
+      if (status.hasOmittedReplyStatus) {
+        CenterRow(
+          modifier = Modifier.padding(
+            top = when (status.replyChainType) {
+              Start, End -> statusContentPadding
+              else -> Dp.Hairline
             }
-            Text(
-              text = "显示更多回复",
-              fontSize = 14.sp,
-              fontWeight = FontWeight(600),
-              color = Color(0xFF0079D3),
-            )
-          }
-        }
-        status.hasUnloadedReplyStatus -> {
-          CenterRow(
+          )
+        ) {
+          Box(
             modifier = Modifier
               .padding(horizontal = statusContentPadding)
-              .let {
-                if (status.replyChainType == Status.ReplyChainType.Start)
-                  it.padding(top = statusContentPadding)
-                else it
-              }
+              .size(statusAvatarSize),
+            contentAlignment = Alignment.Center
           ) {
-            Box(
-              modifier = Modifier
-                .size(statusAvatarSize),
-              contentAlignment = Alignment.Center
-            ) {
-              Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                repeat(3) {
-                  Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+              repeat(3) {
+                Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
               }
             }
-            WidthSpacer(value = 7.dp)
-            Text(
-              text = "展开了一个讨论串",
-              fontSize = 14.sp,
-              fontWeight = FontWeight(600),
-              color = Color(0xFF0079D3),
-            )
           }
+          Text(
+            text = if (status.hasUnloadedReplyStatus) "展开了一个讨论串" else "显示更多回复",
+            fontSize = 14.sp,
+            fontWeight = FontWeight(600),
+            color = Color(0xFF0079D3),
+          )
         }
       }
       Column(
@@ -197,13 +176,13 @@ fun Status(
           .drawWithContent {
             val itemHeight = this.size.height
             val (startOffsetY, endOffsetY) = when (status.replyChainType) {
-              Status.ReplyChainType.Start -> {
+              Start -> {
                 if (!status.hasUnloadedReplyStatus)
                   avatarHalfSize to itemHeight
                 else 0f to itemHeight
               }
-              Status.ReplyChainType.Continue -> 0f to itemHeight
-              Status.ReplyChainType.End -> 0f to avatarHalfSize
+              Continue -> 0f to itemHeight
+              End -> 0f to avatarHalfSize
               else -> 0f to 0f
             }
             drawLine(
@@ -246,7 +225,7 @@ fun Status(
             openDialog = true
           },
           modifier = Modifier.let {
-            if (status.replyChainType == Status.ReplyChainType.Start)
+            if (status.replyChainType == Start)
               it.onGloballyPositioned { status ->
                 replyStatusHeight = status.size.height
               }
@@ -297,7 +276,7 @@ fun StatusSource(reblogAvatar: String, reblogDisplayName: String) {
               fontSize = AppTheme.typography.statusRepost.fontSize,
             ),
           ) {
-            append(" "+stringResource(id = R.string.post_boosted_format_suffix))
+            append(" " + stringResource(id = R.string.post_boosted_format_suffix))
           }
         },
         modifier = Modifier.weight(1f),
@@ -338,7 +317,7 @@ fun StatusContent(
   val primaryColor = AppTheme.colors.primaryContent
   Box(modifier = modifier) {
     when (replyChainType) {
-      Status.ReplyChainType.Continue, Status.ReplyChainType.Start -> {
+      Continue, Start -> {
         Row(modifier = Modifier.padding(statusContentPadding)) {
           CircleShapeAsyncImage(
             model = avatar,
@@ -580,7 +559,6 @@ fun StatusActionsRow(
   unfavouriteStatus: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-
   val favouritedColor = AppTheme.colors.cardLike
   val unfavouritedColor = AppTheme.colors.cardAction
 
@@ -617,7 +595,7 @@ fun StatusActionsRow(
           animatedFavCount += 1
           favouriteStatus()
         } else {
-          animatedFavCount -=1
+          animatedFavCount -= 1
           unfavouriteStatus()
         }
       }

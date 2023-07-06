@@ -21,7 +21,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.github.whitescent.mastify.viewModel.AppViewModel
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
@@ -30,6 +29,7 @@ import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.slideAnimationOffset
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
+import com.github.whitescent.mastify.viewModel.AppViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.SystemUiController
@@ -56,7 +56,6 @@ fun AppScaffold(
   systemUiController: SystemUiController,
   viewModel: AppViewModel = hiltViewModel()
 ) {
-
   val engine = rememberAnimatedNavHostEngine()
   val navController = rememberAnimatedNavController()
   val scope = rememberCoroutineScope()
@@ -151,5 +150,4 @@ fun AppScaffold(
       drawerState.close()
     }
   }
-
 }

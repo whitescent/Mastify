@@ -8,9 +8,24 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,10 +66,9 @@ fun AppDrawer(
 ) {
   val scope = rememberCoroutineScope()
   ModalDrawerSheet(
-    windowInsets = WindowInsets(0, 0, 0,0),
+    windowInsets = WindowInsets(0, 0, 0, 0),
     drawerContainerColor = AppTheme.colors.background
   ) {
-
     var expanded by rememberSaveable { mutableStateOf(false) }
     val rotate by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
     val transition = updateTransition(targetState = expanded)
@@ -227,19 +241,16 @@ fun AppDrawer(
       }
     }
   }
-
 }
 
 @Composable
 fun DrawerMenu() {
-
   AppDrawerMenu.values().forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
       Divider(thickness = 0.5.dp, modifier = Modifier.padding(vertical = 8.dp))
     }
     DrawerMenuItem(it.icon, it.redId) { }
   }
-
 }
 
 @Composable

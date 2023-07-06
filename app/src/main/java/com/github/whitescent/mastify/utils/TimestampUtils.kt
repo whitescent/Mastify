@@ -30,50 +30,50 @@ private const val YEAR_IN_MILLIS = DAY_IN_MILLIS * 365
  * but even with the FORMAT_ABBREV_RELATIVE flag it wasn't abbreviating enough.
  */
 fun getRelativeTimeSpanString(context: Context, then: Long, now: Long): String {
-    var span = now - then
-    var future = false
-    if (abs(span) < SECOND_IN_MILLIS) {
-        return context.getString(R.string.status_created_at_now)
-    } else if (span < 0) {
-        future = true
-        span = -span
-    }
-    val format: Int
-    if (span < MINUTE_IN_MILLIS) {
-        span /= SECOND_IN_MILLIS
-        format = if (future) {
-            R.string.abbreviated_in_seconds
-        } else {
-            R.string.abbreviated_seconds_ago
-        }
-    } else if (span < HOUR_IN_MILLIS) {
-        span /= MINUTE_IN_MILLIS
-        format = if (future) {
-            R.string.abbreviated_in_minutes
-        } else {
-            R.string.abbreviated_minutes_ago
-        }
-    } else if (span < DAY_IN_MILLIS) {
-        span /= HOUR_IN_MILLIS
-        format = if (future) {
-            R.string.abbreviated_in_hours
-        } else {
-            R.string.abbreviated_hours_ago
-        }
-    } else if (span < YEAR_IN_MILLIS) {
-        span /= DAY_IN_MILLIS
-        format = if (future) {
-            R.string.abbreviated_in_days
-        } else {
-            R.string.abbreviated_days_ago
-        }
+  var span = now - then
+  var future = false
+  if (abs(span) < SECOND_IN_MILLIS) {
+    return context.getString(R.string.status_created_at_now)
+  } else if (span < 0) {
+    future = true
+    span = -span
+  }
+  val format: Int
+  if (span < MINUTE_IN_MILLIS) {
+    span /= SECOND_IN_MILLIS
+    format = if (future) {
+      R.string.abbreviated_in_seconds
     } else {
-        span /= YEAR_IN_MILLIS
-        format = if (future) {
-            R.string.abbreviated_in_years
-        } else {
-            R.string.abbreviated_years_ago
-        }
+      R.string.abbreviated_seconds_ago
     }
-    return context.getString(format, span)
+  } else if (span < HOUR_IN_MILLIS) {
+    span /= MINUTE_IN_MILLIS
+    format = if (future) {
+      R.string.abbreviated_in_minutes
+    } else {
+      R.string.abbreviated_minutes_ago
+    }
+  } else if (span < DAY_IN_MILLIS) {
+    span /= HOUR_IN_MILLIS
+    format = if (future) {
+      R.string.abbreviated_in_hours
+    } else {
+      R.string.abbreviated_hours_ago
+    }
+  } else if (span < YEAR_IN_MILLIS) {
+    span /= DAY_IN_MILLIS
+    format = if (future) {
+      R.string.abbreviated_in_days
+    } else {
+      R.string.abbreviated_days_ago
+    }
+  } else {
+    span /= YEAR_IN_MILLIS
+    format = if (future) {
+      R.string.abbreviated_in_years
+    } else {
+      R.string.abbreviated_years_ago
+    }
+  }
+  return context.getString(format, span)
 }

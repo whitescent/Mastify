@@ -43,5 +43,4 @@ interface TimelineDao {
 
   @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId")
   suspend fun clearAll(accountId: Long)
-
 }
