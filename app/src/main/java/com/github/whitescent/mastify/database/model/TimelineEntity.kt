@@ -41,8 +41,8 @@ data class TimelineEntity(
   @ColumnInfo val mentions: List<Status.Mention>,
   @ColumnInfo val application: Status.Application?,
   @ColumnInfo val attachments: List<Status.Attachment>,
-  @ColumnInfo val hasReplyStatus: Boolean,
-  @ColumnInfo val betweenInReplyStatus: Boolean,
-  @ColumnInfo val isLastReplyStatus: Boolean,
-  @ColumnInfo val hasUnloadedReplyStatus: Boolean
+  @ColumnInfo val replyChainType: Status.ReplyChainType,
+  @ColumnInfo val hasUnloadedReplyStatus: Boolean,
+  @ColumnInfo val hasMultiReplyStatus: Boolean,
+  @ColumnInfo val shouldShow: Boolean
 )

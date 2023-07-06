@@ -30,6 +30,7 @@ interface MastifyColorsInterface {
     get() = Color(0xFF7E8C9F)
   val cardLike: Color
     get() = Color(0xFFEF7096)
+  val replyLine: Color
 }
 
 private object LightColors: MastifyColorsInterface {
@@ -59,6 +60,9 @@ private object LightColors: MastifyColorsInterface {
 
   override val secondaryContent: Color
     get() = Color(0xFF7489A6)
+
+  override val replyLine: Color
+    get() = Color(0xFFcfd9de)
 }
 
 private object DarkColors: MastifyColorsInterface {
@@ -88,6 +92,9 @@ private object DarkColors: MastifyColorsInterface {
 
   override val secondaryContent: Color
     get() = Color(0xFF7489A6)
+
+  override val replyLine: Color
+    get() = Color(0xFF333638)
 }
 
 class MastifyColors : MastifyColorsInterface {
@@ -121,6 +128,8 @@ class MastifyColors : MastifyColorsInterface {
     get() = currentColors.cardBackground
   override val secondaryContent: Color
     get() = currentColors.secondaryContent
+  override val replyLine: Color
+    get() = currentColors.replyLine
 }
 
 val LocalMastifyColors = staticCompositionLocalOf {

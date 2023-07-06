@@ -1,7 +1,6 @@
 package com.github.whitescent.mastify.screen.home
 
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,12 +48,13 @@ import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.viewModel.HomeViewModel
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterialApi::class)
 @AppNavGraph(start = true)
 @Destination(style = AppTransitions::class)
 @Composable
@@ -121,13 +121,17 @@ fun Home(
                   ) {
                     viewModel.loadMore()
                   }
-                  Status(
-                    status = status,
-                    favouriteStatus = { viewModel.favoriteStatus(status.id) },
-                    unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
-                    navigateToDetail = { navigator.navigate(StatusDetailDestination) }
-                  )
-                  if (!status.hasReplyStatus && !status.betweenInReplyStatus) {
+                  if (status.shouldShow) {
+                    Status(
+                      status = status,
+                      favouriteStatus = { viewModel.favoriteStatus(status.id) },
+                      unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
+                      navigateToDetail = { navigator.navigate(StatusDetailDestination) }
+                    )
+                  }
+                  if (status.replyChainType == ReplyChainType.Null ||
+                    status.replyChainType == ReplyChainType.End
+                  ) {
                     HeightSpacer(12.dp)
                   }
                 }
@@ -160,10 +164,7 @@ fun Home(
                       .padding(24.dp),
                     contentAlignment = Alignment.Center
                   ) {
-                    Box(
-                      Modifier
-                        .size(8.dp)
-                        .background(Color.Gray, CircleShape))
+                    Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
                   }
                 }
               }

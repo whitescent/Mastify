@@ -4,14 +4,17 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -32,7 +35,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -105,103 +108,152 @@ fun Status(
   val lastReplyShape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp)
 
   var replyStatusHeight by remember { mutableIntStateOf(0) }
-  val avatarDensity = with(LocalDensity.current) { statusAvatarSize.toPx() }
-  val contentPaddingDensity = with(LocalDensity.current) { statusContentPadding.toPx() }
+  val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
+  val contentPaddingPx = with(LocalDensity.current) { statusContentPadding.toPx() }
+  val avatarHalfSize = avatarSizePx / 2
+  val avatarCenterX = avatarHalfSize + contentPaddingPx
+  val replyLineColor = AppTheme.colors.replyLine
 
   Surface(
     modifier = modifier
       .fillMaxWidth()
       .padding(horizontal = 24.dp),
-    shape = when {
-      status.betweenInReplyStatus -> RectangleShape
-      status.isLastReplyStatus -> lastReplyShape
-      status.hasReplyStatus -> replyShape
-      else -> normalShape
-    },
+    shape =
+      when(status.hasUnloadedReplyStatus) {
+        true -> normalShape
+        else -> {
+          when(status.replyChainType) {
+            Status.ReplyChainType.Start -> replyShape
+            Status.ReplyChainType.End -> lastReplyShape
+            Status.ReplyChainType.Continue -> RectangleShape
+            Status.ReplyChainType.Null -> normalShape
+          }
+        }
+      },
     color = AppTheme.colors.cardBackground,
   ) {
-    Column(
-      modifier = Modifier
-        .clickable(
-          onClick = navigateToDetail,
-          indication = null,
-          interactionSource = remember { MutableInteractionSource() }
-        )
-        .drawWithContent {
-          drawContent()
-          when {
-            status.betweenInReplyStatus -> {
-              drawReplyStatusLine(
-                startOffset = Offset(
-                  x = (avatarDensity / 2 + contentPaddingDensity),
-                  y = avatarDensity + contentPaddingDensity
-                ),
-                endOffset = Offset(
-                  x = (avatarDensity / 2 + contentPaddingDensity),
-                  y = this.size.height + contentPaddingDensity
-                )
-              )
-              drawLastReplyStatusLine(
-                startOffset = Offset((avatarDensity / 2 + contentPaddingDensity), contentPaddingDensity),
-                endOffset = Offset((avatarDensity / 2 + contentPaddingDensity), 0f)
-              )
+    Column {
+      when {
+        status.hasMultiReplyStatus -> {
+          CenterRow {
+            Box(
+              modifier = Modifier
+                .padding(horizontal = statusContentPadding)
+                .size(statusAvatarSize),
+              contentAlignment = Alignment.Center
+            ) {
+              Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                repeat(3) {
+                  Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
+                }
+              }
             }
-            status.isLastReplyStatus -> {
-              drawLastReplyStatusLine(
-                startOffset = Offset((avatarDensity / 2 + contentPaddingDensity), contentPaddingDensity),
-                endOffset = Offset((avatarDensity / 2 + contentPaddingDensity), 0f)
-              )
-            }
-            status.hasReplyStatus -> {
-              drawReplyStatusLine(
-                startOffset = Offset(
-                  x = (avatarDensity / 2 + contentPaddingDensity),
-                  y = avatarDensity + contentPaddingDensity
-                ),
-                endOffset = Offset(
-                  x = (avatarDensity / 2 + contentPaddingDensity),
-                  y = this.size.height + contentPaddingDensity
-                )
-              )
-            }
+            Text(
+              text = "显示更多回复",
+              fontSize = 14.sp,
+              fontWeight = FontWeight(600),
+              color = Color(0xFF0079D3),
+            )
           }
-        },
-    ) {
-      status.reblog?.let {
-        StatusSource(
-          reblogAvatar = reblogAvatar,
-          reblogDisplayName = reblogDisplayName
+        }
+        status.hasUnloadedReplyStatus -> {
+          CenterRow(
+            modifier = Modifier
+              .padding(horizontal = statusContentPadding)
+              .let {
+                if (status.replyChainType == Status.ReplyChainType.Start)
+                  it.padding(top = statusContentPadding)
+                else it
+              }
+          ) {
+            Box(
+              modifier = Modifier
+                .size(statusAvatarSize),
+              contentAlignment = Alignment.Center
+            ) {
+              Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                repeat(3) {
+                  Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
+                }
+              }
+            }
+            WidthSpacer(value = 7.dp)
+            Text(
+              text = "展开了一个讨论串",
+              fontSize = 14.sp,
+              fontWeight = FontWeight(600),
+              color = Color(0xFF0079D3),
+            )
+          }
+        }
+      }
+      Column(
+        modifier = Modifier
+          .clickable(
+            onClick = navigateToDetail,
+            indication = null,
+            interactionSource = remember { MutableInteractionSource() }
+          )
+          .drawWithContent {
+            val itemHeight = this.size.height
+            val (startOffsetY, endOffsetY) = when (status.replyChainType) {
+              Status.ReplyChainType.Start -> {
+                if (!status.hasUnloadedReplyStatus)
+                  avatarHalfSize to itemHeight
+                else 0f to itemHeight
+              }
+              Status.ReplyChainType.Continue -> 0f to itemHeight
+              Status.ReplyChainType.End -> 0f to avatarHalfSize
+              else -> 0f to 0f
+            }
+            drawLine(
+              color = replyLineColor,
+              start = Offset(avatarCenterX, startOffsetY),
+              end = Offset(avatarCenterX, endOffsetY),
+              cap = StrokeCap.Round,
+              strokeWidth = 4f
+            )
+            drawContent()
+          },
+      ) {
+        status.reblog?.let {
+          StatusSource(
+            reblogAvatar = reblogAvatar,
+            reblogDisplayName = reblogDisplayName
+          )
+        }
+        StatusContent(
+          avatar = avatar,
+          displayName = displayName,
+          fullname = fullname,
+          createdAt = createdAt,
+          content = content,
+          sensitive = sensitive,
+          spoilerText = spoilerText,
+          replyChainType = status.replyChainType,
+          attachments = attachments.toImmutableList(),
+          mentions = mentions.toImmutableList(),
+          repliesCount = repliesCount,
+          reblogsCount = reblogsCount,
+          favouritesCount = favouritesCount,
+          favourited = favourited,
+          navigateToDetail = { navigateToDetail() },
+          favouriteStatus = favouriteStatus,
+          unfavouriteStatus = unfavouriteStatus,
+          onClickMedia = {
+            media = attachments
+            targetMediaIndex = it
+            openDialog = true
+          },
+          modifier = Modifier.let {
+            if (status.replyChainType == Status.ReplyChainType.Start)
+              it.onGloballyPositioned { status ->
+                replyStatusHeight = status.size.height
+              }
+            else it
+          }
         )
       }
-      StatusContent(
-        avatar = avatar,
-        displayName = displayName,
-        fullname = fullname,
-        createdAt = createdAt,
-        content = content,
-        sensitive = sensitive,
-        spoilerText = spoilerText,
-        hasReplyStatusList = status.hasReplyStatus,
-        attachments = attachments.toImmutableList(),
-        mentions = mentions.toImmutableList(),
-        repliesCount = repliesCount,
-        reblogsCount = reblogsCount,
-        favouritesCount = favouritesCount,
-        favourited = favourited,
-        navigateToDetail = { navigateToDetail() },
-        favouriteStatus = favouriteStatus,
-        unfavouriteStatus = unfavouriteStatus,
-        onClickMedia = {
-          media = attachments
-          targetMediaIndex = it
-          openDialog = true
-        },
-        modifier = Modifier.let {
-          if (status.hasReplyStatus) it.onGloballyPositioned { status ->
-            replyStatusHeight = status.size.height
-          } else it
-        }
-      )
     }
   }
   if (openDialog) {
@@ -269,7 +321,7 @@ fun StatusContent(
   content: String,
   sensitive: Boolean,
   spoilerText: String,
-  hasReplyStatusList: Boolean,
+  replyChainType: Status.ReplyChainType,
   attachments: ImmutableList<Status.Attachment>,
   mentions: ImmutableList<Status.Mention>,
   repliesCount: Int,
@@ -285,8 +337,8 @@ fun StatusContent(
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   Box(modifier = modifier) {
-    when (hasReplyStatusList) {
-      true -> {
+    when (replyChainType) {
+      Status.ReplyChainType.Continue, Status.ReplyChainType.Start -> {
         Row(modifier = Modifier.padding(statusContentPadding)) {
           CircleShapeAsyncImage(
             model = avatar,
@@ -607,29 +659,3 @@ fun StatusActionsRow(
 
 private val statusContentPadding = 12.dp
 private val statusAvatarSize = 36.dp
-
-fun ContentDrawScope.drawLastReplyStatusLine(
-  startOffset: Offset,
-  endOffset: Offset
-) {
-  drawLine(
-    color = Color.Gray,
-    start = startOffset,
-    end = endOffset,
-    cap = StrokeCap.Round,
-    strokeWidth = 2f
-  )
-}
-
-fun ContentDrawScope.drawReplyStatusLine(
-  startOffset: Offset,
-  endOffset: Offset
-) {
-  drawLine(
-    color = Color.Gray,
-    start = startOffset,
-    end = endOffset,
-    cap = StrokeCap.Round,
-    strokeWidth = 2f
-  )
-}

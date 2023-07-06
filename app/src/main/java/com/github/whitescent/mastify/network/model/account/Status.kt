@@ -31,13 +31,13 @@ data class Status(
   val mentions: List<Mention>,
   val application: Application?,
   @SerialName("media_attachments") val attachments: List<Attachment>,
-  val hasReplyStatus: Boolean = false,
-  val betweenInReplyStatus: Boolean = false,
-  val isLastReplyStatus: Boolean = false,
-  val hasUnloadedReplyStatus: Boolean = false
+  val replyChainType: ReplyChainType = ReplyChainType.Null,
+  val hasUnloadedReplyStatus: Boolean = false,
+  val hasMultiReplyStatus: Boolean = false,
+  val shouldShow: Boolean = true
 ) {
 
-  val isInReplyTo get() = inReplyToId != null
+  val isInReplyTo inline get() = inReplyToId != null
 
   @Serializable
   data class Tag(val name: String, val url: String, val following: Boolean? = null)
@@ -60,8 +60,7 @@ data class Status(
     val avatar: String,
     val url: String
   ) {
-    val fullName: String
-      get() = "@$username@${FormatFactory.getInstanceName(url)}"
+    val fullName: String get() = "@$username@${FormatFactory.getInstanceName(url)}"
   }
 
   @Serializable
@@ -97,10 +96,15 @@ data class Status(
       account = account,
       application = application,
       attachments = attachments,
-      hasReplyStatus = hasReplyStatus,
-      betweenInReplyStatus = betweenInReplyStatus,
-      isLastReplyStatus = isLastReplyStatus,
+      replyChainType = replyChainType,
       hasUnloadedReplyStatus = hasUnloadedReplyStatus,
+      hasMultiReplyStatus = hasMultiReplyStatus,
+      shouldShow = shouldShow
     )
   }
+
+  enum class ReplyChainType {
+    Start, Continue, End, Null
+  }
+
 }

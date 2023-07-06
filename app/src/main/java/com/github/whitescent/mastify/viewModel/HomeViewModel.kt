@@ -26,6 +26,7 @@ class HomeViewModel @Inject constructor(
 
   private val timelineDao = db.timelineDao()
   private var unsortedTimelineList = mutableListOf<Status>()
+  private var nextPage: String? = null
 
   val activeAccount get() = accountRepository.activeAccount!!
   var refreshing by mutableStateOf(false)
@@ -34,7 +35,7 @@ class HomeViewModel @Inject constructor(
     private set
 
   private val paginator = Paginator(
-    initialKey = uiState.nextPage,
+    initialKey = nextPage,
     onLoadUpdated = { uiState = uiState.copy(timelineLoadState = it) },
     onRequest = { nextPage ->
       val response = api.homeTimeline(maxId = nextPage)
@@ -55,9 +56,9 @@ class HomeViewModel @Inject constructor(
       unsortedTimelineList = (unsortedTimelineList + items).toMutableList()
       uiState = uiState.copy(
         statusList = reorderedStatuses(unsortedTimelineList),
-        nextPage = newKey,
         endReached = items.isEmpty()
       )
+      nextPage = newKey
       db.withTransaction {
         replaceStatusRange(unsortedTimelineList)
       }
@@ -101,7 +102,7 @@ class HomeViewModel @Inject constructor(
   init {
     viewModelScope.launch {
       unsortedTimelineList = timelineDao.getStatuses(activeAccount.id).toMutableList()
-      uiState = uiState.copy(statusList = unsortedTimelineList)
+      uiState = uiState.copy(statusList = reorderedStatuses(unsortedTimelineList))
       paginator.refresh()
       // fetch the latest account info
       api.accountVerifyCredentials(
@@ -124,7 +125,7 @@ class HomeViewModel @Inject constructor(
   }
 
   fun refreshTimeline() = viewModelScope.launch {
-    uiState = uiState.copy(nextPage = null)
+    nextPage = null
     paginator.refresh()
   }
 
@@ -165,26 +166,35 @@ class HomeViewModel @Inject constructor(
           val unloadReplyStatusIndex =
             reorderedStatuses.indexOfFirst { it.id == replyStatusList.first().id }
           reorderedStatuses[unloadReplyStatusIndex] =
-            reorderedStatuses[unloadReplyStatusIndex].copy(hasUnloadedReplyStatus = true)
+            reorderedStatuses[unloadReplyStatusIndex].copy(
+              hasUnloadedReplyStatus = true,
+              replyChainType =
+                if (reorderedStatuses[unloadReplyStatusIndex].replyChainType == Status.ReplyChainType.Null)
+                  Status.ReplyChainType.End
+                else reorderedStatuses[unloadReplyStatusIndex].replyChainType
+            )
         } else {
           val finalReplyStatusList = ArrayDeque<Status>().apply {
-            add(replyStatusList.first().copy(hasReplyStatus = true))
+            add(replyStatusList.first().copy(replyChainType = Status.ReplyChainType.Start))
           }
-
           // 给组合完成的回复链更新指定的属性，并且标记不需要重复获取回复链的 status
           replyStatusList.forEachIndexed { replyIndex, status ->
             when (replyIndex) {
               in 1 until replyStatusList.lastIndex -> {
                 finalReplyStatusList.add(
+                  // 将回复数量大于等于 4 的帖子中，隐藏第一个到倒数第二个中间的帖子
+                  /// 并在倒数第二个帖子标记这是一个多回复链的帖子，方便 UI 层更新对应的 line
                   status.copy(
-                    hasReplyStatus = true,
-                    betweenInReplyStatus = true
+                    replyChainType = Status.ReplyChainType.Continue,
+                    hasMultiReplyStatus =
+                      replyIndex == replyStatusList.lastIndex - 1 && replyStatusList.size >= 4,
+                    shouldShow = !(replyStatusList.size >= 4 && replyIndex < replyStatusList.size - 2)
                   )
                 )
                 id2index[status.id] = true
               }
               replyStatusList.lastIndex -> {
-                finalReplyStatusList.add(status.copy(isLastReplyStatus = true))
+                finalReplyStatusList.add(status.copy(replyChainType = Status.ReplyChainType.End))
               }
             }
           }
@@ -195,9 +205,11 @@ class HomeViewModel @Inject constructor(
             if (reorderIndex >= index && status.id == currentStatus.id && startAt == -1) {
               startAt = reorderIndex
             }
-            if (startAt != -1 && finalReplyStatusList.any { replyList ->
-              status.id == replyList.id
-            }) {
+            if (
+              startAt != -1 && finalReplyStatusList.any { replyList ->
+                status.id == replyList.id
+              }
+            ) {
               tempList.remove(status)
             }
           }
@@ -225,7 +237,6 @@ class HomeViewModel @Inject constructor(
 data class HomeUiState(
   val statusList: List<Status> = listOf(),
   val errorMessage: String = "",
-  val nextPage: String? = null,
   val endReached: Boolean = false,
   val timelineLoadState: LoadState = LoadState.NotLoading
 )
