@@ -70,8 +70,8 @@ class HomeViewModel @Inject constructor(
     onRefresh = { items ->
       if (unsortedTimelineList.isNotEmpty()) {
         val lastStatusInApi = items.last()
-        if (!unsortedTimelineList.contains(lastStatusInApi)) {
-          // TODO mark loadMore
+        if (!unsortedTimelineList.any { it.id == lastStatusInApi.id }) {
+          // TODO Implementation mark loadMore
         } else {
           val indexInSavedList = unsortedTimelineList.indexOf(lastStatusInApi) + 1
           val statusListAfterIndex =

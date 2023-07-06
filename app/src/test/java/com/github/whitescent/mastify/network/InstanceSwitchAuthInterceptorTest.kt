@@ -52,7 +52,6 @@ class InstanceSwitchAuthInterceptorTest {
 
   @Test
   fun `should changed request hostname when request url with domain header`() {
-
     mockWebServer.enqueue(MockResponse())
 
     val accountManager: AccountRepository = mock {
@@ -78,12 +77,10 @@ class InstanceSwitchAuthInterceptorTest {
       "http://${mockWebServer.hostName}:${mockWebServer.port}/test",
       mockWebServer.takeRequest().requestUrl.toString()
     )
-
   }
 
   @Test
   fun `should use user's instance name as request hostname when user is logged in`() {
-
     mockWebServer.enqueue(MockResponse())
 
     val accountManager: AccountRepository = mock {
@@ -117,7 +114,5 @@ class InstanceSwitchAuthInterceptorTest {
       "http://${accountManager.activeAccount!!.domain}:${mockWebServer.port}/test",
       mockWebServer.takeRequest().requestUrl.toString()
     )
-
   }
-
 }
