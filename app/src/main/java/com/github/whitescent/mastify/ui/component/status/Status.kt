@@ -84,8 +84,7 @@ fun Status(
   // status author display name
   val displayName = status.reblog?.account?.displayName?.ifEmpty {
     status.reblog.account.username
-  }
-    ?: status.account.displayName.ifEmpty { status.account.username }
+  } ?: status.account.displayName.ifEmpty { status.account.username }
 
   // The display name of the person who forwarded this status
   val reblogDisplayName = status.account.displayName.ifEmpty { status.account.username }

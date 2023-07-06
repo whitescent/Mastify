@@ -73,9 +73,7 @@ class HomeViewModel @Inject constructor(
         if (!unsortedTimelineList.contains(lastStatusInApi)) {
           // TODO mark loadMore
         } else {
-
           val indexInSavedList = unsortedTimelineList.indexOf(lastStatusInApi) + 1
-
           val statusListAfterIndex =
             unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
           val newStatusList = items.filterNot { it in unsortedTimelineList }
