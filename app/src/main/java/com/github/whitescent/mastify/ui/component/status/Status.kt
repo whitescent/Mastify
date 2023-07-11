@@ -123,7 +123,12 @@ fun Status(
       .fillMaxWidth()
       .padding(horizontal = 24.dp),
     shape = when (status.hasUnloadedReplyStatus) {
-      true -> normalShape
+      true -> {
+        when (status.replyChainType) {
+          Start -> replyShape
+          else -> normalShape
+        }
+      }
       else -> {
         when (status.replyChainType) {
           Start -> replyShape
@@ -161,7 +166,8 @@ fun Status(
             text = if (status.hasUnloadedReplyStatus) "展开了一个讨论串" else "显示更多回复",
             fontSize = 14.sp,
             fontWeight = FontWeight(600),
-            color = Color(0xFF0079D3),
+            // color = Color(0xFF0079D3),
+            color = AppTheme.colors.hintText,
           )
         }
       }

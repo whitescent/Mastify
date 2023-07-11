@@ -2,6 +2,8 @@ package com.github.whitescent.mastify.network.model.account
 
 import androidx.compose.runtime.Immutable
 import com.github.whitescent.mastify.database.model.TimelineEntity
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
 import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -31,7 +33,7 @@ data class Status(
   val mentions: List<Mention>,
   val application: Application?,
   @SerialName("media_attachments") val attachments: List<Attachment>,
-  val replyChainType: ReplyChainType = ReplyChainType.Null,
+  val replyChainType: ReplyChainType = Null,
   val hasUnloadedReplyStatus: Boolean = false,
   val hasMultiReplyStatus: Boolean = false,
   val shouldShow: Boolean = true
@@ -39,6 +41,7 @@ data class Status(
 
   val isInReplyTo inline get() = inReplyToId != null
   val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
+  val isReplyEnd inline get() = replyChainType == Null || replyChainType == End
 
   @Serializable
   data class Tag(val name: String, val url: String, val following: Boolean? = null)

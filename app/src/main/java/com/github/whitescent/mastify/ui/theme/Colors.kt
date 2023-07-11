@@ -31,6 +31,8 @@ interface MastifyColorsInterface {
   val cardLike: Color
     get() = Color(0xFFEF7096)
   val replyLine: Color
+  val hintText: Color
+    get() = Color(0xFF1d9bf0)
 }
 
 private object LightColors : MastifyColorsInterface {

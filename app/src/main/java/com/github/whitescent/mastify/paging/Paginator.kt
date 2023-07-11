@@ -1,5 +1,7 @@
 package com.github.whitescent.mastify.paging
 
+import androidx.compose.foundation.lazy.LazyListState
+
 class Paginator<Key, Item>(
   private val initialKey: Key,
   private inline val onLoadUpdated: (LoadState) -> Unit,
@@ -7,13 +9,13 @@ class Paginator<Key, Item>(
   private inline val getNextKey: suspend (List<Item>) -> Key,
   private inline val onError: suspend (Throwable?) -> Unit,
   private inline val onAppend: suspend (items: List<Item>, newKey: Key) -> Unit,
-  private inline val onRefresh: suspend (items: List<Item>) -> Unit
+  private inline val onRefresh: suspend (items: List<Item>, lazyState: LazyListState) -> Unit
 ) : PaginatorInterface<Key, Item> {
 
   private var currentKey = initialKey
   private var loadState = LoadState.NotLoading
 
-  override suspend fun loadNextItems() {
+  override suspend fun append() {
     if (loadState == LoadState.Append) return
     loadState = LoadState.Append
     onLoadUpdated(loadState)
@@ -36,7 +38,7 @@ class Paginator<Key, Item>(
     }
   }
 
-  override suspend fun refresh() {
+  override suspend fun refresh(lazyState: LazyListState) {
     if (loadState == LoadState.Refresh) return
     currentKey = initialKey
     loadState = LoadState.Refresh
@@ -49,7 +51,7 @@ class Paginator<Key, Item>(
         return
       }
       currentKey = getNextKey(result)
-      onRefresh(result)
+      onRefresh(result, lazyState,)
       loadState = LoadState.NotLoading
       onLoadUpdated(loadState)
     } catch (e: Exception) {

@@ -2,7 +2,6 @@ package com.github.whitescent.mastify.ui.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,14 +29,12 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.slideAnimationOffset
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.google.accompanist.systemuicontroller.SystemUiController
 import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
+import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.spec.Route
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
@@ -46,9 +43,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(
   FlowPreview::class,
-  ExperimentalLayoutApi::class,
-  ExperimentalMaterialNavigationApi::class,
-  ExperimentalAnimationApi::class
+  ExperimentalLayoutApi::class
 )
 @Composable
 fun AppScaffold(
@@ -56,13 +51,10 @@ fun AppScaffold(
   systemUiController: SystemUiController,
   viewModel: AppViewModel = hiltViewModel()
 ) {
-  val engine = rememberAnimatedNavHostEngine()
-  val navController = rememberAnimatedNavController()
+  val engine = rememberNavHostEngine()
+  val navController = engine.rememberNavController()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)
-
-  // issue: In many cases, initializing the first visible item index
-  // still cannot accurately locate the saved position
   val lazyState = rememberLazyListState(
     initialFirstVisibleItemIndex = viewModel.timelineScrollPosition ?: 0,
     initialFirstVisibleItemScrollOffset = viewModel.timelineScrollPositionOffset ?: 0

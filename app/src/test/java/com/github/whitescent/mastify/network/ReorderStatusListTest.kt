@@ -3,6 +3,7 @@ package com.github.whitescent.mastify.network
 import com.github.whitescent.mastify.network.ReorderStatusListTest.Status
 import com.github.whitescent.mastify.network.ReorderStatusListTest.Status.ReplyChainType.Continue
 import com.github.whitescent.mastify.network.ReorderStatusListTest.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.ReorderStatusListTest.Status.ReplyChainType.Null
 import com.github.whitescent.mastify.network.ReorderStatusListTest.Status.ReplyChainType.Start
 import org.junit.Assert
 import org.junit.Test
@@ -11,7 +12,7 @@ class ReorderStatusListTest {
   data class Status(
     val id: String,
     val inReplyToId: String? = null,
-    val replyChainType: ReplyChainType = ReplyChainType.Null,
+    val replyChainType: ReplyChainType = Null,
     val hasUnloadedReplyStatus: Boolean = false,
     val hasMultiReplyStatus: Boolean = false,
     val shouldShow: Boolean = true
@@ -24,7 +25,7 @@ class ReorderStatusListTest {
 
   @Test
   fun `test a single status reply`() {
-    val actual = mutableListOf(
+    val actual = listOf(
       Status("1"),
       Status("2"),
       Status("3", "4"),
@@ -32,7 +33,7 @@ class ReorderStatusListTest {
       Status("5"),
       Status("6")
     )
-    val expected = mutableListOf(
+    val expected = listOf(
       Status("1"),
       Status("2"),
       Status("4", replyChainType = Start),
@@ -45,7 +46,7 @@ class ReorderStatusListTest {
 
   @Test
   fun `test multiple status reply`() {
-    val actual = mutableListOf(
+    val actual = listOf(
       Status("1"),
       Status("2"),
       Status("3", "4"),
@@ -53,13 +54,43 @@ class ReorderStatusListTest {
       Status("5"),
       Status("6")
     )
-    val expected = mutableListOf(
+    val expected = listOf(
       Status("1"),
       Status("2"),
       Status("5", replyChainType = Start),
       Status("4", "5", Continue),
       Status("3", "4", End),
       Status("6")
+    )
+    Assert.assertEquals(expected, reorderedStatuses(actual))
+  }
+
+  @Test
+  fun `test two status reply`() {
+    val actual = listOf(
+      Status("1"),
+      Status("2"),
+      Status("3"),
+      Status("4", "5"),
+      Status("5", "9"),
+      Status("6"),
+      Status("7", "8"),
+      Status("8", "9"),
+      Status("9"),
+      Status("10"),
+    )
+    val expected = listOf(
+      Status("1"),
+      Status("2"),
+      Status("3"),
+      Status("9", replyChainType = Start),
+      Status("5", "9", replyChainType = Continue),
+      Status("4", "5", replyChainType = End),
+      Status("6"),
+      Status("9", replyChainType = Start),
+      Status("8", "9", replyChainType = Continue),
+      Status("7", "8", replyChainType = End),
+      Status("10"),
     )
     Assert.assertEquals(expected, reorderedStatuses(actual))
   }
@@ -73,7 +104,7 @@ private fun reorderedStatuses(statuses: List<Status>): List<Status> {
   val id2index = hashMapOf<String, Boolean>()
   var reorderedStatuses = statuses.toMutableList()
 
-  statuses.forEachIndexed { index, currentStatus ->
+  statuses.forEach { currentStatus ->
     if (currentStatus.isInReplyTo && id2index[currentStatus.id] == null) {
       val replyStatusList = ArrayDeque<Status>().apply { add(currentStatus) }
       var replyToStatus = currentStatus.inReplyToId
@@ -96,11 +127,11 @@ private fun reorderedStatuses(statuses: List<Status>): List<Status> {
           reorderedStatuses[unloadReplyStatusIndex].copy(
             hasUnloadedReplyStatus = true,
             replyChainType = reorderedStatuses[unloadReplyStatusIndex].replyChainType
-              .takeIf { it != Status.ReplyChainType.Null } ?: End
+              .takeIf { it != Null } ?: End
           )
       } else {
         val finalReplyStatusList = ArrayDeque<Status>().apply {
-          add(replyStatusList.first().copy(replyChainType = Status.ReplyChainType.Start))
+          add(replyStatusList.first().copy(replyChainType = Start))
         }
         // 给组合完成的回复链更新指定的属性，并且标记不需要重复获取回复链的 status
         replyStatusList.forEachIndexed { replyIndex, status ->
@@ -110,7 +141,7 @@ private fun reorderedStatuses(statuses: List<Status>): List<Status> {
                 // 将回复数量大于等于 4 的帖子中，隐藏第一个到倒数第二个中间的帖子
                 // 并在倒数第二个帖子标记这是一个多回复链的帖子，方便 UI 层更新对应的 line
                 status.copy(
-                  replyChainType = Status.ReplyChainType.Continue,
+                  replyChainType = Continue,
                   hasMultiReplyStatus = replyStatusList.size >= 4 &&
                     replyIndex == replyStatusList.lastIndex - 1,
                   shouldShow = !(replyStatusList.size >= 4 && replyIndex < replyStatusList.size - 2)
@@ -125,16 +156,11 @@ private fun reorderedStatuses(statuses: List<Status>): List<Status> {
         }
         // 删除原本的 status，并替换为获取到的回复链
         val tempList = reorderedStatuses.toMutableList()
-        var startAt = -1
-        reorderedStatuses.forEachIndexed { reorderIndex, status ->
-          if (reorderIndex >= index && status.id == currentStatus.id && startAt == -1) {
-            startAt = reorderIndex
-          }
-          if (
-            startAt != -1 && finalReplyStatusList.any { replyList ->
+        val startAt = reorderedStatuses.indexOfFirst { finalReplyStatusList.last().id == it.id }
+        reorderedStatuses.forEachIndexed { reorderedIndex, status ->
+          if (reorderedIndex >= startAt && finalReplyStatusList.any { replyList ->
               status.id == replyList.id
-            }
-          ) {
+            }) {
             tempList.remove(status)
           }
         }

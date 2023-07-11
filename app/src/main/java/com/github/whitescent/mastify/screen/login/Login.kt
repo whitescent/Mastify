@@ -155,40 +155,38 @@ fun Login(
                 )
               }
               else -> {
-                Crossfade(state.errorMessageId != 0) { error ->
-                  when (error) {
-                    true -> {
-                      Text(
-                        text = state.errorMessage(),
-                        fontSize = 14.sp,
-                        color = Color(0xFFFF3838),
-                      )
-                    }
-                    else -> {
-                      InstanceCard(
-                        title = state.instanceTitle,
-                        description = state.instanceDescription,
-                        activeMonth = state.activeMonth,
-                        imageUrl = state.instanceImageUrl,
-                        onClick = { name ->
-                          viewModel.authenticateApp(
-                            appName = name,
-                            navigateToOauth = { clientId ->
-                              launchCustomChromeTab(
-                                context = context,
-                                uri = Uri.parse(
-                                  "https://${state.text}/oauth/authorize?client_id=$clientId" +
-                                    "&scope=read+write+push" +
-                                    "&redirect_uri=mastify://oauth" +
-                                    "&response_type=code"
-                                ),
-                                toolbarColor = backgroundColor
-                              )
-                            }
-                          )
-                        }
-                      )
-                    }
+                when (state.errorMessageId) {
+                  0 -> {
+                    InstanceCard(
+                      title = state.instanceTitle,
+                      description = state.instanceDescription,
+                      activeMonth = state.activeMonth,
+                      imageUrl = state.instanceImageUrl,
+                      onClick = { name ->
+                        viewModel.authenticateApp(
+                          appName = name,
+                          navigateToOauth = { clientId ->
+                            launchCustomChromeTab(
+                              context = context,
+                              uri = Uri.parse(
+                                "https://${state.text}/oauth/authorize?client_id=$clientId" +
+                                  "&scope=read+write+push" +
+                                  "&redirect_uri=mastify://oauth" +
+                                  "&response_type=code"
+                              ),
+                              toolbarColor = backgroundColor
+                            )
+                          }
+                        )
+                      }
+                    )
+                  }
+                  else -> {
+                    Text(
+                      text = state.errorMessage(),
+                      fontSize = 14.sp,
+                      color = Color(0xFFFF3838),
+                    )
                   }
                 }
               }

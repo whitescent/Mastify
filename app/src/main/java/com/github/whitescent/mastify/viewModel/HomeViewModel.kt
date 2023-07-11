@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.viewModel
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Status
@@ -18,23 +20,27 @@ import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-  db: AppDatabase,
+  preferenceRepository: PreferenceRepository,
+  private val db: AppDatabase,
   private val accountRepository: AccountRepository,
   private val api: MastodonApi,
 ) : ViewModel() {
 
   private val timelineDao = db.timelineDao()
   private var unsortedTimelineList = mutableListOf<Status>()
+  private var previousStatusList = mutableListOf<Status>()
   private var nextPage: String? = null
+  private var initRefresh = true
+  private var timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex ?: 0
+  private val timelineScrollPositionOffset = preferenceRepository.timelineModel?.offset ?: 0
 
   val activeAccount get() = accountRepository.activeAccount!!
-  var refreshing by mutableStateOf(false)
-
   var uiState by mutableStateOf(HomeUiState())
     private set
 
@@ -67,36 +73,52 @@ class HomeViewModel @Inject constructor(
         replaceStatusRange(unsortedTimelineList)
       }
     },
-    onRefresh = { items ->
+    onRefresh = { items, lazyState ->
       if (unsortedTimelineList.isNotEmpty()) {
         val lastStatusInApi = items.last()
         if (!unsortedTimelineList.any { it.id == lastStatusInApi.id }) {
           // TODO Implementation mark loadMore
+          uiState = uiState.copy(showLoadMorePlacerHolder = true)
+          loadPreviousStatus()
         } else {
+          // 将 api 获取到的 status 和 db 有的数据组合起来
           val indexInSavedList = unsortedTimelineList.indexOf(lastStatusInApi) + 1
           val statusListAfterIndex =
             unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
-          val newStatusList = items.filterNot { it in unsortedTimelineList }
+          val newStatusList = items.filterNot {
+            unsortedTimelineList.any { saved -> saved.id == it.id }
+          }
           // 添加 api 获取到的新的帖子
           unsortedTimelineList = (newStatusList + unsortedTimelineList).toMutableList()
           // 删除那些已经删除的帖子
-          unsortedTimelineList = items.filterNot { it !in unsortedTimelineList }.toMutableList()
+          unsortedTimelineList = items.filterNot {
+            !unsortedTimelineList.any { saved -> saved.id == it.id }
+          }.toMutableList()
           // 补上除了 api 获取到的，保存在 db 中的 status
           unsortedTimelineList = (unsortedTimelineList + statusListAfterIndex).toMutableList()
+          if (newStatusList.isNotEmpty()) {
+            uiState = uiState.copy(newStatusCount = newStatusList.size, showNewStatusButton = true)
+            viewModelScope.launch(Dispatchers.Main) {
+              lazyState.scrollToItem(
+                index = when (initRefresh) {
+                  true -> timelineScrollPosition.plus(newStatusList.size)
+                  else -> newStatusList.size
+                },
+                scrollOffset = if (initRefresh) timelineScrollPositionOffset else 0
+              )
+            }
+          }
         }
       } else {
         unsortedTimelineList = items.toMutableList()
       }
-
       uiState = uiState.copy(
         statusList = reorderedStatuses(unsortedTimelineList),
         endReached = items.isEmpty()
       )
-
-      if (items.isNotEmpty()) {
-        db.withTransaction {
-          replaceStatusRange(unsortedTimelineList)
-        }
+      db.withTransaction {
+        // replaceStatusRange(unsortedTimelineList)
+        reinsertAllStatus(unsortedTimelineList, activeAccount.id)
       }
     }
   )
@@ -105,7 +127,7 @@ class HomeViewModel @Inject constructor(
     viewModelScope.launch {
       unsortedTimelineList = timelineDao.getStatuses(activeAccount.id).toMutableList()
       uiState = uiState.copy(statusList = reorderedStatuses(unsortedTimelineList))
-      paginator.refresh()
+      // paginator.refresh()
       // fetch the latest account info
       api.accountVerifyCredentials(
         domain = activeAccount.domain,
@@ -122,13 +144,17 @@ class HomeViewModel @Inject constructor(
     }
   }
 
-  fun loadMore() = viewModelScope.launch {
-    paginator.loadNextItems()
+  fun initRefresh(lazyState: LazyListState) = viewModelScope.launch {
+    paginator.refresh(lazyState)
+    initRefresh = false
   }
 
-  fun refreshTimeline() = viewModelScope.launch {
-    nextPage = null
-    paginator.refresh()
+  fun append() = viewModelScope.launch {
+    paginator.append()
+  }
+
+  fun refreshTimeline(lazyState: LazyListState) = viewModelScope.launch {
+    paginator.refresh(lazyState)
   }
 
   fun favoriteStatus(id: String) = viewModelScope.launch {
@@ -139,6 +165,42 @@ class HomeViewModel @Inject constructor(
     api.unfavouriteStatus(id)
   }
 
+  fun loadPreviousStatus() {
+    viewModelScope.launch {
+      val response = api.homeTimeline(
+        maxId = if (previousStatusList.isNotEmpty()) previousStatusList.last().id else null,
+        limit = 20
+      )
+      if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+        val body = response.body()!!
+        if (unsortedTimelineList.any { it.id == body.last().id }) {
+          val startIndex = unsortedTimelineList.indexOf(body.last()) + 1
+          val remainList = unsortedTimelineList.subList(startIndex, unsortedTimelineList.size)
+          unsortedTimelineList = (previousStatusList + body + remainList).toMutableList()
+          uiState = uiState.copy(
+            statusList = reorderedStatuses(unsortedTimelineList),
+            previousStatusList = emptyList(),
+            showLoadMorePlacerHolder = false
+          )
+          db.withTransaction {
+            // replaceStatusRange(unsortedTimelineList)
+            reinsertAllStatus(unsortedTimelineList, activeAccount.id)
+          }
+        } else {
+          if (previousStatusList.isNotEmpty()) previousStatusList += body
+          else previousStatusList = body.toMutableList()
+          uiState = uiState.copy(previousStatusList = reorderedStatuses(previousStatusList))
+        }
+      } else {
+        // ERROR
+      }
+    }
+  }
+
+  fun dismissButton() {
+    uiState = uiState.copy(showNewStatusButton = false)
+  }
+
   private fun reorderedStatuses(statuses: List<Status>): List<Status> {
     fun findReplyStatusById(id: String?) = id?.let {
       statuses.find { status -> status.id == it }
@@ -147,7 +209,7 @@ class HomeViewModel @Inject constructor(
     val id2index = hashMapOf<String, Boolean>()
     var reorderedStatuses = statuses.toMutableList()
 
-    statuses.forEachIndexed { index, currentStatus ->
+    statuses.forEach { currentStatus ->
       if (currentStatus.isInReplyTo && id2index[currentStatus.id] == null) {
         val replyStatusList = ArrayDeque<Status>().apply { add(currentStatus) }
         var replyToStatus = currentStatus.inReplyToId
@@ -199,16 +261,11 @@ class HomeViewModel @Inject constructor(
           }
           // 删除原本的 status，并替换为获取到的回复链
           val tempList = reorderedStatuses.toMutableList()
-          var startAt = -1
-          reorderedStatuses.forEachIndexed { reorderIndex, status ->
-            if (reorderIndex >= index && status.id == currentStatus.id && startAt == -1) {
-              startAt = reorderIndex
-            }
-            if (
-              startAt != -1 && finalReplyStatusList.any { replyList ->
+          val startAt = reorderedStatuses.indexOfFirst { finalReplyStatusList.last().id == it.id }
+          reorderedStatuses.forEachIndexed { reorderedIndex, status ->
+            if (reorderedIndex >= startAt && finalReplyStatusList.any { replyList ->
                 status.id == replyList.id
-              }
-            ) {
+              }) {
               tempList.remove(status)
             }
           }
@@ -220,9 +277,12 @@ class HomeViewModel @Inject constructor(
     return reorderedStatuses
   }
 
-  private suspend fun replaceStatusRange(
-    statuses: List<Status>
-  ) {
+  private suspend fun reinsertAllStatus(statuses: List<Status>, accountId: Long) {
+    timelineDao.clearAll(accountId)
+    statuses.forEach { timelineDao.insert(it.toEntity(accountId)) }
+  }
+
+  private suspend fun replaceStatusRange(statuses: List<Status>) {
     if (statuses.isNotEmpty()) {
       timelineDao.deleteRange(activeAccount.id, statuses.last().id, statuses.first().id)
     }
@@ -234,7 +294,10 @@ class HomeViewModel @Inject constructor(
 
 data class HomeUiState(
   val statusList: List<Status> = listOf(),
-  val errorMessage: String = "",
+  val previousStatusList: List<Status> = listOf(),
+  val newStatusCount: Int = 0,
+  val showNewStatusButton: Boolean = false,
   val endReached: Boolean = false,
-  val timelineLoadState: LoadState = LoadState.NotLoading
+  val timelineLoadState: LoadState = LoadState.NotLoading,
+  val showLoadMorePlacerHolder: Boolean = false
 )

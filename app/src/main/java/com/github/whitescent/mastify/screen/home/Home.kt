@@ -1,13 +1,22 @@
 package com.github.whitescent.mastify.screen.home
 
 import android.widget.Toast
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -24,11 +33,18 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -46,11 +62,12 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
+import com.github.whitescent.mastify.ui.component.AnimatedVisibility
+import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.Status
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -75,24 +92,28 @@ fun Home(
   val uiState = viewModel.uiState
   val homeTimeline = uiState.statusList
 
+  val firstVisibleIndex by remember {
+    derivedStateOf {
+      lazyState.firstVisibleItemIndex
+    }
+  }
+  var refreshing by remember { mutableStateOf(false) }
+
   val scope = rememberCoroutineScope()
+
   val pullRefreshState = rememberPullRefreshState(
-    refreshing = viewModel.refreshing,
+    refreshing = refreshing,
     onRefresh = {
       scope.launch {
-        viewModel.refreshing = true
+        refreshing = true
         delay(500)
-        viewModel.refreshTimeline()
-        viewModel.refreshing = false
+        viewModel.refreshTimeline(lazyState)
+        refreshing = false
       }
     },
   )
 
-  Box(
-    Modifier
-      .statusBarsPadding()
-      .pullRefresh(pullRefreshState)
-  ) {
+  Box(Modifier.statusBarsPadding().pullRefresh(pullRefreshState)) {
     Column {
       HomeTopBar(
         avatar = viewModel.activeAccount.profilePictureUrl,
@@ -105,7 +126,7 @@ fun Home(
       when (homeTimeline.size) {
         0 -> {
           when (uiState.timelineLoadState) {
-            LoadState.Error -> Error { viewModel.refreshTimeline() }
+            LoadState.Error -> Error { viewModel.refreshTimeline(lazyState) }
             LoadState.NotLoading -> EmptyTimeline()
             else -> Loading()
           }
@@ -118,14 +139,47 @@ fun Home(
                 .fillMaxSize()
                 .drawVerticalScrollbar(lazyState)
             ) {
+              if (uiState.showLoadMorePlacerHolder) {
+                items(uiState.previousStatusList) { status ->
+                  key(status.id) {
+                    if (status.shouldShow) {
+                      Status(
+                        status = status,
+                        favouriteStatus = { viewModel.favoriteStatus(status.id) },
+                        unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
+                        navigateToDetail = { navigator.navigate(StatusDetailDestination) }
+                      )
+                    }
+                    if (status.isReplyEnd) HeightSpacer(12.dp)
+                  }
+                }
+                item {
+                  Box(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .height(56.dp)
+                      .padding(24.dp)
+                      .border(1.dp, Color.Gray)
+                      .clickable { viewModel.loadPreviousStatus() },
+                    contentAlignment = Alignment.Center
+                  ) {
+                    Text(
+                      text = "加载更多",
+                      color = AppTheme.colors.hintText,
+                      fontSize = 16.sp,
+                      modifier = Modifier.padding(16.dp)
+                    )
+                  }
+                }
+              }
               items(homeTimeline) { status ->
-                val loadThreshold = uiState.statusList.size - uiState.statusList.size / 4
+                val loadThreshold = uiState.statusList.size - uiState.statusList.size / 3
                 key(status.id) {
                   if (
                     status.id <= uiState.statusList[loadThreshold].id &&
                     !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
                   ) {
-                    viewModel.loadMore()
+                    viewModel.append()
                   }
                   if (status.shouldShow) {
                     Status(
@@ -135,9 +189,7 @@ fun Home(
                       navigateToDetail = { navigator.navigate(StatusDetailDestination) }
                     )
                   }
-                  if (status.replyChainType == Null || status.replyChainType == End) {
-                    HeightSpacer(12.dp)
-                  }
+                  if (status.isReplyEnd) HeightSpacer(12.dp)
                 }
               }
               item {
@@ -157,7 +209,7 @@ fun Home(
                   }
                   LoadState.Error -> {
                     Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                    viewModel.loadMore() // retry
+                    viewModel.append() // retry
                   }
                   else -> Unit
                 }
@@ -171,6 +223,26 @@ fun Home(
                     Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
                   }
                 }
+              }
+            }
+            AnimatedVisibility(
+              visible = uiState.showNewStatusButton,
+              enter = slideInVertically(
+                animationSpec = spring(
+                  dampingRatio = Spring.DampingRatioMediumBouncy,
+                  stiffness = Spring.StiffnessMedium
+                ),
+                initialOffsetY = { -250 }
+              ) + fadeIn(tween(400)),
+              exit = slideOutVertically(
+                animationSpec = tween(durationMillis = 200),
+                targetOffsetY = { -150 }
+              ) + fadeOut(),
+              modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp)
+            ) {
+              NewStatusToast(count = viewModel.uiState.newStatusCount) {
+                scope.launch { lazyState.scrollToItem(0) }
+                viewModel.dismissButton()
               }
             }
             Image(
@@ -188,7 +260,43 @@ fun Home(
         }
       }
     }
-    PullRefreshIndicator(viewModel.refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+    PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+  }
+
+  LaunchedEffect(Unit) {
+    viewModel.initRefresh(lazyState)
+  }
+
+  LaunchedEffect(firstVisibleIndex) {
+    if (firstVisibleIndex == 0 && uiState.showNewStatusButton) viewModel.dismissButton()
+  }
+}
+
+@Composable
+fun NewStatusToast(count: Int, onDismiss: () -> Unit) {
+  Surface(
+    shape = CircleShape,
+    color = AppTheme.colors.accent,
+  ) {
+    CenterRow(
+      modifier = Modifier
+        .clickable { onDismiss() }
+        .padding(horizontal = 18.dp, vertical = 8.dp),
+    ) {
+      Icon(
+        painter = painterResource(id = R.drawable.arrow_up),
+        contentDescription = null,
+        tint = Color.White,
+        modifier = Modifier.size(24.dp)
+      )
+      WidthSpacer(value = 2.dp)
+      Text(
+        text = "$count 条新嘟文",
+        fontSize = 16.sp,
+        color = Color.White,
+        fontWeight = FontWeight(500)
+      )
+    }
   }
 }
 

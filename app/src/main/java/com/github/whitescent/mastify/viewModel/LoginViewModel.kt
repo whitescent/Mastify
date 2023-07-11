@@ -129,8 +129,5 @@ data class LoginUiState(
   val authenticateError: Boolean = false
 ) {
   @Composable
-  fun errorMessage(): String {
-    require(errorMessageId != 0)
-    return stringResource(errorMessageId)
-  }
+  fun errorMessage(): String = stringResource(errorMessageId)
 }

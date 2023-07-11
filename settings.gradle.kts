@@ -13,7 +13,8 @@ dependencyResolutionManagement {
   repositories {
     google()
     mavenCentral()
-    maven(url = "https://jitpack.io")
+    maven("https://jitpack.io")
+    maven("https://androidx.dev/storage/compose-compiler/repository/")
   }
 }
 rootProject.name = "Mastify"

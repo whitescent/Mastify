@@ -2,7 +2,7 @@
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
-  id("org.jetbrains.kotlin.plugin.serialization") version "1.8.20"
+  alias(libs.plugins.kotlin.serialization)
   id("kotlin-kapt")
   id("kotlin-parcelize")
   id("dagger.hilt.android.plugin")
@@ -33,6 +33,7 @@ android {
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
       )
+      isDebuggable = true
     }
   }
   kotlinOptions {
@@ -114,7 +115,7 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.coil.gif)
   implementation(libs.coil.video)
-  implementation(libs.compose.destinations.animations.core)
+  implementation(libs.compose.destinations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
   testImplementation(libs.mockito.kotlin)
@@ -124,5 +125,4 @@ dependencies {
 
   implementation(libs.kotlinx.datetime)
   implementation(libs.kotlinx.collections)
-
 }

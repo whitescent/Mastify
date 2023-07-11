@@ -3,7 +3,6 @@ package com.github.whitescent.mastify.ui.transitions
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,10 +19,9 @@ import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.OauthDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.ramcosta.composedestinations.spec.DestinationStyleAnimated
+import com.ramcosta.composedestinations.spec.DestinationStyle
 
-@OptIn(ExperimentalAnimationApi::class)
-object AppTransitions : DestinationStyleAnimated {
+object AppTransitions : DestinationStyle.Animated {
 
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
     return when (initialState.appDestination()) {
@@ -56,8 +54,7 @@ object AppTransitions : DestinationStyleAnimated {
   }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
-object LoginTransitions : DestinationStyleAnimated {
+object LoginTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
     return when (initialState.appDestination()) {
       HomeDestination ->
@@ -81,8 +78,7 @@ object LoginTransitions : DestinationStyleAnimated {
   }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
-object OauthTransitions : DestinationStyleAnimated {
+object OauthTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return fadeIn()
   }
@@ -95,8 +91,7 @@ object OauthTransitions : DestinationStyleAnimated {
   }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
-object StatusTransitions : DestinationStyleAnimated {
+object StatusTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition? {
     return when (initialState.appDestination()) {
       HomeDestination ->
