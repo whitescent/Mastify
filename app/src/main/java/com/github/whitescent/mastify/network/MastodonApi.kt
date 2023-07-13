@@ -3,9 +3,10 @@ package com.github.whitescent.mastify.network
 import at.connyduck.calladapter.networkresult.NetworkResult
 import com.github.whitescent.mastify.network.model.account.AccessToken
 import com.github.whitescent.mastify.network.model.account.Account
-import com.github.whitescent.mastify.network.model.account.Status
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
+import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.StatusContext
 import retrofit2.Response
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -71,4 +72,9 @@ interface MastodonApi {
   suspend fun unfavouriteStatus(
     @Path("id") statusId: String
   ): NetworkResult<Status>
+
+  @GET("api/v1/statuses/{id}/context")
+  suspend fun statusContext(
+    @Path("id") statusId: String
+  ): NetworkResult<StatusContext>
 }

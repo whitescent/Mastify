@@ -1,9 +1,9 @@
-package com.github.whitescent.mastify.network.model.account
+package com.github.whitescent.mastify.network.model.status
 
 import androidx.compose.runtime.Immutable
 import com.github.whitescent.mastify.database.model.TimelineEntity
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
 import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

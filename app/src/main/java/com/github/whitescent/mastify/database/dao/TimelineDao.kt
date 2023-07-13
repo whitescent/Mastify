@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.github.whitescent.mastify.database.model.TimelineEntity
-import com.github.whitescent.mastify.network.model.account.Status
+import com.github.whitescent.mastify.network.model.status.Status
 
 @Dao
 interface TimelineDao {

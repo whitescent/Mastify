@@ -3,7 +3,7 @@ package com.github.whitescent.mastify
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.*
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
 import com.github.whitescent.mastify.data.repository.AccountRepository

@@ -29,10 +29,11 @@ import com.ramcosta.composedestinations.navigation.navigate
 fun BottomBar(
   navController: NavController,
   destination: Destination,
-  scrollToTop: () -> Unit
+  scrollToTop: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   Surface(
-    modifier = Modifier
+    modifier = modifier
       .fillMaxWidth()
       .heightIn(54.dp)
       .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),

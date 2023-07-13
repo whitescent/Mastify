@@ -12,11 +12,11 @@ import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.MastodonApi
-import com.github.whitescent.mastify.network.model.account.Status
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Continue
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Start
+import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Continue
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Start
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,7 +36,7 @@ class HomeViewModel @Inject constructor(
   private var unsortedTimelineList = mutableListOf<Status>()
   private var previousStatusList = mutableListOf<Status>()
   private var nextPage: String? = null
-  private var initRefresh = true
+  private var initRefresh = false
   private var timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex ?: 0
   private val timelineScrollPositionOffset = preferenceRepository.timelineModel?.offset ?: 0
 
@@ -101,7 +101,7 @@ class HomeViewModel @Inject constructor(
             viewModelScope.launch(Dispatchers.Main) {
               lazyState.scrollToItem(
                 index = when (initRefresh) {
-                  true -> timelineScrollPosition.plus(newStatusList.size)
+                  false -> timelineScrollPosition.plus(newStatusList.size)
                   else -> newStatusList.size
                 },
                 scrollOffset = if (initRefresh) timelineScrollPositionOffset else 0
@@ -145,8 +145,10 @@ class HomeViewModel @Inject constructor(
   }
 
   fun initRefresh(lazyState: LazyListState) = viewModelScope.launch {
-    paginator.refresh(lazyState)
-    initRefresh = false
+    if (!initRefresh) {
+      paginator.refresh(lazyState)
+      initRefresh = true
+    }
   }
 
   fun append() = viewModelScope.launch {

@@ -1,13 +1,9 @@
 package com.github.whitescent.mastify.ui.component
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
@@ -18,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
@@ -26,7 +21,6 @@ import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.slideAnimationOffset
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
 import com.google.accompanist.systemuicontroller.SystemUiController
@@ -41,6 +35,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(
   FlowPreview::class,
   ExperimentalLayoutApi::class
@@ -96,20 +91,14 @@ fun AppScaffold(
   ) {
     Scaffold(
       bottomBar = {
-        AnimatedVisibility(
-          visible = destination.shouldShowScaffoldElements(),
-          enter = fadeIn(tween(slideAnimationOffset)),
-          exit = fadeOut(tween(slideAnimationOffset))
-        ) {
-          if (destination.shouldShowScaffoldElements()) {
-            BottomBar(
-              navController = navController,
-              destination = destination,
-              scrollToTop = {
-                scope.launch { lazyState.scrollToItem(0) }
-              }
-            )
-          }
+        if (destination.shouldShowScaffoldElements()) {
+          BottomBar(
+            navController = navController,
+            destination = destination,
+            scrollToTop = {
+              scope.launch { lazyState.scrollToItem(0) }
+            }
+          )
         }
       },
       containerColor = AppTheme.colors.background,
@@ -118,7 +107,6 @@ fun AppScaffold(
       DestinationsNavHost(
         engine = engine,
         navController = navController,
-        modifier = Modifier.padding(bottom = it.calculateBottomPadding()),
         navGraph = NavGraphs.root,
         startRoute = startRoute,
         dependenciesContainerBuilder = {

@@ -50,11 +50,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
-import com.github.whitescent.mastify.network.model.account.Status
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Continue
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.End
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Null
-import com.github.whitescent.mastify.network.model.account.Status.ReplyChainType.Start
+import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Continue
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Start
 import com.github.whitescent.mastify.ui.component.AnimatedCountText
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -77,6 +77,7 @@ fun Status(
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
+  navigateToMedia: (List<Status.Attachment>, Int) -> Unit
 ) {
   val avatar = status.reblog?.account?.avatar ?: status.account.avatar
   val reblogAvatar = status.account.avatar
@@ -102,10 +103,6 @@ fun Status(
   val reblogsCount = status.reblog?.reblogsCount ?: status.reblogsCount
   val favouritesCount = status.reblog?.favouritesCount ?: status.favouritesCount
   val favourited = status.reblog?.favourited ?: status.favourited
-
-  var openDialog by rememberSaveable { mutableStateOf(false) }
-  var targetMediaIndex by remember { mutableIntStateOf(0) }
-  var media by remember { mutableStateOf<List<Status.Attachment>>(listOf()) }
 
   val normalShape = RoundedCornerShape(18.dp)
   val replyShape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
@@ -225,9 +222,7 @@ fun Status(
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
           onClickMedia = {
-            media = attachments
-            targetMediaIndex = it
-            openDialog = true
+            navigateToMedia(attachments, it)
           },
           modifier = Modifier.let {
             if (status.replyChainType == Start)
@@ -238,16 +233,6 @@ fun Status(
           }
         )
       }
-    }
-  }
-  if (openDialog) {
-    StatusMediaDialog(
-      avatar = avatar,
-      content = content,
-      media = media,
-      targetMediaIndex = targetMediaIndex,
-    ) {
-      openDialog = false
     }
   }
 }

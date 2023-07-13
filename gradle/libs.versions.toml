@@ -9,6 +9,7 @@ androidxNavigation = "2.6.0"
 androidxHilt = "1.0.0"
 androidxStartup = "1.1.1"
 androidxBrowser = "1.5.0"
+androidDesugar = "1.2.2"
 
 compose = "1.6.0-alpha01"
 composeCompiler = "1.5.0-dev-k1.9.0-6a60475e07f"
@@ -60,6 +61,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 junit = { module = "junit:junit", version.ref = "junit" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExt" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxTestEspresso" }
+android-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "androidDesugar" }
 
 androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }

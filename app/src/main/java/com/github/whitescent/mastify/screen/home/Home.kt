@@ -64,6 +64,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
+import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -147,7 +148,15 @@ fun Home(
                         status = status,
                         favouriteStatus = { viewModel.favoriteStatus(status.id) },
                         unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
-                        navigateToDetail = { navigator.navigate(StatusDetailDestination) }
+                        navigateToDetail = { navigator.navigate(StatusDetailDestination(status)) },
+                        navigateToMedia = { attachments, index ->
+                          navigator.navigate(
+                            StatusMediaScreenDestination(
+                              attachments.toTypedArray(),
+                              index
+                            )
+                          )
+                        }
                       )
                     }
                     if (status.isReplyEnd) HeightSpacer(12.dp)
@@ -186,7 +195,12 @@ fun Home(
                       status = status,
                       favouriteStatus = { viewModel.favoriteStatus(status.id) },
                       unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
-                      navigateToDetail = { navigator.navigate(StatusDetailDestination) }
+                      navigateToDetail = { navigator.navigate(StatusDetailDestination(status)) },
+                      navigateToMedia = { attachments, index ->
+                        navigator.navigate(
+                          StatusMediaScreenDestination(attachments.toTypedArray(), index)
+                        )
+                      }
                     )
                   }
                   if (status.isReplyEnd) HeightSpacer(12.dp)

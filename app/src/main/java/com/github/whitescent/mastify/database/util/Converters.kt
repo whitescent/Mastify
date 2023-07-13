@@ -1,7 +1,7 @@
 package com.github.whitescent.mastify.database.util
 
 import androidx.room.TypeConverter
-import com.github.whitescent.mastify.network.model.account.Status
+import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
