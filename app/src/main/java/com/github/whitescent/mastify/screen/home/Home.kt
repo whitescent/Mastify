@@ -70,7 +70,7 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
-import com.github.whitescent.mastify.ui.component.status.Status
+import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.viewModel.HomeViewModel
@@ -144,11 +144,18 @@ fun Home(
                 items(uiState.previousStatusList) { status ->
                   key(status.id) {
                     if (status.shouldShow) {
-                      Status(
+                      StatusListItem(
                         status = status,
-                        favouriteStatus = { viewModel.favoriteStatus(status.id) },
-                        unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
-                        navigateToDetail = { navigator.navigate(StatusDetailDestination(status)) },
+                        favouriteStatus = { viewModel.favoriteStatus(status.threadId) },
+                        unfavouriteStatus = { viewModel.unfavoriteStatus(status.threadId) },
+                        navigateToDetail = {
+                          navigator.navigate(
+                            StatusDetailDestination(
+                              avatar = viewModel.activeAccount.profilePictureUrl,
+                              status = status
+                            )
+                          )
+                        },
                         navigateToMedia = { attachments, index ->
                           navigator.navigate(
                             StatusMediaScreenDestination(
@@ -191,16 +198,24 @@ fun Home(
                     viewModel.append()
                   }
                   if (status.shouldShow) {
-                    Status(
+                    StatusListItem(
                       status = status,
-                      favouriteStatus = { viewModel.favoriteStatus(status.id) },
-                      unfavouriteStatus = { viewModel.unfavoriteStatus(status.id) },
-                      navigateToDetail = { navigator.navigate(StatusDetailDestination(status)) },
+                      favouriteStatus = { viewModel.favoriteStatus(status.threadId) },
+                      unfavouriteStatus = { viewModel.unfavoriteStatus(status.threadId) },
+                      navigateToDetail = {
+                        navigator.navigate(
+                          StatusDetailDestination(
+                            avatar = viewModel.activeAccount.profilePictureUrl,
+                            status = status
+                          )
+                        )
+                      },
                       navigateToMedia = { attachments, index ->
                         navigator.navigate(
                           StatusMediaScreenDestination(attachments.toTypedArray(), index)
                         )
-                      }
+                      },
+                      modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
                     )
                   }
                   if (status.isReplyEnd) HeightSpacer(12.dp)

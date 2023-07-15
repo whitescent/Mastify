@@ -39,6 +39,7 @@ data class Status(
   val shouldShow: Boolean = true
 ) {
 
+  val threadId inline get() = this.reblog?.id ?: this.id
   val isInReplyTo inline get() = inReplyToId != null
   val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
   val isReplyEnd inline get() = replyChainType == Null || replyChainType == End

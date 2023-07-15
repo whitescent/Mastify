@@ -36,7 +36,7 @@ class HomeViewModel @Inject constructor(
   private var unsortedTimelineList = mutableListOf<Status>()
   private var previousStatusList = mutableListOf<Status>()
   private var nextPage: String? = null
-  private var initRefresh = false
+  private var isInitialLoad = false
   private var timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex ?: 0
   private val timelineScrollPositionOffset = preferenceRepository.timelineModel?.offset ?: 0
 
@@ -81,30 +81,23 @@ class HomeViewModel @Inject constructor(
           uiState = uiState.copy(showLoadMorePlacerHolder = true)
           loadPreviousStatus()
         } else {
-          // 将 api 获取到的 status 和 db 有的数据组合起来
-          val indexInSavedList = unsortedTimelineList.indexOf(lastStatusInApi) + 1
-          val statusListAfterIndex =
-            unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
           val newStatusList = items.filterNot {
             unsortedTimelineList.any { saved -> saved.id == it.id }
           }
+          val indexInSavedList = unsortedTimelineList.indexOfFirst { it.id == items.last().id } + 1
+          val statusListAfterIndex =
+            unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
           // 添加 api 获取到的新的帖子
-          unsortedTimelineList = (newStatusList + unsortedTimelineList).toMutableList()
-          // 删除那些已经删除的帖子
-          unsortedTimelineList = items.filterNot {
-            !unsortedTimelineList.any { saved -> saved.id == it.id }
-          }.toMutableList()
-          // 补上除了 api 获取到的，保存在 db 中的 status
-          unsortedTimelineList = (unsortedTimelineList + statusListAfterIndex).toMutableList()
+          unsortedTimelineList = (items + statusListAfterIndex).toMutableList()
           if (newStatusList.isNotEmpty()) {
             uiState = uiState.copy(newStatusCount = newStatusList.size, showNewStatusButton = true)
             viewModelScope.launch(Dispatchers.Main) {
               lazyState.scrollToItem(
-                index = when (initRefresh) {
+                index = when (isInitialLoad) {
                   false -> timelineScrollPosition.plus(newStatusList.size)
                   else -> newStatusList.size
                 },
-                scrollOffset = if (initRefresh) timelineScrollPositionOffset else 0
+                scrollOffset = if (isInitialLoad) timelineScrollPositionOffset else 0
               )
             }
           }
@@ -145,9 +138,9 @@ class HomeViewModel @Inject constructor(
   }
 
   fun initRefresh(lazyState: LazyListState) = viewModelScope.launch {
-    if (!initRefresh) {
+    if (!isInitialLoad) {
       paginator.refresh(lazyState)
-      initRefresh = true
+      isInitialLoad = true
     }
   }
 

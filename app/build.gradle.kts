@@ -2,10 +2,10 @@
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
-  alias(libs.plugins.kotlin.serialization)
   id("kotlin-kapt")
   id("kotlin-parcelize")
   id("dagger.hilt.android.plugin")
+  alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
 }
 

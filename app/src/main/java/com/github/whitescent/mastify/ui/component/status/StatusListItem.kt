@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.Status.Application
+import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Continue
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
@@ -71,13 +73,14 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
 @Composable
-fun Status(
-  modifier: Modifier = Modifier,
+fun StatusListItem(
   status: Status,
+  modifier: Modifier = Modifier,
+  backgroundColor: Color = AppTheme.colors.cardBackground,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
-  navigateToMedia: (List<Status.Attachment>, Int) -> Unit
+  navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
   val avatar = status.reblog?.account?.avatar ?: status.account.avatar
   val reblogAvatar = status.account.avatar
@@ -116,9 +119,7 @@ fun Status(
   val replyLineColor = AppTheme.colors.replyLine
 
   Surface(
-    modifier = modifier
-      .fillMaxWidth()
-      .padding(horizontal = 24.dp),
+    modifier = modifier,
     shape = when (status.hasUnloadedReplyStatus) {
       true -> {
         when (status.replyChainType) {
@@ -135,7 +136,7 @@ fun Status(
         }
       }
     },
-    color = AppTheme.colors.cardBackground,
+    color = backgroundColor,
   ) {
     Column {
       if (status.hasOmittedReplyStatus) {
@@ -214,6 +215,7 @@ fun Status(
           replyChainType = status.replyChainType,
           attachments = attachments.toImmutableList(),
           mentions = mentions.toImmutableList(),
+          application = application,
           repliesCount = repliesCount,
           reblogsCount = reblogsCount,
           favouritesCount = favouritesCount,
@@ -291,8 +293,9 @@ fun StatusContent(
   sensitive: Boolean,
   spoilerText: String,
   replyChainType: Status.ReplyChainType,
-  attachments: ImmutableList<Status.Attachment>,
+  attachments: ImmutableList<Attachment>,
   mentions: ImmutableList<Status.Mention>,
+  application: Application?,
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,
@@ -409,7 +412,7 @@ fun StatusContent(
                 onClick = onClickMedia,
               )
             }
-            HeightSpacer(value = 6.dp)
+            HeightSpacer(value = 8.dp)
             StatusActionsRow(
               repliesCount = repliesCount,
               reblogsCount = reblogsCount,
@@ -524,7 +527,7 @@ fun StatusContent(
               onClick = onClickMedia,
             )
           }
-          HeightSpacer(value = 6.dp)
+          HeightSpacer(value = 8.dp)
           StatusActionsRow(
             repliesCount = repliesCount,
             reblogsCount = reblogsCount,
@@ -564,8 +567,7 @@ fun StatusActionsRow(
     CenterRow(modifier = Modifier.weight(1f)) {
       ClickableIcon(
         painter = painterResource(id = R.drawable.chat),
-        modifier = Modifier
-          .size(20.dp),
+        modifier = Modifier.size(statusActionsIconSize),
         tint = AppTheme.colors.cardAction,
       )
       WidthSpacer(value = 2.dp)
@@ -576,8 +578,7 @@ fun StatusActionsRow(
       WidthSpacer(value = 24.dp)
       ClickableIcon(
         painter = painterResource(id = R.drawable.heart),
-        modifier = Modifier
-          .size(20.dp),
+        modifier = Modifier.size(statusActionsIconSize),
         tint = animatedFavIconColor,
       ) {
         favState = !favState
@@ -597,8 +598,7 @@ fun StatusActionsRow(
       WidthSpacer(value = 24.dp)
       ClickableIcon(
         painter = painterResource(id = R.drawable.repost),
-        modifier = Modifier
-          .size(20.dp),
+        modifier = Modifier.size(statusActionsIconSize),
         tint = AppTheme.colors.cardAction,
       )
       WidthSpacer(value = 2.dp)
@@ -617,8 +617,7 @@ fun StatusActionsRow(
       WidthSpacer(value = 16.dp)
       ClickableIcon(
         painter = painterResource(id = R.drawable.share),
-        modifier = Modifier
-          .size(20.dp),
+        modifier = Modifier.size(statusActionsIconSize),
         tint = AppTheme.colors.cardAction,
       )
     }
@@ -627,3 +626,5 @@ fun StatusActionsRow(
 
 private val statusContentPadding = 12.dp
 private val statusAvatarSize = 36.dp
+private val statusActionsIconSize = 20.dp
+private val statusDetailActionsIconSize = 24.dp

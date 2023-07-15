@@ -46,7 +46,7 @@ private object LightColors : MastifyColorsInterface {
     get() = Color(0xFF046FFF)
 
   override val accent10: Color
-    get() = Color(0xE6046FFF)
+    get() = Color(0xE6046FFF).copy(alpha = 0.1f)
 
   override val background: Color
     get() = Color(0xFFF8F8FB)
