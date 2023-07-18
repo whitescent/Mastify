@@ -1,6 +1,8 @@
 package com.github.whitescent.mastify.ui.transitions
 
 import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.End
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.LinearEasing
@@ -17,6 +19,7 @@ import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.OauthDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
+import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
 object AppTransitions : DestinationStyle.Animated {
@@ -41,6 +44,7 @@ object AppTransitions : DestinationStyle.Animated {
           animationSpec = tween(slideAnimationTween)
         )
       }
+      StatusMediaScreenDestination -> scaleOut()
       else -> fadeOut()
     }
   }
@@ -85,20 +89,42 @@ object OauthTransitions : DestinationStyle.Animated {
 object StatusTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return when (initialState.appDestination()) {
-      HomeDestination ->
-        slideInHorizontally(
-          initialOffsetX = { slideAnimationOffset },
+      HomeDestination, StatusDetailDestination ->
+        slideIntoContainer(
+          towards = Start,
           animationSpec = tween(slideAnimationTween)
         )
       else -> fadeIn()
     }
   }
-
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return when (targetState.appDestination()) {
       HomeDestination ->
-        slideOutHorizontally(
-          targetOffsetX = { slideAnimationOffset },
+        slideOutOfContainer(
+          towards = End,
+          animationSpec = tween(slideAnimationTween)
+        )
+      StatusDetailDestination ->
+        slideOutOfContainer(
+          towards = Start,
+          animationSpec = tween(slideAnimationTween)
+        )
+      StatusMediaScreenDestination -> scaleOut()
+      else -> fadeOut()
+    }
+  }
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
+    return if (initialState.appDestination() == StatusMediaScreenDestination) fadeIn() else
+      slideIntoContainer(
+        towards = End,
+        animationSpec = tween(slideAnimationTween)
+      )
+  }
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
+    return when (targetState.appDestination()) {
+      HomeDestination, StatusDetailDestination ->
+        slideOutOfContainer(
+          towards = End,
           animationSpec = tween(slideAnimationTween)
         )
       else -> fadeOut()

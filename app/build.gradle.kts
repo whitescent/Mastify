@@ -17,7 +17,7 @@ android {
   defaultConfig {
     applicationId = "com.github.whitescent.mastify"
     minSdk = 21
-    targetSdk = 33
+    targetSdk = 34
     versionCode = 1
     versionName = "1.0"
 
@@ -29,11 +29,18 @@ android {
   buildTypes {
     release {
       isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
       )
-      isDebuggable = true
+    }
+    create("benchmark") {
+      initWith(buildTypes.getByName("release"))
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks += listOf("release")
+      isDebuggable = false
+      proguardFiles("benchmark-rules.pro")
     }
   }
   kotlinOptions {
@@ -42,7 +49,6 @@ android {
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
-    isCoreLibraryDesugaringEnabled = true
   }
   composeOptions {
     kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
@@ -126,6 +132,4 @@ dependencies {
 
   implementation(libs.kotlinx.datetime)
   implementation(libs.kotlinx.collections)
-
-  coreLibraryDesugaring(libs.android.desugar)
 }

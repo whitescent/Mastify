@@ -84,10 +84,10 @@ class HomeViewModel @Inject constructor(
           val newStatusList = items.filterNot {
             unsortedTimelineList.any { saved -> saved.id == it.id }
           }
+          // 添加 api 获取到的新的帖子
           val indexInSavedList = unsortedTimelineList.indexOfFirst { it.id == items.last().id } + 1
           val statusListAfterIndex =
             unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
-          // 添加 api 获取到的新的帖子
           unsortedTimelineList = (items + statusListAfterIndex).toMutableList()
           if (newStatusList.isNotEmpty()) {
             uiState = uiState.copy(newStatusCount = newStatusList.size, showNewStatusButton = true)

@@ -9,7 +9,7 @@ androidxNavigation = "2.6.0"
 androidxHilt = "1.0.0"
 androidxStartup = "1.1.1"
 androidxBrowser = "1.5.0"
-androidDesugar = "1.2.2"
+androidDesugar = "2.0.3"
 
 compose = "1.6.0-alpha01"
 composeCompiler = "1.5.0-dev-k1.9.0-6a60475e07f"
@@ -29,7 +29,7 @@ kotlinxCollections = "0.3.5"
 kotlinxCoroutines = "1.7.1"
 kotlin = "1.9.0"
 
-agp = "8.1.0-alpha11"
+agp = "8.2.0-alpha12"
 accompanist = "0.30.1"
 coil = "2.4.0"
 mmkv = "1.2.15"
@@ -45,6 +45,9 @@ splashScreen = "1.0.1"
 junit = "4.13.2"
 jsoup = "1.16.1"
 zoomable = "1.6.0"
+uiautomator = "2.2.0"
+benchmark-macro-junit4 = "1.2.0-alpha16"
+profileinstaller = "1.3.1"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -123,6 +126,9 @@ androidx-paging-compose = { module = "androidx.paging:paging-compose", version.r
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
+benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
+profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

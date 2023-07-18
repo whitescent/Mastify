@@ -10,7 +10,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -62,6 +63,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -91,15 +93,18 @@ fun Home(
 ) {
   val context = LocalContext.current
   val uiState = viewModel.uiState
-  val homeTimeline = uiState.statusList
-
+  val homeTimeline = remember(uiState.statusList) {
+    uiState.statusList.map { Status.ViewData(it) }
+  }
+  val previousTimeline = remember(uiState.previousStatusList) {
+    uiState.previousStatusList.map { Status.ViewData(it) }
+  }
   val firstVisibleIndex by remember {
     derivedStateOf {
       lazyState.firstVisibleItemIndex
     }
   }
   var refreshing by remember { mutableStateOf(false) }
-
   val scope = rememberCoroutineScope()
 
   val pullRefreshState = rememberPullRefreshState(
@@ -139,20 +144,21 @@ fun Home(
               modifier = Modifier
                 .fillMaxSize()
                 .drawVerticalScrollbar(lazyState)
+                .testTag("homeTimelineLazyColumn")
             ) {
               if (uiState.showLoadMorePlacerHolder) {
-                items(uiState.previousStatusList) { status ->
+                items(previousTimeline, contentType = { it }) { status ->
                   key(status.id) {
                     if (status.shouldShow) {
                       StatusListItem(
                         status = status,
-                        favouriteStatus = { viewModel.favoriteStatus(status.threadId) },
-                        unfavouriteStatus = { viewModel.unfavoriteStatus(status.threadId) },
+                        favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
+                        unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
                         navigateToDetail = {
                           navigator.navigate(
                             StatusDetailDestination(
                               avatar = viewModel.activeAccount.profilePictureUrl,
-                              status = status
+                              status = status.status
                             )
                           )
                         },
@@ -163,32 +169,39 @@ fun Home(
                               index
                             )
                           )
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
                       )
                     }
                     if (status.isReplyEnd) HeightSpacer(12.dp)
                   }
                 }
                 item {
-                  Box(
+                  Surface(
                     modifier = Modifier
+                      .padding(16.dp)
                       .fillMaxWidth()
-                      .height(56.dp)
-                      .padding(24.dp)
-                      .border(1.dp, Color.Gray)
-                      .clickable { viewModel.loadPreviousStatus() },
-                    contentAlignment = Alignment.Center
+                      .height(56.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color(0xFFebf4fb)
                   ) {
-                    Text(
-                      text = "加载更多",
-                      color = AppTheme.colors.hintText,
-                      fontSize = 16.sp,
-                      modifier = Modifier.padding(16.dp)
-                    )
+                    Box(
+                      modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { viewModel.loadPreviousStatus() }
+                        .padding(12.dp),
+                      contentAlignment = Alignment.Center
+                    ) {
+                      Text(
+                        text = "加载更多",
+                        color = AppTheme.colors.hintText,
+                        fontSize = 16.sp
+                      )
+                    }
                   }
                 }
               }
-              items(homeTimeline) { status ->
+              items(homeTimeline, contentType = { it }) { status ->
                 val loadThreshold = uiState.statusList.size - uiState.statusList.size / 3
                 key(status.id) {
                   if (
@@ -200,13 +213,13 @@ fun Home(
                   if (status.shouldShow) {
                     StatusListItem(
                       status = status,
-                      favouriteStatus = { viewModel.favoriteStatus(status.threadId) },
-                      unfavouriteStatus = { viewModel.unfavoriteStatus(status.threadId) },
+                      favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
+                      unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
                       navigateToDetail = {
                         navigator.navigate(
                           StatusDetailDestination(
                             avatar = viewModel.activeAccount.profilePictureUrl,
-                            status = status
+                            status = status.status
                           )
                         )
                       },
@@ -316,9 +329,9 @@ fun NewStatusToast(count: Int, onDismiss: () -> Unit) {
         painter = painterResource(id = R.drawable.arrow_up),
         contentDescription = null,
         tint = Color.White,
-        modifier = Modifier.size(24.dp)
+        modifier = Modifier.size(16.dp)
       )
-      WidthSpacer(value = 2.dp)
+      WidthSpacer(value = 4.dp)
       Text(
         text = "$count 条新嘟文",
         fontSize = 16.sp,

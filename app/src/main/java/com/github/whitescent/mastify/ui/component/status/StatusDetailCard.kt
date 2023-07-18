@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,64 +48,48 @@ import com.github.whitescent.mastify.utils.launchCustomChromeTab
 
 @Composable
 fun StatusDetailCard(
-  status: Status,
+  status: Status.ViewData,
   modifier: Modifier = Modifier,
   backgroundColor: Color = AppTheme.colors.cardBackground,
   contentTextStyle: TextStyle = LocalTextStyle.current,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
+  navigateToDetail: () -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
-  val avatar = status.reblog?.account?.avatar ?: status.account.avatar
-  // status author display name
-  val displayName = status.reblog?.account?.displayName?.ifEmpty {
-    status.reblog.account.username
-  } ?: status.account.displayName.ifEmpty { status.account.username }
-
-  // The display name of the person who forwarded this status
-  val reblogDisplayName = status.account.displayName.ifEmpty { status.account.username }
-
-  val fullname = status.reblog?.account?.fullName ?: status.account.fullName
-  val createdAt = status.reblog?.createdAt ?: status.createdAt
-  val content = status.reblog?.content ?: status.content
-  val application = status.reblog?.application ?: status.application
-  val sensitive = status.reblog?.sensitive ?: status.sensitive
-  val spoilerText = status.reblog?.spoilerText ?: status.spoilerText
-  val mentions = status.reblog?.mentions ?: status.mentions
-  val tags = status.reblog?.tags ?: status.tags
-  val attachments = status.reblog?.attachments ?: status.attachments
-  val repliesCount = status.reblog?.repliesCount ?: status.repliesCount
-  val reblogsCount = status.reblog?.reblogsCount ?: status.reblogsCount
-  val favouritesCount = status.reblog?.favouritesCount ?: status.favouritesCount
-  val favourited = status.reblog?.favourited ?: status.favourited
-
   Surface(
     modifier = modifier
       .fillMaxWidth()
       .padding(12.dp),
     shape = RoundedCornerShape(18.dp),
-    color = backgroundColor,
+    color = backgroundColor
   ) {
     val context = LocalContext.current
     val primaryColor = AppTheme.colors.primaryContent
     Column(
-      modifier = Modifier.padding(statusContentPadding)
+      modifier = Modifier
+        .clickable(
+          onClick = navigateToDetail,
+          indication = null,
+          interactionSource = remember { MutableInteractionSource() }
+        )
+        .padding(statusContentPadding)
     ) {
       CenterRow(modifier = Modifier.fillMaxWidth()) {
         CircleShapeAsyncImage(
-          model = avatar,
+          model = status.avatar,
           modifier = Modifier.size(statusAvatarSize),
         )
         WidthSpacer(value = 7.dp)
         Column(modifier = Modifier.weight(1f)) {
           Text(
-            text = displayName,
+            text = status.displayName,
             style = AppTheme.typography.statusDisplayName,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
           )
           Text(
-            text = fullname,
+            text = status.fullname,
             style = AppTheme.typography.statusUsername.copy(
               color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
             ),
@@ -118,8 +104,10 @@ fun StatusDetailCard(
           modifier = Modifier.size(18.dp),
         )
       }
-      if (content.isNotEmpty()) {
-        var mutableSensitive by rememberSaveable(sensitive) { mutableStateOf(sensitive) }
+      if (status.content.isNotEmpty()) {
+        var mutableSensitive by rememberSaveable(status.sensitive) {
+          mutableStateOf(status.sensitive)
+        }
         HeightSpacer(value = 4.dp)
         if (mutableSensitive) {
           Surface(
@@ -141,7 +129,7 @@ fun StatusDetailCard(
               )
               WidthSpacer(value = 4.dp)
               Text(
-                text = spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },
+                text = status.spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },
                 color = Color.White,
               )
             }
@@ -149,7 +137,7 @@ fun StatusDetailCard(
         }
         AnimatedVisibility(visible = !mutableSensitive) {
           HtmlText(
-            text = content.trimEnd(),
+            text = status.content.trimEnd(),
             style = contentTextStyle,
             linkClicked = { span ->
               launchCustomChromeTab(
@@ -161,25 +149,25 @@ fun StatusDetailCard(
           )
         }
       }
-      if (attachments.isNotEmpty()) {
+      if (status.attachments.isNotEmpty()) {
         HeightSpacer(value = 4.dp)
         StatusMedia(
-          sensitive = sensitive,
-          spoilerText = spoilerText,
-          attachments = attachments,
-          onClick = { navigateToMedia(attachments, it) },
+          sensitive = status.sensitive,
+          spoilerText = status.spoilerText,
+          attachments = status.attachments,
+          onClick = { navigateToMedia(status.attachments, it) },
         )
       }
       HeightSpacer(value = 8.dp)
       StatusDetailInfo(
-        reblogsCount = reblogsCount,
-        favouritesCount = favouritesCount,
-        createdAt = createdAt,
-        application = application
+        reblogsCount = status.reblogsCount,
+        favouritesCount = status.favouritesCount,
+        createdAt = status.createdAt,
+        application = status.application
       )
       HeightSpacer(value = 8.dp)
       StatusDetailActionsRow(
-        favourited = favourited,
+        favourited = status.favourited,
         favouriteStatus = favouriteStatus,
         unfavouriteStatus = unfavouriteStatus,
       )
@@ -273,12 +261,12 @@ fun StatusDetailInfo(
     HeightSpacer(value = 8.dp)
     CenterRow {
       Text(
-        text = "$favouritesCount 喜欢",
-        color = Color(0xFFF91880)
+        text = pluralStringResource(id = R.plurals.favs, favouritesCount, favouritesCount),
+        color = Color(0xFFF91880),
       )
       WidthSpacer(value = 8.dp)
       Text(
-        text = "$reblogsCount 转嘟",
+        text = pluralStringResource(id = R.plurals.reblogs, reblogsCount, reblogsCount),
         color = Color(0xFF00BA7C)
       )
     }

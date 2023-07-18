@@ -39,9 +39,10 @@ data class Status(
   val shouldShow: Boolean = true
 ) {
 
-  val threadId inline get() = this.reblog?.id ?: this.id
+  val actionableId inline get() = reblog?.id ?: id
+  val actionableStatus: Status inline get() = reblog ?: this
+
   val isInReplyTo inline get() = inReplyToId != null
-  val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
   val isReplyEnd inline get() = replyChainType == Null || replyChainType == End
 
   @Serializable
@@ -110,5 +111,47 @@ data class Status(
 
   enum class ReplyChainType {
     Start, Continue, End, Null
+  }
+
+  data class ViewData(
+    val status: Status,
+    val replyChainType: ReplyChainType = status.replyChainType,
+    val hasUnloadedReplyStatus: Boolean = status.hasUnloadedReplyStatus,
+    val hasMultiReplyStatus: Boolean = status.hasMultiReplyStatus,
+    val shouldShow: Boolean = status.shouldShow
+  ) {
+    val id inline get() = status.id
+    val reblog inline get() = status.reblog
+
+    val avatar inline get() = status.reblog?.account?.avatar ?: status.account.avatar
+    val rebloggedAvatar inline get() = status.account.avatar
+
+    val displayName inline get() = status.reblog?.account?.displayName?.ifEmpty {
+      status.reblog.account.username
+    } ?: status.account.displayName.ifEmpty { status.account.username }
+
+    val reblogDisplayName inline get() = status.account.displayName
+      .ifEmpty { status.account.username }
+
+    val fullname inline get() = status.reblog?.account?.fullName ?: status.account.fullName
+    val createdAt inline get() = status.reblog?.createdAt ?: status.createdAt
+    val content inline get() = status.reblog?.content ?: status.content
+    val application inline get() = status.reblog?.application ?: status.application
+    val sensitive inline get() = status.reblog?.sensitive ?: status.sensitive
+    val spoilerText inline get() = status.reblog?.spoilerText ?: status.spoilerText
+    val mentions inline get() = status.reblog?.mentions ?: status.mentions
+    val tags inline get() = status.reblog?.tags ?: status.tags
+    val attachments inline get() = status.reblog?.attachments ?: status.attachments
+    val repliesCount inline get() = status.reblog?.repliesCount ?: status.repliesCount
+    val reblogsCount inline get() = status.reblog?.reblogsCount ?: status.reblogsCount
+    val favouritesCount inline get() = status.reblog?.favouritesCount ?: status.favouritesCount
+    val favourited inline get() = status.reblog?.favourited ?: status.favourited
+
+    val actionable: Status inline get() = status.actionableStatus
+    val actionableId: String inline get() = status.actionableStatus.id
+
+    val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
+    val isReplyEnd inline get() = replyChainType == Null || replyChainType == End
+    val isInReplyTo inline get() = status.inReplyToId != null
   }
 }

@@ -12,6 +12,7 @@
   <string name="error_invalid_domain">Invalid domain entered</string>
 
   <!-- home screen -->
+  <string name="home_title">Home</string>
   <string name="post_boosted_format_suffix">boosted</string>
   <string name="title_add_account">Add Account</string>
   <string name="title_profile">Profile</string>
@@ -24,6 +25,21 @@
   <string name="title_logout">Log out</string>
   <string name="sensitive_content">Sensitive Content</string>
   <string name="reply_a_post">replied a post</string>
+  <string name="started_a_discussion_thread">started a discussion thread</string>
+  <string name="show_more_replies">Show more replies</string>
+
+  <!-- status detail screen -->
+  <string name="post_your_reply">post your reply</string>
+
+  <plurals name="favs">
+    <item quantity="one">%d Favorite</item>
+    <item quantity="other">%d Favorites</item>
+  </plurals>
+
+  <plurals name="reblogs">
+    <item quantity="one">%d Boost</item>
+    <item quantity="other">%d Boosts</item>
+  </plurals>
 
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
   <string name="status_created_at_now">now</string>

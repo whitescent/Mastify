@@ -71,10 +71,11 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
+import kotlinx.serialization.json.JsonNull.content
 
 @Composable
 fun StatusListItem(
-  status: Status,
+  status: Status.ViewData,
   modifier: Modifier = Modifier,
   backgroundColor: Color = AppTheme.colors.cardBackground,
   favouriteStatus: () -> Unit,
@@ -82,31 +83,6 @@ fun StatusListItem(
   navigateToDetail: () -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
-  val avatar = status.reblog?.account?.avatar ?: status.account.avatar
-  val reblogAvatar = status.account.avatar
-
-  // status author display name
-  val displayName = status.reblog?.account?.displayName?.ifEmpty {
-    status.reblog.account.username
-  } ?: status.account.displayName.ifEmpty { status.account.username }
-
-  // The display name of the person who forwarded this status
-  val reblogDisplayName = status.account.displayName.ifEmpty { status.account.username }
-
-  val fullname = status.reblog?.account?.fullName ?: status.account.fullName
-  val createdAt = status.reblog?.createdAt ?: status.createdAt
-  val content = status.reblog?.content ?: status.content
-  val application = status.reblog?.application ?: status.application
-  val sensitive = status.reblog?.sensitive ?: status.sensitive
-  val spoilerText = status.reblog?.spoilerText ?: status.spoilerText
-  val mentions = status.reblog?.mentions ?: status.mentions
-  val tags = status.reblog?.tags ?: status.tags
-  val attachments = status.reblog?.attachments ?: status.attachments
-  val repliesCount = status.reblog?.repliesCount ?: status.repliesCount
-  val reblogsCount = status.reblog?.reblogsCount ?: status.reblogsCount
-  val favouritesCount = status.reblog?.favouritesCount ?: status.favouritesCount
-  val favourited = status.reblog?.favourited ?: status.favourited
-
   val normalShape = RoundedCornerShape(18.dp)
   val replyShape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
   val lastReplyShape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp)
@@ -136,7 +112,7 @@ fun StatusListItem(
         }
       }
     },
-    color = backgroundColor,
+    color = backgroundColor
   ) {
     Column {
       if (status.hasOmittedReplyStatus) {
@@ -161,10 +137,12 @@ fun StatusListItem(
             }
           }
           Text(
-            text = if (status.hasUnloadedReplyStatus) "展开了一个讨论串" else "显示更多回复",
+            text = stringResource(
+              id = if (status.hasUnloadedReplyStatus) R.string.started_a_discussion_thread
+              else R.string.show_more_replies
+            ),
             fontSize = 14.sp,
             fontWeight = FontWeight(600),
-            // color = Color(0xFF0079D3),
             color = AppTheme.colors.hintText,
           )
         }
@@ -180,8 +158,7 @@ fun StatusListItem(
             val itemHeight = this.size.height
             val (startOffsetY, endOffsetY) = when (status.replyChainType) {
               Start -> {
-                if (!status.hasUnloadedReplyStatus)
-                  avatarHalfSize to itemHeight
+                if (!status.hasUnloadedReplyStatus) avatarHalfSize to itemHeight
                 else 0f to itemHeight
               }
               Continue -> 0f to itemHeight
@@ -200,31 +177,31 @@ fun StatusListItem(
       ) {
         status.reblog?.let {
           StatusSource(
-            reblogAvatar = reblogAvatar,
-            reblogDisplayName = reblogDisplayName
+            reblogAvatar = status.rebloggedAvatar,
+            reblogDisplayName = status.reblogDisplayName
           )
         }
         StatusContent(
-          avatar = avatar,
-          displayName = displayName,
-          fullname = fullname,
-          createdAt = createdAt,
-          content = content,
-          sensitive = sensitive,
-          spoilerText = spoilerText,
+          avatar = status.avatar,
+          displayName = status.displayName,
+          fullname = status.fullname,
+          createdAt = status.createdAt,
+          content = status.content,
+          sensitive = status.sensitive,
+          spoilerText = status.spoilerText,
           replyChainType = status.replyChainType,
-          attachments = attachments.toImmutableList(),
-          mentions = mentions.toImmutableList(),
-          application = application,
-          repliesCount = repliesCount,
-          reblogsCount = reblogsCount,
-          favouritesCount = favouritesCount,
-          favourited = favourited,
+          attachments = status.attachments.toImmutableList(),
+          mentions = status.mentions.toImmutableList(),
+          application = status.application,
+          repliesCount = status.repliesCount,
+          reblogsCount = status.reblogsCount,
+          favouritesCount = status.favouritesCount,
+          favourited = status.favourited,
           navigateToDetail = { navigateToDetail() },
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
           onClickMedia = {
-            navigateToMedia(attachments, it)
+            navigateToMedia(status.attachments, it)
           },
           modifier = Modifier.let {
             if (status.replyChainType == Start)
@@ -627,4 +604,3 @@ fun StatusActionsRow(
 private val statusContentPadding = 12.dp
 private val statusAvatarSize = 36.dp
 private val statusActionsIconSize = 20.dp
-private val statusDetailActionsIconSize = 24.dp
