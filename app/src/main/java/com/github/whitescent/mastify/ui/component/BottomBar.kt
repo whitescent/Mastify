@@ -6,7 +6,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,7 +35,6 @@ fun BottomBar(
   Surface(
     modifier = modifier
       .fillMaxWidth()
-      .heightIn(54.dp)
       .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     color = AppTheme.colors.bottomBarBackground,
@@ -59,7 +58,8 @@ fun BottomBar(
               indication = null,
               interactionSource = MutableInteractionSource()
             )
-            .padding(bottom = 35.dp, top = 20.dp, start = 24.dp, end = 24.dp),
+            .navigationBarsPadding()
+            .padding(top = 20.dp, start = 24.dp, end = 24.dp, bottom = 20.dp),
           verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally
         ) {

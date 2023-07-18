@@ -3,8 +3,6 @@ package com.github.whitescent.mastify.ui.component
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -97,12 +95,11 @@ fun AppScaffold(
             destination = destination,
             scrollToTop = {
               scope.launch { lazyState.scrollToItem(0) }
-            }
+            },
           )
         }
       },
-      containerColor = AppTheme.colors.background,
-      contentWindowInsets = WindowInsets.systemBarsIgnoringVisibility,
+      containerColor = AppTheme.colors.background
     ) {
       DestinationsNavHost(
         engine = engine,

@@ -34,6 +34,8 @@ class MainActivity : ComponentActivity() {
             color = Color.Transparent,
             darkIcons = useDarkIcons
           )
+          // Support non-full screen gestures
+          systemUiController.isNavigationBarContrastEnforced = false
         }
         AppScaffold(
           startRoute = if (isLoggedIn) NavGraphs.app else NavGraphs.login,

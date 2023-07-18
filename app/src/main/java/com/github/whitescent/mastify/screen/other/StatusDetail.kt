@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -365,7 +366,7 @@ fun ReplyTextField(
       .fillMaxWidth()
       .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
   ) {
-    CenterRow(Modifier.padding(horizontal = 12.dp, vertical = 24.dp)) {
+    CenterRow(Modifier.navigationBarsPadding().padding(horizontal = 12.dp, vertical = 24.dp)) {
       CircleShapeAsyncImage(model = avatar, modifier = Modifier.size(48.dp))
       WidthSpacer(value = 6.dp)
       BasicTextField(
