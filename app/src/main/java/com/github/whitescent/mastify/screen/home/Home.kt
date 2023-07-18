@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.screen.home
 
 import android.widget.Toast
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -50,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -93,11 +91,11 @@ fun Home(
 ) {
   val context = LocalContext.current
   val uiState = viewModel.uiState
-  val homeTimeline = remember(uiState.statusList) {
-    uiState.statusList.map { Status.ViewData(it) }
+  val timeline = remember(uiState.timeline) {
+    uiState.timeline.map { Status.ViewData(it) }
   }
-  val previousTimeline = remember(uiState.previousStatusList) {
-    uiState.previousStatusList.map { Status.ViewData(it) }
+  val timelineWithNewStatus = remember(uiState.timelineWithNewStatus) {
+    uiState.timelineWithNewStatus.map { Status.ViewData(it) }
   }
   val firstVisibleIndex by remember {
     derivedStateOf {
@@ -113,7 +111,7 @@ fun Home(
       scope.launch {
         refreshing = true
         delay(500)
-        viewModel.refreshTimeline(lazyState)
+        viewModel.refreshTimeline()
         refreshing = false
       }
     },
@@ -129,140 +127,176 @@ fun Home(
           }
         }
       )
-      when (homeTimeline.size) {
+      when (timeline.size) {
         0 -> {
           when (uiState.timelineLoadState) {
-            LoadState.Error -> Error { viewModel.refreshTimeline(lazyState) }
+            LoadState.Error -> Error { viewModel.refreshTimeline() }
             LoadState.NotLoading -> EmptyTimeline()
             else -> Loading()
           }
         }
         else -> {
           Box {
-            LazyColumn(
-              state = lazyState,
-              modifier = Modifier
-                .fillMaxSize()
-                .drawVerticalScrollbar(lazyState)
-                .testTag("homeTimelineLazyColumn")
-            ) {
-              if (uiState.showLoadMorePlacerHolder) {
-                items(previousTimeline, contentType = { it }) { status ->
-                  key(status.id) {
-                    if (status.shouldShow) {
-                      StatusListItem(
-                        status = status,
-                        favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-                        unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
-                        navigateToDetail = {
-                          navigator.navigate(
-                            StatusDetailDestination(
-                              avatar = viewModel.activeAccount.profilePictureUrl,
-                              status = status.status
-                            )
-                          )
-                        },
-                        navigateToMedia = { attachments, index ->
-                          navigator.navigate(
-                            StatusMediaScreenDestination(
-                              attachments.toTypedArray(),
-                              index
-                            )
-                          )
-                        },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-                      )
-                    }
-                    if (status.isReplyEnd) HeightSpacer(12.dp)
-                  }
-                }
-                item {
-                  Surface(
+            Crossfade(
+              targetState = uiState.showNewStatusButton,
+              animationSpec = tween(0)
+            ) { hasNewStatus ->
+              when (hasNewStatus) {
+                true -> {
+                  LazyColumn(
+                    state = lazyState,
                     modifier = Modifier
-                      .padding(16.dp)
-                      .fillMaxWidth()
-                      .height(56.dp),
-                    shape = RoundedCornerShape(18.dp),
-                    color = Color(0xFFebf4fb)
+                      .fillMaxSize()
+                      .drawVerticalScrollbar(lazyState)
                   ) {
-                    Box(
-                      modifier = Modifier
-                        .fillMaxSize()
-                        .clickable { viewModel.loadPreviousStatus() }
-                        .padding(12.dp),
-                      contentAlignment = Alignment.Center
-                    ) {
-                      Text(
-                        text = "加载更多",
-                        color = AppTheme.colors.hintText,
-                        fontSize = 16.sp
-                      )
+                    items(timelineWithNewStatus, contentType = { it }) { status ->
+                      val loadThreshold = uiState.timeline.size - uiState.timeline.size / 3
+                      key(status.id) {
+                        if (
+                          status.id <= uiState.timeline[loadThreshold].id &&
+                          !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
+                        ) {
+                          viewModel.append()
+                        }
+                        if (status.shouldShow) {
+                          StatusListItem(
+                            status = status,
+                            favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
+                            unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+                            navigateToDetail = {
+                              navigator.navigate(
+                                StatusDetailDestination(
+                                  avatar = viewModel.activeAccount.profilePictureUrl,
+                                  status = status.status
+                                )
+                              )
+                            },
+                            navigateToMedia = { attachments, index ->
+                              navigator.navigate(
+                                StatusMediaScreenDestination(attachments.toTypedArray(), index)
+                              )
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+                          )
+                        }
+                        if (status.isReplyEnd) HeightSpacer(12.dp)
+                      }
+                    }
+                    item {
+                      when (uiState.timelineLoadState) {
+                        LoadState.Append -> {
+                          Box(
+                            modifier = Modifier
+                              .padding(24.dp)
+                              .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                          ) {
+                            CircularProgressIndicator(
+                              modifier = Modifier.size(20.dp),
+                              color = AppTheme.colors.primaryContent
+                            )
+                          }
+                        }
+                        LoadState.Error -> {
+                          Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
+                          viewModel.append() // retry
+                        }
+                        else -> Unit
+                      }
+                      if (uiState.endReached) {
+                        Box(
+                          modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                          contentAlignment = Alignment.Center
+                        ) {
+                          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
+                        }
+                      }
                     }
                   }
-                }
-              }
-              items(homeTimeline, contentType = { it }) { status ->
-                val loadThreshold = uiState.statusList.size - uiState.statusList.size / 3
-                key(status.id) {
-                  if (
-                    status.id <= uiState.statusList[loadThreshold].id &&
-                    !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
-                  ) {
-                    viewModel.append()
-                  }
-                  if (status.shouldShow) {
-                    StatusListItem(
-                      status = status,
-                      favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-                      unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
-                      navigateToDetail = {
-                        navigator.navigate(
-                          StatusDetailDestination(
-                            avatar = viewModel.activeAccount.profilePictureUrl,
-                            status = status.status
-                          )
-                        )
+                  LaunchedEffect(Unit) {
+                    lazyState.scrollToItem(
+                      index = when (uiState.isInitialLoad) {
+                        false -> viewModel.timelineScrollPosition + uiState.newStatusCount
+                        else -> uiState.newStatusCount
                       },
-                      navigateToMedia = { attachments, index ->
-                        navigator.navigate(
-                          StatusMediaScreenDestination(attachments.toTypedArray(), index)
-                        )
-                      },
-                      modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+                      scrollOffset = if (uiState.isInitialLoad) 0 else viewModel.timelineScrollPositionOffset
                     )
                   }
-                  if (status.isReplyEnd) HeightSpacer(12.dp)
                 }
-              }
-              item {
-                when (uiState.timelineLoadState) {
-                  LoadState.Append -> {
-                    Box(
-                      modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth(),
-                      contentAlignment = Alignment.Center
-                    ) {
-                      CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = AppTheme.colors.primaryContent
-                      )
-                    }
-                  }
-                  LoadState.Error -> {
-                    Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                    viewModel.append() // retry
-                  }
-                  else -> Unit
-                }
-                if (uiState.endReached) {
-                  Box(
+                false -> {
+                  LazyColumn(
+                    state = lazyState,
                     modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(24.dp),
-                    contentAlignment = Alignment.Center
+                      .fillMaxSize()
+                      .drawVerticalScrollbar(lazyState)
                   ) {
-                    Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
+                    items(timeline, contentType = { it }) { status ->
+                      val loadThreshold = uiState.timeline.size - uiState.timeline.size / 3
+                      key(status.id) {
+                        if (
+                          status.id <= uiState.timeline[loadThreshold].id &&
+                          !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
+                        ) {
+                          viewModel.append()
+                        }
+                        if (status.shouldShow) {
+                          StatusListItem(
+                            status = status,
+                            favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
+                            unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+                            navigateToDetail = {
+                              navigator.navigate(
+                                StatusDetailDestination(
+                                  avatar = viewModel.activeAccount.profilePictureUrl,
+                                  status = status.status
+                                )
+                              )
+                            },
+                            navigateToMedia = { attachments, index ->
+                              navigator.navigate(
+                                StatusMediaScreenDestination(attachments.toTypedArray(), index)
+                              )
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+                          )
+                        }
+                        if (status.isReplyEnd) HeightSpacer(12.dp)
+                      }
+                    }
+                    item {
+                      when (uiState.timelineLoadState) {
+                        LoadState.Append -> {
+                          Box(
+                            modifier = Modifier
+                              .padding(24.dp)
+                              .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                          ) {
+                            CircularProgressIndicator(
+                              modifier = Modifier.size(20.dp),
+                              color = AppTheme.colors.primaryContent
+                            )
+                          }
+                        }
+                        LoadState.Error -> {
+                          Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
+                          viewModel.append() // retry
+                        }
+                        else -> Unit
+                      }
+                      if (uiState.endReached) {
+                        Box(
+                          modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                          contentAlignment = Alignment.Center
+                        ) {
+                          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -282,9 +316,11 @@ fun Home(
               ) + fadeOut(),
               modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp)
             ) {
-              NewStatusToast(count = viewModel.uiState.newStatusCount) {
-                scope.launch { lazyState.scrollToItem(0) }
-                viewModel.dismissButton()
+              NewStatusToast(uiState.newStatusCount) {
+                scope.launch {
+                  lazyState.scrollToItem(0)
+                  viewModel.dismissButton()
+                }
               }
             }
             Image(
@@ -303,10 +339,6 @@ fun Home(
       }
     }
     PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
-  }
-
-  LaunchedEffect(Unit) {
-    viewModel.initRefresh(lazyState)
   }
 
   LaunchedEffect(firstVisibleIndex) {

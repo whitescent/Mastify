@@ -338,13 +338,6 @@ fun StatusDetailInReply(
               }
             }
           }
-          // if (lazyState.firstVisibleItemIndex != 0) {
-          //   if (!lazyState.canScrollForward) {
-          //     item {
-          //       Spacer(Modifier.fillParentMaxHeight())
-          //     }
-          //   }
-          // }
         }
         LaunchedEffect(Unit) {
           lazyState.scrollToItem(ancestors.size)

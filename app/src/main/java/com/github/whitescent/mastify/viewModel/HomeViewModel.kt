@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.viewModel
 
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -20,7 +19,6 @@ import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,9 +34,9 @@ class HomeViewModel @Inject constructor(
   private var unsortedTimelineList = mutableListOf<Status>()
   private var previousStatusList = mutableListOf<Status>()
   private var nextPage: String? = null
-  private var isInitialLoad = false
-  private var timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex ?: 0
-  private val timelineScrollPositionOffset = preferenceRepository.timelineModel?.offset ?: 0
+
+  val timelineScrollPosition = preferenceRepository.timelineModel?.firstVisibleItemIndex ?: 0
+  val timelineScrollPositionOffset = preferenceRepository.timelineModel?.offset ?: 0
 
   val activeAccount get() = accountRepository.activeAccount!!
   var uiState by mutableStateOf(HomeUiState())
@@ -65,7 +63,7 @@ class HomeViewModel @Inject constructor(
     onAppend = { items, newKey ->
       unsortedTimelineList = (unsortedTimelineList + items).toMutableList()
       uiState = uiState.copy(
-        statusList = reorderedStatuses(unsortedTimelineList),
+        timeline = reorderedStatuses(unsortedTimelineList),
         endReached = items.isEmpty()
       )
       nextPage = newKey
@@ -73,7 +71,7 @@ class HomeViewModel @Inject constructor(
         replaceStatusRange(unsortedTimelineList)
       }
     },
-    onRefresh = { items, lazyState ->
+    onRefresh = { items ->
       if (unsortedTimelineList.isNotEmpty()) {
         val lastStatusInApi = items.last()
         if (!unsortedTimelineList.any { it.id == lastStatusInApi.id }) {
@@ -89,26 +87,26 @@ class HomeViewModel @Inject constructor(
           val statusListAfterIndex =
             unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
           unsortedTimelineList = (items + statusListAfterIndex).toMutableList()
-          if (newStatusList.isNotEmpty()) {
-            uiState = uiState.copy(newStatusCount = newStatusList.size, showNewStatusButton = true)
-            viewModelScope.launch(Dispatchers.Main) {
-              lazyState.scrollToItem(
-                index = when (isInitialLoad) {
-                  false -> timelineScrollPosition.plus(newStatusList.size)
-                  else -> newStatusList.size
-                },
-                scrollOffset = if (isInitialLoad) timelineScrollPositionOffset else 0
-              )
-            }
+          uiState = if (newStatusList.isNotEmpty())
+            uiState.copy(
+              timelineWithNewStatus = reorderedStatuses(unsortedTimelineList),
+              newStatusCount = newStatusList.size,
+              showNewStatusButton = newStatusList.isNotEmpty()
+            )
+          else {
+            uiState.copy(
+              timeline = reorderedStatuses(unsortedTimelineList),
+              endReached = items.isEmpty()
+            )
           }
         }
       } else {
         unsortedTimelineList = items.toMutableList()
+        uiState = uiState.copy(
+          timeline = reorderedStatuses(unsortedTimelineList),
+          endReached = items.isEmpty()
+        )
       }
-      uiState = uiState.copy(
-        statusList = reorderedStatuses(unsortedTimelineList),
-        endReached = items.isEmpty()
-      )
       db.withTransaction {
         // replaceStatusRange(unsortedTimelineList)
         reinsertAllStatus(unsortedTimelineList, activeAccount.id)
@@ -119,8 +117,9 @@ class HomeViewModel @Inject constructor(
   init {
     viewModelScope.launch {
       unsortedTimelineList = timelineDao.getStatuses(activeAccount.id).toMutableList()
-      uiState = uiState.copy(statusList = reorderedStatuses(unsortedTimelineList))
-      // paginator.refresh()
+      uiState = uiState.copy(timeline = reorderedStatuses(unsortedTimelineList))
+      paginator.refresh()
+      uiState = uiState.copy(isInitialLoad = true)
       // fetch the latest account info
       api.accountVerifyCredentials(
         domain = activeAccount.domain,
@@ -137,19 +136,12 @@ class HomeViewModel @Inject constructor(
     }
   }
 
-  fun initRefresh(lazyState: LazyListState) = viewModelScope.launch {
-    if (!isInitialLoad) {
-      paginator.refresh(lazyState)
-      isInitialLoad = true
-    }
-  }
-
   fun append() = viewModelScope.launch {
     paginator.append()
   }
 
-  fun refreshTimeline(lazyState: LazyListState) = viewModelScope.launch {
-    paginator.refresh(lazyState)
+  fun refreshTimeline() = viewModelScope.launch {
+    paginator.refresh()
   }
 
   fun favoriteStatus(id: String) = viewModelScope.launch {
@@ -160,7 +152,7 @@ class HomeViewModel @Inject constructor(
     api.unfavouriteStatus(id)
   }
 
-  fun loadPreviousStatus() {
+  private fun loadPreviousStatus() {
     viewModelScope.launch {
       val response = api.homeTimeline(
         maxId = if (previousStatusList.isNotEmpty()) previousStatusList.last().id else null,
@@ -173,8 +165,8 @@ class HomeViewModel @Inject constructor(
           val remainList = unsortedTimelineList.subList(startIndex, unsortedTimelineList.size)
           unsortedTimelineList = (previousStatusList + body + remainList).toMutableList()
           uiState = uiState.copy(
-            statusList = reorderedStatuses(unsortedTimelineList),
-            previousStatusList = emptyList(),
+            timeline = reorderedStatuses(unsortedTimelineList),
+            previousTimeline = emptyList(),
             showLoadMorePlacerHolder = false
           )
           db.withTransaction {
@@ -184,7 +176,7 @@ class HomeViewModel @Inject constructor(
         } else {
           if (previousStatusList.isNotEmpty()) previousStatusList += body
           else previousStatusList = body.toMutableList()
-          uiState = uiState.copy(previousStatusList = reorderedStatuses(previousStatusList))
+          uiState = uiState.copy(previousTimeline = reorderedStatuses(previousStatusList))
         }
       } else {
         // ERROR
@@ -193,10 +185,16 @@ class HomeViewModel @Inject constructor(
   }
 
   fun dismissButton() {
-    uiState = uiState.copy(showNewStatusButton = false)
+    uiState = uiState.copy(
+      timeline = uiState.timelineWithNewStatus,
+      timelineWithNewStatus = emptyList(),
+      showNewStatusButton = false
+    )
   }
 
   private fun reorderedStatuses(statuses: List<Status>): List<Status> {
+    if (statuses.isEmpty()) return emptyList()
+
     fun findReplyStatusById(id: String?) = id?.let {
       statuses.find { status -> status.id == it }
     }
@@ -288,10 +286,12 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeUiState(
-  val statusList: List<Status> = listOf(),
-  val previousStatusList: List<Status> = listOf(),
+  val timeline: List<Status> = emptyList(),
+  val timelineWithNewStatus: List<Status> = emptyList(),
+  val previousTimeline: List<Status> = emptyList(),
   val newStatusCount: Int = 0,
   val showNewStatusButton: Boolean = false,
+  val isInitialLoad: Boolean = false,
   val endReached: Boolean = false,
   val timelineLoadState: LoadState = LoadState.NotLoading,
   val showLoadMorePlacerHolder: Boolean = false
