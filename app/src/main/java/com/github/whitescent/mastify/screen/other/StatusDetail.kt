@@ -1,7 +1,5 @@
 package com.github.whitescent.mastify.screen.other
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -28,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
@@ -268,21 +265,23 @@ fun StatusDetailInReply(
     hasUnloadedReplyStatus = false,
     hasMultiReplyStatus = false,
   )
-  Crossfade(
-    targetState = loading,
-    modifier = modifier,
-    animationSpec = tween(0)
-  ) {
-    when (it) {
+  LazyColumn(modifier = modifier, state = lazyState) {
+    items(ancestors + currentStatus, key = { it.id }) { repliedStatus ->
+      StatusListItem(
+        status = repliedStatus,
+        favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
+        unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
+        navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
+        navigateToMedia = navigateToMedia,
+        modifier = Modifier.padding(horizontal = 12.dp)
+      )
+    }
+    item {
+      HeightSpacer(value = 8.dp)
+    }
+    when (loading) {
       true -> {
-        Column(Modifier.padding(horizontal = 12.dp)) {
-          StatusListItem(
-            status = currentStatus,
-            favouriteStatus = { favouriteStatus(currentStatus.actionableId) },
-            unfavouriteStatus = { unfavouriteStatus(currentStatus.actionableId) },
-            navigateToDetail = { navigateToDetail(currentStatus.actionable) },
-            navigateToMedia = navigateToMedia
-          )
+        item {
           Box(Modifier.fillMaxWidth(), Alignment.Center) {
             Column {
               HeightSpacer(value = 8.dp)
@@ -295,52 +294,32 @@ fun StatusDetailInReply(
         }
       }
       else -> {
-        LazyColumn(modifier = modifier, state = lazyState) {
-          items(ancestors + currentStatus) { repliedStatus ->
-            StatusListItem(
-              status = repliedStatus,
-              favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
-              unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
-              navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
-              navigateToMedia = navigateToMedia,
-              modifier = Modifier.padding(horizontal = 12.dp)
-            )
-          }
-          item {
-            HeightSpacer(value = 8.dp)
-          }
-          when (descendants.isEmpty()) {
-            true -> {
-              item {
-                Box(
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                  contentAlignment = Alignment.Center
-                ) {
-                  Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-                }
-              }
-            }
-            else -> {
-              items(descendants) { replyStatus ->
-                key(replyStatus.actionableId) {
-                  StatusListItem(
-                    status = replyStatus,
-                    favouriteStatus = { favouriteStatus(replyStatus.actionableId) },
-                    unfavouriteStatus = { unfavouriteStatus(replyStatus.actionableId) },
-                    navigateToDetail = { navigateToDetail(replyStatus.actionable) },
-                    navigateToMedia = navigateToMedia,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                  )
-                  if (replyStatus.isReplyEnd) HeightSpacer(8.dp)
-                }
+        when (descendants.isEmpty()) {
+          true -> {
+            item {
+              Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+              ) {
+                Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
               }
             }
           }
-        }
-        LaunchedEffect(Unit) {
-          lazyState.scrollToItem(ancestors.size)
+          else -> {
+            items(descendants) {
+              key(it.actionableId) {
+                StatusListItem(
+                  status = it,
+                  favouriteStatus = { favouriteStatus(it.actionableId) },
+                  unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
+                  navigateToDetail = { navigateToDetail(it.actionable) },
+                  navigateToMedia = navigateToMedia,
+                  modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                )
+                if (it.isReplyEnd) HeightSpacer(8.dp)
+              }
+            }
+          }
         }
       }
     }

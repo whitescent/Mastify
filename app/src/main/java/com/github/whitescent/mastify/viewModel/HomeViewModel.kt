@@ -20,6 +20,7 @@ import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -72,41 +73,32 @@ class HomeViewModel @Inject constructor(
       }
     },
     onRefresh = { items ->
+      var newStatusCount = 0
       if (unsortedTimelineList.isNotEmpty()) {
         val lastStatusInApi = items.last()
         if (!unsortedTimelineList.any { it.id == lastStatusInApi.id }) {
           // TODO Implementation mark loadMore
-          uiState = uiState.copy(showLoadMorePlacerHolder = true)
-          loadPreviousStatus()
+          // loadPreviousStatus()
         } else {
           val newStatusList = items.filterNot {
             unsortedTimelineList.any { saved -> saved.id == it.id }
           }
+          newStatusCount = newStatusList.size
           // 添加 api 获取到的新的帖子
           val indexInSavedList = unsortedTimelineList.indexOfFirst { it.id == items.last().id } + 1
           val statusListAfterIndex =
             unsortedTimelineList.subList(indexInSavedList, unsortedTimelineList.size)
           unsortedTimelineList = (items + statusListAfterIndex).toMutableList()
-          uiState = if (newStatusList.isNotEmpty())
-            uiState.copy(
-              timelineWithNewStatus = reorderedStatuses(unsortedTimelineList),
-              newStatusCount = newStatusList.size,
-              showNewStatusButton = newStatusList.isNotEmpty()
-            )
-          else {
-            uiState.copy(
-              timeline = reorderedStatuses(unsortedTimelineList),
-              endReached = items.isEmpty()
-            )
-          }
         }
       } else {
         unsortedTimelineList = items.toMutableList()
-        uiState = uiState.copy(
-          timeline = reorderedStatuses(unsortedTimelineList),
-          endReached = items.isEmpty()
-        )
       }
+      uiState = uiState.copy(
+        timeline = reorderedStatuses(unsortedTimelineList),
+        endReached = items.isEmpty(),
+        showNewStatusButton = newStatusCount != 0,
+        newStatusCount = newStatusCount
+      )
       db.withTransaction {
         // replaceStatusRange(unsortedTimelineList)
         reinsertAllStatus(unsortedTimelineList, activeAccount.id)
@@ -152,11 +144,17 @@ class HomeViewModel @Inject constructor(
     api.unfavouriteStatus(id)
   }
 
-  private fun loadPreviousStatus() {
+  fun loadPreviousStatus() {
+    uiState = uiState.copy(
+      showNewStatusButton = true,
+      showLoadMorePlacerHolder = true,
+      timelineWithNewStatus = uiState.timeline,
+      newStatusCount = 2
+    )
     viewModelScope.launch {
       val response = api.homeTimeline(
         maxId = if (previousStatusList.isNotEmpty()) previousStatusList.last().id else null,
-        limit = 20
+        limit = 2
       )
       if (response.isSuccessful && !response.body().isNullOrEmpty()) {
         val body = response.body()!!
@@ -185,11 +183,7 @@ class HomeViewModel @Inject constructor(
   }
 
   fun dismissButton() {
-    uiState = uiState.copy(
-      timeline = uiState.timelineWithNewStatus,
-      timelineWithNewStatus = emptyList(),
-      showNewStatusButton = false
-    )
+    uiState = uiState.copy(showNewStatusButton = false)
   }
 
   private fun reorderedStatuses(statuses: List<Status>): List<Status> {
@@ -229,7 +223,10 @@ class HomeViewModel @Inject constructor(
             )
         } else {
           val finalReplyStatusList = ArrayDeque<Status>().apply {
-            add(replyStatusList.first().copy(replyChainType = Start))
+            add(replyStatusList.first().copy(
+              replyChainType = Start,
+              uuid = replyStatusList.first().id + Clock.System.now()
+            ))
           }
           // 给组合完成的回复链更新指定的属性，并且标记不需要重复获取回复链的 status
           replyStatusList.forEachIndexed { replyIndex, status ->
@@ -256,9 +253,11 @@ class HomeViewModel @Inject constructor(
           val tempList = reorderedStatuses.toMutableList()
           val startAt = reorderedStatuses.indexOfFirst { finalReplyStatusList.last().id == it.id }
           reorderedStatuses.forEachIndexed { reorderedIndex, status ->
-            if (reorderedIndex >= startAt && finalReplyStatusList.any { replyList ->
+            if (
+              reorderedIndex >= startAt && finalReplyStatusList.any { replyList ->
                 status.id == replyList.id
-              }) {
+              }
+            ) {
               tempList.remove(status)
             }
           }
@@ -269,7 +268,6 @@ class HomeViewModel @Inject constructor(
     }
     return reorderedStatuses
   }
-
   private suspend fun reinsertAllStatus(statuses: List<Status>, accountId: Long) {
     timelineDao.clearAll(accountId)
     statuses.forEach { timelineDao.insert(it.toEntity(accountId)) }

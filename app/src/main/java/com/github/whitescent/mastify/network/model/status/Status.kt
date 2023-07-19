@@ -36,14 +36,14 @@ data class Status(
   val replyChainType: ReplyChainType = Null,
   val hasUnloadedReplyStatus: Boolean = false,
   val hasMultiReplyStatus: Boolean = false,
-  val shouldShow: Boolean = true
+  val shouldShow: Boolean = true,
+  val uuid: String = id
 ) {
 
   val actionableId inline get() = reblog?.id ?: id
   val actionableStatus: Status inline get() = reblog ?: this
 
   val isInReplyTo inline get() = inReplyToId != null
-  val isReplyEnd inline get() = replyChainType == Null || replyChainType == End
 
   @Serializable
   data class Tag(val name: String, val url: String, val following: Boolean? = null)
@@ -80,6 +80,7 @@ data class Status(
   fun toEntity(timelineUserId: Long): TimelineEntity {
     return TimelineEntity(
       id = id,
+      uuid = uuid,
       timelineUserId = timelineUserId,
       createdAt = createdAt,
       sensitive = sensitive,
@@ -121,6 +122,7 @@ data class Status(
     val shouldShow: Boolean = status.shouldShow
   ) {
     val id inline get() = status.id
+    val uuid inline get() = status.uuid
     val reblog inline get() = status.reblog
 
     val avatar inline get() = status.reblog?.account?.avatar ?: status.account.avatar

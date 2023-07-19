@@ -19,6 +19,7 @@ import com.github.whitescent.mastify.network.model.status.Status
 )
 data class TimelineEntity(
   @PrimaryKey val id: String,
+  @ColumnInfo val uuid: String,
   @ColumnInfo val timelineUserId: Long,
   @ColumnInfo val createdAt: String,
   @ColumnInfo val sensitive: Boolean,

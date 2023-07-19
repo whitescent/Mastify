@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -39,7 +40,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -94,6 +94,9 @@ fun Home(
   val timeline = remember(uiState.timeline) {
     uiState.timeline.map { Status.ViewData(it) }
   }
+  val previousTimeline = remember(uiState.previousTimeline) {
+    uiState.previousTimeline.map { Status.ViewData(it) }
+  }
   val timelineWithNewStatus = remember(uiState.timelineWithNewStatus) {
     uiState.timelineWithNewStatus.map { Status.ViewData(it) }
   }
@@ -137,166 +140,80 @@ fun Home(
         }
         else -> {
           Box {
-            Crossfade(
-              targetState = uiState.showNewStatusButton,
-              animationSpec = tween(0)
-            ) { hasNewStatus ->
-              when (hasNewStatus) {
-                true -> {
-                  LazyColumn(
-                    state = lazyState,
-                    modifier = Modifier
-                      .fillMaxSize()
-                      .drawVerticalScrollbar(lazyState)
-                  ) {
-                    items(timelineWithNewStatus, contentType = { it }) { status ->
-                      val loadThreshold = uiState.timeline.size - uiState.timeline.size / 3
-                      key(status.id) {
-                        if (
-                          status.id <= uiState.timeline[loadThreshold].id &&
-                          !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
-                        ) {
-                          viewModel.append()
-                        }
-                        if (status.shouldShow) {
-                          StatusListItem(
-                            status = status,
-                            favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-                            unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
-                            navigateToDetail = {
-                              navigator.navigate(
-                                StatusDetailDestination(
-                                  avatar = viewModel.activeAccount.profilePictureUrl,
-                                  status = status.status
-                                )
-                              )
-                            },
-                            navigateToMedia = { attachments, index ->
-                              navigator.navigate(
-                                StatusMediaScreenDestination(attachments.toTypedArray(), index)
-                              )
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-                          )
-                        }
-                        if (status.isReplyEnd) HeightSpacer(12.dp)
-                      }
-                    }
-                    item {
-                      when (uiState.timelineLoadState) {
-                        LoadState.Append -> {
-                          Box(
-                            modifier = Modifier
-                              .padding(24.dp)
-                              .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                          ) {
-                            CircularProgressIndicator(
-                              modifier = Modifier.size(20.dp),
-                              color = AppTheme.colors.primaryContent
-                            )
-                          }
-                        }
-                        LoadState.Error -> {
-                          Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                          viewModel.append() // retry
-                        }
-                        else -> Unit
-                      }
-                      if (uiState.endReached) {
-                        Box(
-                          modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                          contentAlignment = Alignment.Center
-                        ) {
-                          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-                        }
-                      }
-                    }
-                  }
-                  LaunchedEffect(Unit) {
-                    lazyState.scrollToItem(
-                      index = when (uiState.isInitialLoad) {
-                        false -> viewModel.timelineScrollPosition + uiState.newStatusCount
-                        else -> uiState.newStatusCount
-                      },
-                      scrollOffset = if (uiState.isInitialLoad) 0 else viewModel.timelineScrollPositionOffset
-                    )
-                  }
+            LazyColumn(
+              state = lazyState,
+              modifier = Modifier
+                .fillMaxSize()
+                .drawVerticalScrollbar(lazyState)
+            ) {
+              items(
+                items = timeline,
+                contentType = { it },
+                key = { it.uuid }
+              ) { status ->
+                val loadThreshold = uiState.timeline.size - uiState.timeline.size / 3
+                if (
+                  status.id <= uiState.timeline[loadThreshold].id &&
+                  !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
+                ) {
+                  viewModel.append()
                 }
-                false -> {
-                  LazyColumn(
-                    state = lazyState,
+                if (status.shouldShow) {
+                  StatusListItem(
+                    status = status,
+                    favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
+                    unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+                    navigateToDetail = {
+                      navigator.navigate(
+                        StatusDetailDestination(
+                          avatar = viewModel.activeAccount.profilePictureUrl,
+                          status = status.status
+                        )
+                      )
+                    },
+                    navigateToMedia = { attachments, index ->
+                      navigator.navigate(
+                        StatusMediaScreenDestination(attachments.toTypedArray(), index)
+                      )
+                    },
                     modifier = Modifier
-                      .fillMaxSize()
-                      .drawVerticalScrollbar(lazyState)
+                      .fillMaxWidth()
+                      .padding(horizontal = 24.dp)
+                  )
+                }
+                if (status.isReplyEnd) HeightSpacer(value = 12.dp)
+                if (previousTimeline.isNotEmpty() && status == previousTimeline.last())
+                  LoadMorePlaceHolder { viewModel.loadPreviousStatus() }
+              }
+              item {
+                when (uiState.timelineLoadState) {
+                  LoadState.Append -> {
+                    Box(
+                      modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                      contentAlignment = Alignment.Center
+                    ) {
+                      CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = AppTheme.colors.primaryContent
+                      )
+                    }
+                  }
+                  LoadState.Error -> {
+                    Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
+                    viewModel.append() // retry
+                  }
+                  else -> Unit
+                }
+                if (uiState.endReached) {
+                  Box(
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(24.dp),
+                    contentAlignment = Alignment.Center
                   ) {
-                    items(timeline, contentType = { it }) { status ->
-                      val loadThreshold = uiState.timeline.size - uiState.timeline.size / 3
-                      key(status.id) {
-                        if (
-                          status.id <= uiState.timeline[loadThreshold].id &&
-                          !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
-                        ) {
-                          viewModel.append()
-                        }
-                        if (status.shouldShow) {
-                          StatusListItem(
-                            status = status,
-                            favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-                            unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
-                            navigateToDetail = {
-                              navigator.navigate(
-                                StatusDetailDestination(
-                                  avatar = viewModel.activeAccount.profilePictureUrl,
-                                  status = status.status
-                                )
-                              )
-                            },
-                            navigateToMedia = { attachments, index ->
-                              navigator.navigate(
-                                StatusMediaScreenDestination(attachments.toTypedArray(), index)
-                              )
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
-                          )
-                        }
-                        if (status.isReplyEnd) HeightSpacer(12.dp)
-                      }
-                    }
-                    item {
-                      when (uiState.timelineLoadState) {
-                        LoadState.Append -> {
-                          Box(
-                            modifier = Modifier
-                              .padding(24.dp)
-                              .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                          ) {
-                            CircularProgressIndicator(
-                              modifier = Modifier.size(20.dp),
-                              color = AppTheme.colors.primaryContent
-                            )
-                          }
-                        }
-                        LoadState.Error -> {
-                          Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                          viewModel.append() // retry
-                        }
-                        else -> Unit
-                      }
-                      if (uiState.endReached) {
-                        Box(
-                          modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                          contentAlignment = Alignment.Center
-                        ) {
-                          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-                        }
-                      }
-                    }
+                    Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
                   }
                 }
               }
@@ -351,6 +268,7 @@ fun NewStatusToast(count: Int, onDismiss: () -> Unit) {
   Surface(
     shape = CircleShape,
     color = AppTheme.colors.accent,
+    shadowElevation = 4.dp
   ) {
     CenterRow(
       modifier = Modifier
@@ -370,6 +288,41 @@ fun NewStatusToast(count: Int, onDismiss: () -> Unit) {
         color = Color.White,
         fontWeight = FontWeight(500)
       )
+    }
+  }
+}
+
+@Composable
+fun LoadMorePlaceHolder(loadMore: () -> Unit) {
+  var loading by remember { mutableStateOf(false) }
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .height(56.dp),
+    contentAlignment = Alignment.Center
+  ) {
+    Crossfade(
+      targetState = loading,
+      modifier = Modifier
+        .padding(horizontal = 12.dp)
+        .clickable {
+          loading = true
+          loadMore()
+          loading = false
+        },
+    ) {
+      when (it) {
+        false -> {
+          Text(
+            text = "加载更多",
+            color = AppTheme.colors.hintText,
+            fontSize = 17.sp
+          )
+        }
+        else -> {
+          CircularProgressIndicator(color = AppTheme.colors.hintText)
+        }
+      }
     }
   }
 }
