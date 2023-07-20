@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -93,12 +94,6 @@ fun Home(
   val uiState = viewModel.uiState
   val timeline = remember(uiState.timeline) {
     uiState.timeline.map { Status.ViewData(it) }
-  }
-  val previousTimeline = remember(uiState.previousTimeline) {
-    uiState.previousTimeline.map { Status.ViewData(it) }
-  }
-  val timelineWithNewStatus = remember(uiState.timelineWithNewStatus) {
-    uiState.timelineWithNewStatus.map { Status.ViewData(it) }
   }
   val firstVisibleIndex by remember {
     derivedStateOf {
@@ -182,8 +177,7 @@ fun Home(
                   )
                 }
                 if (status.isReplyEnd) HeightSpacer(value = 12.dp)
-                if (previousTimeline.isNotEmpty() && status == previousTimeline.last())
-                  LoadMorePlaceHolder { viewModel.loadPreviousStatus() }
+                if (status.hasUnloadedStatus) LoadMorePlaceHolder { viewModel.loadUnloadedStatus() }
               }
               item {
                 when (uiState.timelineLoadState) {
@@ -264,7 +258,7 @@ fun Home(
 }
 
 @Composable
-fun NewStatusToast(count: Int, onDismiss: () -> Unit) {
+fun NewStatusToast(count: String, onDismiss: () -> Unit) {
   Surface(
     shape = CircleShape,
     color = AppTheme.colors.accent,
@@ -295,35 +289,43 @@ fun NewStatusToast(count: Int, onDismiss: () -> Unit) {
 @Composable
 fun LoadMorePlaceHolder(loadMore: () -> Unit) {
   var loading by remember { mutableStateOf(false) }
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .height(56.dp),
-    contentAlignment = Alignment.Center
-  ) {
-    Crossfade(
-      targetState = loading,
+  Column {
+    Surface(
       modifier = Modifier
-        .padding(horizontal = 12.dp)
-        .clickable {
-          loading = true
-          loadMore()
-          loading = false
-        },
+        .padding(horizontal = 24.dp)
+        .fillMaxWidth()
+        .height(56.dp),
+      shape = RoundedCornerShape(18.dp),
+      color = Color(0xFFebf4fb)
     ) {
-      when (it) {
-        false -> {
-          Text(
-            text = "加载更多",
-            color = AppTheme.colors.hintText,
-            fontSize = 17.sp
-          )
-        }
-        else -> {
-          CircularProgressIndicator(color = AppTheme.colors.hintText)
+      Box(
+        modifier = Modifier
+          .fillMaxSize()
+          .clickable {
+            loading = true
+            loadMore()
+          }
+          .padding(12.dp),
+        contentAlignment = Alignment.Center
+      ) {
+        Crossfade(loading) {
+          when (it) {
+            false -> {
+              Text(
+                text = "加载更多",
+                color = AppTheme.colors.hintText,
+                fontSize = 16.sp
+              )
+            }
+            true -> CircularProgressIndicator(
+              modifier = Modifier.size(24.dp),
+              color = AppTheme.colors.primaryContent
+            )
+          }
         }
       }
     }
+    HeightSpacer(value = 12.dp)
   }
 }
 

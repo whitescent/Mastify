@@ -44,6 +44,7 @@ data class TimelineEntity(
   @ColumnInfo val attachments: List<Status.Attachment>,
   @ColumnInfo val replyChainType: Status.ReplyChainType,
   @ColumnInfo val hasUnloadedReplyStatus: Boolean,
+  @ColumnInfo val hasUnloadedStatus: Boolean,
   @ColumnInfo val hasMultiReplyStatus: Boolean,
   @ColumnInfo val shouldShow: Boolean
 )

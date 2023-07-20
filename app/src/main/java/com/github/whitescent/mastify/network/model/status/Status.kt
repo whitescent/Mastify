@@ -35,6 +35,7 @@ data class Status(
   @SerialName("media_attachments") val attachments: List<Attachment>,
   val replyChainType: ReplyChainType = Null,
   val hasUnloadedReplyStatus: Boolean = false,
+  val hasUnloadedStatus: Boolean = false,
   val hasMultiReplyStatus: Boolean = false,
   val shouldShow: Boolean = true,
   val uuid: String = id
@@ -105,6 +106,7 @@ data class Status(
       attachments = attachments,
       replyChainType = replyChainType,
       hasUnloadedReplyStatus = hasUnloadedReplyStatus,
+      hasUnloadedStatus = hasUnloadedStatus,
       hasMultiReplyStatus = hasMultiReplyStatus,
       shouldShow = shouldShow
     )
@@ -118,6 +120,7 @@ data class Status(
     val status: Status,
     val replyChainType: ReplyChainType = status.replyChainType,
     val hasUnloadedReplyStatus: Boolean = status.hasUnloadedReplyStatus,
+    val hasUnloadedStatus: Boolean = status.hasUnloadedStatus,
     val hasMultiReplyStatus: Boolean = status.hasMultiReplyStatus,
     val shouldShow: Boolean = status.shouldShow
   ) {
