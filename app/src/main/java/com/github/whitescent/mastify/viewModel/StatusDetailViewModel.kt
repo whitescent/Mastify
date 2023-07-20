@@ -7,8 +7,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
-import com.github.whitescent.mastify.data.repository.AccountRepository
-import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
@@ -17,6 +15,7 @@ import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Start
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
+import com.github.whitescent.mastify.utils.toViewData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,10 +25,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StatusDetailViewModel @Inject constructor(
-  preferenceRepository: PreferenceRepository,
   savedStateHandle: SavedStateHandle,
   private val db: AppDatabase,
-  private val accountRepository: AccountRepository,
   private val api: MastodonApi
 ) : ViewModel() {
 
@@ -86,12 +83,12 @@ class StatusDetailViewModel @Inject constructor(
         }
       }
     }
-    return result.map { Status.ViewData(it) }
+    return result.toViewData()
   }
 
   private fun markDescendants(descendants: List<Status>): List<Status.ViewData> {
     if (descendants.isEmpty() || descendants.size == 1)
-      return descendants.map { Status.ViewData(it) }
+      return descendants.toViewData()
     val result = descendants.toMutableList()
     descendants.forEachIndexed { index, status ->
       when {
@@ -114,7 +111,7 @@ class StatusDetailViewModel @Inject constructor(
         }
       }
     }
-    return result.map { Status.ViewData(it) }
+    return result.toViewData()
   }
 }
 

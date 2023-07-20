@@ -2,7 +2,6 @@ package com.github.whitescent.mastify.ui.component
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -19,6 +18,7 @@ import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.utils.rememberAppState
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
 import com.google.accompanist.systemuicontroller.SystemUiController
@@ -34,10 +34,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(
-  FlowPreview::class,
-  ExperimentalLayoutApi::class
-)
+@OptIn(FlowPreview::class)
 @Composable
 fun AppScaffold(
   startRoute: Route,
@@ -46,6 +43,7 @@ fun AppScaffold(
 ) {
   val engine = rememberNavHostEngine()
   val navController = engine.rememberNavController()
+  val appState = rememberAppState()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)
   val lazyState = rememberLazyListState(
@@ -101,6 +99,7 @@ fun AppScaffold(
       },
       containerColor = AppTheme.colors.background
     ) {
+      appState.appContentPaddingValues = it
       DestinationsNavHost(
         engine = engine,
         navController = navController,
@@ -109,6 +108,7 @@ fun AppScaffold(
         dependenciesContainerBuilder = {
           dependency(NavGraphs.app) { lazyState }
           dependency(NavGraphs.app) { drawerState }
+          dependency(NavGraphs.app) { appState }
         }
       )
     }

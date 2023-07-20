@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -62,7 +62,6 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
-import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -74,6 +73,8 @@ import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
+import com.github.whitescent.mastify.utils.AppState
+import com.github.whitescent.mastify.utils.toViewData
 import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -85,6 +86,7 @@ import kotlinx.coroutines.launch
 @Destination(style = AppTransitions::class)
 @Composable
 fun Home(
+  appState: AppState,
   drawerState: DrawerState,
   lazyState: LazyListState,
   navigator: DestinationsNavigator,
@@ -93,7 +95,7 @@ fun Home(
   val context = LocalContext.current
   val uiState = viewModel.uiState
   val timeline = remember(uiState.timeline) {
-    uiState.timeline.map { Status.ViewData(it) }
+    uiState.timeline.toViewData()
   }
   val firstVisibleIndex by remember {
     derivedStateOf {
@@ -115,7 +117,7 @@ fun Home(
     },
   )
 
-  Box(Modifier.statusBarsPadding().pullRefresh(pullRefreshState)) {
+  Box(Modifier.systemBarsPadding().pullRefresh(pullRefreshState)) {
     Column {
       HomeTopBar(
         avatar = viewModel.activeAccount.profilePictureUrl,
@@ -238,7 +240,8 @@ fun Home(
               painter = painterResource(id = R.drawable.edit),
               contentDescription = null,
               modifier = Modifier
-                .padding(24.dp)
+                .padding(bottom = appState.appContentPaddingValues.calculateBottomPadding())
+                .padding(horizontal = 24.dp)
                 .align(Alignment.BottomEnd)
                 .background(AppTheme.colors.primaryGradient, CircleShape)
                 .shadow(6.dp, CircleShape)

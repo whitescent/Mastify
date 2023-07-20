@@ -3,6 +3,8 @@ package com.github.whitescent.mastify.utils
 import com.github.whitescent.mastify.network.model.status.Status
 import java.util.UUID
 
+fun List<Status>.toViewData() = this.map { Status.ViewData(it) }
+
 fun reorderedStatuses(statuses: List<Status>): List<Status> {
   if (statuses.isEmpty()) return emptyList()
 
