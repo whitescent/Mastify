@@ -7,6 +7,7 @@ import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.VideoFrameDecoder
+import com.github.whitescent.R
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
@@ -23,6 +24,7 @@ class MastifyApp : Application(), ImageLoaderFactory {
         }
         add(VideoFrameDecoder.Factory())
       }
+      .placeholder(R.drawable.image_placeholder)
       .build()
   }
 }
