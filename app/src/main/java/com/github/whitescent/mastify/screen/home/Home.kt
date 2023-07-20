@@ -240,7 +240,7 @@ fun Home(
               painter = painterResource(id = R.drawable.edit),
               contentDescription = null,
               modifier = Modifier
-                .padding(bottom = appState.appContentPaddingValues.calculateBottomPadding())
+                .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
                 .padding(horizontal = 24.dp)
                 .align(Alignment.BottomEnd)
                 .background(AppTheme.colors.primaryGradient, CircleShape)

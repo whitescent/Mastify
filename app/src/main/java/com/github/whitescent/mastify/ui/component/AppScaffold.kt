@@ -43,7 +43,6 @@ fun AppScaffold(
 ) {
   val engine = rememberNavHostEngine()
   val navController = engine.rememberNavController()
-  val appState = rememberAppState()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)
   val lazyState = rememberLazyListState(
@@ -99,7 +98,7 @@ fun AppScaffold(
       },
       containerColor = AppTheme.colors.background
     ) {
-      appState.appContentPaddingValues = it
+      val appState = rememberAppState(it.calculateTopPadding(), it.calculateBottomPadding())
       DestinationsNavHost(
         engine = engine,
         navController = navController,
