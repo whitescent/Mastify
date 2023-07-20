@@ -33,6 +33,7 @@ import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.utils.BlurTransformation
+import kotlinx.collections.immutable.ImmutableList
 
 private val imageGridSpacing = 2.dp
 private const val DefaultAspectRatio = 20f / 9f
@@ -41,7 +42,7 @@ private const val DefaultAspectRatio = 20f / 9f
 fun StatusMedia(
   sensitive: Boolean,
   spoilerText: String,
-  attachments: List<Attachment>,
+  attachments: ImmutableList<Attachment>,
   modifier: Modifier = Modifier,
   onClick: ((Int) -> Unit)? = null
 ) {

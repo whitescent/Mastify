@@ -45,6 +45,8 @@ import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun StatusDetailCard(
@@ -55,7 +57,7 @@ fun StatusDetailCard(
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
-  navigateToMedia: (List<Attachment>, Int) -> Unit,
+  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   Surface(
     modifier = modifier
@@ -154,7 +156,7 @@ fun StatusDetailCard(
         StatusMedia(
           sensitive = status.sensitive,
           spoilerText = status.spoilerText,
-          attachments = status.attachments,
+          attachments = status.attachments.toImmutableList(),
           onClick = { navigateToMedia(status.attachments, it) },
         )
       }

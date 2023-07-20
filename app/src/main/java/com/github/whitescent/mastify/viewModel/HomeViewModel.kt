@@ -19,7 +19,7 @@ import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
+import java.util.UUID
 import javax.inject.Inject
 
 private const val timelineFetchNumber = 30
@@ -236,7 +236,7 @@ class HomeViewModel @Inject constructor(
           val finalReplyStatusList = ArrayDeque<Status>().apply {
             add(replyStatusList.first().copy(
               replyChainType = Start,
-              uuid = replyStatusList.first().id + Clock.System.now()
+              uuid = replyStatusList.first().id + UUID.randomUUID().toString()
             ))
           }
           // 给组合完成的回复链更新指定的属性，并且标记不需要重复获取回复链的 status
@@ -279,6 +279,7 @@ class HomeViewModel @Inject constructor(
     }
     return reorderedStatuses
   }
+
   private suspend fun reinsertAllStatus(statuses: List<Status>, accountId: Long) {
     timelineDao.clearAll(accountId)
     statuses.forEach { timelineDao.insert(it.toEntity(accountId)) }

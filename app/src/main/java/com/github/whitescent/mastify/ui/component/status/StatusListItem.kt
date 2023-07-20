@@ -71,7 +71,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
-import kotlinx.serialization.json.JsonNull.content
 
 @Composable
 fun StatusListItem(
@@ -81,7 +80,7 @@ fun StatusListItem(
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
-  navigateToMedia: (List<Attachment>, Int) -> Unit,
+  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   val normalShape = RoundedCornerShape(18.dp)
   val replyShape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
@@ -181,6 +180,7 @@ fun StatusListItem(
             reblogDisplayName = status.reblogDisplayName
           )
         }
+        status.attachments.toImmutableList()
         StatusContent(
           avatar = status.avatar,
           displayName = status.displayName,
@@ -190,8 +190,8 @@ fun StatusListItem(
           sensitive = status.sensitive,
           spoilerText = status.spoilerText,
           replyChainType = status.replyChainType,
-          attachments = status.attachments.toImmutableList(),
-          mentions = status.mentions.toImmutableList(),
+          attachments = status.attachments,
+          mentions = status.mentions,
           application = status.application,
           repliesCount = status.repliesCount,
           reblogsCount = status.reblogsCount,

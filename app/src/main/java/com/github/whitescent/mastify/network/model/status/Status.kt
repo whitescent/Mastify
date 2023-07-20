@@ -5,6 +5,7 @@ import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
 import com.github.whitescent.mastify.utils.FormatFactory
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -144,9 +145,11 @@ data class Status(
     val application inline get() = status.reblog?.application ?: status.application
     val sensitive inline get() = status.reblog?.sensitive ?: status.sensitive
     val spoilerText inline get() = status.reblog?.spoilerText ?: status.spoilerText
-    val mentions inline get() = status.reblog?.mentions ?: status.mentions
+    val mentions inline get() =
+      status.reblog?.mentions?.toImmutableList() ?: status.mentions.toImmutableList()
     val tags inline get() = status.reblog?.tags ?: status.tags
-    val attachments inline get() = status.reblog?.attachments ?: status.attachments
+    val attachments inline get() =
+      status.reblog?.attachments?.toImmutableList() ?: status.attachments.toImmutableList()
     val repliesCount inline get() = status.reblog?.repliesCount ?: status.repliesCount
     val reblogsCount inline get() = status.reblog?.reblogsCount ?: status.reblogsCount
     val favouritesCount inline get() = status.reblog?.favouritesCount ?: status.favouritesCount
