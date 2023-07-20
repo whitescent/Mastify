@@ -68,7 +68,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -180,7 +179,6 @@ fun StatusListItem(
             reblogDisplayName = status.reblogDisplayName
           )
         }
-        status.attachments.toImmutableList()
         StatusContent(
           avatar = status.avatar,
           displayName = status.displayName,

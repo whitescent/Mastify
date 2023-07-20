@@ -162,7 +162,7 @@ fun Home(
                       navigator.navigate(
                         StatusDetailDestination(
                           avatar = viewModel.activeAccount.profilePictureUrl,
-                          status = status.status
+                          status = status.actionable
                         )
                       )
                     },

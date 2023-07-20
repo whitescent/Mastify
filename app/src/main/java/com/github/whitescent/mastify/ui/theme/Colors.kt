@@ -33,6 +33,8 @@ interface MastifyColorsInterface {
   val replyLine: Color
   val hintText: Color
     get() = Color(0xFF1d9bf0)
+  val replyTextFieldBackground: Color
+  val replyTextFieldBorder: Color
 }
 
 private object LightColors : MastifyColorsInterface {
@@ -65,6 +67,12 @@ private object LightColors : MastifyColorsInterface {
 
   override val replyLine: Color
     get() = Color(0xFFcfd9de)
+
+  override val replyTextFieldBackground: Color
+    get() = Color(0xFFF4F4F4)
+
+  override val replyTextFieldBorder: Color
+    get() = Color(0xFFE6E6E6)
 }
 
 private object DarkColors : MastifyColorsInterface {
@@ -87,7 +95,7 @@ private object DarkColors : MastifyColorsInterface {
     get() = Color.Black
 
   override val bottomBarBackground: Color
-    get() = secondaryBackground
+    get() = Color(0xFF242424)
 
   override val cardBackground: Color
     get() = Color(0x0FFFFFFF)
@@ -97,6 +105,12 @@ private object DarkColors : MastifyColorsInterface {
 
   override val replyLine: Color
     get() = Color(0xFF333638)
+
+  override val replyTextFieldBackground: Color
+    get() = Color(0xFF282828)
+
+  override val replyTextFieldBorder: Color
+    get() = Color(0xFF454545)
 }
 
 class MastifyColors : MastifyColorsInterface {
@@ -132,6 +146,10 @@ class MastifyColors : MastifyColorsInterface {
     get() = currentColors.secondaryContent
   override val replyLine: Color
     get() = currentColors.replyLine
+  override val replyTextFieldBackground: Color
+    get() = currentColors.replyTextFieldBackground
+  override val replyTextFieldBorder: Color
+    get() = currentColors.replyTextFieldBorder
 }
 
 val LocalMastifyColors = staticCompositionLocalOf {

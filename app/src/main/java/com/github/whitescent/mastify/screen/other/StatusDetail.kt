@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -32,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -103,7 +105,8 @@ fun StatusDetail(
         color = AppTheme.colors.primaryContent,
       )
     }
-    Divider()
+    Divider(color = DividerDefaults.color.copy(0.4f))
+    HeightSpacer(value = 4.dp)
     when (threadInReply) {
       true -> {
         StatusDetailInReply(
@@ -263,7 +266,7 @@ fun StatusDetailInReply(
   val currentStatus = status.copy(
     replyChainType = End,
     hasUnloadedReplyStatus = false,
-    hasMultiReplyStatus = false,
+    hasMultiReplyStatus = false
   )
   LazyColumn(modifier = modifier, state = lazyState) {
     items(ancestors + currentStatus, key = { it.id }) { repliedStatus ->
@@ -337,6 +340,7 @@ fun ReplyTextField(
     modifier = Modifier
       .fillMaxWidth()
       .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+    color = AppTheme.colors.cardBackground
   ) {
     CenterRow(Modifier.navigationBarsPadding().padding(horizontal = 12.dp, vertical = 24.dp)) {
       CircleShapeAsyncImage(model = avatar, modifier = Modifier.size(48.dp))
@@ -346,18 +350,19 @@ fun ReplyTextField(
         onValueChange = onValueChange,
         modifier = Modifier
           .fillMaxWidth()
-          .background(Color(0xFFF4F4F4), RoundedCornerShape(12.dp))
-          .border(2.dp, Color(0xFFE6E6E6), RoundedCornerShape(12.dp))
+          .background(AppTheme.colors.replyTextFieldBackground, RoundedCornerShape(12.dp))
+          .border(2.dp, AppTheme.colors.replyTextFieldBorder, RoundedCornerShape(12.dp))
           .height(48.dp),
         maxLines = 1,
-        textStyle = TextStyle(color = AppTheme.colors.primaryContent, fontSize = 16.sp),
+        textStyle = TextStyle(AppTheme.colors.primaryContent, fontSize = 16.sp),
+        cursorBrush = SolidColor(AppTheme.colors.primaryContent)
       ) {
         Box(Modifier.fillMaxSize().padding(12.dp), Alignment.CenterStart) {
           if (text.isEmpty()) {
             Text(
               text = stringResource(id = R.string.post_your_reply),
               color = Color(0xFFBABABA),
-              style = TextStyle(color = AppTheme.colors.primaryContent, fontSize = 16.sp),
+              style = TextStyle(color = AppTheme.colors.cardBackground, fontSize = 16.sp),
             )
           }
           it()
