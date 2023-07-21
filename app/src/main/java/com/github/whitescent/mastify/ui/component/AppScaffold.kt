@@ -110,6 +110,9 @@ fun AppScaffold(
           dependency(NavGraphs.app) { appState }
         }
       )
+      LaunchedEffect(it) {
+        appState.setPaddingValues(it)
+      }
     }
   }
 

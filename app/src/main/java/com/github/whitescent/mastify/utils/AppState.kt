@@ -5,8 +5,11 @@ package com.github.whitescent.mastify.utils
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -15,13 +18,20 @@ class AppState(
   private val appContentPaddingTop: Dp,
   private val appContentPaddingBottom: Dp,
 ) {
-  val appPaddingValues by lazy {
+
+  var appPaddingValues by mutableStateOf(
     PaddingValues(top = appContentPaddingTop, bottom = appContentPaddingBottom)
+  )
+    private set
+
+  fun setPaddingValues(paddingValues: PaddingValues) {
+    appPaddingValues = paddingValues
   }
+
   companion object {
     val saver = listSaver(
       save = { listOf(it.appContentPaddingTop.value, it.appContentPaddingBottom.value) },
-      restore = { AppState(Dp(it[0] as Float), Dp(it[1] as Float)) }
+      restore = { AppState(Dp(it[0]), Dp(it[1])) }
     )
   }
 }

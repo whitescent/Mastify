@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -116,8 +116,13 @@ fun Home(
       }
     },
   )
-
-  Box(Modifier.systemBarsPadding().pullRefresh(pullRefreshState)) {
+  Box(
+    modifier = Modifier
+      .fillMaxSize()
+      .statusBarsPadding()
+      .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
+      .pullRefresh(pullRefreshState)
+  ) {
     Column {
       HomeTopBar(
         avatar = viewModel.activeAccount.profilePictureUrl,
@@ -240,8 +245,7 @@ fun Home(
               painter = painterResource(id = R.drawable.edit),
               contentDescription = null,
               modifier = Modifier
-                .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
-                .padding(horizontal = 24.dp)
+                .padding(24.dp)
                 .align(Alignment.BottomEnd)
                 .background(AppTheme.colors.primaryGradient, CircleShape)
                 .shadow(6.dp, CircleShape)

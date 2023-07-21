@@ -130,6 +130,7 @@ dependencies {
   implementation(libs.jsoup)
   implementation(libs.zoomable)
   implementation(libs.lottie)
+  debugImplementation(libs.leakcanary)
 
   implementation(libs.kotlinx.datetime)
   implementation(libs.kotlinx.collections)
