@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -57,6 +58,7 @@ fun StatusDetailCard(
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
+  navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   Surface(
@@ -81,6 +83,7 @@ fun StatusDetailCard(
         CircleShapeAsyncImage(
           model = status.avatar,
           modifier = Modifier.size(statusAvatarSize),
+          onClick = { navigateToProfile(status.actionable.account) }
         )
         WidthSpacer(value = 7.dp)
         Column(modifier = Modifier.weight(1f)) {

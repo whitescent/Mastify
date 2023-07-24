@@ -1,6 +1,9 @@
 package com.github.whitescent.mastify.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Query
+import androidx.room.Upsert
 import com.github.whitescent.mastify.database.model.AccountEntity
 
 @Dao

@@ -44,9 +44,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
+import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -115,8 +117,8 @@ fun StatusDetail(
           ancestors = state.ancestors.toImmutableList(),
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
-          favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-          unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+          favouriteStatus = viewModel::favoriteStatus,
+          unfavouriteStatus = viewModel::unfavoriteStatus,
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -134,6 +136,9 @@ fun StatusDetail(
                 targetMediaIndex = index
               )
             )
+          },
+          navigateToProfile = {
+            navigator.navigate(ProfileDestination(it))
           },
           modifier = Modifier.weight(1f)
         )
@@ -143,8 +148,8 @@ fun StatusDetail(
           status = status,
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
-          favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-          unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+          favouriteStatus = viewModel::favoriteStatus,
+          unfavouriteStatus = viewModel::unfavoriteStatus,
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -163,6 +168,7 @@ fun StatusDetail(
               )
             )
           },
+          navigateToProfile = { navigator.navigate(ProfileDestination(it)) },
           modifier = Modifier.weight(1f)
         )
       }
@@ -184,6 +190,7 @@ fun StatusDetailContent(
   favouriteStatus: (String) -> Unit,
   unfavouriteStatus: (String) -> Unit,
   navigateToDetail: (Status) -> Unit,
+  navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
   LazyColumn(modifier = modifier) {
@@ -194,6 +201,7 @@ fun StatusDetailContent(
         unfavouriteStatus = { unfavouriteStatus(status.actionableId) },
         navigateToDetail = { navigateToDetail(status.actionable) },
         navigateToMedia = navigateToMedia,
+        navigateToProfile = navigateToProfile,
         contentTextStyle = TextStyle(
           fontSize = 16.sp,
           color = AppTheme.colors.primaryContent
@@ -238,6 +246,7 @@ fun StatusDetailContent(
                   unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
                   navigateToDetail = { navigateToDetail(it.actionable) },
                   navigateToMedia = navigateToMedia,
+                  navigateToProfile = navigateToProfile,
                   modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                 )
                 if (it.isReplyEnd) HeightSpacer(8.dp)
@@ -261,6 +270,7 @@ fun StatusDetailInReply(
   favouriteStatus: (String) -> Unit,
   unfavouriteStatus: (String) -> Unit,
   navigateToDetail: (Status) -> Unit,
+  navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
   val currentStatus = status.copy(
@@ -276,6 +286,7 @@ fun StatusDetailInReply(
         unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
         navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
         navigateToMedia = navigateToMedia,
+        navigateToProfile = navigateToProfile,
         modifier = Modifier.padding(horizontal = 12.dp)
       )
     }
@@ -317,6 +328,7 @@ fun StatusDetailInReply(
                   unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
                   navigateToDetail = { navigateToDetail(it.actionable) },
                   navigateToMedia = navigateToMedia,
+                  navigateToProfile = navigateToProfile,
                   modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                 )
                 if (it.isReplyEnd) HeightSpacer(8.dp)

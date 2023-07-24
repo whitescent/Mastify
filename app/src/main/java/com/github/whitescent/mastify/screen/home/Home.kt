@@ -63,6 +63,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.paging.LoadState
+import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
@@ -178,9 +179,12 @@ fun Home(
                         StatusMediaScreenDestination(attachments.toTypedArray(), index)
                       )
                     },
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(horizontal = 24.dp)
+                    navigateToProfile = {
+                      navigator.navigate(
+                        ProfileDestination(it)
+                      )
+                    },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
                   )
                 }
                 if (status.isReplyEnd) HeightSpacer(value = 12.dp)

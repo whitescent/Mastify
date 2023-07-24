@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -79,6 +80,7 @@ fun StatusListItem(
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
+  navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   val normalShape = RoundedCornerShape(18.dp)
@@ -176,7 +178,8 @@ fun StatusListItem(
         status.reblog?.let {
           StatusSource(
             reblogAvatar = status.rebloggedAvatar,
-            reblogDisplayName = status.reblogDisplayName
+            reblogDisplayName = status.reblogDisplayName,
+            navigateToProfile = { navigateToProfile(it.account) }
           )
         }
         StatusContent(
@@ -201,6 +204,7 @@ fun StatusListItem(
           onClickMedia = {
             navigateToMedia(status.attachments, it)
           },
+          navigateToProfile = { navigateToProfile(status.actionable.account) },
           modifier = Modifier.let {
             if (status.replyChainType == Start)
               it.onGloballyPositioned { status ->
@@ -215,7 +219,11 @@ fun StatusListItem(
 }
 
 @Composable
-fun StatusSource(reblogAvatar: String, reblogDisplayName: String) {
+fun StatusSource(
+  reblogAvatar: String,
+  reblogDisplayName: String,
+  navigateToProfile: () -> Unit
+) {
   Column {
     CenterRow(
       Modifier
@@ -225,6 +233,7 @@ fun StatusSource(reblogAvatar: String, reblogDisplayName: String) {
       CircleShapeAsyncImage(
         model = reblogAvatar,
         modifier = Modifier.size(24.dp),
+        onClick = { navigateToProfile() }
       )
       WidthSpacer(value = 4.dp)
       Text(
@@ -279,6 +288,7 @@ fun StatusContent(
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   onClickMedia: (Int) -> Unit,
+  navigateToProfile: () -> Unit,
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
@@ -290,6 +300,7 @@ fun StatusContent(
           CircleShapeAsyncImage(
             model = avatar,
             modifier = Modifier.size(statusAvatarSize),
+            onClick = { navigateToProfile() }
           )
           WidthSpacer(value = 7.dp)
           Column(modifier = Modifier.align(Alignment.Top)) {
@@ -407,6 +418,7 @@ fun StatusContent(
             CircleShapeAsyncImage(
               model = avatar,
               modifier = Modifier.size(statusAvatarSize),
+              onClick = { navigateToProfile() }
             )
             WidthSpacer(value = 7.dp)
             Column(modifier = Modifier.weight(1f)) {

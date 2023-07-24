@@ -1,35 +1,70 @@
 package com.github.whitescent.mastify.viewModel
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.github.whitescent.mastify.data.repository.PreferenceRepository
+import androidx.lifecycle.viewModelScope
+import at.connyduck.calladapter.networkresult.fold
+import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.screen.navArgs
+import com.github.whitescent.mastify.screen.other.ProfileNavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-  preferenceRepository: PreferenceRepository
+  savedStateHandle: SavedStateHandle,
+  accountRepository: AccountRepository,
+  private val api: MastodonApi
 ) : ViewModel() {
 
-  // val account = preferenceRepository.account
-  // var statuses by mutableStateOf<List<Status>>(emptyList())
-  //   private set
-  // var profile by mutableStateOf<Account?>(null)
-  //   private set
-  //
-  // fun initProfilePage() = viewModelScope.launch(Dispatchers.Main) {
-  //   val list = apiRepository.getAccountStatuses(
-  //     instanceName = account!!.instanceName,
-  //     token = account.accessToken,
-  //     id = account.id
-  //   )
-  //   list?.let {
-  //     statuses = it
-  //   }
-  //   apiRepository.accountVerifyCredentials(
-  //     instanceName = account.instanceName,
-  //     token = account.accessToken
-  //   )?.let {
-  //     profile = it
-  //   }
-  // }
+  private val navArgs: ProfileNavArgs = savedStateHandle.navArgs()
+
+  var uiState by mutableStateOf(
+    ProfileUiState(
+      account = navArgs.account,
+      isSelf = navArgs.account.id == accountRepository.activeAccount!!.accountId
+    )
+  )
+    private set
+
+  init {
+    viewModelScope.launch {
+      getRelationship(navArgs.account.id)
+      fetchAccount(navArgs.account.id)
+    }
+  }
+
+  private suspend fun fetchAccount(accountId: String) {
+    api.account(accountId).fold(
+      {
+        uiState = uiState.copy(account = it)
+      },
+      {
+        it.printStackTrace()
+      }
+    )
+  }
+
+  private suspend fun getRelationship(accountId: String) {
+    api.relationships(listOf(accountId)).fold(
+      {
+        uiState = uiState.copy(isFollowing = it.first().following)
+      },
+      {
+        it.printStackTrace()
+      }
+    )
+  }
 }
+
+data class ProfileUiState(
+  val account: Account,
+  val isSelf: Boolean,
+  val isFollowing: Boolean? = null
+)

@@ -52,7 +52,9 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.database.model.AccountEntity
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
 @Composable
@@ -60,9 +62,10 @@ fun AppDrawer(
   isSystemBarVisible: Boolean,
   drawerState: DrawerState,
   activeAccount: AccountEntity,
-  accounts: MutableList<AccountEntity>,
+  accounts: ImmutableList<AccountEntity>,
   changeAccount: (Long) -> Unit,
   navigateToLogin: () -> Unit,
+  navigateToProfile: (Account) -> Unit,
 ) {
   val scope = rememberCoroutineScope()
   ModalDrawerSheet(
@@ -106,7 +109,10 @@ fun AppDrawer(
       ) {
         CircleShapeAsyncImage(
           model = activeAccount.profilePictureUrl,
-          modifier = Modifier.size(72.dp)
+          modifier = Modifier.size(72.dp),
+          onClick = {
+            navigateToProfile(activeAccount.toAccount())
+          }
         )
         HeightSpacer(value = 6.dp)
         CenterRow {
@@ -114,7 +120,7 @@ fun AppDrawer(
             modifier = Modifier.weight(1f)
           ) {
             Text(
-              text = activeAccount.displayName,
+              text = activeAccount.realDisplayName,
               fontSize = 24.sp,
               color = AppTheme.colors.primaryContent
             )

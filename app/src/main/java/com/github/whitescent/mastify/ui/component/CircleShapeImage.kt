@@ -2,6 +2,7 @@ package com.github.whitescent.mastify.ui.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
@@ -38,7 +39,8 @@ fun CircleShapeAsyncImage(
   border: BorderStroke? = null,
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = 1f,
-  colorFilter: ColorFilter? = null
+  colorFilter: ColorFilter? = null,
+  onClick: (() -> Unit)? = null
 ) {
   Surface(
     modifier = modifier,
@@ -50,7 +52,11 @@ fun CircleShapeAsyncImage(
       contentDescription = null,
       contentScale = contentScale,
       alpha = alpha,
-      colorFilter = colorFilter
+      colorFilter = colorFilter,
+      modifier = Modifier.clickable(
+        enabled = onClick != null,
+        onClick = { onClick?.invoke() }
+      )
     )
   }
 }

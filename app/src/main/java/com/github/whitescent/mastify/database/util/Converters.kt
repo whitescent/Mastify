@@ -1,6 +1,8 @@
 package com.github.whitescent.mastify.database.util
 
 import androidx.room.TypeConverter
+import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.account.Fields
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
@@ -25,12 +27,12 @@ class StatusConverter {
   }
 
   @TypeConverter
-  fun fromJsonToAccount(json: String): Status.Account {
+  fun fromJsonToAccount(json: String): Account {
     return this.json.decodeFromString(json)
   }
 
   @TypeConverter
-  fun fromAccountToJson(account: Status.Account): String {
+  fun fromAccountToJson(account: Account): String {
     return json.encodeToString(account)
   }
 
@@ -42,6 +44,16 @@ class StatusConverter {
   @TypeConverter
   fun fromTagToJson(tag: List<Status.Tag>): String {
     return json.encodeToString(tag)
+  }
+
+  @TypeConverter
+  fun fromJsonToFields(json: String): List<Fields> {
+    return this.json.decodeFromString(json)
+  }
+
+  @TypeConverter
+  fun fromFieldsToJson(mention: List<Fields>): String {
+    return json.encodeToString(mention)
   }
 
   @TypeConverter

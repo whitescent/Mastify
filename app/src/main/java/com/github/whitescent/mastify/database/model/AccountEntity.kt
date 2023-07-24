@@ -2,36 +2,52 @@ package com.github.whitescent.mastify.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.account.Fields
 
 @Entity
 data class AccountEntity(
   @PrimaryKey(autoGenerate = true) val id: Long,
   val domain: String,
-  var accessToken: String,
-  var clientId: String?, // nullable for backward compatibility
-  var clientSecret: String?, // nullable for backward compatibility
-  var isActive: Boolean,
-  var accountId: String = "",
-  var username: String = "",
-  var displayName: String = "",
-  var profilePictureUrl: String = "",
-  var header: String = "",
-  var followersCount: Long = 0,
-  var followingCount: Long = 0,
-  var statusesCount: Long = 0
+  val accessToken: String,
+  val clientId: String?, // nullable for backward compatibility
+  val clientSecret: String?, // nullable for backward compatibility
+  val isActive: Boolean,
+  val accountId: String,
+  val username: String = "",
+  val displayName: String = "",
+  val note: String = "",
+  val profilePictureUrl: String = "",
+  val header: String = "",
+  val createdAt: String = "",
+  val fields: List<Fields> = emptyList(),
+  val followersCount: Long = 0,
+  val followingCount: Long = 0,
+  val statusesCount: Long = 0
 ) {
 
   val fullName: String
     get() = "@$username@$domain"
 
-  fun logout() {
-    // deleting credentials so they cannot be used again
-    accessToken = ""
-    clientId = null
-    clientSecret = null
-  }
+  val realDisplayName inline get() = this.displayName.ifEmpty { this.username }
 
-  fun isLoggedIn() = accessToken.isNotEmpty()
+  fun toAccount(): Account {
+    return Account(
+      id = accountId,
+      username = username,
+      displayName = displayName,
+      note = note,
+      url = "",
+      avatar = profilePictureUrl,
+      header = header,
+      followersCount = followersCount,
+      followingCount = followingCount,
+      statusesCount = statusesCount,
+      createdAt = createdAt,
+      source = null,
+      fields = fields
+    )
+  }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

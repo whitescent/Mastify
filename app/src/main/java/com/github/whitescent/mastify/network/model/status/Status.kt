@@ -2,9 +2,9 @@ package com.github.whitescent.mastify.network.model.status
 
 import androidx.compose.runtime.Immutable
 import com.github.whitescent.mastify.database.model.TimelineEntity
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
-import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -59,17 +59,6 @@ data class Status(
     val type: String,
     @SerialName("preview_url") val previewUrl: String?
   )
-
-  @Serializable
-  data class Account(
-    val id: String,
-    @SerialName("display_name") val displayName: String,
-    val username: String,
-    val avatar: String,
-    val url: String
-  ) {
-    val fullName: String get() = "@$username@${FormatFactory.getInstanceName(url)}"
-  }
 
   @Serializable
   data class Mention(
@@ -128,6 +117,7 @@ data class Status(
     val id inline get() = status.id
     val uuid inline get() = status.uuid
     val reblog inline get() = status.reblog
+    val accountId inline get() = status.account.id
 
     val avatar inline get() = status.reblog?.account?.avatar ?: status.account.avatar
     val rebloggedAvatar inline get() = status.account.avatar

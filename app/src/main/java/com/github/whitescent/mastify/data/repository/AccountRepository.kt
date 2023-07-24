@@ -20,8 +20,9 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
 
   init {
     accounts = accountDao.loadAll().toMutableList()
-    activeAccount = accounts.find { acc -> acc.isActive }
-      ?: accounts.firstOrNull()?.also { acc -> acc.isActive = true }
+    (accounts.find { acc -> acc.isActive } ?: accounts.firstOrNull())
+      ?.copy(isActive = true)
+      ?.let { activeAccount = it }
   }
 
   fun addAccount(
@@ -32,8 +33,8 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
     newAccount: Account
   ) {
     activeAccount?.let {
-      it.isActive = false
-      accountDao.insertOrReplace(it)
+      activeAccount = it.copy(isActive = false)
+      accountDao.insertOrReplace(activeAccount!!)
     }
     // check if this is a relogin with an existing account,
     // if yes update it, otherwise create a new one
@@ -57,11 +58,20 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
         clientId = clientId,
         clientSecret = clientSecret,
         isActive = true,
-        accountId = newAccount.id
+        accountId = newAccount.id,
+        username = newAccount.username,
+        displayName = newAccount.displayName,
+        profilePictureUrl = newAccount.avatar,
+        followingCount = newAccount.followingCount,
+        followersCount = newAccount.followersCount,
+        header = newAccount.header,
+        statusesCount = newAccount.statusesCount,
+        fields = newAccount.fields,
+        note = newAccount.note,
+        createdAt = newAccount.createdAt
       ).also { accounts.add(it) }
     }
     activeAccount = newAccountEntity
-    updateActiveAccount(newAccount)
   }
 
   /**
@@ -70,15 +80,20 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
    * @param account the [Account] object returned from the api
    */
   fun updateActiveAccount(account: Account) {
-    activeAccount?.let {
-      it.accountId = account.id
-      it.username = account.username
-      it.displayName = account.displayName
-      it.profilePictureUrl = account.avatar
-      it.followingCount = account.followersCount
-      it.followersCount = account.followersCount
-      it.header = account.header
-      it.statusesCount = account.statusesCount
+    activeAccount?.copy(
+      accountId = account.id,
+      username = account.username,
+      displayName = account.displayName,
+      profilePictureUrl = account.avatar,
+      followingCount = account.followingCount,
+      followersCount = account.followersCount,
+      header = account.header,
+      statusesCount = account.statusesCount,
+      fields = account.fields,
+      note = account.note,
+      createdAt = account.createdAt
+    )?.let {
+      activeAccount = it
       accountDao.insertOrReplace(it)
     }
   }
@@ -92,15 +107,15 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
       id == accountId
     } ?: return // invalid accountId passed, do nothing
 
-    activeAccount?.let {
-      it.isActive = false
+    activeAccount?.copy(isActive = false)?.let {
+      activeAccount = it
       saveAccount(it)
     }
 
     activeAccount = newActiveAccount
 
-    activeAccount?.let {
-      it.isActive = true
+    activeAccount?.copy(isActive = true)?.let {
+      activeAccount = it
       accountDao.insertOrReplace(it)
     }
   }
@@ -110,7 +125,7 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
    * New accounts must be created with [addAccount]
    * @param account the account to save
    */
-  fun saveAccount(account: AccountEntity) {
+  private fun saveAccount(account: AccountEntity) {
     if (account.id != 0L) {
       accountDao.insertOrReplace(account)
     }

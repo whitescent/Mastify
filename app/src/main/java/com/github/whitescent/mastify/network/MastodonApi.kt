@@ -3,6 +3,7 @@ package com.github.whitescent.mastify.network
 import at.connyduck.calladapter.networkresult.NetworkResult
 import com.github.whitescent.mastify.network.model.account.AccessToken
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
 import com.github.whitescent.mastify.network.model.status.Status
@@ -77,4 +78,14 @@ interface MastodonApi {
   suspend fun statusContext(
     @Path("id") statusId: String
   ): NetworkResult<StatusContext>
+
+  @GET("api/v1/accounts/{id}")
+  suspend fun account(
+    @Path("id") accountId: String
+  ): NetworkResult<Account>
+
+  @GET("api/v1/accounts/relationships")
+  suspend fun relationships(
+    @Query("id[]") accountIds: List<String>
+  ): NetworkResult<List<Relationship>>
 }

@@ -16,6 +16,7 @@ import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
+import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.rememberAppState
@@ -28,6 +29,7 @@ import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.spec.Route
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -56,12 +58,12 @@ fun AppScaffold(
   ModalNavigationDrawer(
     drawerState = drawerState,
     drawerContent = {
-      if (destination.shouldShowScaffoldElements()) {
+      if (destination.shouldShowScaffoldElements() && viewModel.activeAccount != null) {
         AppDrawer(
           isSystemBarVisible = systemUiController.isSystemBarsVisible,
           drawerState = drawerState,
           activeAccount = viewModel.activeAccount!!,
-          accounts = viewModel.accounts,
+          accounts = viewModel.accounts.toImmutableList(),
           changeAccount = {
             viewModel.changeActiveAccount(it)
             navController.navigate(NavGraphs.app) {
@@ -74,6 +76,13 @@ fun AppScaffold(
           },
           navigateToLogin = {
             navController.navigate(LoginDestination) {
+              scope.launch {
+                drawerState.close()
+              }
+            }
+          },
+          navigateToProfile = {
+            navController.navigate(ProfileDestination(it)) {
               scope.launch {
                 drawerState.close()
               }
@@ -98,7 +107,7 @@ fun AppScaffold(
       },
       containerColor = AppTheme.colors.background
     ) {
-      val appState = rememberAppState(it.calculateTopPadding(), it.calculateBottomPadding())
+      val appState = rememberAppState(it.calculateBottomPadding())
       DestinationsNavHost(
         engine = engine,
         navController = navController,

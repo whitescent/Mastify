@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 
 @Entity(
@@ -37,7 +38,7 @@ data class TimelineEntity(
   @ColumnInfo val reblogged: Boolean,
   @ColumnInfo val reblog: Status?,
   @ColumnInfo val content: String,
-  @ColumnInfo val account: Status.Account,
+  @ColumnInfo val account: Account,
   @ColumnInfo val tags: List<Status.Tag>,
   @ColumnInfo val mentions: List<Status.Mention>,
   @ColumnInfo val application: Status.Application?,
