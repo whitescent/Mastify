@@ -11,7 +11,7 @@ import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.screen.navArgs
-import com.github.whitescent.mastify.screen.other.ProfileNavArgs
+import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

@@ -184,10 +184,15 @@ fun Home(
                         ProfileDestination(it)
                       )
                     },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp)
+                    modifier = Modifier
+                      .fillMaxWidth()
+                      .padding(
+                        start = 24.dp,
+                        end = 24.dp,
+                        bottom = if (status.isReplyEnd) 12.dp else 0.dp
+                      )
                   )
                 }
-                if (status.isReplyEnd) HeightSpacer(value = 12.dp)
                 if (status.hasUnloadedStatus) LoadMorePlaceHolder { viewModel.loadUnloadedStatus() }
               }
               item {
