@@ -103,7 +103,8 @@ fun ProfileInfo(
         Text(
           text = account.realDisplayName,
           fontSize = 24.sp,
-          fontWeight = FontWeight(500)
+          fontWeight = FontWeight(500),
+          color = AppTheme.colors.primaryContent
         )
         HeightSpacer(value = 2.dp)
         Text(
@@ -128,7 +129,7 @@ fun ProfileInfo(
     HeightSpacer(value = 8.dp)
     HtmlText(
       text = account.note,
-      style = TextStyle(fontSize = 16.sp)
+      style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
     )
     HeightSpacer(value = 8.dp)
     AccountFields(account.fields)
@@ -141,7 +142,7 @@ fun AccountFields(fields: List<Fields>) {
   Column(Modifier.fillMaxWidth()) {
     fields.forEach {
       CenterRow {
-        Box(Modifier.width(100.dp), Alignment.CenterStart) {
+        Box(Modifier.width(150.dp), Alignment.CenterStart) {
           CenterRow {
             Text(
               text = it.name,
@@ -160,7 +161,14 @@ fun AccountFields(fields: List<Fields>) {
             }
           }
         }
-        HtmlText(text = it.value, style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight(450)))
+        HtmlText(
+          text = it.value,
+          style = TextStyle(
+            fontSize = 16.sp,
+            fontWeight = FontWeight(450),
+            color = AppTheme.colors.primaryContent
+          )
+        )
       }
       if (it != fields.last()) HeightSpacer(value = 4.dp)
     }

@@ -189,7 +189,7 @@ fun Home(
                       .padding(
                         start = 24.dp,
                         end = 24.dp,
-                        bottom = if (status.isReplyEnd) 12.dp else 0.dp
+                        bottom = if (status.isReplyEnd) 16.dp else 0.dp
                       )
                   )
                 }
