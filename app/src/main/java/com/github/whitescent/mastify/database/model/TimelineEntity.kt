@@ -19,8 +19,8 @@ import com.github.whitescent.mastify.network.model.status.Status
   indices = [Index("timelineUserId")]
 )
 data class TimelineEntity(
-  @PrimaryKey val id: String,
-  @ColumnInfo val uuid: String,
+  @ColumnInfo val id: String,
+  @PrimaryKey val uuid: String,
   @ColumnInfo val timelineUserId: Long,
   @ColumnInfo val createdAt: String,
   @ColumnInfo val sensitive: Boolean,

@@ -83,9 +83,9 @@ fun StatusListItem(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
-  val normalShape = RoundedCornerShape(18.dp)
-  val replyShape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
-  val lastReplyShape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp)
+  val normalShape = remember { RoundedCornerShape(18.dp) }
+  val replyShape = remember { RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp) }
+  val lastReplyShape = remember { RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp) }
 
   var replyStatusHeight by remember { mutableIntStateOf(0) }
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }

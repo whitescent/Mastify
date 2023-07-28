@@ -21,6 +21,9 @@ interface TimelineDao {
   )
   fun getStatuses(accountId: Long): List<Status>
 
+  @Query("SELECT * FROM timelineentity WHERE timelineUserId = :accountId")
+  fun getAll(accountId: Long): List<Status>
+
   @Query(
     """
       SELECT id FROM timelineentity WHERE timelineUserId = :accountId

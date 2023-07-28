@@ -72,6 +72,7 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
       ).also { accounts.add(it) }
     }
     activeAccount = newAccountEntity
+    accountDao.insertOrReplace(activeAccount!!)
   }
 
   /**
