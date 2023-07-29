@@ -33,8 +33,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
-import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -51,7 +51,7 @@ import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun StatusDetailCard(
-  status: Status.ViewData,
+  status: StatusUiData,
   modifier: Modifier = Modifier,
   backgroundColor: Color = AppTheme.colors.cardBackground,
   contentTextStyle: TextStyle = LocalTextStyle.current,

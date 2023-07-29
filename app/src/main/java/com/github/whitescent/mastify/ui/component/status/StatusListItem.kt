@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -73,7 +74,7 @@ import kotlinx.datetime.toInstant
 
 @Composable
 fun StatusListItem(
-  status: Status.ViewData,
+  status: StatusUiData,
   modifier: Modifier = Modifier,
   backgroundColor: Color = AppTheme.colors.cardBackground,
   favouriteStatus: () -> Unit,

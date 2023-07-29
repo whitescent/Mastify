@@ -7,6 +7,11 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.Status.Application
+import com.github.whitescent.mastify.network.model.status.Status.Attachment
+import com.github.whitescent.mastify.network.model.status.Status.Mention
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType
+import com.github.whitescent.mastify.network.model.status.Status.Tag
 
 @Entity(
   foreignKeys = [
@@ -39,11 +44,11 @@ data class TimelineEntity(
   @ColumnInfo val reblog: Status?,
   @ColumnInfo val content: String,
   @ColumnInfo val account: Account,
-  @ColumnInfo val tags: List<Status.Tag>,
-  @ColumnInfo val mentions: List<Status.Mention>,
-  @ColumnInfo val application: Status.Application?,
-  @ColumnInfo val attachments: List<Status.Attachment>,
-  @ColumnInfo val replyChainType: Status.ReplyChainType,
+  @ColumnInfo val tags: List<Tag>,
+  @ColumnInfo val mentions: List<Mention>,
+  @ColumnInfo val application: Application?,
+  @ColumnInfo val attachments: List<Attachment>,
+  @ColumnInfo val replyChainType: ReplyChainType,
   @ColumnInfo val hasUnloadedReplyStatus: Boolean,
   @ColumnInfo val hasUnloadedStatus: Boolean,
   @ColumnInfo val hasMultiReplyStatus: Boolean,

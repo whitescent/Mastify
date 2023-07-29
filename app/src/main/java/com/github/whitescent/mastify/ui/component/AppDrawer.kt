@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.database.model.AccountEntity
+import com.github.whitescent.mastify.mapper.account.toAccount
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import kotlinx.collections.immutable.ImmutableList

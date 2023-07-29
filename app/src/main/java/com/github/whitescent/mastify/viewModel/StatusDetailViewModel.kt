@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.viewModel
 
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,7 +8,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
-import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Continue
@@ -15,8 +17,10 @@ import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Start
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
-import com.github.whitescent.mastify.utils.toViewData
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -26,7 +30,6 @@ import javax.inject.Inject
 @HiltViewModel
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
-  private val db: AppDatabase,
   private val api: MastodonApi
 ) : ViewModel() {
 
@@ -70,8 +73,8 @@ class StatusDetailViewModel @Inject constructor(
 
   fun updateText(text: String) = _replyText.update { text }
 
-  private fun markAncestors(ancestors: List<Status>): List<Status.ViewData> {
-    if (ancestors.isEmpty()) return emptyList()
+  private fun markAncestors(ancestors: List<Status>): ImmutableList<StatusUiData> {
+    if (ancestors.isEmpty()) return persistentListOf()
     val result = ancestors.toMutableList()
     ancestors.forEachIndexed { index, status ->
       when (index) {
@@ -83,12 +86,12 @@ class StatusDetailViewModel @Inject constructor(
         }
       }
     }
-    return result.toViewData()
+    return result.toUiData().toImmutableList()
   }
 
-  private fun markDescendants(descendants: List<Status>): List<Status.ViewData> {
+  private fun markDescendants(descendants: List<Status>): ImmutableList<StatusUiData> {
     if (descendants.isEmpty() || descendants.size == 1)
-      return descendants.toViewData()
+      return descendants.toUiData().toImmutableList()
     val result = descendants.toMutableList()
     descendants.forEachIndexed { index, status ->
       when {
@@ -111,13 +114,14 @@ class StatusDetailViewModel @Inject constructor(
         }
       }
     }
-    return result.toViewData()
+    return result.toUiData().toImmutableList()
   }
 }
 
+@Immutable
 data class StatusDetailUiState(
   val loading: Boolean = false,
-  val ancestors: List<Status.ViewData> = emptyList(),
-  val descendants: List<Status.ViewData> = emptyList(),
+  val ancestors: ImmutableList<StatusUiData> = persistentListOf(),
+  val descendants: ImmutableList<StatusUiData> = persistentListOf(),
   val loadError: Boolean = false
 )

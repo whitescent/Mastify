@@ -5,8 +5,6 @@ import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import java.util.UUID
 
-fun List<Status>.toViewData() = this.map { Status.ViewData(it) }
-
 suspend fun reorderedStatuses(statuses: List<Status>, api: MastodonApi): List<Status> {
   if (statuses.isEmpty()) return emptyList()
 

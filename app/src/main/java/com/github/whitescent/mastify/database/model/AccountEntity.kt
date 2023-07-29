@@ -2,7 +2,6 @@ package com.github.whitescent.mastify.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
 
 @Entity
@@ -30,24 +29,6 @@ data class AccountEntity(
     get() = "@$username@$domain"
 
   val realDisplayName inline get() = this.displayName.ifEmpty { this.username }
-
-  fun toAccount(): Account {
-    return Account(
-      id = accountId,
-      username = username,
-      displayName = displayName,
-      note = note,
-      url = "",
-      avatar = profilePictureUrl,
-      header = header,
-      followersCount = followersCount,
-      followingCount = followingCount,
-      statusesCount = statusesCount,
-      createdAt = createdAt,
-      source = null,
-      fields = fields
-    )
-  }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

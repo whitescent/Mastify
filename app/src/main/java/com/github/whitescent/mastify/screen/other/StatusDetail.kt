@@ -44,6 +44,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -84,7 +86,7 @@ fun StatusDetail(
   val state = viewModel.uiState
   val replyText by viewModel.replyText.collectAsStateWithLifecycle()
 
-  val status = Status.ViewData(viewModel.navArgs.status)
+  val status = viewModel.navArgs.status.toUiData()
   val avatar = viewModel.navArgs.avatar
   val threadInReply = status.reblog?.isInReplyTo ?: status.isInReplyTo
 
@@ -183,8 +185,8 @@ fun StatusDetail(
 
 @Composable
 fun StatusDetailContent(
-  status: Status.ViewData,
-  descendants: ImmutableList<Status.ViewData>,
+  status: StatusUiData,
+  descendants: ImmutableList<StatusUiData>,
   loading: Boolean,
   modifier: Modifier = Modifier,
   favouriteStatus: (String) -> Unit,
@@ -261,10 +263,10 @@ fun StatusDetailContent(
 
 @Composable
 fun StatusDetailInReply(
-  status: Status.ViewData,
+  status: StatusUiData,
   lazyState: LazyListState,
-  ancestors: ImmutableList<Status.ViewData>,
-  descendants: ImmutableList<Status.ViewData>,
+  ancestors: ImmutableList<StatusUiData>,
+  descendants: ImmutableList<StatusUiData>,
   loading: Boolean,
   modifier: Modifier = Modifier,
   favouriteStatus: (String) -> Unit,

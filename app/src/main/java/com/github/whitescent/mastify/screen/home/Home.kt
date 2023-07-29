@@ -64,7 +64,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
-import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -154,17 +154,10 @@ fun Home(
             ) {
               items(
                 items = timeline,
-                contentType = { it },
+                contentType = { it.itemType },
                 key = { it.uuid }
               ) { item ->
-                val status = remember(item) { Status.ViewData(item) }
-                // val loadThreshold by remember(it) { mutableIntStateOf(timeline.size - timeline.size / 3) }
-                // if (
-                //   status.id <= timeline[loadThreshold].id &&
-                //   !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
-                // ) {
-                //   viewModel.append()
-                // }
+                val status by remember(item) { mutableStateOf(item.toUiData()) }
                 if (status.shouldShow) {
                   StatusListItem(
                     status = status,
@@ -277,7 +270,7 @@ fun Home(
     snapshotFlow { firstVisibleIndex }
       .map {
         !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading &&
-          firstVisibleIndex >= timeline.size - timeline.size / 3
+          lazyState.firstVisibleItemIndex >= timeline.size - timeline.size / 3
       }
       .distinctUntilChanged()
       .filter { it }

@@ -125,7 +125,7 @@ fun AppScaffold(
     }
   }
 
-  LaunchedEffect(lazyState) {
+  LaunchedEffect(Unit) {
     snapshotFlow { lazyState.firstVisibleItemIndex }
       .debounce(500L)
       .collectLatest {

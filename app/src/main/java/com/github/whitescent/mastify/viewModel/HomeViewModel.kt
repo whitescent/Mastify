@@ -9,6 +9,7 @@ import androidx.room.withTransaction
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
@@ -17,10 +18,9 @@ import com.github.whitescent.mastify.utils.reorderedStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-private const val timelineFetchNumber = 30
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -30,12 +30,12 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
   private val timelineDao = db.timelineDao()
-
+  private val timelineFetchNumber = 30
   private var nextPage: String? = null
   private var isInitialLoad = true
-
   private var timelineListFlow = MutableStateFlow<List<Status>>(listOf())
   val timelineList = timelineListFlow.asStateFlow()
+
   val activeAccount get() = accountRepository.activeAccount!!
   var uiState by mutableStateOf(HomeUiState())
     private set
@@ -107,7 +107,7 @@ class HomeViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      timelineListFlow.emit(timelineDao.getStatuses(activeAccount.id))
+      timelineListFlow.emit(timelineDao.getAll(activeAccount.id))
       paginator.refresh()
       isInitialLoad = false
       // fetch the latest account info
@@ -154,7 +154,7 @@ class HomeViewModel @Inject constructor(
             }
           )
           tempList = reorderedStatuses(tempList, api).toMutableList()
-          timelineListFlow.emit(tempList)
+          timelineListFlow.update { tempList }
         } else {
           list[list.lastIndex] = list[list.lastIndex].copy(hasUnloadedStatus = true)
           when (tempList.indexOfFirst { it.hasUnloadedStatus }) {
@@ -165,7 +165,7 @@ class HomeViewModel @Inject constructor(
             }
           }
           tempList = reorderedStatuses(tempList, api).toMutableList()
-          timelineListFlow.emit(tempList)
+          timelineListFlow.update { tempList }
         }
       } else {
         // TODO ERROR
