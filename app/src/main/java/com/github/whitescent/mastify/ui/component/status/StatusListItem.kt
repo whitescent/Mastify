@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Continue
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
@@ -192,8 +191,6 @@ fun StatusListItem(
           spoilerText = status.spoilerText,
           replyChainType = status.replyChainType,
           attachments = status.attachments,
-          mentions = status.mentions,
-          application = status.application,
           repliesCount = status.repliesCount,
           reblogsCount = status.reblogsCount,
           favouritesCount = status.favouritesCount,
@@ -278,8 +275,6 @@ fun StatusContent(
   spoilerText: String,
   replyChainType: Status.ReplyChainType,
   attachments: ImmutableList<Attachment>,
-  mentions: ImmutableList<Status.Mention>,
-  application: Application?,
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,

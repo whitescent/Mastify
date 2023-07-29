@@ -64,6 +64,11 @@ interface MastodonApi {
     @Query("limit") limit: Int? = null
   ): Response<List<Status>>
 
+  @GET("api/v1/statuses/{id}")
+  suspend fun status(
+    @Path("id") statusId: String
+  ): NetworkResult<Status>
+
   @POST("api/v1/statuses/{id}/favourite")
   suspend fun favouriteStatus(
     @Path("id") statusId: String

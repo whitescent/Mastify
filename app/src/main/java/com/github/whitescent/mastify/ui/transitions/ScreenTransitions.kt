@@ -35,7 +35,7 @@ object AppTransitions : DestinationStyle.Animated {
       else -> fadeIn()
     }
   }
-  override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition? {
     return when (targetState.appDestination()) {
       HomeDestination -> scaleOut(tween(500), targetScale = 0.5f) + fadeOut()
       StatusDetailDestination, LoginDestination, OauthDestination -> {
@@ -44,7 +44,7 @@ object AppTransitions : DestinationStyle.Animated {
           animationSpec = tween(slideAnimationTween)
         )
       }
-      StatusMediaScreenDestination -> scaleOut()
+      StatusMediaScreenDestination -> null
       else -> fadeOut()
     }
   }
@@ -134,11 +134,11 @@ object StatusTransitions : DestinationStyle.Animated {
 
 object StatusMediaTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
-    return scaleIn(tween(200, easing = LinearEasing)) + fadeIn()
+    return scaleIn(tween(200, easing = LinearEasing), initialScale = 0.5f)
   }
 
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
-    return scaleOut(tween(200, easing = LinearEasing)) + fadeOut()
+    return fadeOut()
   }
 }
 

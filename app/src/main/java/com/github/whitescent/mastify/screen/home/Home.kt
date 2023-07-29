@@ -45,6 +45,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -62,6 +64,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -75,11 +78,13 @@ import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.utils.AppState
-import com.github.whitescent.mastify.utils.toViewData
 import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -95,9 +100,7 @@ fun Home(
 ) {
   val context = LocalContext.current
   val uiState = viewModel.uiState
-  val timeline = remember(uiState.timeline) {
-    uiState.timeline.toViewData()
-  }
+  val timeline by viewModel.timelineList.collectAsStateWithLifecycle(listOf())
   val firstVisibleIndex by remember {
     derivedStateOf {
       lazyState.firstVisibleItemIndex
@@ -153,14 +156,15 @@ fun Home(
                 items = timeline,
                 contentType = { it },
                 key = { it.uuid }
-              ) { status ->
-                val loadThreshold = uiState.timeline.size - uiState.timeline.size / 3
-                if (
-                  status.id <= uiState.timeline[loadThreshold].id &&
-                  !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
-                ) {
-                  viewModel.append()
-                }
+              ) { item ->
+                val status = remember(item) { Status.ViewData(item) }
+                // val loadThreshold by remember(it) { mutableIntStateOf(timeline.size - timeline.size / 3) }
+                // if (
+                //   status.id <= timeline[loadThreshold].id &&
+                //   !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading
+                // ) {
+                //   viewModel.append()
+                // }
                 if (status.shouldShow) {
                   StatusListItem(
                     status = status,
@@ -270,6 +274,16 @@ fun Home(
 
   LaunchedEffect(firstVisibleIndex) {
     if (firstVisibleIndex == 0 && uiState.showNewStatusButton) viewModel.dismissButton()
+    snapshotFlow { firstVisibleIndex }
+      .map {
+        !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading &&
+          firstVisibleIndex >= timeline.size - timeline.size / 3
+      }
+      .distinctUntilChanged()
+      .filter { it }
+      .collect {
+        viewModel.append()
+      }
   }
 }
 
