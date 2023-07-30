@@ -9,6 +9,7 @@ import org.junit.Assert
 import org.junit.Test
 
 class ReorderStatusListTest {
+
   data class Status(
     val id: String,
     val inReplyToId: String? = null,
@@ -24,20 +25,20 @@ class ReorderStatusListTest {
   }
 
   @Test
-  fun `test a single status reply`() {
+  fun `case 1`() {
     val actual = listOf(
       Status("1"),
-      Status("2"),
-      Status("3", "4"),
+      Status("2", "3"),
+      Status("3"),
       Status("4"),
       Status("5"),
       Status("6")
     )
     val expected = listOf(
       Status("1"),
-      Status("2"),
-      Status("4", replyChainType = Start),
-      Status("3", "4", End),
+      Status("3", replyChainType = Start),
+      Status("2", "3", End),
+      Status("4"),
       Status("5"),
       Status("6")
     )
@@ -45,52 +46,157 @@ class ReorderStatusListTest {
   }
 
   @Test
-  fun `test multiple status reply`() {
+  fun `case 2`() {
+    val actual = listOf(
+      Status("1"),
+      Status("2", "3"),
+      Status("3", "6"),
+      Status("4"),
+      Status("5", "6"),
+      Status("6"),
+      Status("7"),
+    )
+    val expected = listOf(
+      Status("1"),
+      Status("6", replyChainType = Start),
+      Status("3", "6", replyChainType = Continue),
+      Status("2", "3", replyChainType = End),
+      Status("4"),
+      Status("6", replyChainType = Start),
+      Status("5", "6", End),
+      Status("7")
+    )
+    Assert.assertEquals(expected, reorderedStatuses(actual))
+  }
+
+  @Test
+  fun `case 3`() {
+    val actual = listOf(
+      Status("1", "6"),
+      Status("2"),
+      Status("3"),
+      Status("4"),
+      Status("5"),
+      Status("6"),
+    )
+    val expected = listOf(
+      Status("6", replyChainType = Start),
+      Status("1", "6", replyChainType = End),
+      Status("2"),
+      Status("3"),
+      Status("4"),
+      Status("5"),
+    )
+    Assert.assertEquals(expected, reorderedStatuses(actual))
+  }
+
+  @Test
+  fun `case 4`() {
+    val actual = listOf(
+      Status("1", "7"),
+      Status("2"),
+      Status("3"),
+    )
+    val expected = listOf(
+      Status("1", "7", replyChainType = End, hasUnloadedReplyStatus = true),
+      Status("2"),
+      Status("3"),
+    )
+    Assert.assertEquals(expected, reorderedStatuses(actual))
+  }
+
+  @Test
+  fun `case 5`() {
     val actual = listOf(
       Status("1"),
       Status("2"),
       Status("3", "4"),
       Status("4", "5"),
-      Status("5"),
-      Status("6")
+      Status("5", "9"),
+      Status("6"),
+      Status("7"),
     )
     val expected = listOf(
       Status("1"),
       Status("2"),
-      Status("5", replyChainType = Start),
-      Status("4", "5", Continue),
-      Status("3", "4", End),
-      Status("6")
+      Status("5", "9", replyChainType = Start, hasUnloadedReplyStatus = true),
+      Status("4", "5", replyChainType = Continue),
+      Status("3", "4", replyChainType = End),
+      Status("6"),
+      Status("7"),
     )
     Assert.assertEquals(expected, reorderedStatuses(actual))
   }
 
   @Test
-  fun `test two status reply`() {
+  fun `case 6`() {
     val actual = listOf(
       Status("1"),
-      Status("2"),
-      Status("3"),
+      Status("2", "3"),
+      Status("3", "4"),
       Status("4", "5"),
-      Status("5", "9"),
+      Status("5", "6"),
       Status("6"),
-      Status("7", "8"),
-      Status("8", "9"),
-      Status("9"),
-      Status("10"),
+      Status("7"),
     )
     val expected = listOf(
       Status("1"),
-      Status("2"),
-      Status("3"),
-      Status("9", replyChainType = Start),
-      Status("5", "9", replyChainType = Continue),
-      Status("4", "5", replyChainType = End),
+      Status("6", replyChainType = Start),
+      Status("5", "6", replyChainType = Continue, shouldShow = false),
+      Status("4", "5", replyChainType = Continue, shouldShow = false),
+      Status("3", "4", replyChainType = Continue, hasMultiReplyStatus = true),
+      Status("2", "3", replyChainType = End),
+      Status("7"),
+    )
+    Assert.assertEquals(expected, reorderedStatuses(actual))
+  }
+
+  @Test
+  fun `case 7`() {
+    var actual = listOf(
+      Status("1"),
+      Status("2", "3"),
+      Status("3", "7"),
+      Status("4")
+    )
+    var expected = listOf(
+      Status("1"),
+      Status("3", "7", replyChainType = Start, hasUnloadedReplyStatus = true),
+      Status("2", "3", replyChainType = End),
+      Status("4")
+    )
+    Assert.assertEquals(expected, reorderedStatuses(actual))
+    val appendItem = listOf(
+      Status("5"),
       Status("6"),
-      Status("9", replyChainType = Start),
-      Status("8", "9", replyChainType = Continue),
-      Status("7", "8", replyChainType = End),
-      Status("10"),
+      Status("7"),
+    )
+    actual = reorderedStatuses(actual + appendItem)
+    expected = listOf(
+      Status("1"),
+      Status("7", replyChainType = Start),
+      Status("3", "7", replyChainType = Continue),
+      Status("2", "3", replyChainType = End),
+      Status("4"),
+      Status("5"),
+      Status("6"),
+    )
+    Assert.assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `case 8`() {
+    val actual = listOf(
+      Status("1"),
+      Status("3", replyChainType = Start),
+      Status("2", "3", replyChainType = End),
+      Status("4"),
+    )
+    val expected = listOf(
+      Status("1"),
+      Status("3", replyChainType = Start),
+      Status("2", "3", replyChainType = End),
+      Status("4"),
     )
     Assert.assertEquals(expected, reorderedStatuses(actual))
   }
@@ -107,7 +213,7 @@ private fun reorderedStatuses(statuses: List<Status>): List<Status> {
   var reorderedStatuses = statuses.toMutableList()
 
   statuses.forEach { currentStatus ->
-    if (currentStatus.isInReplyTo && id2index[currentStatus.id] == null) {
+    if (currentStatus.isInReplyTo && id2index[currentStatus.id] == null && currentStatus.replyChainType == Null) {
       val replyStatusList = ArrayDeque<Status>().apply { add(currentStatus) }
       var replyToStatus = currentStatus.inReplyToId
 
