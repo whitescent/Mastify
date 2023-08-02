@@ -10,6 +10,7 @@ fun Status.toUiData(): StatusUiData {
     id = this.id,
     uuid = this.uuid,
     reblog = this.reblog,
+    account = this.account,
     accountId = this.account.id,
     avatar = this.reblog?.account?.avatar ?: this.account.avatar,
     application = this.reblog?.application ?: this.application,

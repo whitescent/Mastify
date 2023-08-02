@@ -64,7 +64,6 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
-import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -98,8 +97,6 @@ fun Home(
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
-  val context = LocalContext.current
-  val uiState = viewModel.uiState
   val timeline by viewModel.timelineList.collectAsStateWithLifecycle(listOf())
   val firstVisibleIndex by remember {
     derivedStateOf {
@@ -108,6 +105,8 @@ fun Home(
   }
   var refreshing by remember { mutableStateOf(false) }
   val scope = rememberCoroutineScope()
+  val context = LocalContext.current
+  val uiState = viewModel.uiState
 
   val pullRefreshState = rememberPullRefreshState(
     refreshing = refreshing,
@@ -156,8 +155,7 @@ fun Home(
                 items = timeline,
                 contentType = { it.itemType },
                 key = { it.uuid }
-              ) { item ->
-                val status by remember(item) { mutableStateOf(item.toUiData()) }
+              ) { status ->
                 if (status.shouldShow) {
                   StatusListItem(
                     status = status,
@@ -264,7 +262,6 @@ fun Home(
     }
     PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
   }
-
   LaunchedEffect(firstVisibleIndex) {
     if (firstVisibleIndex == 0 && uiState.showNewStatusButton) viewModel.dismissButton()
     snapshotFlow { firstVisibleIndex }
@@ -278,6 +275,11 @@ fun Home(
         viewModel.append()
       }
   }
+  // LaunchedEffect(lazyState.isScrollInProgress) {
+  //   if (!lazyState.isScrollInProgress) {
+  //     viewModel.reinsertAllStatus()
+  //   }
+  // }
 }
 
 @Composable

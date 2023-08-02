@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.data.model.ui
 
 import androidx.compose.runtime.Immutable
+import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
@@ -13,6 +14,7 @@ data class StatusUiData(
   val reblog: Status?,
   val accountId: String,
   val avatar: String,
+  val account: Account,
   val application: Status.Application?,
   val rebloggedAvatar: String,
   val displayName: String,
@@ -36,6 +38,7 @@ data class StatusUiData(
   val hasMultiReplyStatus: Boolean,
   val shouldShow: Boolean
 ) {
+  val itemType = "status"
   val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
   val isReplyEnd inline get() = replyChainType == Null || replyChainType == End
   val isInReplyTo inline get() = inReplyToId != null

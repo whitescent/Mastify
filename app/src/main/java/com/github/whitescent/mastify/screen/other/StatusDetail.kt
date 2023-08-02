@@ -20,8 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -60,7 +60,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.StatusTransitions
+import com.github.whitescent.mastify.ui.transitions.StatusDetailTransitions
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -74,7 +74,7 @@ data class StatusDetailNavArgs(
 
 @AppNavGraph
 @Destination(
-  style = StatusTransitions::class,
+  style = StatusDetailTransitions::class,
   navArgsDelegate = StatusDetailNavArgs::class
 )
 @Composable
@@ -109,7 +109,7 @@ fun StatusDetail(
         color = AppTheme.colors.primaryContent,
       )
     }
-    Divider(color = DividerDefaults.color.copy(0.4f))
+    HorizontalDivider(color = DividerDefaults.color.copy(0.4f))
     HeightSpacer(value = 4.dp)
     when (threadInReply) {
       true -> {

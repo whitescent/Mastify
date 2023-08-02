@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -84,8 +84,8 @@ fun StatusListItem(
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   val normalShape = remember { RoundedCornerShape(18.dp) }
-  val replyShape = remember { RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp) }
-  val lastReplyShape = remember { RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp) }
+  val startShape = remember { RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp) }
+  val endShape = remember { RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp) }
 
   var replyStatusHeight by remember { mutableIntStateOf(0) }
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
@@ -99,14 +99,14 @@ fun StatusListItem(
     shape = when (status.hasUnloadedReplyStatus) {
       true -> {
         when (status.replyChainType) {
-          Start -> replyShape
+          Start, Continue -> startShape
           else -> normalShape
         }
       }
       else -> {
         when (status.replyChainType) {
-          Start -> replyShape
-          End -> lastReplyShape
+          Start -> startShape
+          End -> endShape
           Continue -> RectangleShape
           Null -> normalShape
         }
@@ -118,9 +118,15 @@ fun StatusListItem(
       if (status.hasOmittedReplyStatus) {
         CenterRow(
           modifier = Modifier.padding(
-            top = when (status.replyChainType) {
-              Start, End -> statusContentPadding
-              else -> Dp.Hairline
+            top = if (status.hasUnloadedReplyStatus) {
+              if (status.replyChainType == Continue || status.replyChainType == End)
+                statusContentPadding
+              else Dp.Hairline
+            } else {
+              when (status.replyChainType) {
+                Start, End -> statusContentPadding
+                else -> Dp.Hairline
+              }
             }
           )
         ) {
@@ -179,7 +185,7 @@ fun StatusListItem(
           StatusSource(
             reblogAvatar = status.rebloggedAvatar,
             reblogDisplayName = status.reblogDisplayName,
-            navigateToProfile = { navigateToProfile(it.account) }
+            navigateToProfile = { navigateToProfile(status.account) }
           )
         }
         StatusContent(
@@ -261,7 +267,7 @@ fun StatusSource(
         modifier = Modifier.size(16.dp),
       )
     }
-    Divider(thickness = 1.dp, color = AppTheme.colors.background)
+    HorizontalDivider(thickness = 1.dp, color = AppTheme.colors.background)
   }
 }
 

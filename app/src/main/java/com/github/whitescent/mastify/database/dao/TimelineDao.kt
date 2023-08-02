@@ -13,6 +13,9 @@ interface TimelineDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun insert(vararg timelineEntity: TimelineEntity)
 
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun insertAll(timelineEntity: List<TimelineEntity>)
+
   @Query(
     """
       SELECT * FROM timelineentity WHERE timelineUserId = :accountId

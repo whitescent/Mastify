@@ -1,7 +1,9 @@
 package com.github.whitescent.mastify.screen.profile
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +48,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.avatarStartPadding
 import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
@@ -50,7 +57,7 @@ data class ProfileNavArgs(
 )
 
 @AppNavGraph
-@Destination(navArgsDelegate = ProfileNavArgs::class)
+@Destination(navArgsDelegate = ProfileNavArgs::class, style = ProfileTransitions::class)
 @Composable
 fun Profile(
   viewModel: ProfileViewModel = hiltViewModel()
@@ -126,54 +133,102 @@ fun ProfileInfo(
         }
       }
     }
+    if (account.note.isNotEmpty()) {
+      HeightSpacer(value = 8.dp)
+      HtmlText(
+        text = account.note,
+        style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
+      )
+    }
     HeightSpacer(value = 8.dp)
-    HtmlText(
-      text = account.note,
-      style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
+    AccountFields(
+      account.fields,
+      account.followingCount,
+      account.followersCount,
+      account.statusesCount
     )
-    HeightSpacer(value = 8.dp)
-    AccountFields(account.fields)
   }
 }
 
 @Composable
-fun AccountFields(fields: List<Fields>) {
-  if (fields.isEmpty()) return
+fun AccountFields(
+  fields: List<Fields>,
+  followingCount: Long,
+  followersCount: Long,
+  statusesCount: Long,
+) {
+  val icons by remember(followersCount, followersCount, statusesCount) {
+    mutableStateOf(
+      listOf(
+        ProfileButton(R.drawable.following, "$followingCount 正在关注"),
+        ProfileButton(R.drawable.follower, "$followersCount 关注者"),
+        ProfileButton(R.drawable.status, "$statusesCount 嘟文"),
+      )
+    )
+  }
   Column(Modifier.fillMaxWidth()) {
-    fields.forEach {
-      CenterRow {
-        Box(Modifier.width(150.dp), Alignment.CenterStart) {
-          CenterRow {
-            Text(
-              text = it.name,
-              color = Color(0xFF8B8B8B),
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold
-            )
-            it.verifiedAt?.let {
-              WidthSpacer(value = 4.dp)
-              Icon(
-                painter = painterResource(id = R.drawable.seal_check),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = Color(0xFF00BA7C)
+    if (fields.isNotEmpty()) {
+      fields.forEach {
+        CenterRow {
+          Box(Modifier.width(150.dp), Alignment.CenterStart) {
+            CenterRow {
+              Text(
+                text = it.name,
+                color = Color(0xFF8B8B8B),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
               )
+              it.verifiedAt?.let {
+                WidthSpacer(value = 4.dp)
+                Icon(
+                  painter = painterResource(id = R.drawable.seal_check),
+                  contentDescription = null,
+                  modifier = Modifier.size(20.dp),
+                  tint = Color(0xFF00BA7C)
+                )
+              }
             }
           }
-        }
-        HtmlText(
-          text = it.value,
-          style = TextStyle(
-            fontSize = 16.sp,
-            fontWeight = FontWeight(450),
-            color = AppTheme.colors.primaryContent
+          HtmlText(
+            text = it.value,
+            style = TextStyle(
+              fontSize = 16.sp,
+              fontWeight = FontWeight(450),
+              color = AppTheme.colors.primaryContent
+            )
           )
-        )
+        }
+        if (it != fields.last()) HeightSpacer(value = 4.dp)
       }
-      if (it != fields.last()) HeightSpacer(value = 4.dp)
+      HeightSpacer(value = 10.dp)
+    }
+    CenterRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+      icons.forEach {
+        CenterRow {
+          Icon(
+            painter = painterResource(id = it.icon),
+            contentDescription = null,
+            modifier = Modifier.size(24.dp),
+            tint = AppTheme.colors.secondaryContent
+          )
+          WidthSpacer(value = 4.dp)
+          Text(
+            text = it.text,
+            color = AppTheme.colors.secondaryContent,
+            fontSize = 16.sp,
+            fontWeight = FontWeight(650)
+          )
+        }
+      }
     }
   }
 }
+
+@Immutable
+data class ProfileButton(
+  @DrawableRes val icon: Int,
+  val text: String
+)
 
 @Composable
 fun FollowButton(isFollowing: Boolean) {

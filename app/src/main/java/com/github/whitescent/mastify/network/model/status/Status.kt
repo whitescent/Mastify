@@ -37,7 +37,6 @@ data class Status(
   val uuid: String = id
 ) {
 
-  val itemType get() = "status"
   val actionableId inline get() = reblog?.id ?: id
   val actionableStatus: Status inline get() = reblog ?: this
 

@@ -10,15 +10,17 @@ import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.mapper.status.toEntity
+import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.reorderedStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,8 +35,9 @@ class HomeViewModel @Inject constructor(
   private val timelineFetchNumber = 30
   private var nextPage: String? = null
   private var isInitialLoad = true
-  private var timelineListFlow = MutableStateFlow<List<Status>>(listOf())
-  val timelineList = timelineListFlow.asStateFlow()
+
+  private var timelineFlow = MutableStateFlow<List<Status>>(listOf())
+  val timelineList = timelineFlow.asStateFlow().map { it.toUiData() }
 
   val activeAccount get() = accountRepository.activeAccount!!
   var uiState by mutableStateOf(HomeUiState())
@@ -59,35 +62,35 @@ class HomeViewModel @Inject constructor(
       it?.printStackTrace()
     },
     onAppend = { items, newKey ->
-      timelineListFlow.emit(timelineListFlow.value + reorderedStatuses(items, api))
+      timelineFlow.emit(timelineFlow.value + reorderedStatuses(items))
       uiState = uiState.copy(endReached = items.isEmpty())
       nextPage = newKey
       db.withTransaction {
-        reinsertAllStatus(timelineListFlow.value, activeAccount.id)
+        reinsertAllStatus()
       }
     },
     onRefresh = { items ->
-      if (timelineListFlow.value.isNotEmpty()) {
+      if (timelineFlow.value.isNotEmpty()) {
         val lastStatusInApi = items.last()
         when {
-          !timelineListFlow.value.any { it.id == lastStatusInApi.id } && isInitialLoad -> {
+          !timelineFlow.value.any { it.id == lastStatusInApi.id } && isInitialLoad -> {
             uiState = uiState.copy(
               showNewStatusButton = true,
               newStatusCount = "$timelineFetchNumber+"
             )
             loadUnloadedStatus()
           }
-          timelineListFlow.value.any { it.id == lastStatusInApi.id } &&
-            !timelineListFlow.value.any { it.hasUnloadedStatus } -> {
+          timelineFlow.value.any { it.id == lastStatusInApi.id } &&
+            !timelineFlow.value.any { it.hasUnloadedStatus } -> {
             val newStatusList = items.filterNot {
-              timelineListFlow.value.any { saved -> saved.id == it.id }
+              timelineFlow.value.any { saved -> saved.id == it.id }
             }
             val newStatusCount = newStatusList.size
-            // 添加 api 获取到的新的帖子
-            val indexInSavedList = timelineListFlow.value.indexOfFirst { it.id == items.last().id } + 1
+            // 添加 api 获取到的新帖子
+            val indexInSavedList = timelineFlow.value.indexOfFirst { it.id == items.last().id } + 1
             val statusListAfterIndex =
-              timelineListFlow.value.subList(indexInSavedList, timelineListFlow.value.size)
-            timelineListFlow.emit((reorderedStatuses(items, api) + statusListAfterIndex))
+              timelineFlow.value.subList(indexInSavedList, timelineFlow.value.size)
+            timelineFlow.emit(reorderedStatuses(items + statusListAfterIndex))
             uiState = uiState.copy(
               endReached = items.isEmpty(),
               showNewStatusButton = newStatusCount != 0,
@@ -96,18 +99,18 @@ class HomeViewModel @Inject constructor(
           }
         }
       } else {
-        timelineListFlow.emit(reorderedStatuses(items, api))
+        timelineFlow.emit(reorderedStatuses(items))
         uiState = uiState.copy(endReached = items.isEmpty())
       }
       db.withTransaction {
-        reinsertAllStatus(timelineListFlow.value, activeAccount.id)
+        reinsertAllStatus()
       }
     }
   )
 
   init {
     viewModelScope.launch {
-      timelineListFlow.emit(timelineDao.getAll(activeAccount.id))
+      timelineFlow.emit(timelineDao.getAll(activeAccount.id))
       paginator.refresh()
       isInitialLoad = false
       // fetch the latest account info
@@ -135,8 +138,8 @@ class HomeViewModel @Inject constructor(
   fun unfavoriteStatus(id: String) = viewModelScope.launch { api.unfavouriteStatus(id) }
 
   fun loadUnloadedStatus() {
-    var tempList = timelineListFlow.value.toMutableList()
-    val insertIndex = timelineListFlow.value.indexOfFirst { it.hasUnloadedStatus }
+    val tempList = timelineFlow.value.toMutableList()
+    val insertIndex = timelineFlow.value.indexOfFirst { it.hasUnloadedStatus }
     viewModelScope.launch {
       val response = api.homeTimeline(
         maxId = if (insertIndex != -1) tempList[insertIndex].id else null,
@@ -146,6 +149,8 @@ class HomeViewModel @Inject constructor(
         val body = response.body()!!
         val list = body.toMutableList()
         if (tempList.any { it.id == body.last().id }) {
+          // 如果 api 获取到的最后一条帖子已经存在于本地数据库中
+          // 则取消显示加载更多的按钮，并且完成拼接
           tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
           tempList.addAll(
             index = insertIndex + 1,
@@ -153,8 +158,7 @@ class HomeViewModel @Inject constructor(
               tempList.any { saved -> saved.id == it.id }
             }
           )
-          tempList = reorderedStatuses(tempList, api).toMutableList()
-          timelineListFlow.update { tempList }
+          timelineFlow.emit(reorderedStatuses(tempList))
         } else {
           list[list.lastIndex] = list[list.lastIndex].copy(hasUnloadedStatus = true)
           when (tempList.indexOfFirst { it.hasUnloadedStatus }) {
@@ -164,14 +168,13 @@ class HomeViewModel @Inject constructor(
               tempList.addAll(insertIndex + 1, list)
             }
           }
-          tempList = reorderedStatuses(tempList, api).toMutableList()
-          timelineListFlow.update { tempList }
+          timelineFlow.emit(reorderedStatuses(tempList))
         }
       } else {
         // TODO ERROR
       }
       db.withTransaction {
-        reinsertAllStatus(timelineListFlow.value, activeAccount.id)
+        reinsertAllStatus()
       }
     }
   }
@@ -180,9 +183,13 @@ class HomeViewModel @Inject constructor(
     uiState = uiState.copy(showNewStatusButton = false)
   }
 
-  private suspend fun reinsertAllStatus(statuses: List<Status>, accountId: Long) {
-    timelineDao.clearAll(accountId)
-    statuses.forEach { timelineDao.insert(it.toEntity(accountId)) }
+  private fun reinsertAllStatus() {
+    viewModelScope.launch(Dispatchers.IO) {
+      db.withTransaction {
+        timelineDao.clearAll(activeAccount.id)
+        timelineDao.insertAll(timelineFlow.value.map { it.toEntity(activeAccount.id) })
+      }
+    }
   }
 }
 
