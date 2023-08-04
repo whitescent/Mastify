@@ -276,7 +276,7 @@ fun Home(
 }
 
 @Composable
-fun NewStatusToast(count: String, onDismiss: () -> Unit) {
+private fun NewStatusToast(count: String, onDismiss: () -> Unit) {
   Surface(
     shape = CircleShape,
     color = AppTheme.colors.accent,
@@ -305,7 +305,7 @@ fun NewStatusToast(count: String, onDismiss: () -> Unit) {
 }
 
 @Composable
-fun LoadMorePlaceHolder(loadMore: () -> Unit) {
+private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
   var loading by remember { mutableStateOf(false) }
   Column {
     Surface(
@@ -348,7 +348,7 @@ fun LoadMorePlaceHolder(loadMore: () -> Unit) {
 }
 
 @Composable
-fun EmptyTimeline() {
+private fun EmptyTimeline() {
   Box(
     modifier = Modifier
       .fillMaxSize()
@@ -358,7 +358,7 @@ fun EmptyTimeline() {
 }
 
 @Composable
-fun Loading() {
+private fun Loading() {
   val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.car))
   val progress by animateLottieCompositionAsState(composition)
   Box(
@@ -373,7 +373,7 @@ fun Loading() {
 }
 
 @Composable
-fun Error(retry: () -> Unit) {
+private fun Error(retry: () -> Unit) {
   val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error))
   val progress by animateLottieCompositionAsState(
     composition = composition,

@@ -67,3 +67,5 @@ data class Status(
     Start, Continue, End, Null
   }
 }
+
+fun Status?.isReplyTo(target: Status?) = this?.inReplyToId == target?.id

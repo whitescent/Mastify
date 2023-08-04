@@ -12,9 +12,11 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Continue
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
 import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Start
+import com.github.whitescent.mastify.network.model.status.isReplyTo
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -75,10 +77,11 @@ class StatusDetailViewModel @Inject constructor(
 
   private fun markAncestors(ancestors: List<Status>): ImmutableList<StatusUiData> {
     if (ancestors.isEmpty()) return persistentListOf()
-    val result = ancestors.toMutableList()
+    val result = ancestors.toMutableList().also {
+      it[0] = it[0].copy(replyChainType = Start)
+    }
     ancestors.forEachIndexed { index, status ->
       when (index) {
-        0 -> result[index] = status.copy(replyChainType = Start)
         in 1..ancestors.lastIndex -> result[index] = status.copy(replyChainType = Continue)
       }
     }
@@ -88,32 +91,64 @@ class StatusDetailViewModel @Inject constructor(
   private fun markDescendants(descendants: List<Status>): ImmutableList<StatusUiData> {
     if (descendants.isEmpty() || descendants.size == 1)
       return descendants.toUiData().toImmutableList()
-    val result = descendants.toMutableList()
-    descendants.forEachIndexed { index, status ->
-      when {
-        index == 0 && descendants[1].inReplyToId == status.id ->
-          result[index] = status.copy(replyChainType = Start)
-        index == descendants.lastIndex && status.inReplyToId == descendants[index - 1].id ->
-          result[index] = status.copy(replyChainType = End)
-      }
-      if (index > 0 && index < descendants.lastIndex) {
-        when {
-          descendants[index + 1].inReplyToId == status.id &&
-            status.inReplyToId != descendants[index - 1].id -> {
-            result[index] = status.copy(replyChainType = Start)
-          }
-          status.inReplyToId == descendants[index - 1].id &&
-            descendants[index + 1].inReplyToId == status.id -> {
-            result[index] = status.copy(replyChainType = Continue)
-          }
-          status.inReplyToId == descendants[index - 1].id &&
-            descendants[index + 1].inReplyToId != status.id -> {
-            result[index] = status.copy(replyChainType = End)
-          }
+
+    val replyList = descendants.filter { it.inReplyToId == navArgs.status.actionableId }
+    val finalList = mutableListOf<Status>()
+
+    fun searchSubReplies(current: String): List<Status> {
+      val subReplies = mutableListOf<Status>()
+      var now = current
+      descendants.forEach {
+        if (it.inReplyToId == now) {
+          subReplies.add(it)
+          now = it.id
         }
       }
+      return subReplies
     }
-    return result.toUiData().toImmutableList()
+
+    fun markStatus(statusList: List<Status>): List<Status> {
+      val result = mutableListOf<Status>()
+      statusList.forEachIndexed { index, current ->
+        val next = statusList.getOrNull(index + 1)
+        val prev = statusList.getOrNull(index - 1)
+
+        val isFirst = index == 0
+        val isLast = index == statusList.lastIndex
+
+        fun replaceReplyType(new: ReplyChainType) =
+          result.add(index, current.copy(replyChainType = new))
+
+        if (isFirst && next.isReplyTo(current)) replaceReplyType(Start)
+
+        // End of reply chain: Last in thread, replying to previous
+        else if (isLast && current.isReplyTo(prev)) replaceReplyType(End)
+
+        // Other cases:
+        else if (!isFirst && !isLast) when {
+          // Continue of reply chain: Replying to previous and followed by a reply to this
+          current.isReplyTo(prev) && next.isReplyTo(current) -> replaceReplyType(Continue)
+
+          // End of reply chain: Replying to previous and not followed by a reply to this
+          current.isReplyTo(prev) && !next.isReplyTo(current) -> replaceReplyType(End)
+
+          // Start of reply chain: Not replying to previous and followed by a reply to this
+          !current.isReplyTo(prev) && next.isReplyTo(current) -> replaceReplyType(Start)
+        }
+      }
+      return result
+    }
+
+    replyList.forEach { current ->
+      val subReplies = searchSubReplies(current.id).toMutableList()
+      if (subReplies.isNotEmpty()) {
+        subReplies.add(0, current)
+        finalList.addAll(markStatus(subReplies))
+      } else {
+        finalList.add(current)
+      }
+    }
+    return finalList.toUiData().toImmutableList()
   }
 }
 
