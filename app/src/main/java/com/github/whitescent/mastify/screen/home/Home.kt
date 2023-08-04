@@ -81,7 +81,6 @@ import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -269,17 +268,11 @@ fun Home(
         !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading &&
           lazyState.firstVisibleItemIndex >= timeline.size - timeline.size / 3
       }
-      .distinctUntilChanged()
       .filter { it }
       .collect {
         viewModel.append()
       }
   }
-  // LaunchedEffect(lazyState.isScrollInProgress) {
-  //   if (!lazyState.isScrollInProgress) {
-  //     viewModel.reinsertAllStatus()
-  //   }
-  // }
 }
 
 @Composable

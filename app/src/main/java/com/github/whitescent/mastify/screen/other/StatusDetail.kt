@@ -28,7 +28,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -240,19 +239,17 @@ fun StatusDetailContent(
             }
           }
           else -> {
-            items(descendants) {
-              key(it.actionableId) {
-                StatusListItem(
-                  status = it,
-                  favouriteStatus = { favouriteStatus(it.actionableId) },
-                  unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
-                  navigateToDetail = { navigateToDetail(it.actionable) },
-                  navigateToMedia = navigateToMedia,
-                  navigateToProfile = navigateToProfile,
-                  modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                )
-                if (it.isReplyEnd) HeightSpacer(8.dp)
-              }
+            items(descendants, key = { it.actionableId }) {
+              StatusListItem(
+                status = it,
+                favouriteStatus = { favouriteStatus(it.actionableId) },
+                unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
+                navigateToDetail = { navigateToDetail(it.actionable) },
+                navigateToMedia = navigateToMedia,
+                navigateToProfile = navigateToProfile,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+              )
+              if (it.isReplyEnd) HeightSpacer(8.dp)
             }
           }
         }
@@ -322,19 +319,17 @@ fun StatusDetailInReply(
             }
           }
           else -> {
-            items(descendants) {
-              key(it.actionableId) {
-                StatusListItem(
-                  status = it,
-                  favouriteStatus = { favouriteStatus(it.actionableId) },
-                  unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
-                  navigateToDetail = { navigateToDetail(it.actionable) },
-                  navigateToMedia = navigateToMedia,
-                  navigateToProfile = navigateToProfile,
-                  modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                )
-                if (it.isReplyEnd) HeightSpacer(8.dp)
-              }
+            items(descendants, key = { it.actionableId }) {
+              StatusListItem(
+                status = it,
+                favouriteStatus = { favouriteStatus(it.actionableId) },
+                unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
+                navigateToDetail = { navigateToDetail(it.actionable) },
+                navigateToMedia = navigateToMedia,
+                navigateToProfile = navigateToProfile,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+              )
+              if (it.isReplyEnd) HeightSpacer(8.dp)
             }
           }
         }
