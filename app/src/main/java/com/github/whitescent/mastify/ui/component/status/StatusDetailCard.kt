@@ -22,9 +22,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -53,6 +57,7 @@ import kotlinx.collections.immutable.toImmutableList
 fun StatusDetailCard(
   status: StatusUiData,
   modifier: Modifier = Modifier,
+  inReply: Boolean = false,
   backgroundColor: Color = AppTheme.colors.cardBackground,
   contentTextStyle: TextStyle = LocalTextStyle.current,
   favouriteStatus: () -> Unit,
@@ -61,15 +66,24 @@ fun StatusDetailCard(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
+  val normalShape by remember { mutableStateOf(RoundedCornerShape(18.dp)) }
+  val endShape by remember {
+    mutableStateOf(RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp))
+  }
+
+  val context = LocalContext.current
+  val primaryColor = AppTheme.colors.primaryContent
+  val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
+  val contentPaddingPx = with(LocalDensity.current) { statusContentPadding.toPx() }
+  val avatarHalfSize = avatarSizePx / 2
+  val avatarCenterX = avatarHalfSize + contentPaddingPx
+  val replyLineColor = AppTheme.colors.replyLine
+
   Surface(
-    modifier = modifier
-      .fillMaxWidth()
-      .padding(12.dp),
-    shape = RoundedCornerShape(18.dp),
+    modifier = modifier.fillMaxWidth(),
+    shape = if (inReply) endShape else normalShape,
     color = backgroundColor
   ) {
-    val context = LocalContext.current
-    val primaryColor = AppTheme.colors.primaryContent
     Column(
       modifier = Modifier
         .clickable(
@@ -77,6 +91,21 @@ fun StatusDetailCard(
           indication = null,
           interactionSource = remember { MutableInteractionSource() }
         )
+        .let {
+          if (inReply) {
+            it.drawWithContent {
+              val (startOffsetY, endOffsetY) = 0f to avatarHalfSize
+              drawLine(
+                color = replyLineColor,
+                start = Offset(avatarCenterX, startOffsetY),
+                end = Offset(avatarCenterX, endOffsetY),
+                cap = StrokeCap.Round,
+                strokeWidth = 4f
+              )
+              drawContent()
+            }
+          } else it
+        }
         .padding(statusContentPadding)
     ) {
       CenterRow(modifier = Modifier.fillMaxWidth()) {

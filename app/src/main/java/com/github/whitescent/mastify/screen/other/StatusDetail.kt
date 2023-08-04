@@ -48,7 +48,6 @@ import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
-import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -207,6 +206,7 @@ fun StatusDetailContent(
           fontSize = 16.sp,
           color = AppTheme.colors.primaryContent
         ),
+        modifier = Modifier.padding(12.dp)
       )
     }
     item {
@@ -239,7 +239,7 @@ fun StatusDetailContent(
             }
           }
           else -> {
-            items(descendants, key = { it.actionableId }) {
+            items(descendants, key = { it.id }) {
               StatusListItem(
                 status = it,
                 favouriteStatus = { favouriteStatus(it.actionableId) },
@@ -272,22 +272,30 @@ fun StatusDetailInReply(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
-  val currentStatus = status.copy(
-    replyChainType = End,
-    hasUnloadedReplyStatus = false,
-    hasMultiReplyStatus = false
-  )
   LazyColumn(modifier = modifier, state = lazyState) {
-    items(ancestors + currentStatus, key = { it.id }) { repliedStatus ->
-      StatusListItem(
-        status = repliedStatus,
-        favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
-        unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
-        navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
-        navigateToMedia = navigateToMedia,
-        navigateToProfile = navigateToProfile,
-        modifier = Modifier.padding(horizontal = 12.dp)
-      )
+    items(ancestors + status, key = { it.id }) { repliedStatus ->
+      if (repliedStatus == status) {
+        StatusDetailCard(
+          status = status,
+          favouriteStatus = { favouriteStatus(status.actionableId) },
+          unfavouriteStatus = { unfavouriteStatus(status.actionableId) },
+          navigateToDetail = { navigateToDetail(status.actionable) },
+          navigateToMedia = navigateToMedia,
+          navigateToProfile = navigateToProfile,
+          modifier = Modifier.padding(horizontal = 12.dp),
+          inReply = true
+        )
+      } else {
+        StatusListItem(
+          status = repliedStatus,
+          favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
+          unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
+          navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
+          navigateToMedia = navigateToMedia,
+          navigateToProfile = navigateToProfile,
+          modifier = Modifier.padding(horizontal = 12.dp)
+        )
+      }
     }
     item {
       HeightSpacer(value = 8.dp)
@@ -319,7 +327,7 @@ fun StatusDetailInReply(
             }
           }
           else -> {
-            items(descendants, key = { it.actionableId }) {
+            items(descendants, key = { it.id }) {
               StatusListItem(
                 status = it,
                 favouriteStatus = { favouriteStatus(it.actionableId) },
