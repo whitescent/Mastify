@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -108,7 +108,7 @@ fun StatusMedia(
         modifier = Modifier
           .align(Alignment.Center)
           .clickable { mutableSensitive = false },
-        elevation = 12.dp
+        shadowElevation = 12.dp
       ) {
         Text(
           text = spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },

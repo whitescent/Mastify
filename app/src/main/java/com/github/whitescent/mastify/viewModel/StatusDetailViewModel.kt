@@ -78,12 +78,8 @@ class StatusDetailViewModel @Inject constructor(
     val result = ancestors.toMutableList()
     ancestors.forEachIndexed { index, status ->
       when (index) {
-        0 -> {
-          result[index] = status.copy(replyChainType = Start)
-        }
-        in 1..ancestors.lastIndex -> {
-          result[index] = status.copy(replyChainType = Continue)
-        }
+        0 -> result[index] = status.copy(replyChainType = Start)
+        in 1..ancestors.lastIndex -> result[index] = status.copy(replyChainType = Continue)
       }
     }
     return result.toUiData().toImmutableList()
@@ -95,22 +91,25 @@ class StatusDetailViewModel @Inject constructor(
     val result = descendants.toMutableList()
     descendants.forEachIndexed { index, status ->
       when {
-        index == 0 && descendants[1].inReplyToId == status.id ||
-          index > 0 && index < descendants.lastIndex &&
-          descendants[index + 1].inReplyToId == status.id &&
-          status.inReplyToId != descendants[index - 1].id -> {
+        index == 0 && descendants[1].inReplyToId == status.id ->
           result[index] = status.copy(replyChainType = Start)
-        }
-        index > 0 && index < descendants.lastIndex &&
-          status.inReplyToId == descendants[index - 1].id &&
-          descendants[index + 1].inReplyToId == status.id -> {
-          result[index] = status.copy(replyChainType = Continue)
-        }
-        index == descendants.lastIndex && status.inReplyToId == descendants[index - 1].id ||
-          index > 0 && index < descendants.lastIndex &&
-          status.inReplyToId == descendants[index - 1].id &&
-          descendants[index + 1].inReplyToId != status.id -> {
+        index == descendants.lastIndex && status.inReplyToId == descendants[index - 1].id ->
           result[index] = status.copy(replyChainType = End)
+      }
+      if (index > 0 && index < descendants.lastIndex) {
+        when {
+          descendants[index + 1].inReplyToId == status.id &&
+            status.inReplyToId != descendants[index - 1].id -> {
+            result[index] = status.copy(replyChainType = Start)
+          }
+          status.inReplyToId == descendants[index - 1].id &&
+            descendants[index + 1].inReplyToId == status.id -> {
+            result[index] = status.copy(replyChainType = Continue)
+          }
+          status.inReplyToId == descendants[index - 1].id &&
+            descendants[index + 1].inReplyToId != status.id -> {
+            result[index] = status.copy(replyChainType = End)
+          }
         }
       }
     }

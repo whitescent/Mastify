@@ -20,8 +20,7 @@ class PreferenceRepository @Inject constructor() {
     private set
 
   init {
-    timelineModel =
-      mmkv.decodeParcelable("timeline_scroll_position", TimelineModel::class.java)
+    timelineModel = mmkv.decodeParcelable("timeline_scroll_position", TimelineModel::class.java)
   }
 
   fun saveInstanceData(domain: String, clientId: String, clientSecret: String) {
