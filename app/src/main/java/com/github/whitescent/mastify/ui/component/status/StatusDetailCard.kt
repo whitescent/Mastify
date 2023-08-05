@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,7 +58,7 @@ fun StatusDetailCard(
   modifier: Modifier = Modifier,
   inReply: Boolean = false,
   backgroundColor: Color = AppTheme.colors.cardBackground,
-  contentTextStyle: TextStyle = LocalTextStyle.current,
+  contentTextStyle: TextStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,

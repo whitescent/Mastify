@@ -37,6 +37,7 @@ interface MastifyColorsInterface {
   val replyTextFieldBorder: Color
   val followButton: Color
   val unfollowButton: Color
+  val defaultHeader: Color
 }
 
 private object LightColors : MastifyColorsInterface {
@@ -81,6 +82,9 @@ private object LightColors : MastifyColorsInterface {
 
   override val unfollowButton: Color
     get() = Color.White
+
+  override val defaultHeader: Color
+    get() = accent10
 }
 
 private object DarkColors : MastifyColorsInterface {
@@ -125,6 +129,9 @@ private object DarkColors : MastifyColorsInterface {
 
   override val unfollowButton: Color
     get() = Color.Black
+
+  override val defaultHeader: Color
+    get() = Color(0xFF1f9ff1)
 }
 
 class MastifyColors : MastifyColorsInterface {
@@ -168,6 +175,8 @@ class MastifyColors : MastifyColorsInterface {
     get() = currentColors.followButton
   override val unfollowButton: Color
     get() = currentColors.unfollowButton
+  override val defaultHeader: Color
+    get() = currentColors.defaultHeader
 }
 
 val LocalMastifyColors = staticCompositionLocalOf {

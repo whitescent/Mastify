@@ -25,6 +25,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.LoginNavGraph
@@ -61,6 +64,8 @@ fun Login(
   val context = LocalContext.current
   val backgroundColor = AppTheme.colors.primaryContent.toArgb()
   val state = viewModel.uiState
+  val instance by viewModel.instance.collectAsStateWithLifecycle()
+  val instanceVerifyErrorMsg = stringResource(id = R.string.instance_verification_error)
 
   Box(
     modifier = Modifier
@@ -146,22 +151,28 @@ fun Login(
       ) {
         Column {
           HeightSpacer(value = 6.dp)
-          Crossfade(state.isTyping) {
-            when (it) {
-              true -> {
-                CircularProgressIndicator(
-                  color = AppTheme.colors.primaryContent,
-                  modifier = Modifier.size(24.dp)
-                )
-              }
-              else -> {
-                when (state.errorMessageId) {
-                  0 -> {
+          if (viewModel.instanceLocalError) {
+            Text(
+              text = stringResource(R.string.error_invalid_domain),
+              fontSize = 14.sp,
+              color = Color(0xFFFF3838),
+            )
+          } else {
+            Crossfade(state.isTyping) {
+              when (it) {
+                true -> {
+                  CircularProgressIndicator(
+                    color = AppTheme.colors.primaryContent,
+                    modifier = Modifier.size(24.dp)
+                  )
+                }
+                else -> {
+                  instance?.let { result ->
                     InstanceCard(
-                      title = state.instanceTitle,
-                      description = state.instanceDescription,
-                      activeMonth = state.activeMonth,
-                      imageUrl = state.instanceImageUrl,
+                      title = result.instanceTitle,
+                      description = result.instanceDescription,
+                      activeMonth = result.activeMonth,
+                      imageUrl = result.instanceImageUrl,
                       onClick = { name ->
                         viewModel.authenticateApp(
                           appName = name,
@@ -180,10 +191,9 @@ fun Login(
                         )
                       }
                     )
-                  }
-                  else -> {
+                  } ?: run {
                     Text(
-                      text = state.errorMessage(),
+                      text = stringResource(R.string.failed_to_retrieve_instance),
                       fontSize = 14.sp,
                       color = Color(0xFFFF3838),
                     )
@@ -197,12 +207,10 @@ fun Login(
     }
   }
 
-  if (state.authenticateError) {
-    Toast.makeText(
-      context,
-      stringResource(id = R.string.instance_verification_error),
-      Toast.LENGTH_LONG
-    ).show()
+  LaunchedEffect(state.authenticateError) {
+    if (state.authenticateError) {
+      Toast.makeText(context, instanceVerifyErrorMsg, Toast.LENGTH_LONG).show()
+    }
   }
 }
 

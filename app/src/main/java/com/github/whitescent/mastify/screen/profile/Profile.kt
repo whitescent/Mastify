@@ -71,7 +71,7 @@ fun Profile(
             modifier = Modifier
               .fillMaxWidth()
               .height(200.dp)
-              .background(AppTheme.colors.accent10),
+              .background(AppTheme.colors.defaultHeader),
           )
         } else {
           AsyncImage(
@@ -115,7 +115,7 @@ fun ProfileInfo(
         )
         HeightSpacer(value = 2.dp)
         Text(
-          text = account.username,
+          text = account.fullName,
           style = AppTheme.typography.statusUsername.copy(
             color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
           ),
@@ -224,12 +224,6 @@ fun AccountFields(
   }
 }
 
-@Immutable
-data class ProfileButton(
-  @DrawableRes val icon: Int,
-  val text: String
-)
-
 @Composable
 fun FollowButton(isFollowing: Boolean) {
   Button(
@@ -272,3 +266,9 @@ fun EditProfileButton() {
     }
   }
 }
+
+@Immutable
+data class ProfileButton(
+  @DrawableRes val icon: Int,
+  val text: String
+)

@@ -202,10 +202,6 @@ fun StatusDetailContent(
         navigateToDetail = { navigateToDetail(status.actionable) },
         navigateToMedia = navigateToMedia,
         navigateToProfile = navigateToProfile,
-        contentTextStyle = TextStyle(
-          fontSize = 16.sp,
-          color = AppTheme.colors.primaryContent
-        ),
         modifier = Modifier.padding(12.dp)
       )
     }

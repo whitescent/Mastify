@@ -23,6 +23,7 @@ data class Account(
 
   val domain get() = FormatFactory.getInstanceName(url)
 
+  // avoid null display name
   val realDisplayName inline get() = this.displayName.ifEmpty { this.username }
 
   val fullName: String
