@@ -121,7 +121,7 @@ fun StatusDetailCard(
           Text(
             text = status.displayName,
             fontSize = 17.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight(550),
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
           )
