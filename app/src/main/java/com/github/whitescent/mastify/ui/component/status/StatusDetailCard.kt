@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -119,15 +120,15 @@ fun StatusDetailCard(
         Column(modifier = Modifier.weight(1f)) {
           Text(
             text = status.displayName,
-            style = AppTheme.typography.statusDisplayName,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
           )
           Text(
             text = status.fullname,
-            style = AppTheme.typography.statusUsername.copy(
-              color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-            ),
+            fontSize = 14.sp,
+            color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
           )

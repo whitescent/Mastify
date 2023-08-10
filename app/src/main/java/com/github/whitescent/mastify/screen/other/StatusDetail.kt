@@ -61,6 +61,7 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -114,7 +115,6 @@ fun StatusDetail(
       )
     }
     AppHorizontalDivider()
-    HeightSpacer(value = 4.dp)
     when (threadInReply) {
       true -> {
         StatusDetailInReply(
@@ -152,6 +152,7 @@ fun StatusDetail(
       else -> {
         StatusDetailContent(
           status = status,
+          lazyState = lazyState,
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
           favouriteStatus = viewModel::favoriteStatus,
@@ -190,6 +191,7 @@ fun StatusDetail(
 @Composable
 fun StatusDetailContent(
   status: StatusUiData,
+  lazyState: LazyListState,
   descendants: ImmutableList<StatusUiData>,
   loading: Boolean,
   modifier: Modifier = Modifier,
@@ -199,7 +201,10 @@ fun StatusDetailContent(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
-  LazyColumn(modifier = modifier) {
+  LazyColumn(
+    modifier = modifier.fillMaxSize().drawVerticalScrollbar(lazyState),
+    state = lazyState
+  ) {
     item {
       StatusDetailCard(
         status = status,
@@ -207,8 +212,7 @@ fun StatusDetailContent(
         unfavouriteStatus = { unfavouriteStatus(status.actionableId) },
         navigateToDetail = { navigateToDetail(status.actionable) },
         navigateToMedia = navigateToMedia,
-        navigateToProfile = navigateToProfile,
-        modifier = Modifier.padding(0.dp)
+        navigateToProfile = navigateToProfile
       )
     }
     item {
@@ -269,7 +273,6 @@ fun StatusDetailInReply(
           navigateToDetail = { navigateToDetail(status.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
-          modifier = Modifier.padding(horizontal = 12.dp),
           inReply = true
         )
       } else {
@@ -281,8 +284,7 @@ fun StatusDetailInReply(
           unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
           navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
           navigateToMedia = navigateToMedia,
-          navigateToProfile = navigateToProfile,
-          modifier = Modifier.padding(horizontal = 12.dp)
+          navigateToProfile = navigateToProfile
         )
       }
     }
@@ -326,16 +328,7 @@ fun LazyListScope.statusComment(
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
   when (descendants.isEmpty()) {
-    true -> {
-      item {
-        Box(
-          modifier = Modifier.fillMaxWidth().padding(36.dp),
-          contentAlignment = Alignment.Center
-        ) {
-          Box(Modifier.size(4.dp).background(Color.Gray, CircleShape))
-        }
-      }
-    }
+    true -> statusEndIndicator()
     else -> {
       itemsIndexed(
         items = descendants,
@@ -353,17 +346,20 @@ fun LazyListScope.statusComment(
           navigateToProfile = navigateToProfile,
           modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
         )
-        if (replyChainType == Null || replyChainType == End)
-          AppHorizontalDivider()
+        if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()
       }
-      item {
-        Box(
-          modifier = Modifier.fillMaxWidth().padding(36.dp),
-          contentAlignment = Alignment.Center
-        ) {
-          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-        }
-      }
+      statusEndIndicator()
+    }
+  }
+}
+
+fun LazyListScope.statusEndIndicator() {
+  item {
+    Box(
+      modifier = Modifier.fillMaxWidth().padding(36.dp),
+      contentAlignment = Alignment.Center
+    ) {
+      Box(Modifier.size(4.dp).background(Color.Gray, CircleShape))
     }
   }
 }
