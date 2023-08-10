@@ -1,16 +1,18 @@
 package com.github.whitescent.mastify.data.model.ui
 
 import androidx.compose.runtime.Immutable
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.End
-import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
 import kotlinx.collections.immutable.ImmutableList
 
 @Immutable
 data class StatusUiData(
   val id: String,
-  val uuid: String,
   val reblog: Status?,
   val accountId: String,
   val avatar: String,
@@ -32,14 +34,53 @@ data class StatusUiData(
   val favouritesCount: Int,
   val favourited: Boolean,
   val inReplyToId: String?,
-  val replyChainType: Status.ReplyChainType,
-  val hasUnloadedReplyStatus: Boolean,
-  val hasUnloadedStatus: Boolean,
-  val hasMultiReplyStatus: Boolean,
-  val shouldShow: Boolean
 ) {
   val itemType = "status"
-  val hasOmittedReplyStatus inline get() = hasUnloadedReplyStatus || hasMultiReplyStatus
-  val isReplyEnd inline get() = replyChainType == Null || replyChainType == End
+
   val isInReplyTo inline get() = inReplyToId != null
+
+  enum class ReplyChainType {
+    Start, Continue, End, Null
+  }
+}
+
+fun List<StatusUiData>.hasUnloadedParent(index: Int): Boolean {
+  val current = get(index)
+  val currentType = getReplyChainType(index)
+  if (currentType == Null || !current.isInReplyTo) return false
+  return when (val prev = getOrNull(index - 1)) {
+    null -> false
+    else -> current.inReplyToId != prev.id
+  }
+}
+
+fun List<StatusUiData>.getReplyChainType(index: Int): ReplyChainType {
+  val prev = getOrNull(index - 1)
+  val current = get(index)
+  val next = this.getOrNull(index + 1)
+
+  return when {
+    prev != null && next != null -> {
+      when {
+        (current.isInReplyTo &&
+          current.inReplyToId == prev.id && next.inReplyToId == current.id) -> Continue
+        next.inReplyToId == current.id -> Start
+        current.inReplyToId == prev.id -> End
+        else -> Null
+      }
+    }
+    prev == null && next != null -> {
+      when (next.inReplyToId) {
+        current.id -> Start
+        else -> Null
+      }
+    }
+    prev != null && next == null -> {
+      when {
+        current.isInReplyTo && current.inReplyToId == prev.id -> End
+        else -> Null
+      }
+    }
+    else -> Null
+  }
 }

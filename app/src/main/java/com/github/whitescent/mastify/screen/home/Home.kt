@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +34,7 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -64,6 +65,10 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
+import com.github.whitescent.mastify.data.model.ui.getReplyChainType
+import com.github.whitescent.mastify.data.model.ui.hasUnloadedParent
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -134,6 +139,7 @@ fun Home(
           }
         }
       )
+      HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
       when (timeline.size) {
         0 -> {
           when (uiState.timelineLoadState) {
@@ -150,44 +156,45 @@ fun Home(
                 .fillMaxSize()
                 .drawVerticalScrollbar(lazyState)
             ) {
-              items(
+              itemsIndexed(
                 items = timeline,
-                contentType = { it.itemType },
-                key = { it.uuid }
-              ) { status ->
-                if (status.shouldShow) {
-                  StatusListItem(
-                    status = status,
-                    favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-                    unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
-                    navigateToDetail = {
-                      navigator.navigate(
-                        StatusDetailDestination(
-                          avatar = viewModel.activeAccount.profilePictureUrl,
-                          status = status.actionable
-                        )
-                      )
-                    },
-                    navigateToMedia = { attachments, index ->
-                      navigator.navigate(
-                        StatusMediaScreenDestination(attachments.toTypedArray(), index)
-                      )
-                    },
-                    navigateToProfile = {
-                      navigator.navigate(
-                        ProfileDestination(it)
-                      )
-                    },
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(
-                        start = 24.dp,
-                        end = 24.dp,
-                        bottom = if (status.isReplyEnd) 16.dp else 0.dp
-                      )
-                  )
+                contentType = { _, item -> item.itemType },
+                key = { _, item -> item.id }
+              ) { index, status ->
+                val replyChainType by remember(status) {
+                  mutableStateOf(timeline.getReplyChainType(index))
                 }
-                if (status.hasUnloadedStatus) LoadMorePlaceHolder { viewModel.loadUnloadedStatus() }
+                val hasUnloadedParent by remember(status) {
+                  mutableStateOf(timeline.hasUnloadedParent(index))
+                }
+                StatusListItem(
+                  status = status,
+                  replyChainType = replyChainType,
+                  hasUnloadedParent = hasUnloadedParent,
+                  favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
+                  unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+                  navigateToDetail = {
+                    navigator.navigate(
+                      StatusDetailDestination(
+                        avatar = viewModel.activeAccount.profilePictureUrl,
+                        status = status.actionable
+                      )
+                    )
+                  },
+                  navigateToMedia = { attachments, targetIndex ->
+                    navigator.navigate(
+                      StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                    )
+                  },
+                  navigateToProfile = {
+                    navigator.navigate(
+                      ProfileDestination(it)
+                    )
+                  },
+                  modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                )
+                if (replyChainType == End || replyChainType == Null)
+                  HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
               }
               item {
                 when (uiState.timelineLoadState) {

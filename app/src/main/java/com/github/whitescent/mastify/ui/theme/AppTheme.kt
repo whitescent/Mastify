@@ -7,6 +7,7 @@ object AppTheme {
 
   val colors: MastifyColorsInterface
     @Composable
+    @ReadOnlyComposable
     get() = LocalMastifyColors.current
 
   val typography: MastifyTypography

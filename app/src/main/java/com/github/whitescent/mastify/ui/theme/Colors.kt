@@ -38,6 +38,7 @@ interface MastifyColorsInterface {
   val followButton: Color
   val unfollowButton: Color
   val defaultHeader: Color
+  val divider: Color
 }
 
 private object LightColors : MastifyColorsInterface {
@@ -54,7 +55,7 @@ private object LightColors : MastifyColorsInterface {
     get() = Color(0xE6046FFF).copy(alpha = 0.1f)
 
   override val background: Color
-    get() = Color(0xFFF8F8FB)
+    get() = Color.White
 
   override val secondaryBackground: Color
     get() = Color(0xFFFFFFFF)
@@ -85,6 +86,9 @@ private object LightColors : MastifyColorsInterface {
 
   override val defaultHeader: Color
     get() = accent10
+
+  override val divider: Color
+    get() = Color(0xFFD7D7D7).copy(0.3f)
 }
 
 private object DarkColors : MastifyColorsInterface {
@@ -132,6 +136,9 @@ private object DarkColors : MastifyColorsInterface {
 
   override val defaultHeader: Color
     get() = Color(0xFF1f9ff1)
+
+  override val divider: Color
+    get() = Color(0xFFD7D7D7).copy(0.1f)
 }
 
 class MastifyColors : MastifyColorsInterface {
@@ -177,6 +184,8 @@ class MastifyColors : MastifyColorsInterface {
     get() = currentColors.unfollowButton
   override val defaultHeader: Color
     get() = currentColors.defaultHeader
+  override val divider: Color
+    get() = currentColors.divider
 }
 
 val LocalMastifyColors = staticCompositionLocalOf {

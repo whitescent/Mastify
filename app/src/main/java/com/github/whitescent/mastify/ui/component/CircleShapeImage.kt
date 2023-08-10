@@ -4,10 +4,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Surface
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
@@ -37,6 +38,7 @@ fun CircleShapeAsyncImage(
   model: Any?,
   modifier: Modifier = Modifier,
   border: BorderStroke? = null,
+  shape: Shape = CircleShape,
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = 1f,
   colorFilter: ColorFilter? = null,
@@ -44,7 +46,7 @@ fun CircleShapeAsyncImage(
 ) {
   Surface(
     modifier = modifier,
-    shape = CircleShape,
+    shape = shape,
     border = border
   ) {
     AsyncImage(

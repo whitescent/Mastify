@@ -93,4 +93,15 @@ interface MastodonApi {
   suspend fun relationships(
     @Query("id[]") accountIds: List<String>
   ): NetworkResult<List<Relationship>>
+
+  @GET("api/v1/accounts/{id}/statuses")
+  suspend fun accountStatuses(
+    @Path("id") accountId: String,
+    @Query("max_id") maxId: String? = null,
+    @Query("since_id") sinceId: String? = null,
+    @Query("limit") limit: Int? = null,
+    @Query("exclude_replies") excludeReplies: Boolean? = null,
+    @Query("only_media") onlyMedia: Boolean? = null,
+    @Query("pinned") pinned: Boolean? = null
+  ): Response<List<Status>>
 }

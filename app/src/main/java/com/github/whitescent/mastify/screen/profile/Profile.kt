@@ -2,28 +2,36 @@ package com.github.whitescent.mastify.screen.profile
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +43,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
@@ -43,6 +52,7 @@ import com.github.whitescent.mastify.network.model.account.Fields
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
+import com.github.whitescent.mastify.ui.component.CollapsingLayout
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.avatarStartPadding
@@ -51,11 +61,13 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import kotlinx.coroutines.launch
 
 data class ProfileNavArgs(
   val account: Account
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @AppNavGraph
 @Destination(navArgsDelegate = ProfileNavArgs::class, style = ProfileTransitions::class)
 @Composable
@@ -63,39 +75,54 @@ fun Profile(
   viewModel: ProfileViewModel = hiltViewModel()
 ) {
   val uiState = viewModel.uiState
-  Column(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
-    AvatarWithCover(
-      cover = {
-        if (uiState.account.header.contains("missing.png")) {
-          Box(
-            modifier = Modifier
-              .fillMaxWidth()
-              .height(200.dp)
-              .background(AppTheme.colors.defaultHeader),
-          )
-        } else {
-          AsyncImage(
-            model = uiState.account.header,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth().height(200.dp),
-          )
-        }
-      },
-      avatar = {
-        CircleShapeAsyncImage(
-          model = uiState.account.avatar,
-          modifier = Modifier.size(100.dp)
+  val accountStatus = viewModel.pager.collectAsLazyPagingItems()
+  CollapsingLayout(
+    collapsingTop = {
+      Column {
+        AvatarWithCover(
+          cover = {
+            if (uiState.account.header.contains("missing.png")) {
+              Box(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .height(200.dp)
+                  .background(AppTheme.colors.defaultHeader),
+              )
+            } else {
+              AsyncImage(
+                model = uiState.account.header,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().height(200.dp),
+              )
+            }
+          },
+          avatar = {
+            CircleShapeAsyncImage(
+              model = uiState.account.avatar,
+              modifier = Modifier.size(100.dp)
+            )
+          },
         )
-      },
-    )
-    HeightSpacer(value = 8.dp)
-    ProfileInfo(
-      uiState.account,
-      uiState.isSelf,
-      uiState.isFollowing
-    )
-  }
+        ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
+      }
+    },
+    bodyContent = {
+      val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
+      val pagerState = rememberPagerState { tabs.size }
+      val scope = rememberCoroutineScope()
+      Column {
+        ProfileTabs(tabs) {
+          scope.launch {
+            pagerState.scrollToPage(it)
+          }
+        }
+        ProfilePager(state = pagerState, accountStatus = accountStatus)
+      }
+    },
+    topBar = {
+    },
+  )
 }
 
 @Composable
@@ -147,6 +174,49 @@ fun ProfileInfo(
       account.followersCount,
       account.statusesCount
     )
+  }
+}
+
+@Composable
+fun ProfileTabs(
+  tabs: List<ProfileTabItem>,
+  onTabClick: (Int) -> Unit
+) {
+  var state by remember { mutableIntStateOf(0) }
+  TabRow(
+    selectedTabIndex = state,
+    indicator = {
+      TabRowDefaults.PrimaryIndicator(
+        modifier = Modifier.tabIndicatorOffset(it[state]),
+        width = 40.dp,
+        height = 5.dp,
+        color = AppTheme.colors.accent
+      )
+    },
+    containerColor = Color.Transparent,
+  ) {
+    tabs.forEachIndexed { index, tab ->
+      val selected = state == index
+      Tab(
+        selected = selected,
+        onClick = {
+          state = index
+          onTabClick(index)
+        }
+      ) {
+        Text(
+          text = when (tab) {
+            ProfileTabItem.POST -> "嘟文"
+            ProfileTabItem.REPLY -> "回复"
+            else -> "媒体"
+          },
+          fontSize = 18.sp,
+          fontWeight = FontWeight.Medium,
+          color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,
+          modifier = Modifier.padding(12.dp)
+        )
+      }
+    }
   }
 }
 
@@ -209,12 +279,12 @@ fun AccountFields(
             painter = painterResource(id = it.icon),
             contentDescription = null,
             modifier = Modifier.size(24.dp),
-            tint = AppTheme.colors.secondaryContent
+            tint = AppTheme.colors.primaryContent.copy(0.7f)
           )
           WidthSpacer(value = 4.dp)
           Text(
             text = it.text,
-            color = AppTheme.colors.secondaryContent,
+            color = AppTheme.colors.primaryContent.copy(0.7f),
             fontSize = 16.sp,
             fontWeight = FontWeight(650)
           )
@@ -272,3 +342,7 @@ data class ProfileButton(
   @DrawableRes val icon: Int,
   val text: String
 )
+
+enum class ProfileTabItem {
+  POST, REPLY, MEDIA
+}

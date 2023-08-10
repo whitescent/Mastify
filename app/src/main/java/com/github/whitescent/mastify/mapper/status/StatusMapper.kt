@@ -8,7 +8,6 @@ import kotlinx.collections.immutable.toImmutableList
 fun Status.toUiData(): StatusUiData {
   return StatusUiData(
     id = this.id,
-    uuid = this.uuid,
     reblog = this.reblog,
     account = this.account,
     accountId = this.account.id,
@@ -31,20 +30,18 @@ fun Status.toUiData(): StatusUiData {
     favouritesCount = this.reblog?.favouritesCount ?: this.favouritesCount,
     favourited = this.reblog?.favourited ?: this.favourited,
     inReplyToId = this.reblog?.inReplyToId ?: this.inReplyToId,
-    replyChainType = this.replyChainType,
-    hasUnloadedReplyStatus = this.hasUnloadedReplyStatus,
-    hasUnloadedStatus = this.hasUnloadedStatus,
-    hasMultiReplyStatus = this.hasMultiReplyStatus,
-    shouldShow = this.shouldShow,
     actionable = this.actionableStatus,
     actionableId = this.actionableStatus.id
   )
 }
 
+fun List<Status>.toEntity(timelineUserId: Long): List<TimelineEntity> {
+  return this.map { it.toEntity(timelineUserId) }
+}
+
 fun Status.toEntity(timelineUserId: Long): TimelineEntity {
   return TimelineEntity(
     id = id,
-    uuid = uuid,
     timelineUserId = timelineUserId,
     createdAt = createdAt,
     sensitive = sensitive,
@@ -66,12 +63,7 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     mentions = mentions,
     account = account,
     application = application,
-    attachments = attachments,
-    replyChainType = replyChainType,
-    hasUnloadedReplyStatus = hasUnloadedReplyStatus,
-    hasUnloadedStatus = hasUnloadedStatus,
-    hasMultiReplyStatus = hasMultiReplyStatus,
-    shouldShow = shouldShow
+    attachments = attachments
   )
 }
 

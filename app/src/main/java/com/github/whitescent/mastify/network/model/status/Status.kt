@@ -1,7 +1,6 @@
 package com.github.whitescent.mastify.network.model.status
 
 import com.github.whitescent.mastify.network.model.account.Account
-import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType.Null
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -28,13 +27,7 @@ data class Status(
   val tags: List<Tag>,
   val mentions: List<Mention>,
   val application: Application?,
-  @SerialName("media_attachments") val attachments: List<Attachment>,
-  val replyChainType: ReplyChainType = Null,
-  val hasUnloadedReplyStatus: Boolean = false,
-  val hasUnloadedStatus: Boolean = false,
-  val hasMultiReplyStatus: Boolean = false,
-  val shouldShow: Boolean = true,
-  val uuid: String = id
+  @SerialName("media_attachments") val attachments: List<Attachment>
 ) {
 
   val actionableId inline get() = reblog?.id ?: id
@@ -52,7 +45,8 @@ data class Status(
   data class Attachment(
     val url: String,
     val type: String,
-    @SerialName("preview_url") val previewUrl: String?
+    @SerialName("preview_url") val previewUrl: String?,
+    val blurhash: String?,
   )
 
   @Serializable
@@ -62,10 +56,4 @@ data class Status(
     val url: String,
     val acct: String
   )
-
-  enum class ReplyChainType {
-    Start, Continue, End, Null
-  }
 }
-
-fun Status?.isReplyTo(target: Status?) = this?.inReplyToId == target?.id

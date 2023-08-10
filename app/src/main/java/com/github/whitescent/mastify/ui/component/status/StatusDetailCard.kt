@@ -1,7 +1,7 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,8 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,13 +42,13 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun StatusDetailCard(
@@ -58,7 +56,6 @@ fun StatusDetailCard(
   modifier: Modifier = Modifier,
   inReply: Boolean = false,
   backgroundColor: Color = AppTheme.colors.cardBackground,
-  contentTextStyle: TextStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
@@ -142,53 +139,37 @@ fun StatusDetailCard(
           mutableStateOf(status.sensitive)
         }
         HeightSpacer(value = 4.dp)
-        if (mutableSensitive) {
-          Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = Color(0xFF3f3131),
-          ) {
-            CenterRow(
-              modifier = Modifier
-                .clickable {
-                  mutableSensitive = !mutableSensitive
-                }
-                .padding(8.dp),
-            ) {
-              Icon(
-                painter = painterResource(id = R.drawable.warning_circle),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp),
-              )
-              WidthSpacer(value = 4.dp)
-              Text(
-                text = status.spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },
-                color = Color.White,
+        Crossfade(mutableSensitive) {
+          when (it) {
+            true -> {
+              SensitiveBar(spoilerText = status.spoilerText) { mutableSensitive = false }
+            }
+            else -> {
+              HtmlText(
+                text = status.content.trimEnd(),
+                fontSize = 14.sp,
+                maxLines = 11,
+                linkClicked = { span ->
+                  launchCustomChromeTab(
+                    context = context,
+                    uri = Uri.parse(span),
+                    toolbarColor = primaryColor.toArgb(),
+                  )
+                },
+                overflow = TextOverflow.Ellipsis,
+                nonLinkClicked = { navigateToDetail() }
               )
             }
           }
-        }
-        AnimatedVisibility(visible = !mutableSensitive) {
-          HtmlText(
-            text = status.content.trimEnd(),
-            style = contentTextStyle,
-            linkClicked = { span ->
-              launchCustomChromeTab(
-                context = context,
-                uri = Uri.parse(span),
-                toolbarColor = primaryColor.toArgb(),
-              )
-            },
-          )
         }
       }
       if (status.attachments.isNotEmpty()) {
         HeightSpacer(value = 4.dp)
         StatusMedia(
-          sensitive = status.sensitive,
-          spoilerText = status.spoilerText,
-          attachments = status.attachments.toImmutableList(),
-          onClick = { navigateToMedia(status.attachments, it) },
+          attachments = status.attachments,
+          onClick = { targetIndex ->
+            navigateToMedia(status.attachments, targetIndex)
+          },
         )
       }
       HeightSpacer(value = 8.dp)

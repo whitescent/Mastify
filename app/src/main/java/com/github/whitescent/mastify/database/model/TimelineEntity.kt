@@ -10,7 +10,6 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.network.model.status.Status.Mention
-import com.github.whitescent.mastify.network.model.status.Status.ReplyChainType
 import com.github.whitescent.mastify.network.model.status.Status.Tag
 
 @Entity(
@@ -24,8 +23,7 @@ import com.github.whitescent.mastify.network.model.status.Status.Tag
   indices = [Index("timelineUserId")]
 )
 data class TimelineEntity(
-  @ColumnInfo val id: String,
-  @PrimaryKey val uuid: String,
+  @PrimaryKey val id: String,
   @ColumnInfo val timelineUserId: Long,
   @ColumnInfo val createdAt: String,
   @ColumnInfo val sensitive: Boolean,
@@ -48,9 +46,4 @@ data class TimelineEntity(
   @ColumnInfo val mentions: List<Mention>,
   @ColumnInfo val application: Application?,
   @ColumnInfo val attachments: List<Attachment>,
-  @ColumnInfo val replyChainType: ReplyChainType,
-  @ColumnInfo val hasUnloadedReplyStatus: Boolean,
-  @ColumnInfo val hasUnloadedStatus: Boolean,
-  @ColumnInfo val hasMultiReplyStatus: Boolean,
-  @ColumnInfo val shouldShow: Boolean
 )

@@ -88,6 +88,8 @@ dependencies {
   implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.paging.compose)
   implementation(libs.androidx.paging.runtime)
+  implementation(libs.androidx.monitor)
+  implementation(libs.androidx.junit.ktx)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.espresso.core)
@@ -118,6 +120,7 @@ dependencies {
   ksp(libs.room.compiler)
   implementation(libs.room.ktx)
   implementation(libs.room.paging)
+  implementation(libs.room.testing)
 
   implementation(libs.coil)
   implementation(libs.coil.compose)

@@ -6,10 +6,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.paging.ProfilePagingSource
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +36,14 @@ class ProfileViewModel @Inject constructor(
     )
   )
     private set
+
+  val pager = Pager(
+    config = PagingConfig(
+      pageSize = 20,
+      enablePlaceholders = false,
+    ),
+    pagingSourceFactory = { ProfilePagingSource(api, this) },
+  ).flow.cachedIn(viewModelScope)
 
   init {
     viewModelScope.launch {
@@ -66,5 +78,5 @@ class ProfileViewModel @Inject constructor(
 data class ProfileUiState(
   val account: Account,
   val isSelf: Boolean,
-  val isFollowing: Boolean? = null
+  val isFollowing: Boolean? = null,
 )

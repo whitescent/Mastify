@@ -5,17 +5,17 @@ androidxLifecycle = "2.6.1"
 androidxActivity = "1.7.2"
 androidxTestExt = "1.1.5"
 androidxTestEspresso = "3.5.1"
-androidxNavigation = "2.6.0"
+androidxNavigation = "2.7.0"
 androidxHilt = "1.0.0"
 androidxStartup = "1.1.1"
-androidxBrowser = "1.5.0"
+androidxBrowser = "1.6.0"
 androidDesugar = "2.0.3"
 
-compose = "1.6.0-alpha02"
-composeCompiler = "1.5.0"
+compose = "1.6.0-alpha03"
+composeCompiler = "1.5.1"
 constraintlayoutCompose = "1.0.1"
-material = "1.6.0-alpha02"
-material3 = "1.2.0-alpha04"
+material = "1.6.0-alpha03"
+material3 = "1.2.0-alpha05"
 okhttp3 = "4.11.0"
 retrofit2 = "2.9.0"
 room = "2.5.2"
@@ -26,10 +26,10 @@ networkresultCalladapter = "1.0.0"
 kotlinxDatetime = "0.4.0"
 kotlinxSerializationJson = "1.5.1"
 kotlinxCollections = "0.3.5"
-kotlinxCoroutines = "1.7.1"
+kotlinxCoroutines = "1.7.2"
 kotlin = "1.9.0"
 
-agp = "8.2.0-alpha13"
+agp = "8.2.0-alpha15"
 accompanist = "0.30.1"
 coil = "2.4.0"
 mmkv = "1.2.15"
@@ -47,8 +47,10 @@ junit = "4.13.2"
 jsoup = "1.16.1"
 zoomable = "1.6.0"
 uiautomator = "2.2.0"
-benchmark-macro-junit4 = "1.2.0-beta02"
+benchmark-macro-junit4 = "1.2.0-beta03"
 profileinstaller = "1.3.1"
+monitor = "1.6.1"
+junitKtx = "1.1.5"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -99,6 +101,7 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
+room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 
 com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxHilt" }
@@ -131,6 +134,8 @@ hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", 
 uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 benchmark-macro-junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark-macro-junit4" }
 profileinstaller = { module = "androidx.profileinstaller:profileinstaller", version.ref = "profileinstaller" }
+androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

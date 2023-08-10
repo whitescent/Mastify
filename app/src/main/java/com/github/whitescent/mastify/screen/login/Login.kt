@@ -70,7 +70,7 @@ fun Login(
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .background(AppTheme.colors.background)
+      .background(AppTheme.colors.secondaryContent)
       .statusBarsPadding()
       .padding(30.dp),
   ) {
@@ -108,7 +108,7 @@ fun Login(
               Icon(
                 painter = painterResource(id = R.drawable.globe),
                 contentDescription = null,
-                tint = Color.Gray,
+                tint = AppTheme.colors.primaryContent,
                 modifier = Modifier.size(24.dp)
               )
               WidthSpacer(value = 4.dp)
@@ -119,7 +119,7 @@ fun Login(
                     true -> {
                       Text(
                         text = stringResource(id = R.string.instance_address_tip),
-                        color = Color.Gray
+                        color = AppTheme.colors.primaryContent.copy(0.5f)
                       )
                     }
                     else -> Unit

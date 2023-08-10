@@ -2,7 +2,7 @@ package com.github.whitescent.mastify.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
+import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status
@@ -10,10 +10,10 @@ import com.github.whitescent.mastify.network.model.status.Status
 @Dao
 interface TimelineDao {
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  @Insert(onConflict = REPLACE)
   suspend fun insert(vararg timelineEntity: TimelineEntity)
 
-  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  @Insert(onConflict = REPLACE)
   suspend fun insertAll(timelineEntity: List<TimelineEntity>)
 
   @Query(

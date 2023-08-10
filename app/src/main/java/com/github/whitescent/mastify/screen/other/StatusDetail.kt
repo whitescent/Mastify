@@ -13,14 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -44,6 +45,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
+import com.github.whitescent.mastify.data.model.ui.getReplyChainType
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
@@ -107,7 +113,7 @@ fun StatusDetail(
         color = AppTheme.colors.primaryContent,
       )
     }
-    HorizontalDivider(color = DividerDefaults.color.copy(0.4f))
+    HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
     HeightSpacer(value = 4.dp)
     when (threadInReply) {
       true -> {
@@ -223,32 +229,14 @@ fun StatusDetailContent(
         }
       }
       else -> {
-        when (descendants.isEmpty()) {
-          true -> {
-            item {
-              Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-              ) {
-                Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-              }
-            }
-          }
-          else -> {
-            items(descendants, key = { it.id }) {
-              StatusListItem(
-                status = it,
-                favouriteStatus = { favouriteStatus(it.actionableId) },
-                unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
-                navigateToDetail = { navigateToDetail(it.actionable) },
-                navigateToMedia = navigateToMedia,
-                navigateToProfile = navigateToProfile,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-              )
-              if (it.isReplyEnd) HeightSpacer(8.dp)
-            }
-          }
-        }
+        statusComment(
+          descendants = descendants,
+          favouriteStatus = favouriteStatus,
+          unfavouriteStatus = unfavouriteStatus,
+          navigateToDetail = navigateToDetail,
+          navigateToMedia = navigateToMedia,
+          navigateToProfile = navigateToProfile
+        )
       }
     }
   }
@@ -269,7 +257,10 @@ fun StatusDetailInReply(
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
   LazyColumn(modifier = modifier, state = lazyState) {
-    items(ancestors + status, key = { it.id }) { repliedStatus ->
+    itemsIndexed(
+      items = ancestors + status,
+      key = { _, item -> item.id }
+    ) { index, repliedStatus ->
       if (repliedStatus == status) {
         StatusDetailCard(
           status = status,
@@ -284,6 +275,8 @@ fun StatusDetailInReply(
       } else {
         StatusListItem(
           status = repliedStatus,
+          replyChainType = if (index == 0) Start else Continue,
+          hasUnloadedParent = false,
           favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
           unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
           navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
@@ -311,32 +304,56 @@ fun StatusDetailInReply(
         }
       }
       else -> {
-        when (descendants.isEmpty()) {
-          true -> {
-            item {
-              Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-              ) {
-                Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-              }
-            }
-          }
-          else -> {
-            items(descendants, key = { it.id }) {
-              StatusListItem(
-                status = it,
-                favouriteStatus = { favouriteStatus(it.actionableId) },
-                unfavouriteStatus = { unfavouriteStatus(it.actionableId) },
-                navigateToDetail = { navigateToDetail(it.actionable) },
-                navigateToMedia = navigateToMedia,
-                navigateToProfile = navigateToProfile,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-              )
-              if (it.isReplyEnd) HeightSpacer(8.dp)
-            }
-          }
+        statusComment(
+          descendants = descendants,
+          favouriteStatus = favouriteStatus,
+          unfavouriteStatus = unfavouriteStatus,
+          navigateToDetail = navigateToDetail,
+          navigateToMedia = navigateToMedia,
+          navigateToProfile = navigateToProfile
+        )
+      }
+    }
+  }
+}
+
+fun LazyListScope.statusComment(
+  descendants: ImmutableList<StatusUiData>,
+  favouriteStatus: (String) -> Unit,
+  unfavouriteStatus: (String) -> Unit,
+  navigateToDetail: (Status) -> Unit,
+  navigateToProfile: (Account) -> Unit,
+  navigateToMedia: (List<Attachment>, Int) -> Unit,
+) {
+  when (descendants.isEmpty()) {
+    true -> {
+      item {
+        Box(
+          modifier = Modifier.fillMaxWidth(),
+          contentAlignment = Alignment.Center
+        ) {
+          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
         }
+      }
+    }
+    else -> {
+      itemsIndexed(
+        items = descendants,
+        key = { _, item -> item.id }
+      ) { index, item ->
+        val replyChainType = remember(item) { descendants.getReplyChainType(index) }
+        StatusListItem(
+          status = item,
+          replyChainType = replyChainType,
+          hasUnloadedParent = false,
+          favouriteStatus = { favouriteStatus(item.actionableId) },
+          unfavouriteStatus = { unfavouriteStatus(item.actionableId) },
+          navigateToDetail = { navigateToDetail(item.actionable) },
+          navigateToMedia = navigateToMedia,
+          navigateToProfile = navigateToProfile,
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        )
+        if (replyChainType == Null || replyChainType == End) HeightSpacer(8.dp)
       }
     }
   }
