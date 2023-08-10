@@ -88,7 +88,7 @@ private object LightColors : MastifyColorsInterface {
     get() = accent10
 
   override val divider: Color
-    get() = Color(0xFFD7D7D7).copy(0.3f)
+    get() = Color(0xFFD7D7D7).copy(0.5f)
 }
 
 private object DarkColors : MastifyColorsInterface {

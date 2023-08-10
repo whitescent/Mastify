@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,6 +66,9 @@ fun StatusDetailCard(
   val normalShape by remember { mutableStateOf(RoundedCornerShape(18.dp)) }
   val endShape by remember {
     mutableStateOf(RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp))
+  }
+  var hideSensitiveContent by rememberSaveable(status.sensitive) {
+    mutableStateOf(status.sensitive)
   }
 
   val context = LocalContext.current
@@ -108,6 +112,7 @@ fun StatusDetailCard(
         CircleShapeAsyncImage(
           model = status.avatar,
           modifier = Modifier.size(statusAvatarSize),
+          shape = AppTheme.shape.statusAvatarShape,
           onClick = { navigateToProfile(status.actionable.account) }
         )
         WidthSpacer(value = 7.dp)
@@ -134,43 +139,45 @@ fun StatusDetailCard(
           modifier = Modifier.size(18.dp),
         )
       }
-      if (status.content.isNotEmpty()) {
-        var mutableSensitive by rememberSaveable(status.sensitive) {
-          mutableStateOf(status.sensitive)
-        }
-        HeightSpacer(value = 4.dp)
-        Crossfade(mutableSensitive) {
-          when (it) {
-            true -> {
-              SensitiveBar(spoilerText = status.spoilerText) { mutableSensitive = false }
+      Crossfade(hideSensitiveContent) {
+        when (it) {
+          true -> {
+            Column {
+              HeightSpacer(value = 4.dp)
+              SensitiveBar(spoilerText = status.spoilerText) { hideSensitiveContent = false }
             }
-            else -> {
-              HtmlText(
-                text = status.content.trimEnd(),
-                fontSize = 14.sp,
-                maxLines = 11,
-                linkClicked = { span ->
-                  launchCustomChromeTab(
-                    context = context,
-                    uri = Uri.parse(span),
-                    toolbarColor = primaryColor.toArgb(),
-                  )
-                },
-                overflow = TextOverflow.Ellipsis,
-                nonLinkClicked = { navigateToDetail() }
-              )
+          }
+          else -> {
+            Column {
+              if (status.content.isNotEmpty()) {
+                HeightSpacer(value = 4.dp)
+                HtmlText(
+                  text = status.content.trimEnd(),
+                  style = TextStyle(fontSize = 16.sp),
+                  maxLines = 11,
+                  linkClicked = { span ->
+                    launchCustomChromeTab(
+                      context = context,
+                      uri = Uri.parse(span),
+                      toolbarColor = primaryColor.toArgb(),
+                    )
+                  },
+                  overflow = TextOverflow.Ellipsis,
+                  nonLinkClicked = { navigateToDetail() }
+                )
+              }
+              if (status.attachments.isNotEmpty()) {
+                HeightSpacer(value = 4.dp)
+                StatusMedia(
+                  attachments = status.attachments,
+                  onClick = { targetIndex ->
+                    navigateToMedia(status.attachments, targetIndex)
+                  },
+                )
+              }
             }
           }
         }
-      }
-      if (status.attachments.isNotEmpty()) {
-        HeightSpacer(value = 4.dp)
-        StatusMedia(
-          attachments = status.attachments,
-          onClick = { targetIndex ->
-            navigateToMedia(status.attachments, targetIndex)
-          },
-        )
       }
       HeightSpacer(value = 8.dp)
       StatusDetailInfo(
@@ -206,15 +213,15 @@ fun StatusDetailActionsRow(
 
   CenterRow(
     modifier = modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.spacedBy(16.dp)
+    horizontalArrangement = Arrangement.spacedBy(20.dp)
   ) {
     ClickableIcon(
-      painter = painterResource(id = R.drawable.chat),
+      painter = painterResource(id = R.drawable.chat_teardrop),
       modifier = Modifier.size(statusDetailActionsIconSize),
       tint = AppTheme.colors.primaryContent,
     )
     ClickableIcon(
-      painter = painterResource(id = R.drawable.heart),
+      painter = painterResource(id = R.drawable.heart2),
       modifier = Modifier.size(statusDetailActionsIconSize),
       tint = animatedFavIconColor,
     ) {
@@ -288,5 +295,5 @@ fun StatusDetailInfo(
 }
 
 private val statusContentPadding = 12.dp
-private val statusAvatarSize = 36.dp
+private val statusAvatarSize = 40.dp
 private val statusDetailActionsIconSize = 24.dp

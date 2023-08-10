@@ -14,4 +14,9 @@ object AppTheme {
     @Composable
     @ReadOnlyComposable
     get() = LocalMastifyTypography.current
+
+  val shape: MastifyShape
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalMastifyShape.current
 }

@@ -215,7 +215,7 @@ fun StatusSource(
     CircleShapeAsyncImage(
       model = reblogAvatar,
       modifier = Modifier.size(24.dp),
-      shape = statusAvatarShape,
+      shape = AppTheme.shape.statusAvatarShape,
       onClick = { navigateToProfile() }
     )
     WidthSpacer(value = 4.dp)
@@ -271,14 +271,14 @@ fun StatusContent(
 ) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
-  var mutableSensitive by rememberSaveable(sensitive) { mutableStateOf(sensitive) }
+  var hideSensitiveContent by rememberSaveable(sensitive) { mutableStateOf(sensitive) }
 
   Box(modifier = modifier) {
     Row(modifier = Modifier.padding(statusContentPadding)) {
       CircleShapeAsyncImage(
         model = avatar,
         modifier = Modifier.size(statusAvatarSize),
-        shape = statusAvatarShape,
+        shape = AppTheme.shape.statusAvatarShape,
         onClick = { navigateToProfile() }
       )
       WidthSpacer(value = 7.dp)
@@ -324,12 +324,12 @@ fun StatusContent(
             )
           }
         }
-        Crossfade(mutableSensitive) {
+        Crossfade(hideSensitiveContent) {
           when (it) {
             true -> {
               Column {
                 HeightSpacer(value = 4.dp)
-                SensitiveBar(spoilerText = spoilerText) { mutableSensitive = false }
+                SensitiveBar(spoilerText = spoilerText) { hideSensitiveContent = false }
               }
             }
             else -> {
@@ -461,5 +461,4 @@ fun StatusActionsRow(
 }
 private val statusContentPadding = 12.dp
 private val statusAvatarSize = 40.dp
-private val statusAvatarShape = RoundedCornerShape(10.dp)
 private val statusActionsIconSize = 20.dp

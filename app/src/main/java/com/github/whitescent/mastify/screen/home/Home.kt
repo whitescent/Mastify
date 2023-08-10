@@ -74,6 +74,7 @@ import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
+import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
@@ -194,7 +195,7 @@ fun Home(
                   modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                 )
                 if (replyChainType == End || replyChainType == Null)
-                  HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
+                  AppHorizontalDivider()
               }
               item {
                 when (uiState.timelineLoadState) {

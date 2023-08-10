@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
@@ -254,7 +255,7 @@ fun AppDrawer(
 fun DrawerMenu() {
   AppDrawerMenu.values().forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
-      Divider(thickness = 0.5.dp, modifier = Modifier.padding(vertical = 8.dp))
+      HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
     }
     DrawerMenuItem(it.icon, it.redId) { }
   }
@@ -305,7 +306,7 @@ enum class AppDrawerMenu(
 ) {
   Profile(R.drawable.user, R.string.title_profile, "profile"),
   Bookmarks(R.drawable.bookmark_simple, R.string.title_bookmarks, "bookmarks"),
-  Favorites(R.drawable.heart_2, R.string.title_favorites, "favorites"),
+  Favorites(R.drawable.heart2, R.string.title_favorites, "favorites"),
   Lists(R.drawable.list_bullets, R.string.title_lists, "lists"),
   Drafts(R.drawable.scroll, R.string.title_draft, "draft"),
   Settings(R.drawable.gear, R.string.title_settings, "settings"),

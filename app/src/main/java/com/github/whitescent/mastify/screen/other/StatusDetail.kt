@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -57,6 +56,7 @@ import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -113,7 +113,7 @@ fun StatusDetail(
         color = AppTheme.colors.primaryContent,
       )
     }
-    HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
+    AppHorizontalDivider()
     HeightSpacer(value = 4.dp)
     when (threadInReply) {
       true -> {
@@ -208,11 +208,11 @@ fun StatusDetailContent(
         navigateToDetail = { navigateToDetail(status.actionable) },
         navigateToMedia = navigateToMedia,
         navigateToProfile = navigateToProfile,
-        modifier = Modifier.padding(12.dp)
+        modifier = Modifier.padding(0.dp)
       )
     }
     item {
-      HeightSpacer(value = 8.dp)
+      AppHorizontalDivider()
     }
     when (loading) {
       true -> {
@@ -287,7 +287,7 @@ fun StatusDetailInReply(
       }
     }
     item {
-      HeightSpacer(value = 8.dp)
+      AppHorizontalDivider()
     }
     when (loading) {
       true -> {
@@ -329,10 +329,10 @@ fun LazyListScope.statusComment(
     true -> {
       item {
         Box(
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().padding(36.dp),
           contentAlignment = Alignment.Center
         ) {
-          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
+          Box(Modifier.size(4.dp).background(Color.Gray, CircleShape))
         }
       }
     }
@@ -351,9 +351,18 @@ fun LazyListScope.statusComment(
           navigateToDetail = { navigateToDetail(item.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
-          modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+          modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
         )
-        if (replyChainType == Null || replyChainType == End) HeightSpacer(8.dp)
+        if (replyChainType == Null || replyChainType == End)
+          AppHorizontalDivider()
+      }
+      item {
+        Box(
+          modifier = Modifier.fillMaxWidth().padding(36.dp),
+          contentAlignment = Alignment.Center
+        ) {
+          Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
+        }
       }
     }
   }
