@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,17 +56,12 @@ fun StatusDetailCard(
   status: StatusUiData,
   modifier: Modifier = Modifier,
   inReply: Boolean = false,
-  backgroundColor: Color = AppTheme.colors.cardBackground,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
-  val normalShape by remember { mutableStateOf(RoundedCornerShape(18.dp)) }
-  val endShape by remember {
-    mutableStateOf(RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp))
-  }
   var hideSensitiveContent by rememberSaveable(status.sensitive) {
     mutableStateOf(status.sensitive)
   }
@@ -82,8 +76,7 @@ fun StatusDetailCard(
 
   Surface(
     modifier = modifier.fillMaxWidth(),
-    shape = if (inReply) endShape else normalShape,
-    color = backgroundColor
+    color = AppTheme.colors.background
   ) {
     Column(
       modifier = Modifier
@@ -123,6 +116,7 @@ fun StatusDetailCard(
             fontSize = 17.sp,
             fontWeight = FontWeight(550),
             overflow = TextOverflow.Ellipsis,
+            color = AppTheme.colors.primaryContent,
             maxLines = 1,
           )
           Text(
@@ -154,7 +148,7 @@ fun StatusDetailCard(
                 HeightSpacer(value = 4.dp)
                 HtmlText(
                   text = status.content.trimEnd(),
-                  style = TextStyle(fontSize = 16.sp),
+                  style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
                   maxLines = 11,
                   linkClicked = { span ->
                     launchCustomChromeTab(
