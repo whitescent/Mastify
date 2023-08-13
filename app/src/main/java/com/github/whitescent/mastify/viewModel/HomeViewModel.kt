@@ -35,7 +35,7 @@ class HomeViewModel @Inject constructor(
   private var initialKey: String? = null
 
   private var timelineFlow = MutableStateFlow<List<Status>>(listOf())
-  val timelineList = timelineFlow.map { reorderStatuses(it).toUiData() }
+  val timelineList = timelineFlow.map { it.toUiData() }
 
   val activeAccount get() = accountRepository.activeAccount!!
   var uiState by mutableStateOf(HomeUiState())
@@ -62,12 +62,12 @@ class HomeViewModel @Inject constructor(
     onError = {
       it?.printStackTrace()
     },
-    onAppend = { items, newKey ->
-      timelineFlow.emit(timelineFlow.value + items)
+    onAppend = { items ->
+      val reorderItems = reorderStatuses(items)
+      timelineFlow.emit(timelineFlow.value + reorderItems)
       uiState = uiState.copy(endReached = items.isEmpty())
-      initialKey = newKey
       db.withTransaction {
-        timelineDao.insertAll(items.toEntity(activeAccount.id))
+        timelineDao.insertAll(reorderItems.toEntity(activeAccount.id))
       }
     },
     onRefresh = { items ->
@@ -82,7 +82,7 @@ class HomeViewModel @Inject constructor(
           val indexInSavedList = timelineFlow.value.indexOfFirst { it.id == items.last().id } + 1
           val statusListAfterIndex =
             timelineFlow.value.subList(indexInSavedList, timelineFlow.value.size)
-          timelineFlow.emit(items + statusListAfterIndex)
+          timelineFlow.emit(reorderStatuses(items) + statusListAfterIndex)
           uiState = uiState.copy(
             endReached = items.isEmpty(),
             showNewStatusButton = newStatusCount != 0,
@@ -91,16 +91,17 @@ class HomeViewModel @Inject constructor(
           reinsertAllStatus(timelineFlow.value, activeAccount.id)
         }
       } else {
-        timelineFlow.emit(items)
+        timelineFlow.emit(reorderStatuses(items))
         uiState = uiState.copy(endReached = items.isEmpty())
-        timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
+        timelineDao.insertAll(timelineFlow.value.map { it.toEntity(activeAccount.id) })
       }
     }
   )
 
   init {
     viewModelScope.launch {
-      timelineFlow.emit(timelineDao.getStatuses(activeAccount.id))
+      timelineFlow.emit(timelineDao.getAll(activeAccount.id))
+      // timelineFlow.emit(timelineDao.getAll(activeAccount.id))
       paginator.refresh()
       // fetch the latest account info
       homeRepository.updateAccountInfo()
