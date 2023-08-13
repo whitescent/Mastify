@@ -101,7 +101,6 @@ class HomeViewModel @Inject constructor(
   init {
     viewModelScope.launch {
       timelineFlow.emit(timelineDao.getAll(activeAccount.id))
-      // timelineFlow.emit(timelineDao.getAll(activeAccount.id))
       paginator.refresh()
       // fetch the latest account info
       homeRepository.updateAccountInfo()

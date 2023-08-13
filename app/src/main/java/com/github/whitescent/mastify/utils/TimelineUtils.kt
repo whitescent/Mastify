@@ -17,9 +17,7 @@ fun reorderStatuses(statuses: List<Status>): List<Status> {
       parent.children.add(statusNode)
     }
   }
-  val result = extractContent(repliesIndexes.values.filter { it.parent == null })
-  println("come ${statuses.size} result ${result.size}")
-  return result
+  return extractContent(repliesIndexes.values.filter { it.parent == null })
 }
 
 private fun extractContent(statusNode: List<StatusNode>): List<Status> {
