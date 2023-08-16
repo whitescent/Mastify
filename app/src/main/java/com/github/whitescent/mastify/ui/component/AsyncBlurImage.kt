@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.ui
+package com.github.whitescent.mastify.ui.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember

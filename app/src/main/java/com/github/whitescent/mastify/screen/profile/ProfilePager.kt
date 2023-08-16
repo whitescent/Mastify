@@ -19,9 +19,7 @@ fun ProfilePager(
     state = state,
     pageContent = {
       when (it) {
-        0 -> {
-          ProfileStatus(accountStatus)
-        }
+        0 -> ProfileStatus(accountStatus)
         1 -> Unit
         2 -> Unit
       }

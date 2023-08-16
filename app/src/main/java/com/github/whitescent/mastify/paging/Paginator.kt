@@ -4,9 +4,9 @@ class Paginator<Key, Item>(
   private val initialKey: Key,
   private inline val onLoadUpdated: (LoadState) -> Unit,
   private inline val onRequest: suspend (nextKey: Key) -> Result<List<Item>>,
-  private inline val getNextKey: suspend (List<Item>, LoadState) -> Key,
+  private inline val getNextKey: suspend (List<Item>) -> Key,
   private inline val onError: suspend (Throwable?) -> Unit,
-  private inline val onAppend: suspend (items: List<Item>, newKey: Key) -> Unit,
+  private inline val onAppend: suspend (items: List<Item>) -> Unit,
   private inline val onRefresh: suspend (items: List<Item>) -> Unit
 ) : PaginatorInterface<Key, Item> {
 
@@ -24,8 +24,8 @@ class Paginator<Key, Item>(
         onLoadUpdated(loadState)
         return
       }
-      currentKey = getNextKey(result, loadState)
-      onAppend(result, currentKey)
+      currentKey = getNextKey(result)
+      onAppend(result)
       loadState = LoadState.NotLoading
       onLoadUpdated(loadState)
     } catch (e: Exception) {
@@ -48,7 +48,7 @@ class Paginator<Key, Item>(
         onLoadUpdated(loadState)
         return
       }
-      currentKey = getNextKey(result, loadState)
+      currentKey = getNextKey(result)
       onRefresh(result)
       loadState = LoadState.NotLoading
       onLoadUpdated(loadState)

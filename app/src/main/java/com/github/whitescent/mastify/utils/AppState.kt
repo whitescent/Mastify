@@ -15,11 +15,12 @@ import androidx.compose.ui.unit.dp
 
 @Stable
 class AppState(
+  private val appContentPaddingTop: Dp,
   private val appContentPaddingBottom: Dp,
 ) {
 
   var appPaddingValues by mutableStateOf(
-    PaddingValues(bottom = appContentPaddingBottom)
+    PaddingValues(top = appContentPaddingTop, bottom = appContentPaddingBottom)
   )
     private set
 
@@ -29,13 +30,13 @@ class AppState(
 
   companion object {
     val saver = listSaver(
-      save = { listOf(it.appContentPaddingBottom.value) },
-      restore = { AppState(Dp(it[0])) }
+      save = { listOf(it.appContentPaddingTop.value, it.appContentPaddingBottom.value) },
+      restore = { AppState(Dp(it[0]), Dp(it[1])) }
     )
   }
 }
 
 @Composable
-fun rememberAppState(bottomPadding: Dp = 0.dp): AppState {
-  return rememberSaveable(saver = AppState.saver) { AppState(bottomPadding) }
+fun rememberAppState(topPadding: Dp = 0.dp, bottomPadding: Dp = 0.dp): AppState {
+  return rememberSaveable(saver = AppState.saver) { AppState(topPadding, bottomPadding) }
 }

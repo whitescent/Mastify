@@ -16,7 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
-import com.github.whitescent.mastify.ui.AsyncBlurImage
+import com.github.whitescent.mastify.ui.component.AsyncBlurImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import kotlinx.collections.immutable.ImmutableList

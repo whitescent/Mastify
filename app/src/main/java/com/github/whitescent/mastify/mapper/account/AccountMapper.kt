@@ -9,7 +9,7 @@ fun AccountEntity.toAccount(): Account {
     username = username,
     displayName = displayName,
     note = note,
-    url = "",
+    url = "https://$domain/@$username",
     avatar = profilePictureUrl,
     header = header,
     followersCount = followersCount,

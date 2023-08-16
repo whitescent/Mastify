@@ -33,6 +33,7 @@ class HomeViewModel @Inject constructor(
   private val timelineDao = db.timelineDao()
   private val timelineFetchNumber = 30
   private var initialKey: String? = null
+  private var isInitialLoad = false
 
   private var timelineFlow = MutableStateFlow<List<Status>>(listOf())
   val timelineList = timelineFlow.map { it.toUiData() }
@@ -53,55 +54,62 @@ class HomeViewModel @Inject constructor(
         Result.success(emptyList())
       }
     },
-    getNextKey = { items, loadState ->
+    getNextKey = { items ->
       // if timelineEntity is not empty, we need set nextPage to the last status id
-      if (loadState == LoadState.Refresh && timelineFlow.value.isNotEmpty())
-        timelineFlow.value.last().id
-      else items.last().id
+      if (!isInitialLoad && timelineFlow.value.isNotEmpty()) timelineFlow.value.last().id
+      else items.lastOrNull()?.id
     },
     onError = {
       it?.printStackTrace()
     },
     onAppend = { items ->
-      val reorderItems = reorderStatuses(items)
-      timelineFlow.emit(timelineFlow.value + reorderItems)
+      timelineFlow.emit(splitReorderStatus(timelineFlow.value + items))
       uiState = uiState.copy(endReached = items.isEmpty())
       db.withTransaction {
-        timelineDao.insertAll(reorderItems.toEntity(activeAccount.id))
+        timelineDao.insertAll(items.toEntity(activeAccount.id))
       }
     },
     onRefresh = { items ->
-      if (timelineFlow.value.isNotEmpty()) {
-        val lastStatusInApi = items.last()
-        if (timelineFlow.value.any { it.id == lastStatusInApi.id }) {
-          val newStatusList = items.filterNot {
-            timelineFlow.value.any { saved -> saved.id == it.id }
-          }
-          val newStatusCount = newStatusList.size
-          // Add / Update / Remove posts obtained by api
-          val indexInSavedList = timelineFlow.value.indexOfFirst { it.id == items.last().id } + 1
-          val statusListAfterIndex =
-            timelineFlow.value.subList(indexInSavedList, timelineFlow.value.size)
-          timelineFlow.emit(reorderStatuses(items) + statusListAfterIndex)
-          uiState = uiState.copy(
-            endReached = items.isEmpty(),
-            showNewStatusButton = newStatusCount != 0,
-            newStatusCount = newStatusCount.toString()
-          )
-          reinsertAllStatus(timelineFlow.value, activeAccount.id)
+      when (items.isEmpty()) {
+        true -> {
+          timelineFlow.emit(emptyList())
+          timelineDao.clearAll(activeAccount.id)
         }
-      } else {
-        timelineFlow.emit(reorderStatuses(items))
-        uiState = uiState.copy(endReached = items.isEmpty())
-        timelineDao.insertAll(timelineFlow.value.map { it.toEntity(activeAccount.id) })
+        else -> {
+          val savedTimeline = timelineDao.getStatuses(activeAccount.id)
+          if (savedTimeline.isNotEmpty()) {
+            val lastStatusInApi = items.last()
+            if (savedTimeline.any { it.id == lastStatusInApi.id }) {
+              val newStatusList = items.filterNot {
+                savedTimeline.any { saved -> saved.id == it.id }
+              }
+              val newStatusCount = newStatusList.size
+              // Add / Update / Remove posts obtained by api
+              val indexInSavedList = savedTimeline.indexOfFirst { it.id == items.last().id } + 1
+              val statusListAfterIndex =
+                savedTimeline.subList(indexInSavedList, savedTimeline.size)
+              timelineFlow.emit(splitReorderStatus(items + statusListAfterIndex))
+              uiState = uiState.copy(
+                showNewStatusButton = newStatusCount != 0,
+                newStatusCount = newStatusCount.toString()
+              )
+              reinsertAllStatus(items + statusListAfterIndex, activeAccount.id)
+            }
+          } else {
+            timelineFlow.emit(reorderStatuses(items))
+            uiState = uiState.copy(endReached = items.isEmpty())
+            timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
+          }
+        }
       }
     }
   )
 
   init {
     viewModelScope.launch {
-      timelineFlow.emit(timelineDao.getAll(activeAccount.id))
+      timelineFlow.emit(splitReorderStatus(timelineDao.getStatuses(activeAccount.id)))
       paginator.refresh()
+      isInitialLoad = true
       // fetch the latest account info
       homeRepository.updateAccountInfo()
     }
@@ -124,6 +132,16 @@ class HomeViewModel @Inject constructor(
       timelineDao.clearAll(accountId)
       timelineDao.insertAll(statuses.toEntity(accountId))
     }
+  }
+
+  private fun splitReorderStatus(statuses: List<Status>): List<Status> {
+    if (statuses.size <= timelineFetchNumber) return reorderStatuses(statuses)
+    val result = mutableListOf<Status>()
+    result.addAll(
+      reorderStatuses(statuses.subList(0, timelineFetchNumber) +
+        reorderStatuses(statuses.subList(timelineFetchNumber, statuses.size)))
+    )
+    return result
   }
 }
 

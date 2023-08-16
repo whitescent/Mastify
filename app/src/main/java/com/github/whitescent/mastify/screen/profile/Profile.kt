@@ -1,6 +1,10 @@
 package com.github.whitescent.mastify.screen.profile
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -8,10 +12,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,31 +40,40 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
+import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
-import com.github.whitescent.mastify.ui.component.CollapsingLayout
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.avatarStartPadding
 import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
+import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayout
+import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememberProfileLayoutState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
+import com.github.whitescent.mastify.utils.AppState
+import com.github.whitescent.mastify.utils.BlurTransformation
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlinx.coroutines.launch
@@ -72,11 +87,14 @@ data class ProfileNavArgs(
 @Destination(navArgsDelegate = ProfileNavArgs::class, style = ProfileTransitions::class)
 @Composable
 fun Profile(
+  appState: AppState,
   viewModel: ProfileViewModel = hiltViewModel()
 ) {
   val uiState = viewModel.uiState
   val accountStatus = viewModel.pager.collectAsLazyPagingItems()
-  CollapsingLayout(
+  val profileLayoutState = rememberProfileLayoutState()
+  ProfileLayout(
+    state = profileLayoutState,
     collapsingTop = {
       Column {
         AvatarWithCover(
@@ -100,10 +118,11 @@ fun Profile(
           avatar = {
             CircleShapeAsyncImage(
               model = uiState.account.avatar,
-              modifier = Modifier.size(100.dp)
+              modifier = Modifier.size(80.dp * (1 - profileLayoutState.progress))
             )
           },
         )
+        HeightSpacer(value = 6.dp)
         ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
       }
     },
@@ -121,8 +140,69 @@ fun Profile(
       }
     },
     topBar = {
+      ProfileTopBar(
+        alpha = profileLayoutState.progress,
+        account = uiState.account,
+        topPadding = appState.appPaddingValues.calculateTopPadding()
+      )
     },
   )
+}
+
+@Composable
+fun ProfileTopBar(
+  alpha: Float,
+  account: Account,
+  topPadding: Dp,
+) {
+  Box(
+    modifier = Modifier
+      .fillMaxWidth()
+      .height(56.dp + topPadding)
+  ) {
+    AsyncImage(
+      model = ImageRequest.Builder(LocalContext.current)
+        .data(account.header)
+        .transformations(BlurTransformation(LocalContext.current))
+        .build(),
+      contentDescription = null,
+      modifier = Modifier
+        .fillMaxSize()
+        .alpha(alpha)
+        .drawWithContent {
+          this.drawContent()
+          drawRect(Color.Black.copy(0.35f))
+        },
+      contentScale = ContentScale.Crop
+    )
+    AnimatedVisibility(
+      visible = alpha >= 1,
+      enter = scaleIn() + fadeIn(),
+      exit = scaleOut() + fadeOut()
+    ) {
+      CenterRow(Modifier.statusBarsPadding().padding(start = 24.dp).width(240.dp)) {
+        CircleShapeAsyncImage(
+          model = account.avatar,
+          modifier = Modifier.size(36.dp)
+        )
+        WidthSpacer(value = 8.dp)
+        Column {
+          Text(
+            text = account.realDisplayName,
+            fontSize = 18.sp,
+            color = Color.White,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+          )
+          Text(
+            text = "${account.statusesCount} 条嘟文",
+            fontSize = 14.sp,
+            color = Color.White
+          )
+        }
+      }
+    }
+  }
 }
 
 @Composable
@@ -320,14 +400,14 @@ fun EditProfileButton() {
     shape = RoundedCornerShape(12.dp),
     color = AppTheme.colors.secondaryContent
   ) {
-    CenterRow(Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+    CenterRow(Modifier.padding(horizontal = 12.dp, vertical = 12.dp)) {
       Icon(
         painter = painterResource(id = R.drawable.pencil_simple_line),
         contentDescription = null,
         modifier = Modifier.size(24.dp),
         tint = Color.White
       )
-      WidthSpacer(value = 8.dp)
+      WidthSpacer(value = 6.dp)
       Text(
         text = "编辑个人资料",
         fontSize = 16.sp,

@@ -38,9 +38,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
@@ -92,7 +93,10 @@ fun AppDrawer(
         contentDescription = null,
         modifier = Modifier
           .fillMaxSize()
-          .alpha(0.6f),
+          .drawWithContent {
+            this.drawContent()
+            drawRect(Color.Black.copy(0.35f))
+          },
         contentScale = ContentScale.Crop,
       )
       Column(
@@ -124,12 +128,12 @@ fun AppDrawer(
             Text(
               text = activeAccount.realDisplayName,
               fontSize = 24.sp,
-              color = AppTheme.colors.primaryContent
+              color = Color.White
             )
             Text(
               text = activeAccount.fullName,
               fontSize = 16.sp,
-              color = AppTheme.colors.primaryContent
+              color = Color.White
             )
           }
           IconButton(
@@ -139,7 +143,7 @@ fun AppDrawer(
               painter = painterResource(R.drawable.more_arrow),
               contentDescription = null,
               modifier = Modifier.rotate(rotate),
-              tint = AppTheme.colors.primaryContent
+              tint = Color.White
             )
           }
         }

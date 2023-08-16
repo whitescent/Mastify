@@ -108,7 +108,6 @@ object StatusDetailTransitions : DestinationStyle.Animated {
           towards = Start,
           animationSpec = tween(slideAnimationTween)
         )
-      StatusMediaScreenDestination -> scaleOut()
       else -> fadeOut()
     }
   }

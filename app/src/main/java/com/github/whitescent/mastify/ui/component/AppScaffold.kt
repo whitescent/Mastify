@@ -107,7 +107,7 @@ fun AppScaffold(
       },
       containerColor = AppTheme.colors.background
     ) {
-      val appState = rememberAppState(it.calculateBottomPadding())
+      val appState = rememberAppState(it.calculateTopPadding(), it.calculateBottomPadding())
       DestinationsNavHost(
         engine = engine,
         navController = navController,

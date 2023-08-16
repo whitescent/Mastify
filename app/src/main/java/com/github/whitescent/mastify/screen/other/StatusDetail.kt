@@ -13,11 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,7 +25,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -45,10 +42,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
-import com.github.whitescent.mastify.data.model.ui.getReplyChainType
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
@@ -64,6 +58,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
+import com.github.whitescent.mastify.ui.component.statusComment
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.StatusDetailTransitions
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
@@ -315,51 +310,6 @@ fun StatusDetailInReply(
           navigateToProfile = navigateToProfile
         )
       }
-    }
-  }
-}
-
-fun LazyListScope.statusComment(
-  descendants: ImmutableList<StatusUiData>,
-  favouriteStatus: (String) -> Unit,
-  unfavouriteStatus: (String) -> Unit,
-  navigateToDetail: (Status) -> Unit,
-  navigateToProfile: (Account) -> Unit,
-  navigateToMedia: (List<Attachment>, Int) -> Unit,
-) {
-  when (descendants.isEmpty()) {
-    true -> statusEndIndicator()
-    else -> {
-      itemsIndexed(
-        items = descendants,
-        key = { _, item -> item.id }
-      ) { index, item ->
-        val replyChainType = remember(item) { descendants.getReplyChainType(index) }
-        StatusListItem(
-          status = item,
-          replyChainType = replyChainType,
-          hasUnloadedParent = false,
-          favouriteStatus = { favouriteStatus(item.actionableId) },
-          unfavouriteStatus = { unfavouriteStatus(item.actionableId) },
-          navigateToDetail = { navigateToDetail(item.actionable) },
-          navigateToMedia = navigateToMedia,
-          navigateToProfile = navigateToProfile,
-          modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-        )
-        if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()
-      }
-      statusEndIndicator()
-    }
-  }
-}
-
-fun LazyListScope.statusEndIndicator() {
-  item {
-    Box(
-      modifier = Modifier.fillMaxWidth().padding(36.dp),
-      contentAlignment = Alignment.Center
-    ) {
-      Box(Modifier.size(4.dp).background(Color.Gray, CircleShape))
     }
   }
 }

@@ -77,6 +77,7 @@ import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
@@ -162,10 +163,10 @@ fun Home(
                 contentType = { _, item -> item.itemType },
                 key = { _, item -> item.id }
               ) { index, status ->
-                val replyChainType by remember(status) {
+                val replyChainType by remember(status, timeline.size, index) {
                   mutableStateOf(timeline.getReplyChainType(index))
                 }
-                val hasUnloadedParent by remember(status) {
+                val hasUnloadedParent by remember(status, timeline.size, index) {
                   mutableStateOf(timeline.hasUnloadedParent(index))
                 }
                 StatusListItem(
@@ -194,8 +195,7 @@ fun Home(
                   },
                   modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                 )
-                if (replyChainType == End || replyChainType == Null)
-                  AppHorizontalDivider()
+                if (replyChainType == End || replyChainType == Null) AppHorizontalDivider()
               }
               item {
                 when (uiState.timelineLoadState) {
@@ -208,7 +208,8 @@ fun Home(
                     ) {
                       CircularProgressIndicator(
                         modifier = Modifier.size(20.dp),
-                        color = AppTheme.colors.primaryContent
+                        color = AppTheme.colors.primaryContent,
+                        strokeWidth = 2.dp
                       )
                     }
                   }
@@ -218,16 +219,7 @@ fun Home(
                   }
                   else -> Unit
                 }
-                if (uiState.endReached) {
-                  Box(
-                    modifier = Modifier
-                      .fillMaxWidth()
-                      .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                  ) {
-                    Box(Modifier.size(8.dp).background(Color.Gray, CircleShape))
-                  }
-                }
+                if (uiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
               }
             }
             AnimatedVisibility(
