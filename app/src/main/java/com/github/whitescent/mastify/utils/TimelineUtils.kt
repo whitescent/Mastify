@@ -23,6 +23,8 @@ fun reorderStatuses(statuses: List<Status>): List<Status> {
 }
 
 fun reorderStatusWithChildren(statusNode: List<StatusNode>): List<StatusNode> {
+  // Sort the statusNode with children into a logical position
+  // so that the newest posts are displayed at the top and not at the bottom
   val result = statusNode.filter { it.children.isEmpty() }.toMutableList()
   val origin = statusNode.filter { it.children.isEmpty() }.toMutableList()
   val statusNodeWithChildren = statusNode.filter { it.children.isNotEmpty() }

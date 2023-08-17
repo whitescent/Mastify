@@ -14,7 +14,6 @@ import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
-import com.github.whitescent.mastify.utils.reorderStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -90,12 +89,11 @@ class StatusDetailViewModel @Inject constructor(
       }
       return subReplies
     }
-
     replyList.forEach { current ->
       val subReplies = searchSubReplies(current.id).toMutableList()
       if (subReplies.isNotEmpty()) {
         subReplies.add(0, current)
-        finalList.addAll(reorderStatuses(subReplies))
+        finalList.addAll(subReplies)
       } else {
         finalList.add(current)
       }
