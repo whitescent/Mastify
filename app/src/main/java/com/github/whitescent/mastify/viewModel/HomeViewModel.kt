@@ -36,7 +36,7 @@ class HomeViewModel @Inject constructor(
   private var isInitialLoad = false
 
   private var timelineFlow = MutableStateFlow<List<Status>>(listOf())
-  val timelineList = timelineFlow.map { it.toUiData() }
+  val timelineList = timelineFlow.map { splitReorderStatus(it).toUiData() }
 
   val activeAccount get() = accountRepository.activeAccount!!
   var uiState by mutableStateOf(HomeUiState())
@@ -63,7 +63,7 @@ class HomeViewModel @Inject constructor(
       it?.printStackTrace()
     },
     onAppend = { items ->
-      timelineFlow.emit(splitReorderStatus(timelineFlow.value + items))
+      timelineFlow.emit(timelineFlow.value + items)
       uiState = uiState.copy(endReached = items.isEmpty())
       db.withTransaction {
         timelineDao.insertAll(items.toEntity(activeAccount.id))
@@ -76,19 +76,18 @@ class HomeViewModel @Inject constructor(
           timelineDao.clearAll(activeAccount.id)
         }
         else -> {
-          val savedTimeline = timelineDao.getStatuses(activeAccount.id)
-          if (savedTimeline.isNotEmpty()) {
+          if (timelineFlow.value.isNotEmpty()) {
             val lastStatusInApi = items.last()
-            if (savedTimeline.any { it.id == lastStatusInApi.id }) {
+            if (timelineFlow.value.any { it.id == lastStatusInApi.id }) {
               val newStatusList = items.filterNot {
-                savedTimeline.any { saved -> saved.id == it.id }
+                timelineFlow.value.any { saved -> saved.id == it.id }
               }
               val newStatusCount = newStatusList.size
               // Add / Update / Remove posts obtained by api
-              val indexInSavedList = savedTimeline.indexOfFirst { it.id == items.last().id } + 1
+              val indexInSavedList = timelineFlow.value.indexOfFirst { it.id == items.last().id } + 1
               val statusListAfterIndex =
-                savedTimeline.subList(indexInSavedList, savedTimeline.size)
-              timelineFlow.emit(splitReorderStatus(items + statusListAfterIndex))
+                timelineFlow.value.subList(indexInSavedList, timelineFlow.value.size)
+              timelineFlow.emit(items + statusListAfterIndex)
               uiState = uiState.copy(
                 showNewStatusButton = newStatusCount != 0,
                 newStatusCount = newStatusCount.toString()
@@ -96,7 +95,7 @@ class HomeViewModel @Inject constructor(
               reinsertAllStatus(items + statusListAfterIndex, activeAccount.id)
             }
           } else {
-            timelineFlow.emit(reorderStatuses(items))
+            timelineFlow.emit(items)
             uiState = uiState.copy(endReached = items.isEmpty())
             timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
           }
@@ -107,7 +106,7 @@ class HomeViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      timelineFlow.emit(splitReorderStatus(timelineDao.getStatuses(activeAccount.id)))
+      timelineFlow.emit(timelineDao.getStatuses(activeAccount.id))
       paginator.refresh()
       isInitialLoad = true
       // fetch the latest account info
@@ -137,10 +136,9 @@ class HomeViewModel @Inject constructor(
   private fun splitReorderStatus(statuses: List<Status>): List<Status> {
     if (statuses.size <= timelineFetchNumber) return reorderStatuses(statuses)
     val result = mutableListOf<Status>()
-    result.addAll(
-      reorderStatuses(statuses.subList(0, timelineFetchNumber) +
-        reorderStatuses(statuses.subList(timelineFetchNumber, statuses.size)))
-    )
+    val prefix = reorderStatuses(statuses.subList(0, timelineFetchNumber))
+    val suffix = reorderStatuses(statuses.subList(timelineFetchNumber, statuses.size))
+    result.addAll(prefix + suffix)
     return result
   }
 }
