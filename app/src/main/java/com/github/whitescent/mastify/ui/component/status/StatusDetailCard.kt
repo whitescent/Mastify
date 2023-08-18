@@ -149,7 +149,6 @@ fun StatusDetailCard(
                 HtmlText(
                   text = status.content.trimEnd(),
                   style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-                  maxLines = 11,
                   linkClicked = { span ->
                     launchCustomChromeTab(
                       context = context,
