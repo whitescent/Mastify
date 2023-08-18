@@ -222,7 +222,7 @@ fun ProfileInfo(
         )
         HeightSpacer(value = 2.dp)
         Text(
-          text = account.fullName,
+          text = account.fullname,
           style = AppTheme.typography.statusUsername.copy(
             color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
           ),
