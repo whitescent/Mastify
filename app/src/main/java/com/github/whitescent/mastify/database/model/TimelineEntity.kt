@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -42,6 +43,7 @@ data class TimelineEntity(
   @ColumnInfo val reblog: Status?,
   @ColumnInfo val content: String,
   @ColumnInfo val account: Account,
+  @ColumnInfo val emojis: List<Emoji>,
   @ColumnInfo val tags: List<Tag>,
   @ColumnInfo val mentions: List<Mention>,
   @ColumnInfo val application: Application?,

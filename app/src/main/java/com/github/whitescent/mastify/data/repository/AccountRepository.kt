@@ -68,6 +68,7 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
         statusesCount = newAccount.statusesCount,
         fields = newAccount.fields,
         note = newAccount.note,
+        emojis = newAccount.emojis,
         createdAt = newAccount.createdAt
       ).also { accounts.add(it) }
     }

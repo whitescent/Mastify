@@ -3,6 +3,7 @@ package com.github.whitescent.mastify.database.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.github.whitescent.mastify.network.model.account.Fields
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 
 @Entity
 data class AccountEntity(
@@ -19,10 +20,11 @@ data class AccountEntity(
   val profilePictureUrl: String = "",
   val header: String = "",
   val createdAt: String = "",
-  val fields: List<Fields> = emptyList(),
-  val followersCount: Long = 0,
-  val followingCount: Long = 0,
-  val statusesCount: Long = 0
+  val emojis: List<Emoji>,
+  val fields: List<Fields>,
+  val followersCount: Long,
+  val followingCount: Long,
+  val statusesCount: Long
 ) {
 
   val fullName: String

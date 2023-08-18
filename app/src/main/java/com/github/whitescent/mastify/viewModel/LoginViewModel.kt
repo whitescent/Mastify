@@ -11,6 +11,7 @@ import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.repository.LoginRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
+import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -28,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
   private val preferenceRepository: PreferenceRepository,
-  private val loginRepository: LoginRepository
+  private val loginRepository: LoginRepository,
+  private val api: MastodonApi
 ) : ViewModel() {
 
   var uiState by mutableStateOf(LoginUiState())
@@ -39,7 +41,7 @@ class LoginViewModel @Inject constructor(
       .debounce(750)
       .filterNot { it.isEmpty() || instanceLocalError }
       .map {
-        loginRepository.fetchInstanceInfo(it).fold(
+        api.fetchInstanceInfo(it).fold(
           onSuccess = { instance ->
             uiState = uiState.copy(isTyping = false)
             InstanceUiData(
@@ -75,8 +77,7 @@ class LoginViewModel @Inject constructor(
 
   fun authenticateApp(appName: String, navigateToOauth: (String) -> Unit) {
     viewModelScope.launch(Dispatchers.IO) {
-      loginRepository
-        .authenticateApp(uiState.text, appName)
+      loginRepository.authenticateApp(uiState.text, appName)
         .fold(
           onSuccess = {
             preferenceRepository.saveInstanceData(uiState.text, it.clientId, it.clientSecret)

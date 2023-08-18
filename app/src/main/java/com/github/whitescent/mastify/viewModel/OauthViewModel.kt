@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.AccessToken
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class OauthViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   preferenceRepository: PreferenceRepository,
+  private val instanceRepository: InstanceRepository,
   private val api: MastodonApi,
   private val accountRepository: AccountRepository
 ) : ViewModel() {
@@ -70,6 +72,8 @@ class OauthViewModel @Inject constructor(
           clientSecret = clientSecret,
           newAccount = newAccount
         )
+        instanceRepository.getAndUpdateInstanceInfo()
+        instanceRepository.getEmojis()
       },
       {
         it.printStackTrace()

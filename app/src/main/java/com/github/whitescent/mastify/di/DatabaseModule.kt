@@ -21,6 +21,5 @@ object DatabaseModule {
     context,
     AppDatabase::class.java,
     "mastify-database",
-  ).allowMainThreadQueries()
-    .build()
+  ).allowMainThreadQueries().build()
 }

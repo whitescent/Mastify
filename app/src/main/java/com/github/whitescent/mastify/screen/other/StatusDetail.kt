@@ -17,7 +17,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
@@ -73,7 +71,7 @@ fun StatusDetail(
 ) {
   val lazyState = rememberLazyListState()
   val state = viewModel.uiState
-  val replyText by viewModel.replyText.collectAsStateWithLifecycle()
+  val replyText = viewModel.replyText
 
   val status = viewModel.navArgs.status.toUiData()
   val avatar = viewModel.navArgs.avatar
@@ -165,9 +163,10 @@ fun StatusDetail(
       }
     }
     ReplyTextField(
-      avatar = avatar,
-      text = replyText,
-      onValueChange = viewModel::updateText
+      targetAccount = viewModel.navArgs.status.actionableStatus.account,
+      fieldValue = replyText,
+      onValueChange = viewModel::updateText,
+      replyToStatus = viewModel::replyToStatus
     )
   }
 }

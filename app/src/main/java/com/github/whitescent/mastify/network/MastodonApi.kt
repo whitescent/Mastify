@@ -4,11 +4,14 @@ import at.connyduck.calladapter.networkresult.NetworkResult
 import com.github.whitescent.mastify.network.model.account.AccessToken
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Relationship
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
+import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -26,7 +29,7 @@ interface MastodonApi {
 
   @GET("api/v1/instance")
   suspend fun fetchInstanceInfo(
-    @Header(DOMAIN_HEADER) domain: String
+    @Header(DOMAIN_HEADER) domain: String? = null
   ): NetworkResult<InstanceInfo>
 
   @FormUrlEncoded
@@ -69,6 +72,12 @@ interface MastodonApi {
     @Path("id") statusId: String
   ): NetworkResult<Status>
 
+  @POST("api/v1/statuses")
+  suspend fun createStatus(
+    @Header("Idempotency-Key") idempotencyKey: String,
+    @Body status: NewStatus,
+  ): NetworkResult<Status>
+
   @POST("api/v1/statuses/{id}/favourite")
   suspend fun favouriteStatus(
     @Path("id") statusId: String
@@ -104,4 +113,7 @@ interface MastodonApi {
     @Query("only_media") onlyMedia: Boolean? = null,
     @Query("pinned") pinned: Boolean? = null
   ): Response<List<Status>>
+
+  @GET("/api/v1/custom_emojis")
+  suspend fun getCustomEmojis(): NetworkResult<List<Emoji>>
 }

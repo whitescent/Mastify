@@ -17,6 +17,7 @@ fun AccountEntity.toAccount(): Account {
     statusesCount = statusesCount,
     createdAt = createdAt,
     source = null,
+    emojis = emojis,
     fields = fields
   )
 }

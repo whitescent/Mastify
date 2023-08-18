@@ -7,6 +7,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.collections.immutable.ImmutableList
 
@@ -21,6 +22,8 @@ data class StatusUiData(
   val rebloggedAvatar: String,
   val displayName: String,
   val content: String,
+  val accountEmojis: ImmutableList<Emoji>,
+  val emojis: ImmutableList<Emoji>,
   val attachments: ImmutableList<Status.Attachment>,
   val actionable: Status,
   val actionableId: String,

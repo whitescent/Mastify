@@ -17,10 +17,11 @@ fun Status.toUiData(): StatusUiData {
     displayName = this.reblog?.account?.displayName?.ifEmpty {
       this.reblog.account.username
     } ?: this.account.displayName.ifEmpty { this.account.username },
-    reblogDisplayName = this.account.displayName
-      .ifEmpty { this.account.username },
-    fullname = this.reblog?.account?.fullName ?: this.account.fullName,
+    reblogDisplayName = this.account.displayName.ifEmpty { this.account.username },
+    fullname = this.reblog?.account?.fullname ?: this.account.fullname,
     createdAt = this.reblog?.createdAt ?: this.createdAt,
+    accountEmojis = (this.reblog?.account?.emojis ?: this.account.emojis).toImmutableList(),
+    emojis = (this.reblog?.emojis ?: this.emojis).toImmutableList(),
     content = this.reblog?.content ?: this.content,
     sensitive = this.reblog?.sensitive ?: this.sensitive,
     spoilerText = this.reblog?.spoilerText ?: this.spoilerText,
@@ -59,6 +60,7 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     reblogged = reblogged,
     reblog = reblog,
     content = content,
+    emojis = emojis,
     tags = tags,
     mentions = mentions,
     account = account,

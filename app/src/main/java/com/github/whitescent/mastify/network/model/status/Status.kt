@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.network.model.status
 
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -24,6 +25,7 @@ data class Status(
   val reblog: Status?,
   val content: String,
   val account: Account,
+  val emojis: List<Emoji>,
   val tags: List<Tag>,
   val mentions: List<Mention>,
   val application: Application?,

@@ -1,9 +1,12 @@
 package com.github.whitescent.mastify.network.model.account
 
+import androidx.compose.runtime.Stable
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Stable
 @Serializable
 data class Account(
   val id: String,
@@ -18,7 +21,8 @@ data class Account(
   @SerialName("statuses_count") val statusesCount: Long,
   @SerialName("created_at") val createdAt: String,
   val source: Source?,
-  val fields: List<Fields>
+  val fields: List<Fields>,
+  val emojis: List<Emoji>
 ) {
 
   val domain get() = FormatFactory.getInstanceName(url)
@@ -26,7 +30,7 @@ data class Account(
   // avoid null display name
   val realDisplayName inline get() = this.displayName.ifEmpty { this.username }
 
-  val fullName: String
+  val fullname: String
     get() = "@$username@$domain"
 }
 

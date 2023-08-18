@@ -3,6 +3,7 @@ package com.github.whitescent.mastify.database.util
 import androidx.room.TypeConverter
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -11,7 +12,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class StatusConverter {
+class Converters {
 
   @OptIn(ExperimentalSerializationApi::class)
   private val json = Json {
@@ -20,72 +21,50 @@ class StatusConverter {
   }
 
   @TypeConverter
-  fun fromJsonToStatus(json: String): Status {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToStatus(json: String): Status = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromStatusToJson(status: Status): String {
-    return json.encodeToString(status)
-  }
+  fun statusToJson(status: Status): String = json.encodeToString(status)
 
   @TypeConverter
-  fun fromJsonToAccount(json: String): Account {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToAccount(json: String): Account = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromAccountToJson(account: Account): String {
-    return json.encodeToString(account)
-  }
+  fun accountToJson(account: Account): String = json.encodeToString(account)
 
   @TypeConverter
-  fun fromJsonToTag(json: String): List<Status.Tag> {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToTag(json: String): List<Status.Tag> = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromTagToJson(tag: List<Status.Tag>): String {
-    return json.encodeToString(tag)
-  }
+  fun tagToJson(tag: List<Status.Tag>): String = json.encodeToString(tag)
 
   @TypeConverter
-  fun fromJsonToFields(json: String): List<Fields> {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToFields(json: String): List<Fields> = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromFieldsToJson(mention: List<Fields>): String {
-    return json.encodeToString(mention)
-  }
+  fun fieldsToJson(mention: List<Fields>): String = json.encodeToString(mention)
 
   @TypeConverter
-  fun fromJsonToMention(json: String): List<Mention> {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToMention(json: String): List<Mention> = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromMentionToJson(mention: List<Mention>): String {
-    return json.encodeToString(mention)
-  }
+  fun mentionToJson(mention: List<Mention>): String = json.encodeToString(mention)
 
   @TypeConverter
-  fun fromJsonToApplication(json: String): Application? {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToApplication(json: String): Application? = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromApplicationToJson(application: Application?): String {
-    return json.encodeToString(application)
-  }
+  fun applicationToJson(application: Application?): String = json.encodeToString(application)
 
   @TypeConverter
-  fun fromJsonToMediaAttachments(json: String): List<Attachment> {
-    return this.json.decodeFromString(json)
-  }
+  fun jsonToMediaAttachments(json: String): List<Attachment> = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun fromMediaAttachmentsToJson(attachments: List<Attachment>): String {
-    return json.encodeToString(attachments)
-  }
+  fun mediaAttachmentsToJson(attachments: List<Attachment>): String = json.encodeToString(attachments)
+
+  @TypeConverter
+  fun jsonToEmoji(json: String): List<Emoji> = this.json.decodeFromString(json)
+
+  @TypeConverter
+  fun emojiToJson(emoji: List<Emoji>): String = json.encodeToString(emoji)
 }
