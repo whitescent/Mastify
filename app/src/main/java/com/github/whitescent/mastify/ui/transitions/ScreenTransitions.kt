@@ -145,7 +145,10 @@ object StatusMediaTransitions : DestinationStyle.Animated {
 
 object ProfileTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
-    return slideIntoContainer(towards = Start) + fadeIn()
+    return slideIntoContainer(
+      towards = Start,
+      animationSpec = tween(slideAnimationTween)
+    ) + fadeIn()
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return fadeOut()
