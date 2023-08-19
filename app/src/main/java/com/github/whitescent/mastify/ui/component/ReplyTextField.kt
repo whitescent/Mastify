@@ -43,11 +43,13 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.viewModel.PostState
@@ -168,10 +170,17 @@ private fun ReplyTextFieldWithToolBar(
       )
       WidthSpacer(value = 4.dp)
       Text(
-        text = targetAccount.realDisplayName,
+        text = buildAnnotatedString {
+          annotateInlineEmojis(
+            targetAccount.realDisplayName,
+            targetAccount.emojis.toShortCode(),
+            this
+          )
+        },
         fontSize = 16.sp,
         fontWeight = FontWeight.Medium,
-        color = AppTheme.colors.primaryContent
+        color = AppTheme.colors.primaryContent,
+        inlineContent = inlineTextContentWithEmoji(targetAccount.emojis),
       )
     }
     BasicTextField(

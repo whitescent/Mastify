@@ -473,6 +473,7 @@ fun StatusActionsRow(
     }
   }
 }
+
 private val statusContentPadding = 12.dp
 private val statusAvatarSize = 40.dp
 private val statusActionsIconSize = 20.dp
