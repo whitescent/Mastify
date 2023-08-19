@@ -55,7 +55,7 @@ class StatusDetailViewModel @Inject constructor(
       api.createStatus(
         idempotencyKey = UUID.randomUUID().toString(),
         status = NewStatus(
-          status = "${navArgs.status.actionableStatus.account.fullname} ${replyField.text}",
+          status = "${navArgs.status.account.fullname} ${replyField.text}",
           warningText = "",
           inReplyToId = navArgs.status.actionableId,
           visibility = "public", // TODO

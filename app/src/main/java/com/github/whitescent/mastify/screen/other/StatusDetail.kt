@@ -163,7 +163,7 @@ fun StatusDetail(
       }
     }
     ReplyTextField(
-      targetAccount = viewModel.navArgs.status.actionableStatus.account,
+      targetAccount = viewModel.navArgs.status.account,
       fieldValue = replyText,
       postState = state.postState,
       onValueChange = viewModel::updateText,
