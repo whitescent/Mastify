@@ -43,9 +43,10 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
+import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
@@ -111,13 +112,14 @@ fun StatusDetailCard(
         )
         WidthSpacer(value = 7.dp)
         Column(modifier = Modifier.weight(1f)) {
-          Text(
+          HtmlText(
             text = status.displayName,
             fontSize = 17.sp,
             fontWeight = FontWeight(550),
             overflow = TextOverflow.Ellipsis,
             color = AppTheme.colors.primaryContent,
             maxLines = 1,
+            inlineContent = inlineTextContentWithEmoji(status.accountEmojis, 17.sp),
           )
           Text(
             text = status.fullname,
@@ -147,9 +149,9 @@ fun StatusDetailCard(
               if (status.content.isNotEmpty()) {
                 HeightSpacer(value = 4.dp)
                 HtmlText(
-                  text = status.content.trimEnd(),
+                  text = status.content,
                   style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-                  linkClicked = { span ->
+                  onClickLink = { span ->
                     launchCustomChromeTab(
                       context = context,
                       uri = Uri.parse(span),
@@ -157,7 +159,8 @@ fun StatusDetailCard(
                     )
                   },
                   overflow = TextOverflow.Ellipsis,
-                  nonLinkClicked = { navigateToDetail() }
+                  onClick = { navigateToDetail() },
+                  inlineContent = inlineTextContentWithEmoji(status.emojis, 16.sp),
                 )
               }
               if (status.attachments.isNotEmpty()) {

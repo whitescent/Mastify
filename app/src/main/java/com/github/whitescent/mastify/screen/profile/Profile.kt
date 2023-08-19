@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -58,16 +60,20 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.annotateInlineEmojis
 import com.github.whitescent.mastify.ui.component.avatarStartPadding
-import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
+import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayout
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememberProfileLayoutState
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -215,10 +221,13 @@ fun ProfileInfo(
     Row(Modifier.fillMaxWidth()) {
       Column(Modifier.weight(1f)) {
         Text(
-          text = account.realDisplayName,
+          text = buildAnnotatedString {
+            annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode(), this)
+          },
           fontSize = 24.sp,
           fontWeight = FontWeight(500),
-          color = AppTheme.colors.primaryContent
+          color = AppTheme.colors.primaryContent,
+          inlineContent = inlineTextContentWithEmoji(account.emojis, 24.sp),
         )
         HeightSpacer(value = 2.dp)
         Text(
@@ -249,6 +258,7 @@ fun ProfileInfo(
     }
     HeightSpacer(value = 8.dp)
     AccountFields(
+      account.emojis,
       account.fields,
       account.followingCount,
       account.followersCount,
@@ -302,6 +312,7 @@ fun ProfileTabs(
 
 @Composable
 fun AccountFields(
+  accountEmojis: List<Emoji>,
   fields: List<Fields>,
   followingCount: Long,
   followersCount: Long,
@@ -319,7 +330,7 @@ fun AccountFields(
   Column(Modifier.fillMaxWidth()) {
     if (fields.isNotEmpty()) {
       fields.forEach {
-        CenterRow {
+        CenterRow(Modifier.fillMaxWidth()) {
           Box(Modifier.width(150.dp), Alignment.CenterStart) {
             CenterRow {
               Text(
@@ -339,13 +350,14 @@ fun AccountFields(
               }
             }
           }
+          Spacer(Modifier.weight(1f).padding(horizontal = 154.dp))
           HtmlText(
             text = it.value,
-            style = TextStyle(
-              fontSize = 16.sp,
-              fontWeight = FontWeight(450),
-              color = AppTheme.colors.primaryContent
-            )
+            maxLines = 1,
+            fontSize = 16.sp,
+            fontWeight = FontWeight(450),
+            overflow = TextOverflow.Ellipsis,
+            inlineContent = inlineTextContentWithEmoji(accountEmojis),
           )
         }
         if (it != fields.last()) HeightSpacer(value = 4.dp)

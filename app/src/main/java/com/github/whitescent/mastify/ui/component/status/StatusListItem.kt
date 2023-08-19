@@ -52,20 +52,25 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.C
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
+import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.AnimatedCountText
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.htmlText.HtmlText
+import com.github.whitescent.mastify.ui.component.annotateInlineEmojis
+import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -172,6 +177,7 @@ fun StatusListItem(
           StatusSource(
             reblogAvatar = status.rebloggedAvatar,
             reblogDisplayName = status.reblogDisplayName,
+            reblogAccountEmojis = status.account.emojis.toImmutableList(),
             navigateToProfile = { navigateToProfile(status.account) }
           )
         }
@@ -183,6 +189,8 @@ fun StatusListItem(
           content = status.content,
           sensitive = status.sensitive,
           spoilerText = status.spoilerText,
+          emojis = status.emojis,
+          accountEmojis = status.accountEmojis,
           attachments = status.attachments,
           repliesCount = status.repliesCount,
           reblogsCount = status.reblogsCount,
@@ -205,6 +213,7 @@ fun StatusListItem(
 fun StatusSource(
   reblogAvatar: String,
   reblogDisplayName: String,
+  reblogAccountEmojis: ImmutableList<Emoji>,
   navigateToProfile: () -> Unit
 ) {
   CenterRow(
@@ -220,14 +229,14 @@ fun StatusSource(
     )
     WidthSpacer(value = 4.dp)
     Text(
-      buildAnnotatedString {
+      text = buildAnnotatedString {
         withStyle(
           SpanStyle(
             color = AppTheme.colors.cardCaption,
             fontSize = AppTheme.typography.statusRepost.fontSize,
           ),
         ) {
-          append(reblogDisplayName)
+          annotateInlineEmojis(reblogDisplayName, reblogAccountEmojis.toShortCode(), this)
         }
         withStyle(
           SpanStyle(
@@ -237,7 +246,8 @@ fun StatusSource(
         ) {
           append(" " + stringResource(id = R.string.post_boosted_format_suffix))
         }
-      }
+      },
+      inlineContent = inlineTextContentWithEmoji(reblogAccountEmojis),
     )
     WidthSpacer(value = 6.dp)
     Image(
@@ -257,6 +267,8 @@ fun StatusContent(
   content: String,
   sensitive: Boolean,
   spoilerText: String,
+  emojis: ImmutableList<Emoji>,
+  accountEmojis: ImmutableList<Emoji>,
   attachments: ImmutableList<Attachment>,
   repliesCount: Int,
   reblogsCount: Int,
@@ -285,11 +297,12 @@ fun StatusContent(
       Column(modifier = Modifier.align(Alignment.Top)) {
         CenterRow {
           Column(modifier = Modifier.weight(1f)) {
-            Text(
+            HtmlText(
               text = displayName,
               style = AppTheme.typography.statusDisplayName,
               overflow = TextOverflow.Ellipsis,
               maxLines = 1,
+              inlineContent = inlineTextContentWithEmoji(accountEmojis),
             )
             Text(
               text = fullname,
@@ -337,10 +350,10 @@ fun StatusContent(
                 if (content.isNotEmpty()) {
                   HeightSpacer(value = 4.dp)
                   HtmlText(
-                    text = content.trimEnd(),
+                    text = content,
                     fontSize = 14.sp,
                     maxLines = 11,
-                    linkClicked = { span ->
+                    onClickLink = { span ->
                       launchCustomChromeTab(
                         context = context,
                         uri = Uri.parse(span),
@@ -348,7 +361,8 @@ fun StatusContent(
                       )
                     },
                     overflow = TextOverflow.Ellipsis,
-                    nonLinkClicked = { navigateToDetail() }
+                    onClick = { navigateToDetail() },
+                    inlineContent = inlineTextContentWithEmoji(emojis, 14.sp),
                   )
                 }
                 if (attachments.isNotEmpty()) {

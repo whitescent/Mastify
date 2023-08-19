@@ -3,7 +3,6 @@ package com.github.whitescent.mastify.ui.component
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,14 +24,12 @@ fun SensitiveBar(
   onClick: () -> Unit,
 ) {
   Surface(
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(90.dp),
+    modifier = Modifier.fillMaxWidth(),
     color = Color(0xFF7E7E7E),
     shape = RoundedCornerShape(10.dp),
     onClick = onClick
   ) {
-    Row(Modifier.padding(24.dp)) {
+    Row(Modifier.padding(20.dp)) {
       Icon(
         painter = painterResource(id = R.drawable.eye_hide),
         contentDescription = null,
@@ -44,12 +41,13 @@ fun SensitiveBar(
         Text(
           text = spoilerText.ifEmpty { stringResource(id = R.string.sensitive_content) },
           color = sensitiveContentColor,
-          fontSize = 18.sp
+          fontSize = 16.sp
         )
+        HeightSpacer(value = 6.dp)
         Text(
           text = "单击以显示内容",
           color = sensitiveContentColor,
-          fontSize = 12.sp
+          fontSize = 14.sp
         )
       }
     }
