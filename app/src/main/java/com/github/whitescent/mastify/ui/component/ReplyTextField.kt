@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -39,6 +40,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,11 +50,13 @@ import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.viewModel.PostState
 
 @Composable
 fun ReplyTextField(
   targetAccount: Account,
   fieldValue: TextFieldValue,
+  postState: PostState,
   onValueChange: (TextFieldValue) -> Unit,
   replyToStatus: () -> Unit
 ) {
@@ -73,10 +77,9 @@ fun ReplyTextField(
             fieldValue = fieldValue,
             focusRequester = focusRequester,
             targetAccount = targetAccount,
+            postState = postState,
             onValueChange = onValueChange,
-            onFocusChanged = { focused ->
-              expand = focused
-            },
+            onFocusChanged = { focused -> expand = focused },
             replyToStatus = replyToStatus
           )
         }
@@ -132,12 +135,14 @@ private fun ReplyTextFieldWithToolBar(
   fieldValue: TextFieldValue,
   focusRequester: FocusRequester,
   targetAccount: Account,
+  postState: PostState,
   onValueChange: (TextFieldValue) -> Unit,
   onFocusChanged: (Boolean) -> Unit,
   replyToStatus: () -> Unit
 ) {
   var isFocused by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
+  val keyboard = LocalSoftwareKeyboardController.current
   Column(
     modifier = Modifier.navigationBarsPadding().padding(horizontal = 12.dp)
   ) {
@@ -210,25 +215,40 @@ private fun ReplyTextFieldWithToolBar(
       )
       Spacer(Modifier.weight(1f))
       IconButton(
-        onClick = { replyToStatus() },
+        onClick = {
+          replyToStatus()
+          keyboard?.hide()
+        },
         enabled = fieldValue.text.isNotEmpty(),
-        // modifier = Modifier.size(24.dp),
         colors = IconButtonDefaults.filledIconButtonColors(
           containerColor = AppTheme.colors.accent,
           contentColor = Color.White,
           disabledContentColor = Color.Gray
         ),
       ) {
-        Icon(
-          painter = painterResource(id = R.drawable.send),
-          contentDescription = null,
-          modifier = Modifier.size(24.dp)
-        )
+        when (postState) {
+          is PostState.Idle, PostState.Success -> {
+            Icon(
+              painter = painterResource(id = R.drawable.send),
+              contentDescription = null,
+              modifier = Modifier.size(24.dp)
+            )
+          }
+          is PostState.Failure -> Unit
+          is PostState.Posting -> {
+            CircularProgressIndicator(color = Color.White, strokeWidth = 4.dp)
+          }
+        }
       }
     }
   }
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
+  }
+  LaunchedEffect(postState) {
+    if (postState is PostState.Success) {
+      focusManager.clearFocus()
+    }
   }
   BackHandler(isFocused) {
     focusManager.clearFocus()

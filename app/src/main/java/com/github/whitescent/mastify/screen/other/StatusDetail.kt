@@ -71,7 +71,7 @@ fun StatusDetail(
 ) {
   val lazyState = rememberLazyListState()
   val state = viewModel.uiState
-  val replyText = viewModel.replyText
+  val replyText = viewModel.replyField
 
   val status = viewModel.navArgs.status.toUiData()
   val avatar = viewModel.navArgs.avatar
@@ -165,6 +165,7 @@ fun StatusDetail(
     ReplyTextField(
       targetAccount = viewModel.navArgs.status.actionableStatus.account,
       fieldValue = replyText,
+      postState = state.postState,
       onValueChange = viewModel::updateText,
       replyToStatus = viewModel::replyToStatus
     )

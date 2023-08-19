@@ -20,6 +20,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -34,7 +35,7 @@ class StatusDetailViewModel @Inject constructor(
 
   val navArgs: StatusDetailNavArgs = savedStateHandle.navArgs()
 
-  var replyText by mutableStateOf(TextFieldValue(""))
+  var replyField by mutableStateOf(TextFieldValue(""))
     private set
 
   var uiState by mutableStateOf(StatusDetailUiState())
@@ -54,7 +55,7 @@ class StatusDetailViewModel @Inject constructor(
       api.createStatus(
         idempotencyKey = UUID.randomUUID().toString(),
         status = NewStatus(
-          status = replyText.text,
+          status = "${navArgs.status.actionableStatus.account.fullname} ${replyField.text}",
           warningText = "",
           inReplyToId = navArgs.status.actionableId,
           visibility = "public", // TODO
@@ -63,11 +64,19 @@ class StatusDetailViewModel @Inject constructor(
           mediaAttributes = null,
           scheduledAt = null,
           poll = null,
-          language = null
-        )
+          language = null,
+        ),
       ).fold(
-        {
-          uiState = uiState.copy(postState = PostState.Success)
+        { status ->
+          uiState = uiState.copy(
+            postState = PostState.Success,
+            descendants = uiState.descendants.toMutableList().also {
+              it.add(0, status.toUiData())
+            }.toImmutableList()
+          )
+          replyField = replyField.copy(text = "")
+          delay(50)
+          uiState = uiState.copy(postState = PostState.Idle)
         },
         {
           it.printStackTrace()
@@ -97,7 +106,7 @@ class StatusDetailViewModel @Inject constructor(
     }
   }
 
-  fun updateText(text: TextFieldValue) { replyText = text }
+  fun updateText(text: TextFieldValue) { replyField = text }
 
   private fun reorderDescendants(descendants: List<Status>): ImmutableList<StatusUiData> {
     if (descendants.isEmpty() || descendants.size == 1)
