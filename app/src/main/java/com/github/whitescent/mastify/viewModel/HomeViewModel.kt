@@ -76,7 +76,12 @@ class HomeViewModel @Inject constructor(
           timelineDao.clearAll(activeAccount.id)
         }
         else -> {
-          if (timelineFlow.value.isNotEmpty()) {
+          if (timelineFlow.value.size < timelineFetchNumber || items.size < timelineFetchNumber) {
+            timelineFlow.emit(items)
+            uiState = uiState.copy(endReached = items.isEmpty())
+            timelineDao.clearAll(activeAccount.id)
+            timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
+          } else {
             val lastStatusInApi = items.last()
             if (timelineFlow.value.any { it.id == lastStatusInApi.id }) {
               val newStatusList = items.filterNot {
@@ -94,10 +99,6 @@ class HomeViewModel @Inject constructor(
               )
               reinsertAllStatus(items + statusListAfterIndex, activeAccount.id)
             }
-          } else {
-            timelineFlow.emit(items)
-            uiState = uiState.copy(endReached = items.isEmpty())
-            timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
           }
         }
       }
