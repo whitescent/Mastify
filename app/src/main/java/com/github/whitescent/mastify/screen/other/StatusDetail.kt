@@ -184,7 +184,7 @@ fun StatusDetail(
       targetAccount = viewModel.navArgs.status.account,
       fieldValue = replyText,
       postState = state.postState,
-      onValueChange = viewModel::updateText,
+      onValueChange = viewModel::updateTextFieldValue,
       replyToStatus = viewModel::replyToStatus,
       openEmojiPicker = { openSheet = true }
     )
@@ -195,8 +195,8 @@ fun StatusDetail(
       emojis = state.instanceEmojis,
       onDismissRequest = { openSheet = false },
       onSelectEmoji = {
-        viewModel.updateText(
-          text = viewModel.replyField.copy(
+        viewModel.updateTextFieldValue(
+          textFieldValue = viewModel.replyField.copy(
             text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
             selection = TextRange(viewModel.replyField.selection.start + it.length + 1)
           )

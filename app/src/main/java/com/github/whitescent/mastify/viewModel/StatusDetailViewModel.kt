@@ -109,7 +109,7 @@ class StatusDetailViewModel @Inject constructor(
     }
   }
 
-  fun updateText(text: TextFieldValue) { replyField = text }
+  fun updateTextFieldValue(textFieldValue: TextFieldValue) { replyField = textFieldValue }
 
   private fun reorderDescendants(descendants: List<Status>): ImmutableList<StatusUiData> {
     if (descendants.isEmpty() || descendants.size == 1)
