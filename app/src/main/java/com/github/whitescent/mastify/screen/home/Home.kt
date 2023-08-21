@@ -1,14 +1,13 @@
 package com.github.whitescent.mastify.screen.home
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -73,7 +72,6 @@ import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
-import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -222,26 +220,14 @@ fun Home(
                 if (uiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
               }
             }
-            AnimatedVisibility(
+            NewStatusToast(
               visible = uiState.showNewStatusButton,
-              enter = slideInVertically(
-                animationSpec = spring(
-                  dampingRatio = Spring.DampingRatioMediumBouncy,
-                  stiffness = Spring.StiffnessMedium
-                ),
-                initialOffsetY = { -250 }
-              ) + fadeIn(tween(400)),
-              exit = slideOutVertically(
-                animationSpec = tween(durationMillis = 200),
-                targetOffsetY = { -150 }
-              ) + fadeOut(),
+              count = uiState.newStatusCount,
               modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp)
             ) {
-              NewStatusToast(uiState.newStatusCount) {
-                scope.launch {
-                  lazyState.scrollToItem(0)
-                  viewModel.dismissButton()
-                }
+              scope.launch {
+                lazyState.scrollToItem(0)
+                viewModel.dismissButton()
               }
             }
             Image(
@@ -276,30 +262,42 @@ fun Home(
 }
 
 @Composable
-private fun NewStatusToast(count: String, onDismiss: () -> Unit) {
-  Surface(
-    shape = CircleShape,
-    color = AppTheme.colors.accent,
-    shadowElevation = 4.dp
+private fun NewStatusToast(
+  visible: Boolean,
+  count: String,
+  modifier: Modifier = Modifier,
+  onDismiss: () -> Unit,
+) {
+  AnimatedVisibility(
+    visible = visible,
+    enter = scaleIn() + fadeIn(tween(400)),
+    exit = scaleOut() + fadeOut(tween(400)),
+    modifier = modifier
   ) {
-    CenterRow(
-      modifier = Modifier
-        .clickable { onDismiss() }
-        .padding(horizontal = 18.dp, vertical = 8.dp),
+    Surface(
+      shape = CircleShape,
+      color = AppTheme.colors.accent,
+      shadowElevation = 4.dp
     ) {
-      Icon(
-        painter = painterResource(id = R.drawable.arrow_up),
-        contentDescription = null,
-        tint = Color.White,
-        modifier = Modifier.size(16.dp)
-      )
-      WidthSpacer(value = 4.dp)
-      Text(
-        text = "$count 条新嘟文",
-        fontSize = 16.sp,
-        color = Color.White,
-        fontWeight = FontWeight(500)
-      )
+      CenterRow(
+        modifier = Modifier
+          .clickable { onDismiss() }
+          .padding(horizontal = 18.dp, vertical = 8.dp),
+      ) {
+        Icon(
+          painter = painterResource(id = R.drawable.arrow_up),
+          contentDescription = null,
+          tint = Color.White,
+          modifier = Modifier.size(16.dp)
+        )
+        WidthSpacer(value = 4.dp)
+        Text(
+          text = "$count 条新嘟文",
+          fontSize = 16.sp,
+          color = Color.White,
+          fontWeight = FontWeight(500)
+        )
+      }
     }
   }
 }
