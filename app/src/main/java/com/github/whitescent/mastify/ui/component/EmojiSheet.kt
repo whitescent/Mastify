@@ -108,7 +108,7 @@ fun EmojiSheet(
                   .crossfade(true)
                   .build(),
                 contentDescription = null,
-                modifier = Modifier.size(32.dp).clickable { onSelectEmoji(":${it.shortcode}:") },
+                modifier = Modifier.size(32.dp).clickable { onSelectEmoji(" :${it.shortcode}: ") },
               )
             }
           }

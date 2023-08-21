@@ -272,12 +272,12 @@ fun ProfileTabs(
   tabs: List<ProfileTabItem>,
   onTabClick: (Int) -> Unit
 ) {
-  var state by remember { mutableIntStateOf(0) }
+  var selectedIndex by remember { mutableIntStateOf(0) }
   TabRow(
-    selectedTabIndex = state,
+    selectedTabIndex = selectedIndex,
     indicator = {
       TabRowDefaults.PrimaryIndicator(
-        modifier = Modifier.tabIndicatorOffset(it[state]),
+        modifier = Modifier.tabIndicatorOffset(it[selectedIndex]),
         width = 40.dp,
         height = 5.dp,
         color = AppTheme.colors.accent
@@ -286,11 +286,11 @@ fun ProfileTabs(
     containerColor = Color.Transparent,
   ) {
     tabs.forEachIndexed { index, tab ->
-      val selected = state == index
+      val selected = selectedIndex == index
       Tab(
         selected = selected,
         onClick = {
-          state = index
+          selectedIndex = index
           onTabClick(index)
         }
       ) {
