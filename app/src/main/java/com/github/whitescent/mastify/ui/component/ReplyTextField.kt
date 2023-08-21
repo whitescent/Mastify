@@ -201,9 +201,6 @@ private fun ReplyTextFieldWithToolBar(
         },
       textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
       cursorBrush = SolidColor(AppTheme.colors.primaryContent),
-      onTextLayout = {
-        // println("layout ${it.layoutInput.}")
-      }
     ) {
       Box {
         if (fieldValue.text.isEmpty()) {
@@ -237,20 +234,22 @@ private fun ReplyTextFieldWithToolBar(
         },
         enabled = fieldValue.text.isNotEmpty(),
         colors = IconButtonDefaults.filledIconButtonColors(
-          containerColor = AppTheme.colors.accent,
+          containerColor = when (postState != PostState.Failure) {
+            true -> AppTheme.colors.accent
+            else -> Color(0xFFF53232)
+          },
           contentColor = Color.White,
           disabledContentColor = Color.Gray
         ),
       ) {
         when (postState) {
-          is PostState.Idle, PostState.Success -> {
+          is PostState.Idle, PostState.Success, PostState.Failure -> {
             Icon(
               painter = painterResource(id = R.drawable.send),
               contentDescription = null,
               modifier = Modifier.size(24.dp)
             )
           }
-          is PostState.Failure -> Unit
           is PostState.Posting -> {
             CircularProgressIndicator(color = Color.White, strokeWidth = 4.dp)
           }
