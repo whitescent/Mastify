@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,10 +59,12 @@ fun ReplyTextField(
   fieldValue: TextFieldValue,
   postState: PostState,
   onValueChange: (TextFieldValue) -> Unit,
-  replyToStatus: () -> Unit
+  replyToStatus: () -> Unit,
+  openEmojiPicker: () -> Unit,
 ) {
-  var expand by rememberSaveable { mutableStateOf(false) }
+  var expand by remember { mutableStateOf(false) }
   val focusRequester = remember { FocusRequester() }
+
   Surface(
     modifier = Modifier.imePadding(),
     color = AppTheme.colors.background,
@@ -82,7 +83,8 @@ fun ReplyTextField(
             postState = postState,
             onValueChange = onValueChange,
             onFocusChanged = { focused -> expand = focused },
-            replyToStatus = replyToStatus
+            replyToStatus = replyToStatus,
+            openEmojiPicker = openEmojiPicker
           )
         }
         else -> {
@@ -140,11 +142,13 @@ private fun ReplyTextFieldWithToolBar(
   postState: PostState,
   onValueChange: (TextFieldValue) -> Unit,
   onFocusChanged: (Boolean) -> Unit,
-  replyToStatus: () -> Unit
+  replyToStatus: () -> Unit,
+  openEmojiPicker: () -> Unit,
 ) {
   var isFocused by remember { mutableStateOf(false) }
   val focusManager = LocalFocusManager.current
   val keyboard = LocalSoftwareKeyboardController.current
+
   Column(
     modifier = Modifier.navigationBarsPadding().padding(horizontal = 12.dp)
   ) {
@@ -196,7 +200,10 @@ private fun ReplyTextFieldWithToolBar(
           isFocused = it.isFocused
         },
       textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-      cursorBrush = SolidColor(AppTheme.colors.primaryContent)
+      cursorBrush = SolidColor(AppTheme.colors.primaryContent),
+      onTextLayout = {
+        // println("layout ${it.layoutInput.}")
+      }
     ) {
       Box {
         if (fieldValue.text.isEmpty()) {
@@ -220,7 +227,7 @@ private fun ReplyTextFieldWithToolBar(
         painter = painterResource(id = R.drawable.emoji),
         tint = AppTheme.colors.cardAction,
         modifier = Modifier.size(24.dp),
-        onClick = { /*TODO*/ }
+        onClick = openEmojiPicker,
       )
       Spacer(Modifier.weight(1f))
       IconButton(
@@ -255,9 +262,7 @@ private fun ReplyTextFieldWithToolBar(
     focusRequester.requestFocus()
   }
   LaunchedEffect(postState) {
-    if (postState is PostState.Success) {
-      focusManager.clearFocus()
-    }
+    if (postState is PostState.Success) focusManager.clearFocus()
   }
   BackHandler(isFocused) {
     focusManager.clearFocus()

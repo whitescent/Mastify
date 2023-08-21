@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.viewModel
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,8 +9,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
@@ -28,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
-  private val api: MastodonApi
+  private val api: MastodonApi,
+  private val instanceRepository: InstanceRepository
 ) : ViewModel() {
 
   private var isInitialLoad = false
@@ -93,6 +95,7 @@ class StatusDetailViewModel @Inject constructor(
         {
           uiState = uiState.copy(
             loading = false,
+            instanceEmojis = instanceRepository.getEmojis().toImmutableList(),
             ancestors = it.ancestors.toUiData().toImmutableList(),
             descendants = reorderDescendants(it.descendants),
           )
@@ -112,7 +115,7 @@ class StatusDetailViewModel @Inject constructor(
     if (descendants.isEmpty() || descendants.size == 1)
       return descendants.toUiData().toImmutableList()
 
-    // remove sub replies
+    // remove some replies that did not reply to the main status
     val replyList = descendants.filter { it.inReplyToId == navArgs.status.actionableId }
     val finalList = mutableListOf<Status>()
 
@@ -140,9 +143,9 @@ class StatusDetailViewModel @Inject constructor(
   }
 }
 
-@Immutable
 data class StatusDetailUiState(
   val loading: Boolean = false,
+  val instanceEmojis: ImmutableList<Emoji> = persistentListOf(),
   val ancestors: ImmutableList<StatusUiData> = persistentListOf(),
   val descendants: ImmutableList<StatusUiData> = persistentListOf(),
   val loadError: Boolean = false,

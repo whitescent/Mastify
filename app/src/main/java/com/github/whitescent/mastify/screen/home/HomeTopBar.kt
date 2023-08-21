@@ -29,7 +29,7 @@ fun HomeTopBar(
       .padding(24.dp)
   ) {
     Icon(
-      painter = painterResource(id = R.drawable.text_logo),
+      painter = painterResource(id = R.drawable.logo_text),
       contentDescription = null,
       tint = AppTheme.colors.primaryContent,
     )

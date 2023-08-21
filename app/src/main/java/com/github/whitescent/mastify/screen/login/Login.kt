@@ -7,6 +7,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -78,9 +79,9 @@ fun Login(
       modifier = Modifier.fillMaxWidth()
     ) {
       Icon(
-        painter = painterResource(id = R.drawable.text_logo),
+        painter = painterResource(id = R.drawable.logo_text),
         contentDescription = null,
-        modifier = Modifier.size(180.dp),
+        modifier = Modifier.size(180.dp).border(5.dp, Color.Red),
         tint = AppTheme.colors.primaryContent
       )
       BasicTextField(
