@@ -31,13 +31,15 @@ fun reorderStatusWithChildren(statusNode: List<StatusNode>): List<StatusNode> {
   val statusNodeWithChildren = statusNode.filter { it.children.isNotEmpty() }
   statusNodeWithChildren.forEach { node ->
     val childWithMaxId = node.children.getMaxRecursively()
+    var insertIndex = -1
     for (index in origin.indices) {
       if (origin[index].contentId < childWithMaxId!!.contentId) {
-        val insertIndex = result.indexOf(origin[index])
+        insertIndex = result.indexOf(origin[index])
         result.add(insertIndex, node)
         break
       }
     }
+    if (insertIndex == -1) result.add(result.size, node)
   }
   return result
 }

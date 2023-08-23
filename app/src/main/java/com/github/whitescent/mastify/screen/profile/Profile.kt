@@ -254,7 +254,7 @@ fun ProfileInfo(
     if (account.note.isNotEmpty()) {
       HeightSpacer(value = 8.dp)
       HtmlText(
-        text = account.note,
+        text = account.noteWithEmoji,
         style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
       )
     }

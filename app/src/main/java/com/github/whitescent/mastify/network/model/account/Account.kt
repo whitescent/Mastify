@@ -2,6 +2,7 @@ package com.github.whitescent.mastify.network.model.account
 
 import androidx.compose.runtime.Stable
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
 import com.github.whitescent.mastify.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -24,6 +25,8 @@ data class Account(
   val fields: List<Fields>,
   val emojis: List<Emoji>
 ) {
+
+  val noteWithEmoji = generateHtmlContentWithEmoji(note, emojis)
 
   val domain get() = FormatFactory.getInstanceName(url)
 

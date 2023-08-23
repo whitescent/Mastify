@@ -39,6 +39,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
+import java.util.regex.Pattern
 
 private const val URL_TAG = "url_tag"
 private const val ID_IMAGE = "image"
@@ -198,6 +199,20 @@ fun annotateInlineEmojis(
       to.append(c)
     }
   }
+}
+
+fun generateHtmlContentWithEmoji(
+  content: String,
+  emojis: List<Emoji>
+): String {
+  var result = content
+  emojis.forEach { (shortcode, url) ->
+    val regex = Pattern.compile(":$shortcode:", Pattern.LITERAL).toRegex()
+    result = result.replace(regex = regex) {
+      "<emoji class=\"emoji\" target=\"$url\">:$shortcode:</emoji>"
+    }
+  }
+  return result
 }
 
 @Composable

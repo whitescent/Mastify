@@ -2,10 +2,9 @@ package com.github.whitescent.mastify.mapper.status
 
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.database.model.TimelineEntity
-import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
 import kotlinx.collections.immutable.toImmutableList
-import java.util.regex.Pattern
 
 fun Status.toUiData(): StatusUiData {
   return StatusUiData(
@@ -42,20 +41,6 @@ fun Status.toUiData(): StatusUiData {
     actionable = this.actionableStatus,
     actionableId = this.actionableStatus.id
   )
-}
-
-private fun generateHtmlContentWithEmoji(
-  content: String,
-  emojis: List<Emoji>
-): String {
-  var result = content
-  emojis.forEach { (shortcode, url) ->
-    val regex = Pattern.compile(":$shortcode:", Pattern.LITERAL).toRegex()
-    result = result.replace(regex = regex) {
-      "<emoji class=\"emoji\" target=\"$url\">:$shortcode:</emoji>"
-    }
-  }
-  return result
 }
 
 fun List<Status>.toEntity(timelineUserId: Long): List<TimelineEntity> {
