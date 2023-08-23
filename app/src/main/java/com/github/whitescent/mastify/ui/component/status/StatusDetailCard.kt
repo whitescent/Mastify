@@ -46,7 +46,6 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
@@ -118,8 +117,7 @@ fun StatusDetailCard(
             fontWeight = FontWeight(550),
             overflow = TextOverflow.Ellipsis,
             color = AppTheme.colors.primaryContent,
-            maxLines = 1,
-            inlineContent = inlineTextContentWithEmoji(status.accountEmojis, 17.sp),
+            maxLines = 1
           )
           Text(
             text = status.fullname,
@@ -151,7 +149,7 @@ fun StatusDetailCard(
                 HtmlText(
                   text = status.content,
                   style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-                  onClickLink = { span ->
+                  onLinkClick = { span ->
                     launchCustomChromeTab(
                       context = context,
                       uri = Uri.parse(span),
@@ -159,8 +157,8 @@ fun StatusDetailCard(
                     )
                   },
                   overflow = TextOverflow.Ellipsis,
-                  onClick = { navigateToDetail() },
-                  inlineContent = inlineTextContentWithEmoji(status.emojis, 16.sp),
+                  // onClick = { navigateToDetail() },
+                  // inlineContent = inlineTextContentWithEmoji(status.emojis, 16.sp),
                 )
               }
               if (status.attachments.isNotEmpty()) {

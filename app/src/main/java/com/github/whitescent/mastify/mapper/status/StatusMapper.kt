@@ -2,8 +2,10 @@ package com.github.whitescent.mastify.mapper.status
 
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.database.model.TimelineEntity
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.collections.immutable.toImmutableList
+import java.util.regex.Pattern
 
 fun Status.toUiData(): StatusUiData {
   return StatusUiData(
@@ -14,15 +16,21 @@ fun Status.toUiData(): StatusUiData {
     avatar = this.reblog?.account?.avatar ?: this.account.avatar,
     application = this.reblog?.application ?: this.application,
     rebloggedAvatar = this.account.avatar,
-    displayName = this.reblog?.account?.displayName?.ifEmpty {
-      this.reblog.account.username
-    } ?: this.account.displayName.ifEmpty { this.account.username },
-    reblogDisplayName = this.account.displayName.ifEmpty { this.account.username },
     fullname = this.reblog?.account?.fullname ?: this.account.fullname,
     createdAt = this.reblog?.createdAt ?: this.createdAt,
     accountEmojis = (this.reblog?.account?.emojis ?: this.account.emojis).toImmutableList(),
     emojis = (this.reblog?.emojis ?: this.emojis).toImmutableList(),
-    content = this.reblog?.content ?: this.content,
+    displayName = generateHtmlContentWithEmoji(
+      this.reblog?.account?.displayName?.ifEmpty {
+        this.reblog.account.username
+      } ?: this.account.displayName.ifEmpty { this.account.username },
+      this.reblog?.account?.emojis ?: account.emojis
+    ),
+    reblogDisplayName = this.account.displayName.ifEmpty { this.account.username },
+    content = generateHtmlContentWithEmoji(
+      content = this.reblog?.content ?: this.content,
+      emojis = this.reblog?.emojis ?: this.emojis
+    ),
     sensitive = this.reblog?.sensitive ?: this.sensitive,
     spoilerText = this.reblog?.spoilerText ?: this.spoilerText,
     attachments = this.reblog?.attachments?.toImmutableList() ?: this.attachments.toImmutableList(),
@@ -34,6 +42,20 @@ fun Status.toUiData(): StatusUiData {
     actionable = this.actionableStatus,
     actionableId = this.actionableStatus.id
   )
+}
+
+private fun generateHtmlContentWithEmoji(
+  content: String,
+  emojis: List<Emoji>
+): String {
+  var result = content
+  emojis.forEach { (shortcode, url) ->
+    val regex = Pattern.compile(":$shortcode:", Pattern.LITERAL).toRegex()
+    result = result.replace(regex = regex) {
+      "<emoji class=\"emoji\" target=\"$url\">:$shortcode:</emoji>"
+    }
+  }
+  return result
 }
 
 fun List<Status>.toEntity(timelineUserId: Long): List<TimelineEntity> {

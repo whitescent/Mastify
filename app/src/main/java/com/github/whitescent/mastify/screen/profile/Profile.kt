@@ -63,7 +63,6 @@ import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
-import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -186,7 +185,7 @@ fun ProfileTopBar(
       enter = scaleIn() + fadeIn(),
       exit = scaleOut() + fadeOut()
     ) {
-      CenterRow(Modifier.statusBarsPadding().padding(start = 24.dp).width(240.dp)) {
+      CenterRow(Modifier.statusBarsPadding().padding(start = 24.dp).width(280.dp)) {
         CircleShapeAsyncImage(
           model = account.avatar,
           modifier = Modifier.size(36.dp)
@@ -194,11 +193,14 @@ fun ProfileTopBar(
         WidthSpacer(value = 8.dp)
         Column {
           Text(
-            text = account.realDisplayName,
+            text = buildAnnotatedString {
+              annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode(), this)
+            },
             fontSize = 18.sp,
             color = Color.White,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            inlineContent = inlineTextContentWithEmoji(account.emojis, 18.sp),
           )
           Text(
             text = "${account.statusesCount} 条嘟文",
@@ -258,7 +260,6 @@ fun ProfileInfo(
     }
     HeightSpacer(value = 8.dp)
     AccountFields(
-      account.emojis,
       account.fields,
       account.followingCount,
       account.followersCount,
@@ -312,7 +313,6 @@ fun ProfileTabs(
 
 @Composable
 fun AccountFields(
-  accountEmojis: List<Emoji>,
   fields: List<Fields>,
   followingCount: Long,
   followersCount: Long,
@@ -356,8 +356,7 @@ fun AccountFields(
             maxLines = 1,
             fontSize = 16.sp,
             fontWeight = FontWeight(450),
-            overflow = TextOverflow.Ellipsis,
-            inlineContent = inlineTextContentWithEmoji(accountEmojis),
+            overflow = TextOverflow.Ellipsis
           )
         }
         if (it != fields.last()) HeightSpacer(value = 4.dp)

@@ -249,8 +249,9 @@ fun StatusDetailContent(
             Column {
               HeightSpacer(value = 8.dp)
               CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
                 color = AppTheme.colors.primaryContent,
-                modifier = Modifier.size(24.dp)
+                strokeWidth = 2.dp
               )
             }
           }
@@ -322,8 +323,9 @@ fun StatusDetailInReply(
             Column {
               HeightSpacer(value = 8.dp)
               CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
                 color = AppTheme.colors.primaryContent,
-                modifier = Modifier.size(24.dp)
+                strokeWidth = 2.dp
               )
             }
           }

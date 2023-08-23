@@ -189,14 +189,11 @@ fun StatusListItem(
           content = status.content,
           sensitive = status.sensitive,
           spoilerText = status.spoilerText,
-          emojis = status.emojis,
-          accountEmojis = status.accountEmojis,
           attachments = status.attachments,
           repliesCount = status.repliesCount,
           reblogsCount = status.reblogsCount,
           favouritesCount = status.favouritesCount,
           favourited = status.favourited,
-          navigateToDetail = { navigateToDetail() },
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
           onClickMedia = {
@@ -249,7 +246,7 @@ fun StatusSource(
       },
       inlineContent = inlineTextContentWithEmoji(reblogAccountEmojis),
     )
-    WidthSpacer(value = 6.dp)
+    WidthSpacer(value = 4.dp)
     Image(
       painter = painterResource(id = R.drawable.reblog),
       contentDescription = null,
@@ -267,14 +264,11 @@ fun StatusContent(
   content: String,
   sensitive: Boolean,
   spoilerText: String,
-  emojis: ImmutableList<Emoji>,
-  accountEmojis: ImmutableList<Emoji>,
   attachments: ImmutableList<Attachment>,
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,
   favourited: Boolean,
-  navigateToDetail: () -> Unit,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   onClickMedia: (Int) -> Unit,
@@ -301,8 +295,7 @@ fun StatusContent(
               text = displayName,
               style = AppTheme.typography.statusDisplayName,
               overflow = TextOverflow.Ellipsis,
-              maxLines = 1,
-              inlineContent = inlineTextContentWithEmoji(accountEmojis),
+              maxLines = 1
             )
             Text(
               text = fullname,
@@ -353,7 +346,7 @@ fun StatusContent(
                     text = content,
                     fontSize = 14.sp,
                     maxLines = 11,
-                    onClickLink = { span ->
+                    onLinkClick = { span ->
                       launchCustomChromeTab(
                         context = context,
                         uri = Uri.parse(span),
@@ -361,8 +354,6 @@ fun StatusContent(
                       )
                     },
                     overflow = TextOverflow.Ellipsis,
-                    onClick = { navigateToDetail() },
-                    inlineContent = inlineTextContentWithEmoji(emojis, 14.sp),
                   )
                 }
                 if (attachments.isNotEmpty()) {
