@@ -27,6 +27,7 @@ kotlinxSerializationJson = "1.5.1"
 kotlinxCollections = "0.3.5"
 kotlinxCoroutines = "1.7.2"
 kotlin = "1.9.0"
+ktsoup = "0.3.0"
 
 agp = "8.2.0-alpha15"
 accompanist = "0.30.1"
@@ -93,6 +94,10 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "coil" }
 coil-svg = { module = "io.coil-kt:coil-svg", version.ref = "coil" }
 coil-video = { module = "io.coil-kt:coil-video", version.ref = "coil" }
+
+
+ktsoup-core = { module = "org.drewcarlson:ktsoup-core", version.ref = "ktsoup" }
+ktsoup-fx = { module = "org.drewcarlson:ktsoup-fs", version.ref = "ktsoup" }
 
 constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 

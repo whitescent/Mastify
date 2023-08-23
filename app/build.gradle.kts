@@ -122,6 +122,9 @@ dependencies {
   implementation(libs.room.paging)
   implementation(libs.room.testing)
 
+  implementation(libs.ktsoup.core)
+  implementation(libs.ktsoup.fx)
+
   implementation(libs.coil)
   implementation(libs.coil.compose)
   implementation(libs.coil.gif)
