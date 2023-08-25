@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.github.whitescent.mastify.extensions.getSizeOfIndex
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
@@ -50,7 +51,8 @@ fun EmojiSheet(
   ModalBottomSheet(
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,
-    windowInsets = WindowInsets(0, WindowInsets.statusBars.getTop(LocalDensity.current), 0, 0)
+    windowInsets = WindowInsets(0, WindowInsets.statusBars.getTop(LocalDensity.current), 0, 0),
+    containerColor = AppTheme.colors.background
   ) {
     val category by remember(emojis) { mutableStateOf(emojis.groupBy { it.category }) }
     Column {
@@ -94,7 +96,8 @@ fun EmojiSheet(
                 text = category,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                color = AppTheme.colors.primaryContent
               )
             }
             items(
