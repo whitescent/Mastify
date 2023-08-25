@@ -194,7 +194,7 @@ fun ProfileTopBar(
         Column {
           Text(
             text = buildAnnotatedString {
-              annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode(), this)
+              annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
             },
             fontSize = 18.sp,
             color = Color.White,
@@ -224,7 +224,7 @@ fun ProfileInfo(
       Column(Modifier.weight(1f)) {
         Text(
           text = buildAnnotatedString {
-            annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode(), this)
+            annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
           },
           fontSize = 24.sp,
           fontWeight = FontWeight(500),

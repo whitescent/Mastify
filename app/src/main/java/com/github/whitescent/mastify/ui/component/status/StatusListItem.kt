@@ -233,7 +233,7 @@ fun StatusSource(
             fontSize = AppTheme.typography.statusRepost.fontSize,
           ),
         ) {
-          annotateInlineEmojis(reblogDisplayName, reblogAccountEmojis.toShortCode(), this)
+          annotateInlineEmojis(reblogDisplayName, reblogAccountEmojis.toShortCode())
         }
         withStyle(
           SpanStyle(

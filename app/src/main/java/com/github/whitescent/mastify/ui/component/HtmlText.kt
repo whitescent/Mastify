@@ -178,10 +178,9 @@ private fun AnnotatedString.Builder.renderEmoji(element: Element) {
 
 private fun skipElement(element: Element): Boolean = element.hasClass("invisible")
 
-fun annotateInlineEmojis(
+fun AnnotatedString.Builder.annotateInlineEmojis(
   text: String,
-  shortcodes: List<String>,
-  to: AnnotatedString.Builder,
+  shortcodes: List<String>
 ) {
   val emojiPositions = emojiRegex.findAll(text).filter { shortcodes.contains(it.value) }
   text.forEachIndexed { index: Int, c: Char ->
@@ -192,12 +191,10 @@ fun annotateInlineEmojis(
     // Account for custom emoji ':' parenthesis
     if (emojiPosition?.range?.first == index) {
       emojiPosition.also {
-        to.appendInlineContent(emojiPosition.value)
+        appendInlineContent(emojiPosition.value)
       }
     }
-    if (emojiPosition == null) {
-      to.append(c)
-    }
+    if (emojiPosition == null) append(c)
   }
 }
 

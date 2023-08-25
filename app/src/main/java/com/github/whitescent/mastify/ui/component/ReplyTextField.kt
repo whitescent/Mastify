@@ -177,8 +177,7 @@ private fun ReplyTextFieldWithToolBar(
         text = buildAnnotatedString {
           annotateInlineEmojis(
             targetAccount.realDisplayName,
-            targetAccount.emojis.toShortCode(),
-            this
+            targetAccount.emojis.toShortCode()
           )
         },
         fontSize = 16.sp,
