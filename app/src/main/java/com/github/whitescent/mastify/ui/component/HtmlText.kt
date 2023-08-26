@@ -67,7 +67,7 @@ fun HtmlText(
     textDecoration = TextDecoration.None
   )
 ) {
-  val document = remember(text) { Jsoup.parse(text.replace("\n", "<br>")) }
+  val document = remember(text) { Jsoup.parse(text) }
   val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
   val value = remember(document) { buildContentAnnotatedString(document, urlSpanStyle, style) }
   Text(
@@ -135,11 +135,7 @@ private fun AnnotatedString.Builder.renderNode(
 ) {
   when (node) {
     is Element -> renderElement(node, urlSpanStyle, textStyle)
-    is TextNode -> {
-      pushStyle(textStyle.toSpanStyle())
-      append(node.wholeText)
-      pop()
-    }
+    is TextNode -> renderText(node.wholeText, textStyle)
   }
 }
 
@@ -159,7 +155,7 @@ private fun AnnotatedString.Builder.renderElement(
       pop()
     }
 
-    "br" -> append("\n")
+    "br" -> renderText("\n", textStyle)
 
     "span", "p" -> {
       element.childNodes().forEach {
@@ -174,6 +170,14 @@ private fun AnnotatedString.Builder.renderElement(
 private fun AnnotatedString.Builder.renderEmoji(element: Element) {
   val emojiHref = element.attr("target")
   appendInlineContent(ID_IMAGE, emojiHref)
+}
+
+private fun AnnotatedString.Builder.renderText(text: String, textStyle: TextStyle) {
+  pushStyle(
+    textStyle.toSpanStyle()
+  )
+  append(text)
+  pop()
 }
 
 private fun skipElement(element: Element): Boolean = element.hasClass("invisible")
