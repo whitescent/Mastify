@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.ui.component.profileCollapsingLayout
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +22,7 @@ fun rememberProfileLayoutState(): ProfileLayoutState {
   }
 }
 
+@Stable
 class ProfileLayoutState(
   initialOffset: Float = 0f,
   initialMaxOffset: Float = 0f,
