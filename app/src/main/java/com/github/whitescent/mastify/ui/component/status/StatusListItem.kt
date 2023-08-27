@@ -221,7 +221,7 @@ fun StatusSource(
     CircleShapeAsyncImage(
       model = reblogAvatar,
       modifier = Modifier.size(24.dp),
-      shape = AppTheme.shape.statusAvatarShape,
+      shape = AppTheme.shape.avatarShape,
       onClick = { navigateToProfile() }
     )
     WidthSpacer(value = 4.dp)
@@ -277,14 +277,16 @@ fun StatusContent(
 ) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
-  var hideSensitiveContent by rememberSaveable(sensitive) { mutableStateOf(sensitive) }
+  var hideSensitiveContent by rememberSaveable(sensitive, spoilerText) {
+    mutableStateOf(sensitive && spoilerText.isNotEmpty())
+  }
 
   Box(modifier = modifier) {
     Row(modifier = Modifier.padding(statusContentPadding)) {
       CircleShapeAsyncImage(
         model = avatar,
         modifier = Modifier.size(statusAvatarSize),
-        shape = AppTheme.shape.statusAvatarShape,
+        shape = AppTheme.shape.avatarShape,
         onClick = { navigateToProfile() }
       )
       WidthSpacer(value = 7.dp)
@@ -344,7 +346,7 @@ fun StatusContent(
                   HeightSpacer(value = 4.dp)
                   HtmlText(
                     text = content,
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     maxLines = 11,
                     onLinkClick = { span ->
                       launchCustomChromeTab(
@@ -367,7 +369,7 @@ fun StatusContent(
             }
           }
         }
-        HeightSpacer(value = 8.dp)
+        HeightSpacer(value = 6.dp)
         StatusActionsRow(
           repliesCount = repliesCount,
           reblogsCount = reblogsCount,

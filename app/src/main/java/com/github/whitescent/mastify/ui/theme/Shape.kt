@@ -6,7 +6,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
 class MastifyShape {
-  val statusAvatarShape @Composable get() = RoundedCornerShape(10.dp)
+  val avatarShape @Composable get() = RoundedCornerShape(10.dp)
 }
 
 val LocalMastifyShape = staticCompositionLocalOf {

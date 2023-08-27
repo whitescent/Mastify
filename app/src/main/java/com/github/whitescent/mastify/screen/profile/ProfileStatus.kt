@@ -16,7 +16,9 @@ import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 
 @Composable
-fun ProfileStatus(accountStatus: LazyPagingItems<StatusUiData>) {
+fun ProfileStatus(
+  accountStatus: LazyPagingItems<StatusUiData>
+) {
   LazyColumn(
     modifier = Modifier.fillMaxSize().padding(bottom = 56.dp),
   ) {

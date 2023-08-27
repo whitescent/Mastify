@@ -62,8 +62,8 @@ fun StatusDetailCard(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
-  var hideSensitiveContent by rememberSaveable(status.sensitive) {
-    mutableStateOf(status.sensitive)
+  var hideSensitiveContent by rememberSaveable(status.sensitive, status.spoilerText) {
+    mutableStateOf(status.sensitive && status.spoilerText.isNotEmpty())
   }
 
   val context = LocalContext.current
@@ -106,7 +106,7 @@ fun StatusDetailCard(
         CircleShapeAsyncImage(
           model = status.avatar,
           modifier = Modifier.size(statusAvatarSize),
-          shape = AppTheme.shape.statusAvatarShape,
+          shape = AppTheme.shape.avatarShape,
           onClick = { navigateToProfile(status.actionable.account) }
         )
         WidthSpacer(value = 7.dp)
@@ -145,7 +145,7 @@ fun StatusDetailCard(
           else -> {
             Column {
               if (status.content.isNotEmpty()) {
-                HeightSpacer(value = 4.dp)
+                HeightSpacer(value = 8.dp)
                 HtmlText(
                   text = status.content,
                   style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
@@ -156,9 +156,7 @@ fun StatusDetailCard(
                       toolbarColor = primaryColor.toArgb(),
                     )
                   },
-                  overflow = TextOverflow.Ellipsis,
-                  // onClick = { navigateToDetail() },
-                  // inlineContent = inlineTextContentWithEmoji(status.emojis, 16.sp),
+                  overflow = TextOverflow.Ellipsis
                 )
               }
               if (status.attachments.isNotEmpty()) {

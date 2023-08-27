@@ -5,6 +5,7 @@ import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
 import kotlinx.collections.immutable.toImmutableList
+import org.jsoup.Jsoup
 
 fun Status.toUiData(): StatusUiData {
   return StatusUiData(
@@ -26,10 +27,10 @@ fun Status.toUiData(): StatusUiData {
       this.reblog?.account?.emojis ?: account.emojis
     ),
     reblogDisplayName = this.account.displayName.ifEmpty { this.account.username },
-    content = generateHtmlContentWithEmoji(
+    content = Jsoup.parse(generateHtmlContentWithEmoji(
       content = this.reblog?.content ?: this.content,
       emojis = this.reblog?.emojis ?: this.emojis
-    ),
+    )).body().html(),
     sensitive = this.reblog?.sensitive ?: this.sensitive,
     spoilerText = this.reblog?.spoilerText ?: this.spoilerText,
     attachments = this.reblog?.attachments?.toImmutableList() ?: this.attachments.toImmutableList(),

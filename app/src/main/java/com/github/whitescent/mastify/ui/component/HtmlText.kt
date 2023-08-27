@@ -62,6 +62,7 @@ fun HtmlText(
     fontSize = fontSize,
     fontWeight = fontWeight
   ),
+  inlineContentSize: TextUnit = 20.sp,
   urlSpanStyle: SpanStyle = SpanStyle(
     color = Color(0xFF0079D3),
     textDecoration = TextDecoration.None
@@ -102,8 +103,8 @@ fun HtmlText(
     inlineContent = mapOf(
       ID_IMAGE to InlineTextContent(
         Placeholder(
-          width = style.fontSize,
-          height = style.fontSize,
+          width = inlineContentSize,
+          height = inlineContentSize,
           placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter
         )
       ) { target ->
@@ -227,8 +228,8 @@ fun inlineTextContentWithEmoji(
         emoji.shortcode,
         InlineTextContent(
           placeholder = Placeholder(
-            width = size.takeOrElse { 14.sp },
-            height = size.takeOrElse { 14.sp },
+            width = size.takeOrElse { 20.sp },
+            height = size.takeOrElse { 20.sp },
             PlaceholderVerticalAlign.TextCenter,
           ),
           children = {

@@ -25,7 +25,7 @@ object AppTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return when (initialState.appDestination()) {
       HomeDestination -> scaleIn(tween(500), initialScale = 0.5f) + fadeIn()
-      StatusDetailDestination, LoginDestination, ProfileDestination -> {
+      LoginDestination, ProfileDestination -> {
         slideIntoContainer(
           towards = End,
           animationSpec = tween(slideAnimationTween)
@@ -152,6 +152,21 @@ object ProfileTransitions : DestinationStyle.Animated {
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return fadeOut()
+  }
+}
+
+object PostTransitions : DestinationStyle.Animated {
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
+    return slideIntoContainer(
+      towards = Start,
+      animationSpec = tween(slideAnimationTween)
+    ) + fadeIn()
+  }
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
+    return slideOutOfContainer(
+      towards = End,
+      animationSpec = tween(slideAnimationTween)
+    )
   }
 }
 

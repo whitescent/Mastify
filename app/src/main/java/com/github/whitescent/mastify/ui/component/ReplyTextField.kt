@@ -51,7 +51,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.viewModel.PostState
+import com.github.whitescent.mastify.utils.PostState
 
 @Composable
 fun ReplyTextField(

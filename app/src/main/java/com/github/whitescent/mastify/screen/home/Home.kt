@@ -69,6 +69,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.N
 import com.github.whitescent.mastify.data.model.ui.getReplyChainType
 import com.github.whitescent.mastify.data.model.ui.hasUnloadedParent
 import com.github.whitescent.mastify.paging.LoadState
+import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -238,7 +239,9 @@ fun Home(
                 .align(Alignment.BottomEnd)
                 .background(AppTheme.colors.primaryGradient, CircleShape)
                 .shadow(6.dp, CircleShape)
-                .clickable { }
+                .clickable {
+                  navigator.navigate(PostDestination)
+                }
                 .padding(16.dp)
             )
           }

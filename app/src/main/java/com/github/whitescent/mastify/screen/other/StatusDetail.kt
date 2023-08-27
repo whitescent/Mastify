@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -27,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -49,6 +48,7 @@ import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
+import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.EmojiSheet
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.ReplyTextField
@@ -85,6 +85,7 @@ fun StatusDetail(
   val lazyState = rememberLazyListState()
   val sheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
+  val keyboard = LocalSoftwareKeyboardController.current
 
   val state = viewModel.uiState
   val replyText = viewModel.replyField
@@ -98,15 +99,13 @@ fun StatusDetail(
   Column(Modifier.fillMaxSize()) {
     Spacer(Modifier.statusBarsPadding())
     CenterRow(Modifier.padding(12.dp)) {
-      IconButton(onClick = { navigator.popBackStack() }) {
-        Icon(
-          painter = painterResource(id = R.drawable.arrow_left),
-          contentDescription = null,
-          modifier = Modifier.size(28.dp),
-          tint = AppTheme.colors.primaryContent
-        )
-      }
-      WidthSpacer(value = 8.dp)
+      ClickableIcon(
+        painter = painterResource(id = R.drawable.arrow_left),
+        onClick = { navigator.popBackStack() },
+        modifier = Modifier.size(28.dp),
+        tint = AppTheme.colors.primaryContent
+      )
+      WidthSpacer(value = 12.dp)
       Text(
         text = stringResource(id = R.string.home_title),
         fontSize = 20.sp,
@@ -114,7 +113,7 @@ fun StatusDetail(
         color = AppTheme.colors.primaryContent,
       )
     }
-    AppHorizontalDivider()
+    AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
     when (threadInReply) {
       true -> {
         StatusDetailInReply(
@@ -198,12 +197,15 @@ fun StatusDetail(
         viewModel.updateTextFieldValue(
           textFieldValue = viewModel.replyField.copy(
             text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
-            selection = TextRange(viewModel.replyField.selection.start + it.length + 1)
+            selection = TextRange(viewModel.replyField.selection.start + it.length)
           )
         )
         scope.launch {
           sheetState.hide()
-        }.invokeOnCompletion { openSheet = false }
+        }.invokeOnCompletion {
+          openSheet = false
+          keyboard?.show()
+        }
       }
     )
   }

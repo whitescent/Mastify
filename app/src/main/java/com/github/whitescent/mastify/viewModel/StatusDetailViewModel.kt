@@ -17,6 +17,7 @@ import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
+import com.github.whitescent.mastify.utils.PostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -151,10 +152,3 @@ data class StatusDetailUiState(
   val loadError: Boolean = false,
   val postState: PostState = PostState.Idle
 )
-
-sealed class PostState {
-  data object Idle : PostState()
-  data object Posting : PostState()
-  data object Success : PostState()
-  data object Failure : PostState()
-}
