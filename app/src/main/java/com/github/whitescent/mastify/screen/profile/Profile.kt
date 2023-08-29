@@ -78,7 +78,6 @@ import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememb
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
 import com.github.whitescent.mastify.utils.AppState
-import com.github.whitescent.mastify.utils.BlurTransformation
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlinx.coroutines.launch
@@ -160,6 +159,7 @@ fun ProfileTopBar(
   account: Account,
   topPadding: Dp,
 ) {
+  val defaultBackgroundColor = AppTheme.colors.accent
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -168,13 +168,13 @@ fun ProfileTopBar(
     AsyncImage(
       model = ImageRequest.Builder(LocalContext.current)
         .data(account.header)
-        .transformations(BlurTransformation(LocalContext.current))
         .build(),
       contentDescription = null,
       modifier = Modifier
         .fillMaxSize()
         .alpha(alpha)
         .drawWithContent {
+          drawRect(defaultBackgroundColor)
           this.drawContent()
           drawRect(Color.Black.copy(0.35f))
         },
