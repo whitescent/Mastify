@@ -38,11 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -52,9 +50,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.C
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
-import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
-import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.AnimatedCountText
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -64,13 +60,10 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.annotateInlineEmojis
-import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -176,10 +169,8 @@ fun StatusListItem(
         status.reblog?.let {
           StatusSource(
             reblogAvatar = status.rebloggedAvatar,
-            reblogDisplayName = status.reblogDisplayName,
-            reblogAccountEmojis = status.account.emojis.toImmutableList(),
-            navigateToProfile = { navigateToProfile(status.account) }
-          )
+            reblogDisplayName = status.reblogDisplayName
+          ) { navigateToProfile(status.account) }
         }
         StatusContent(
           avatar = status.avatar,
@@ -210,7 +201,6 @@ fun StatusListItem(
 fun StatusSource(
   reblogAvatar: String,
   reblogDisplayName: String,
-  reblogAccountEmojis: ImmutableList<Emoji>,
   navigateToProfile: () -> Unit
 ) {
   CenterRow(
@@ -225,26 +215,12 @@ fun StatusSource(
       onClick = { navigateToProfile() }
     )
     WidthSpacer(value = 4.dp)
-    Text(
-      text = buildAnnotatedString {
-        withStyle(
-          SpanStyle(
-            color = AppTheme.colors.cardCaption,
-            fontSize = AppTheme.typography.statusRepost.fontSize,
-          ),
-        ) {
-          annotateInlineEmojis(reblogDisplayName, reblogAccountEmojis.toShortCode())
-        }
-        withStyle(
-          SpanStyle(
-            color = AppTheme.colors.cardCaption60,
-            fontSize = AppTheme.typography.statusRepost.fontSize,
-          ),
-        ) {
-          append(" " + stringResource(id = R.string.post_boosted_format_suffix))
-        }
-      },
-      inlineContent = inlineTextContentWithEmoji(reblogAccountEmojis),
+    HtmlText(
+      text = "$reblogDisplayName " + stringResource(id = R.string.post_boosted_format_suffix),
+      style = TextStyle(
+        color = AppTheme.colors.cardCaption,
+        fontSize = AppTheme.typography.statusRepost.fontSize,
+      )
     )
     WidthSpacer(value = 4.dp)
     Image(

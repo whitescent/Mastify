@@ -21,9 +21,7 @@ fun Status.toUiData(): StatusUiData {
     accountEmojis = (this.reblog?.account?.emojis ?: this.account.emojis).toImmutableList(),
     emojis = (this.reblog?.emojis ?: this.emojis).toImmutableList(),
     displayName = generateHtmlContentWithEmoji(
-      this.reblog?.account?.displayName?.ifEmpty {
-        this.reblog.account.username
-      } ?: this.account.displayName.ifEmpty { this.account.username },
+      this.reblog?.account?.realDisplayName ?: this.account.displayName,
       this.reblog?.account?.emojis ?: account.emojis
     ),
     reblogDisplayName = this.account.displayName.ifEmpty { this.account.username },
