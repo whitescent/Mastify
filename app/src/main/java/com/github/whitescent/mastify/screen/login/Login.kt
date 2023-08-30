@@ -140,7 +140,7 @@ fun Login(
       ) {
         Button(
           onClick = {
-            viewModel.checkInstance { clientId ->
+            viewModel.checkInstance(context) { clientId ->
               launchCustomChromeTab(
                 context = context,
                 uri = Uri.parse(
