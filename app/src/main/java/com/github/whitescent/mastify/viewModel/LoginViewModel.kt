@@ -4,23 +4,15 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
-import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.repository.LoginRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -36,46 +28,33 @@ class LoginViewModel @Inject constructor(
   var uiState by mutableStateOf(LoginUiState())
     private set
 
-  val instance: StateFlow<InstanceUiData?> =
-    snapshotFlow { uiState.text }
-      .debounce(750)
-      .filterNot { it.isEmpty() || instanceLocalError }
-      .map {
-        api.fetchInstanceInfo(it).fold(
-          onSuccess = { instance ->
-            uiState = uiState.copy(isTyping = false)
-            InstanceUiData(
-              instance.title,
-              instance.stats.userCount,
-              instance.thumbnail,
-              instance.shortDescription
-            )
-          },
-          onFailure = {
-            uiState = uiState.copy(isTyping = false)
-            null
-          }
-        )
-      }
-      .stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Eagerly,
-        initialValue = null
-      )
-
   val instanceLocalError by derivedStateOf {
     !loginRepository.isInstanceCorrect(uiState.text)
   }
 
   fun onValueChange(text: String) {
-    uiState = uiState.copy(text = text, isTyping = true)
+    uiState = uiState.copy(text = text)
   }
 
   fun clearInputText() {
-    uiState = uiState.copy(text = "", isTyping = false)
+    uiState = uiState.copy(text = "")
   }
 
-  fun authenticateApp(appName: String, navigateToOauth: (String) -> Unit) {
+  fun checkInstance(navigateToOauth: (String) -> Unit) {
+    viewModelScope.launch {
+      uiState = uiState.copy(loginStatus = LoginStatus.Loading)
+      api.fetchInstanceInfo(uiState.text).fold(
+        onSuccess = { instance ->
+          authenticateApp(instance.title, navigateToOauth)
+        },
+        onFailure = {
+          uiState = uiState.copy(loginStatus = LoginStatus.Failure)
+        }
+      )
+    }
+  }
+
+  private fun authenticateApp(appName: String, navigateToOauth: (String) -> Unit) {
     viewModelScope.launch(Dispatchers.IO) {
       loginRepository.authenticateApp(uiState.text, appName)
         .fold(
@@ -84,6 +63,7 @@ class LoginViewModel @Inject constructor(
             uiState = uiState.copy(authenticateError = false)
             withContext(Dispatchers.Main) {
               navigateToOauth(it.clientId)
+              uiState = uiState.copy(loginStatus = LoginStatus.Idle)
             }
           },
           onFailure = {
@@ -97,6 +77,12 @@ class LoginViewModel @Inject constructor(
 
 data class LoginUiState(
   val text: String = "",
-  val isTyping: Boolean = false,
-  val authenticateError: Boolean = false
+  val authenticateError: Boolean = false,
+  val loginStatus: LoginStatus = LoginStatus.Idle
 )
+
+sealed class LoginStatus {
+  data object Idle : LoginStatus()
+  data object Loading : LoginStatus()
+  data object Failure : LoginStatus()
+}

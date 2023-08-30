@@ -1,9 +1,8 @@
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
-  <string name="instance_address">实例地址</string>
   <string name="instance_address_tip">您所在的实例地址是什么？</string>
-  <string name="users_of_instance">实例人数</string>
+  <string name="log_in_to">登录到 %s</string>
   <string name="failed_to_retrieve_instance">获取实例信息失败</string>
   <string name="instance_verification_error">验证实例时出现错误</string>
 
