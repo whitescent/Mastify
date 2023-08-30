@@ -12,12 +12,10 @@ import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-@OptIn(FlowPreview::class)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
   private val preferenceRepository: PreferenceRepository,
