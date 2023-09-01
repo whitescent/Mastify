@@ -19,9 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
@@ -240,7 +238,7 @@ fun AppDrawer(
               color = AppTheme.colors.primaryContent,
             )
           }
-          Divider(thickness = 0.5.dp)
+          AppHorizontalDivider()
         }
       }
       HeightSpacer(value = 8.dp)
@@ -259,7 +257,7 @@ fun AppDrawer(
 fun DrawerMenu() {
   AppDrawerMenu.values().forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
-      HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
+      AppHorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
     }
     DrawerMenuItem(it.icon, it.redId) { }
   }
