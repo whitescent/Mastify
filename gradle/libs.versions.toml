@@ -8,6 +8,7 @@ androidxTestEspresso = "3.5.1"
 androidxNavigation = "2.7.0"
 androidxHilt = "1.0.0"
 androidxStartup = "1.1.1"
+androidxMedia3 = "1.1.1"
 androidxBrowser = "1.6.0"
 androidDesugar = "2.0.3"
 
@@ -32,6 +33,7 @@ ktsoup = "0.3.0"
 agp = "8.2.0-alpha15"
 accompanist = "0.30.1"
 coil = "2.4.0"
+media = "0.4.0"
 mmkv = "1.2.15"
 mockk = "1.13.5"
 mockitoKotlin = "5.0.0"
@@ -55,6 +57,8 @@ junitKtx = "1.1.5"
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
 androidx-browser = { module = "androidx.browser:browser", version.ref = "androidxBrowser" }
+androidx-media3 = { module = "androidx.media3:media3-exoplayer", version.ref = "androidxMedia3" }
+androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "androidxMedia3" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
 androidx-compose-ui-util = { module = "androidx.compose.ui:ui-util", version.ref = "compose" }
 androidx-compose-material = { module = "androidx.compose.material:material", version.ref = "compose" }
@@ -118,6 +122,7 @@ mockk = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 mockk-agent = { module = "io.mockk:mockk-agent", version.ref = "mockk" }
 
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+compose-media = { module = "com.github.fengdai.compose:media", version.ref = "media" }
 zoomable = { module = "com.mxalbert.zoomable:zoomable", version.ref = "zoomable" }
 lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
 leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }

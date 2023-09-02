@@ -49,7 +49,20 @@ data class Status(
     val type: String,
     @SerialName("preview_url") val previewUrl: String?,
     val blurhash: String?,
+    val meta: Meta?
   )
+
+  @Serializable
+  data class Meta(
+    val original: Original,
+  ) {
+    @Serializable
+    data class Original(
+      val duration: Float?,
+      val width: Int = 0,
+      val height: Int = 0,
+    )
+  }
 
   @Serializable
   data class Mention(

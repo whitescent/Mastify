@@ -74,6 +74,7 @@ dependencies {
 
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.browser)
+  implementation(libs.androidx.media3)
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.util)
   implementation(libs.androidx.compose.material)
@@ -90,6 +91,7 @@ dependencies {
   implementation(libs.androidx.paging.runtime)
   implementation(libs.androidx.monitor)
   implementation(libs.androidx.junit.ktx)
+  implementation(libs.androidx.media3.ui)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.espresso.core)
@@ -129,6 +131,7 @@ dependencies {
   implementation(libs.coil.compose)
   implementation(libs.coil.gif)
   implementation(libs.coil.video)
+  implementation(libs.compose.media)
   implementation(libs.compose.destinations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
