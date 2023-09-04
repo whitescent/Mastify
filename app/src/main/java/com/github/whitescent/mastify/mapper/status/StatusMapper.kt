@@ -9,36 +9,39 @@ import org.jsoup.Jsoup
 
 fun Status.toUiData(): StatusUiData {
   return StatusUiData(
-    id = this.id,
-    reblog = this.reblog,
-    account = this.account,
-    accountId = this.account.id,
-    avatar = this.reblog?.account?.avatar ?: this.account.avatar,
-    application = this.reblog?.application ?: this.application,
-    rebloggedAvatar = this.account.avatar,
-    fullname = this.reblog?.account?.fullname ?: this.account.fullname,
-    createdAt = this.reblog?.createdAt ?: this.createdAt,
-    accountEmojis = (this.reblog?.account?.emojis ?: this.account.emojis).toImmutableList(),
-    emojis = (this.reblog?.emojis ?: this.emojis).toImmutableList(),
+    id = id,
+    reblog = reblog,
+    account = account,
+    link = actionableStatus.uri,
+    accountId = account.id,
+    avatar = reblog?.account?.avatar ?: account.avatar,
+    application = reblog?.application ?: application,
+    reblogged = reblog?.reblogged ?: reblogged,
+    bookmarked = reblog?.bookmarked ?: bookmarked,
+    rebloggedAvatar = account.avatar,
+    fullname = reblog?.account?.fullname ?: account.fullname,
+    createdAt = reblog?.createdAt ?: createdAt,
+    accountEmojis = (reblog?.account?.emojis ?: account.emojis).toImmutableList(),
+    emojis = (reblog?.emojis ?: emojis).toImmutableList(),
     displayName = generateHtmlContentWithEmoji(
-      this.reblog?.account?.realDisplayName ?: this.account.displayName,
-      this.reblog?.account?.emojis ?: account.emojis
+      reblog?.account?.realDisplayName ?: account.realDisplayName,
+      reblog?.account?.emojis ?: account.emojis
     ),
-    reblogDisplayName = this.account.displayName.ifEmpty { this.account.username },
+    reblogDisplayName = generateHtmlContentWithEmoji(account.realDisplayName, account.emojis),
     content = Jsoup.parse(generateHtmlContentWithEmoji(
-      content = this.reblog?.content ?: this.content,
-      emojis = this.reblog?.emojis ?: this.emojis
+      content = reblog?.content ?: content,
+      emojis = reblog?.emojis ?: emojis
     )).body().html(),
-    sensitive = this.reblog?.sensitive ?: this.sensitive,
-    spoilerText = this.reblog?.spoilerText ?: this.spoilerText,
-    attachments = this.reblog?.attachments?.toImmutableList() ?: this.attachments.toImmutableList(),
-    repliesCount = this.reblog?.repliesCount ?: this.repliesCount,
-    reblogsCount = this.reblog?.reblogsCount ?: this.reblogsCount,
-    favouritesCount = this.reblog?.favouritesCount ?: this.favouritesCount,
-    favourited = this.reblog?.favourited ?: this.favourited,
-    inReplyToId = this.reblog?.inReplyToId ?: this.inReplyToId,
-    actionable = this.actionableStatus,
-    actionableId = this.actionableStatus.id
+    sensitive = reblog?.sensitive ?: sensitive,
+    spoilerText = reblog?.spoilerText ?: spoilerText,
+    attachments = reblog?.attachments?.toImmutableList() ?: attachments.toImmutableList(),
+    repliesCount = reblog?.repliesCount ?: repliesCount,
+    reblogsCount = reblog?.reblogsCount ?: reblogsCount,
+    favouritesCount = reblog?.favouritesCount ?: favouritesCount,
+    favourited = reblog?.favourited ?: favourited,
+    inReplyToId = reblog?.inReplyToId ?: inReplyToId,
+    actionable = actionableStatus,
+    actionableId = actionableStatus.id
   )
 }
 
@@ -64,6 +67,7 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     inReplyToId = inReplyToId,
     inReplyToAccountId = inReplyToAccountId,
     reblogged = reblogged,
+    bookmarked = bookmarked,
     reblog = reblog,
     content = content,
     emojis = emojis,

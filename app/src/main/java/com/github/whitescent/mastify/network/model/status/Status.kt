@@ -22,6 +22,7 @@ data class Status(
   @SerialName("in_reply_to_id") val inReplyToId: String?,
   @SerialName("in_reply_to_account_id") val inReplyToAccountId: String?,
   val reblogged: Boolean,
+  val bookmarked: Boolean,
   val reblog: Status?,
   val content: String,
   val account: Account,

@@ -122,7 +122,7 @@ fun StatusMediaItem(
   onClick: (() -> Unit)? = null
 ) {
   when (MediaType.fromString(media.type)) {
-    MediaType.IMAGE, MediaType.GIF -> {
+    MediaType.IMAGE -> {
       AsyncBlurImage(
         url = media.url,
         blurHash = media.blurhash ?: "",
@@ -135,7 +135,7 @@ fun StatusMediaItem(
           }
       )
     }
-    MediaType.VIDEO -> {
+    MediaType.VIDEO, MediaType.GIF -> {
       // show thumbnail
       Box(
         modifier = modifier

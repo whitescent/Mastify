@@ -45,6 +45,7 @@ fun LazyListScope.statusComment(
         val replyChainType = remember(item) { descendants.getReplyChainType(index) }
         StatusListItem(
           status = item,
+          menuAction = { },
           replyChainType = replyChainType,
           hasUnloadedParent = false,
           favouriteStatus = { favouriteStatus(item.actionableId) },

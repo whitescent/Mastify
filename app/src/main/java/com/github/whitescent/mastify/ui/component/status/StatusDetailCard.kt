@@ -145,7 +145,7 @@ fun StatusDetailCard(
           else -> {
             Column {
               if (status.content.isNotEmpty()) {
-                HeightSpacer(value = 8.dp)
+                HeightSpacer(value = 4.dp)
                 HtmlText(
                   text = status.content,
                   style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),

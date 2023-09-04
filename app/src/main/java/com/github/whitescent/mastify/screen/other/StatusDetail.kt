@@ -305,6 +305,7 @@ fun StatusDetailInReply(
       } else {
         StatusListItem(
           status = repliedStatus,
+          menuAction = { },
           replyChainType = if (index == 0) Start else Continue,
           hasUnloadedParent = false,
           favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },

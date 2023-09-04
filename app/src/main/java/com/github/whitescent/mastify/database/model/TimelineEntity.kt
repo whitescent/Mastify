@@ -40,6 +40,7 @@ data class TimelineEntity(
   @ColumnInfo val editedAt: String?,
   @ColumnInfo val favourited: Boolean,
   @ColumnInfo val reblogged: Boolean,
+  @ColumnInfo val bookmarked: Boolean,
   @ColumnInfo val reblog: Status?,
   @ColumnInfo val content: String,
   @ColumnInfo val account: Account,

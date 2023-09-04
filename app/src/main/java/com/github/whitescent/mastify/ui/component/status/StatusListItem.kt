@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -41,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -63,6 +65,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.viewModel.StatusMenuAction
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
@@ -73,6 +76,7 @@ fun StatusListItem(
   replyChainType: ReplyChainType,
   hasUnloadedParent: Boolean,
   modifier: Modifier = Modifier,
+  menuAction: (StatusMenuAction) -> Unit,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   navigateToDetail: () -> Unit,
@@ -183,6 +187,7 @@ fun StatusListItem(
           attachments = status.attachments,
           repliesCount = status.repliesCount,
           reblogsCount = status.reblogsCount,
+          menuAction = menuAction,
           favouritesCount = status.favouritesCount,
           favourited = status.favourited,
           favouriteStatus = favouriteStatus,
@@ -245,6 +250,7 @@ fun StatusContent(
   reblogsCount: Int,
   favouritesCount: Int,
   favourited: Boolean,
+  menuAction: (StatusMenuAction) -> Unit,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
   onClickMedia: (Int) -> Unit,
@@ -256,6 +262,8 @@ fun StatusContent(
   var hideSensitiveContent by rememberSaveable(sensitive, spoilerText) {
     mutableStateOf(sensitive && spoilerText.isNotEmpty())
   }
+  var openMenu by remember { mutableStateOf(false) }
+  var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
   Box(modifier = modifier) {
     Row(modifier = Modifier.padding(statusContentPadding)) {
@@ -285,27 +293,43 @@ fun StatusContent(
             )
           }
           WidthSpacer(value = 4.dp)
-          CenterRow {
-            Text(
-              text = remember(createdAt) {
-                getRelativeTimeSpanString(
-                  context,
-                  createdAt.toInstant().toEpochMilliseconds(),
-                  Clock.System.now().toEpochMilliseconds()
-                )
-              },
-              style = AppTheme.typography.statusUsername.copy(
-                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-              ),
-              overflow = TextOverflow.Ellipsis,
-              maxLines = 1,
-            )
-            WidthSpacer(value = 4.dp)
-            ClickableIcon(
-              painter = painterResource(id = R.drawable.more),
-              tint = AppTheme.colors.cardMenu,
-              modifier = Modifier.size(18.dp),
-            )
+          Column {
+            CenterRow {
+              Text(
+                text = remember(createdAt) {
+                  getRelativeTimeSpanString(
+                    context,
+                    createdAt.toInstant().toEpochMilliseconds(),
+                    Clock.System.now().toEpochMilliseconds()
+                  )
+                },
+                style = AppTheme.typography.statusUsername.copy(
+                  color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+                ),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+              )
+              WidthSpacer(value = 4.dp)
+              ClickableIcon(
+                painter = painterResource(id = R.drawable.more),
+                tint = AppTheme.colors.cardMenu,
+                modifier = Modifier
+                  .size(18.dp)
+                  .onSizeChanged {
+                    pressOffset = IntOffset(x = -it.width, y = it.height)
+                  },
+                onClick = { openMenu = true }
+              )
+            }
+            StatusDropdownMenu(
+              expanded = openMenu,
+              fullname = fullname,
+              offset = pressOffset,
+              onDismissRequest = { openMenu = false },
+            ) {
+              menuAction(it)
+              openMenu = false
+            }
           }
         }
         Crossfade(hideSensitiveContent) {

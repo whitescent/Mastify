@@ -30,6 +30,7 @@ fun ProfileStatus(
       accountStatus[it]?.let { status ->
         StatusListItem(
           status = status,
+          menuAction = { },
           replyChainType = Null,
           hasUnloadedParent = false,
           favouriteStatus = { /*TODO*/ },

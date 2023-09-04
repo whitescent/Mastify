@@ -161,6 +161,7 @@ fun Post(
     AppHorizontalDivider()
     PostToolBar(
       modifier = Modifier.padding(12.dp),
+      enabledPostButton = viewModel.postTextField.text.isNotEmpty(),
       postState = state.postState,
       postStatus = viewModel::postStatus
     ) {
@@ -205,6 +206,7 @@ fun Post(
 @Composable
 fun PostToolBar(
   modifier: Modifier = Modifier,
+  enabledPostButton: Boolean,
   postState: PostState,
   postStatus: () -> Unit,
   openEmojiPicker: () -> Unit,
@@ -250,7 +252,9 @@ fun PostToolBar(
           else -> Color(0xFFF53232)
         },
         contentColor = Color.White,
-      )
+        disabledContentColor = Color.Gray
+      ),
+      enabled = enabledPostButton
     ) {
       when (postState) {
         is PostState.Idle, PostState.Success, PostState.Failure -> {

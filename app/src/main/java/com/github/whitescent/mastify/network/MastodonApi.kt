@@ -72,6 +72,16 @@ interface MastodonApi {
     @Path("id") statusId: String
   ): NetworkResult<Status>
 
+  @POST("api/v1/statuses/{id}/bookmark")
+  suspend fun bookmarkStatus(
+    @Path("id") statusId: String,
+  ): NetworkResult<Status>
+
+  @POST("api/v1/statuses/{id}/unbookmark")
+  suspend fun unbookmarkStatus(
+    @Path("id") statusId: String,
+  ): NetworkResult<Status>
+
   @POST("api/v1/statuses")
   suspend fun createStatus(
     @Header("Idempotency-Key") idempotencyKey: String,
@@ -97,6 +107,29 @@ interface MastodonApi {
   suspend fun account(
     @Path("id") accountId: String
   ): NetworkResult<Account>
+
+  @POST("api/v1/accounts/{id}/block")
+  suspend fun blockAccount(
+    @Path("id") accountId: String,
+  ): NetworkResult<Relationship>
+
+  @POST("api/v1/accounts/{id}/unblock")
+  suspend fun unblockAccount(
+    @Path("id") accountId: String,
+  ): NetworkResult<Relationship>
+
+  @FormUrlEncoded
+  @POST("api/v1/accounts/{id}/mute")
+  suspend fun muteAccount(
+    @Path("id") accountId: String,
+    @Field("notifications") notifications: Boolean? = null,
+    @Field("duration") duration: Int? = null,
+  ): NetworkResult<Relationship>
+
+  @POST("api/v1/accounts/{id}/unmute")
+  suspend fun unmuteAccount(
+    @Path("id") accountId: String,
+  ): NetworkResult<Relationship>
 
   @GET("api/v1/accounts/relationships")
   suspend fun relationships(

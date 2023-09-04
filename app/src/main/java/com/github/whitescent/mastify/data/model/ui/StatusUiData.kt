@@ -10,15 +10,19 @@ import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.collections.immutable.ImmutableList
+import org.jsoup.Jsoup
 
 @Immutable
 data class StatusUiData(
   val id: String,
   val reblog: Status?,
+  val link: String,
   val accountId: String,
   val avatar: String,
   val account: Account,
   val application: Status.Application?,
+  val reblogged: Boolean,
+  val bookmarked: Boolean,
   val rebloggedAvatar: String,
   val displayName: String,
   val content: String,
@@ -39,7 +43,7 @@ data class StatusUiData(
   val inReplyToId: String?,
 ) {
   val itemType = "status"
-
+  val parsedContent: String = Jsoup.parse(content).body().text()
   val isInReplyTo inline get() = inReplyToId != null
 
   enum class ReplyChainType {

@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.viewModel
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -123,6 +124,13 @@ class HomeViewModel @Inject constructor(
 
   fun unfavoriteStatus(id: String) = viewModelScope.launch { api.unfavouriteStatus(id) }
 
+  fun bookmarkStatus(id: String) = viewModelScope.launch { api.bookmarkStatus(id) }
+
+  fun muteAccount(accountId: String, notifications: Boolean = false, duration: Int? = null) =
+    viewModelScope.launch { api.muteAccount(accountId, notifications, duration) }
+
+  fun blockAccount(accountId: String) = viewModelScope.launch { api.blockAccount(accountId) }
+
   fun dismissButton() {
     uiState = uiState.copy(showNewStatusButton = false)
   }
@@ -150,3 +158,12 @@ data class HomeUiState(
   val endReached: Boolean = false,
   val timelineLoadState: LoadState = LoadState.NotLoading
 )
+
+@Stable
+sealed interface StatusMenuAction {
+  data object CopyText : StatusMenuAction
+  data object CopyLink : StatusMenuAction
+  data object Bookmark : StatusMenuAction
+  data object Mute : StatusMenuAction
+  data object Block : StatusMenuAction
+}
