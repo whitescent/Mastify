@@ -166,4 +166,5 @@ sealed interface StatusMenuAction {
   data object Bookmark : StatusMenuAction
   data object Mute : StatusMenuAction
   data object Block : StatusMenuAction
+  data object Report : StatusMenuAction // TODO
 }

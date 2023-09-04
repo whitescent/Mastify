@@ -82,6 +82,8 @@ import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
+import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
+import com.github.whitescent.mastify.ui.component.status.StatusSnackBarType
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.utils.AppState
@@ -112,6 +114,8 @@ fun Home(
     }
   }
   var refreshing by remember { mutableStateOf(false) }
+  var showSnackBar by remember { mutableStateOf(false) }
+  var snackBarType by remember { mutableStateOf(StatusSnackBarType.TEXT) }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val clipboard = LocalClipboardManager.current
@@ -178,14 +182,23 @@ fun Home(
                   hasUnloadedParent = hasUnloadedParent,
                   menuAction = {
                     when (it) {
-                      is StatusMenuAction.CopyText ->
+                      is StatusMenuAction.CopyText -> {
                         clipboard.setText(AnnotatedString(status.parsedContent))
-                      is StatusMenuAction.CopyLink ->
+                        snackBarType = StatusSnackBarType.TEXT
+                      }
+                      is StatusMenuAction.CopyLink -> {
                         clipboard.setText(AnnotatedString(status.link))
-                      is StatusMenuAction.Bookmark -> viewModel.bookmarkStatus(status.actionableId)
+                        snackBarType = StatusSnackBarType.LINK
+                      }
+                      is StatusMenuAction.Bookmark -> {
+                        viewModel.bookmarkStatus(status.actionableId)
+                        snackBarType = StatusSnackBarType.BOOKMARK
+                      }
                       is StatusMenuAction.Mute -> viewModel.muteAccount(status.actionable.account.id)
                       is StatusMenuAction.Block -> viewModel.blockAccount(status.actionable.account.id)
+                      else -> Unit
                     }
+                    showSnackBar = true
                   },
                   favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
                   unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
@@ -207,7 +220,7 @@ fun Home(
                       ProfileDestination(it)
                     )
                   },
-                  modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                  modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 )
                 if (replyChainType == End || replyChainType == Null) AppHorizontalDivider()
               }
@@ -246,19 +259,26 @@ fun Home(
                 viewModel.dismissButton()
               }
             }
-            Image(
-              painter = painterResource(id = R.drawable.edit),
-              contentDescription = null,
-              modifier = Modifier
-                .padding(24.dp)
-                .align(Alignment.BottomEnd)
-                .background(AppTheme.colors.primaryGradient, CircleShape)
-                .shadow(6.dp, CircleShape)
-                .clickable {
-                  navigator.navigate(PostDestination)
-                }
-                .padding(16.dp)
-            )
+            Column(Modifier.align(Alignment.BottomEnd)) {
+              Image(
+                painter = painterResource(id = R.drawable.edit),
+                contentDescription = null,
+                modifier = Modifier
+                  .padding(24.dp)
+                  .align(Alignment.End)
+                  .background(AppTheme.colors.primaryGradient, CircleShape)
+                  .shadow(6.dp, CircleShape)
+                  .clickable {
+                    navigator.navigate(PostDestination)
+                  }
+                  .padding(16.dp)
+              )
+              StatusSnackBar(
+                show = showSnackBar,
+                snackBarType = snackBarType,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+              ) { showSnackBar = false }
+            }
           }
         }
       }

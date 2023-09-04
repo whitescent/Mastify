@@ -26,6 +26,9 @@
   <string name="reply_a_post">回复了一个嘟文</string>
   <string name="started_a_discussion_thread">展开了一个讨论串</string>
   <string name="show_more_replies">显示更多回复</string>
+  <string name="text_copied">文本内容已复制到剪贴板</string>
+  <string name="link_copied">嘟文链接已复制到剪贴板</string>
+  <string name="bookmarked_snackBar">已收藏到你的书签</string>
 
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>

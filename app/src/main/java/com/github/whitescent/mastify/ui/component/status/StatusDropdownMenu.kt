@@ -36,19 +36,22 @@ import com.github.whitescent.mastify.viewModel.StatusMenuAction
 fun StatusDropdownMenu(
   expanded: Boolean,
   fullname: String,
+  enableCopyText: Boolean,
   modifier: Modifier = Modifier,
   offset: IntOffset = IntOffset.Zero,
   onDismissRequest: () -> Unit,
   actionHandler: (StatusMenuAction) -> Unit
 ) {
   if (expanded) {
-    val actions = listOf(
-      MenuAction("复制文本内容", R.drawable.copy, StatusMenuAction.CopyText),
-      MenuAction("复制链接", R.drawable.link_simple, StatusMenuAction.CopyLink),
-      MenuAction("添加到书签", R.drawable.bookmark_simple, StatusMenuAction.Bookmark),
-      MenuAction("隐藏 $fullname", R.drawable.eye_hide, StatusMenuAction.Mute),
-      MenuAction("屏蔽 $fullname", R.drawable.block, StatusMenuAction.Block),
-    )
+    val actions = mutableListOf<MenuAction>().apply {
+      if (enableCopyText)
+        add(MenuAction("复制文本内容", R.drawable.copy, StatusMenuAction.CopyText))
+      add(MenuAction("复制链接", R.drawable.link_simple, StatusMenuAction.CopyLink))
+      add(MenuAction("添加到书签", R.drawable.bookmark_simple, StatusMenuAction.Bookmark))
+      add(MenuAction("隐藏 $fullname", R.drawable.eye_hide, StatusMenuAction.Mute))
+      add(MenuAction("屏蔽 $fullname", R.drawable.block, StatusMenuAction.Block))
+      add(MenuAction("举报", R.drawable.report, StatusMenuAction.Report))
+    }
     Popup(
       onDismissRequest = onDismissRequest,
       properties = PopupProperties(true),

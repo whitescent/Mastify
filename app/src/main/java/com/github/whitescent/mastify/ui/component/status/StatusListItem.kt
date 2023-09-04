@@ -323,6 +323,7 @@ fun StatusContent(
             }
             StatusDropdownMenu(
               expanded = openMenu,
+              enableCopyText = content.isNotEmpty(),
               fullname = fullname,
               offset = pressOffset,
               onDismissRequest = { openMenu = false },

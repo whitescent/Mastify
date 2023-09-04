@@ -26,6 +26,9 @@
   <string name="reply_a_post">replied a post</string>
   <string name="started_a_discussion_thread">started a discussion thread</string>
   <string name="show_more_replies">Show more replies</string>
+  <string name="text_copied">Text copied to clipboard</string>
+  <string name="link_copied">Post link copied to clipboard</string>
+  <string name="bookmarked_snackBar">Saved to your bookmarks</string>
 
   <!-- status detail screen -->
   <string name="post_your_reply">post your reply</string>
