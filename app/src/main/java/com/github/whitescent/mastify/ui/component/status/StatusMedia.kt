@@ -135,7 +135,7 @@ fun StatusMediaItem(
           }
       )
     }
-    MediaType.VIDEO, MediaType.GIF -> {
+    MediaType.VIDEO -> {
       // show thumbnail
       Box(
         modifier = modifier
@@ -163,13 +163,12 @@ fun StatusMediaItem(
 }
 
 enum class MediaType {
-  IMAGE, VIDEO, GIF, NULL;
+  IMAGE, VIDEO, NULL;
   companion object {
     fun fromString(type: String): MediaType {
       return when (type) {
         "image" -> IMAGE
-        "video" -> VIDEO
-        "gifv" -> GIF
+        "video", "gifv" -> VIDEO
         else -> NULL
       }
     }

@@ -77,7 +77,7 @@ fun StatusSnackBar(
       }
     }
   }
-  LaunchedEffect(show) {
+  LaunchedEffect(show, snackBarType) {
     if (show) {
       delay(2500)
       visible = false

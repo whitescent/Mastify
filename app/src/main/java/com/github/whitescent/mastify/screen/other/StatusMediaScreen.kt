@@ -81,7 +81,7 @@ fun StatusMediaScreen(
           }
         ) {
           when (MediaType.fromString(mediaItem.type)) {
-            MediaType.IMAGE, MediaType.GIF -> {
+            MediaType.IMAGE -> {
               val painter = rememberAsyncImagePainter(
                 model = ImageRequest.Builder(LocalContext.current)
                   .data(mediaItem.url)
@@ -111,7 +111,7 @@ fun StatusMediaScreen(
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                   }
                 },
-                surfaceType = SurfaceType.TextureView,
+                surfaceType = SurfaceType.SurfaceView,
               ) {
                 Crossfade(mediaState.isControllerShowing, Modifier.fillMaxSize()) { showing ->
                   when (showing) {
