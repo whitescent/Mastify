@@ -15,10 +15,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,7 +51,6 @@ fun StatusMediaScreen(
   attachments: Array<Attachment>,
   targetMediaIndex: Int,
 ) {
-  var hideOverlay by remember { mutableStateOf(false) }
   val pagerState = rememberPagerState(
     initialPage = targetMediaIndex,
     pageCount = { attachments.size }
@@ -75,10 +70,7 @@ fun StatusMediaScreen(
       pageContent = {
         val mediaItem = attachments[it]
         Zoomable(
-          modifier = Modifier.fillMaxSize(),
-          onTap = {
-            hideOverlay = !hideOverlay
-          }
+          modifier = Modifier.fillMaxSize()
         ) {
           when (MediaType.fromString(mediaItem.type)) {
             MediaType.IMAGE -> {
@@ -111,7 +103,7 @@ fun StatusMediaScreen(
                     CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                   }
                 },
-                surfaceType = SurfaceType.SurfaceView,
+                surfaceType = SurfaceType.TextureView,
               ) {
                 Crossfade(mediaState.isControllerShowing, Modifier.fillMaxSize()) { showing ->
                   when (showing) {
