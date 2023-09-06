@@ -34,6 +34,8 @@ fun ProfileStatus(
           replyChainType = Null,
           hasUnloadedParent = false,
           favouriteStatus = { /*TODO*/ },
+          reblogStatus = { },
+          unreblogStatus = { },
           unfavouriteStatus = { /*TODO*/ },
           navigateToDetail = { /*TODO*/ },
           navigateToProfile = { },

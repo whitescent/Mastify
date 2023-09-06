@@ -98,6 +98,16 @@ interface MastodonApi {
     @Path("id") statusId: String
   ): NetworkResult<Status>
 
+  @POST("api/v1/statuses/{id}/reblog")
+  suspend fun reblogStatus(
+    @Path("id") statusId: String,
+  ): NetworkResult<Status>
+
+  @POST("api/v1/statuses/{id}/unreblog")
+  suspend fun unreblogStatus(
+    @Path("id") statusId: String,
+  ): NetworkResult<Status>
+
   @GET("api/v1/statuses/{id}/context")
   suspend fun statusContext(
     @Path("id") statusId: String

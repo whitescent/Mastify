@@ -202,6 +202,8 @@ fun Home(
                   },
                   favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
                   unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
+                  reblogStatus = { viewModel.reblogStatus(status.actionableId) },
+                  unreblogStatus = { viewModel.unreblogStatus(status.actionableId) },
                   navigateToDetail = {
                     navigator.navigate(
                       StatusDetailDestination(

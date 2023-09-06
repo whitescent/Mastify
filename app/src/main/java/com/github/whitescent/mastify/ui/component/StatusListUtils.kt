@@ -29,6 +29,8 @@ fun LazyListScope.statusComment(
   descendants: ImmutableList<StatusUiData>,
   favouriteStatus: (String) -> Unit,
   unfavouriteStatus: (String) -> Unit,
+  reblogStatus: (String) -> Unit,
+  unreblogStatus: (String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Status.Attachment>, Int) -> Unit,
@@ -50,10 +52,14 @@ fun LazyListScope.statusComment(
           hasUnloadedParent = false,
           favouriteStatus = { favouriteStatus(item.actionableId) },
           unfavouriteStatus = { unfavouriteStatus(item.actionableId) },
+          reblogStatus = { reblogStatus(item.actionableId) },
+          unreblogStatus = { unreblogStatus(item.actionableId) },
           navigateToDetail = { navigateToDetail(item.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
-          modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp).animateItemPlacement(),
+          modifier = Modifier.fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .animateItemPlacement(),
         )
         if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()
       }

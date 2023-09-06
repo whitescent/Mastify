@@ -124,6 +124,8 @@ fun StatusDetail(
           loading = state.loading,
           favouriteStatus = viewModel::favoriteStatus,
           unfavouriteStatus = viewModel::unfavoriteStatus,
+          reblogStatus = viewModel::reblogStatus,
+          unreblogStatus = viewModel::unreblogStatus,
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -156,6 +158,8 @@ fun StatusDetail(
           loading = state.loading,
           favouriteStatus = viewModel::favoriteStatus,
           unfavouriteStatus = viewModel::unfavoriteStatus,
+          reblogStatus = viewModel::reblogStatus,
+          unreblogStatus = viewModel::unreblogStatus,
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -221,6 +225,8 @@ fun StatusDetailContent(
   modifier: Modifier = Modifier,
   favouriteStatus: (String) -> Unit,
   unfavouriteStatus: (String) -> Unit,
+  reblogStatus: (String) -> Unit,
+  unreblogStatus: (String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
@@ -264,6 +270,8 @@ fun StatusDetailContent(
           descendants = descendants,
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
+          reblogStatus = reblogStatus,
+          unreblogStatus = unreblogStatus,
           navigateToDetail = navigateToDetail,
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile
@@ -283,6 +291,8 @@ fun StatusDetailInReply(
   modifier: Modifier = Modifier,
   favouriteStatus: (String) -> Unit,
   unfavouriteStatus: (String) -> Unit,
+  reblogStatus: (String) -> Unit,
+  unreblogStatus: (String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
@@ -310,6 +320,8 @@ fun StatusDetailInReply(
           hasUnloadedParent = false,
           favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
           unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
+          reblogStatus = { reblogStatus(repliedStatus.actionableId) },
+          unreblogStatus = { unreblogStatus(repliedStatus.actionableId) },
           navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile
@@ -339,6 +351,8 @@ fun StatusDetailInReply(
           descendants = descendants,
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
+          reblogStatus = reblogStatus,
+          unreblogStatus = unreblogStatus,
           navigateToDetail = navigateToDetail,
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile

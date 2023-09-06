@@ -44,13 +44,13 @@ class StatusDetailViewModel @Inject constructor(
   var uiState by mutableStateOf(StatusDetailUiState())
     private set
 
-  fun favoriteStatus(id: String) = viewModelScope.launch {
-    api.favouriteStatus(id)
-  }
+  fun favoriteStatus(id: String) = viewModelScope.launch { api.favouriteStatus(id) }
 
-  fun unfavoriteStatus(id: String) = viewModelScope.launch {
-    api.unfavouriteStatus(id)
-  }
+  fun unfavoriteStatus(id: String) = viewModelScope.launch { api.unfavouriteStatus(id) }
+
+  fun reblogStatus(id: String) = viewModelScope.launch { api.reblogStatus(id) }
+
+  fun unreblogStatus(id: String) = viewModelScope.launch { api.unreblogStatus(id) }
 
   fun replyToStatus() {
     uiState = uiState.copy(postState = PostState.Posting)

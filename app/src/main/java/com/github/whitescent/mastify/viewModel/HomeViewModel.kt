@@ -124,6 +124,10 @@ class HomeViewModel @Inject constructor(
 
   fun unfavoriteStatus(id: String) = viewModelScope.launch { api.unfavouriteStatus(id) }
 
+  fun reblogStatus(id: String) = viewModelScope.launch { api.reblogStatus(id) }
+
+  fun unreblogStatus(id: String) = viewModelScope.launch { api.unreblogStatus(id) }
+
   fun bookmarkStatus(id: String) = viewModelScope.launch { api.bookmarkStatus(id) }
 
   fun muteAccount(accountId: String, notifications: Boolean = false, duration: Int? = null) =

@@ -3,6 +3,8 @@ package com.github.whitescent.mastify.ui.component.status
 import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,12 +25,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -67,6 +72,7 @@ import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.StatusMenuAction
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -79,6 +85,8 @@ fun StatusListItem(
   menuAction: (StatusMenuAction) -> Unit,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
+  reblogStatus: () -> Unit,
+  unreblogStatus: () -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
@@ -190,8 +198,11 @@ fun StatusListItem(
           menuAction = menuAction,
           favouritesCount = status.favouritesCount,
           favourited = status.favourited,
+          reblogged = status.reblogged,
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
+          reblogStatus = reblogStatus,
+          unreblogStatus = unreblogStatus,
           onClickMedia = {
             navigateToMedia(status.attachments, it)
           },
@@ -237,7 +248,7 @@ fun StatusSource(
 }
 
 @Composable
-fun StatusContent(
+private fun StatusContent(
   avatar: String,
   displayName: String,
   fullname: String,
@@ -250,9 +261,12 @@ fun StatusContent(
   reblogsCount: Int,
   favouritesCount: Int,
   favourited: Boolean,
+  reblogged: Boolean,
   menuAction: (StatusMenuAction) -> Unit,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
+  reblogStatus: () -> Unit,
+  unreblogStatus: () -> Unit,
   onClickMedia: (Int) -> Unit,
   navigateToProfile: () -> Unit,
   modifier: Modifier = Modifier
@@ -376,8 +390,11 @@ fun StatusContent(
           reblogsCount = reblogsCount,
           favouritesCount = favouritesCount,
           favourited = favourited,
+          reblogged = reblogged,
           favouriteStatus = favouriteStatus,
           unfavouriteStatus = unfavouriteStatus,
+          reblogStatus = reblogStatus,
+          unreblogStatus = unreblogStatus
         )
       }
     }
@@ -385,22 +402,38 @@ fun StatusContent(
 }
 
 @Composable
-fun StatusActionsRow(
+private fun StatusActionsRow(
   repliesCount: Int,
   reblogsCount: Int,
   favouritesCount: Int,
   favourited: Boolean,
+  reblogged: Boolean,
   favouriteStatus: () -> Unit,
   unfavouriteStatus: () -> Unit,
+  reblogStatus: () -> Unit,
+  unreblogStatus: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val favouritedColor = AppTheme.colors.cardLike
-  val unfavouritedColor = AppTheme.colors.cardAction
+  val scope = rememberCoroutineScope()
+
+  val favouriteColor = AppTheme.colors.cardLike
+  val unfavouriteColor = AppTheme.colors.cardAction
 
   var favState by remember(favourited) { mutableStateOf(favourited) }
   var animatedFavCount by remember(favouritesCount) { mutableIntStateOf(favouritesCount) }
   val animatedFavIconColor by animateColorAsState(
-    targetValue = if (favState) favouritedColor else unfavouritedColor,
+    targetValue = if (favState) favouriteColor else unfavouriteColor,
+  )
+
+  val reblogColor = Color(0xFF18BE64)
+  val unreblogColor = AppTheme.colors.cardAction
+
+  val reblogScaleAnimatable = remember { Animatable(1f) }
+  val reblogRotateAnimatable = remember { Animatable(0f) }
+  var reblogState by remember(reblogged) { mutableStateOf(reblogged) }
+  var animatedReblogCount by remember(reblogsCount) { mutableIntStateOf(reblogsCount) }
+  val animatedReblogIconColor by animateColorAsState(
+    targetValue = if (reblogState) reblogColor else unreblogColor,
   )
 
   CenterRow(modifier = modifier) {
@@ -419,7 +452,7 @@ fun StatusActionsRow(
       }
       CenterRow {
         ClickableIcon(
-          painter = painterResource(id = R.drawable.heart),
+          painter = painterResource(id = if (favState) R.drawable.heart_fill else R.drawable.heart),
           modifier = Modifier.size(statusActionsIconSize),
           tint = animatedFavIconColor,
         ) {
@@ -440,14 +473,34 @@ fun StatusActionsRow(
       }
       CenterRow {
         ClickableIcon(
-          painter = painterResource(id = R.drawable.repost),
-          modifier = Modifier.size(statusActionsIconSize),
-          tint = AppTheme.colors.cardAction,
-        )
+          painter = painterResource(if (reblogState) R.drawable.share_fill else R.drawable.share_fat),
+          modifier = Modifier
+            .size(statusActionsIconSize)
+            .scale(reblogScaleAnimatable.value)
+            .rotate(reblogRotateAnimatable.value),
+          tint = animatedReblogIconColor,
+        ) {
+          reblogState = !reblogState
+          if (reblogState) {
+            animatedReblogCount += 1
+            reblogStatus()
+          } else {
+            animatedReblogCount -= 1
+            unreblogStatus()
+          }
+          scope.launch {
+            reblogRotateAnimatable.animateTo(
+              targetValue = if (reblogRotateAnimatable.value == 0f) 360f else 0f,
+              animationSpec = tween(durationMillis = 300)
+            )
+            reblogScaleAnimatable.animateTo(1.4f, animationSpec = tween(durationMillis = 150))
+            reblogScaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 150))
+          }
+        }
         WidthSpacer(value = 2.dp)
-        Text(
-          text = reblogsCount.toString(),
-          color = AppTheme.colors.cardAction,
+        AnimatedCountText(
+          count = animatedReblogCount,
+          style = TextStyle(color = AppTheme.colors.cardAction),
         )
       }
     }
