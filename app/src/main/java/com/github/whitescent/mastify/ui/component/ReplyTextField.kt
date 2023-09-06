@@ -2,6 +2,7 @@ package com.github.whitescent.mastify.ui.component
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -191,6 +192,7 @@ private fun ReplyTextFieldWithToolBar(
       onValueChange = onValueChange,
       modifier = Modifier
         .fillMaxWidth()
+        .animateContentSize()
         .padding(vertical = 16.dp)
         .heightIn(max = 100.dp)
         .focusRequester(focusRequester)
