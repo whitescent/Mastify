@@ -1,3 +1,8 @@
+import java.util.Properties
+
+val localProps = Properties().apply {
+  load(rootDir.resolve("local.properties").bufferedReader())
+}
 
 plugins {
   id("com.android.application")
@@ -26,10 +31,19 @@ android {
       useSupportLibrary = true
     }
   }
+  signingConfigs {
+    create("main") {
+      storeFile = file(localProps.getProperty("sign.file"))
+      storePassword = localProps.getProperty("sign.password")
+      keyAlias = localProps.getProperty("sign.alias")
+      keyPassword = storePassword
+    }
+  }
   buildTypes {
     release {
       isMinifyEnabled = true
       isShrinkResources = true
+      signingConfig = signingConfigs["main"]
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
