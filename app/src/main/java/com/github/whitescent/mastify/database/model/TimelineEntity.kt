@@ -38,7 +38,7 @@ data class TimelineEntity(
   @ColumnInfo val inReplyToAccountId: String?,
   @ColumnInfo val favouritesCount: Int,
   @ColumnInfo val editedAt: String?,
-  @ColumnInfo val favourited: Boolean,
+  @ColumnInfo val favorited: Boolean,
   @ColumnInfo val reblogged: Boolean,
   @ColumnInfo val bookmarked: Boolean,
   @ColumnInfo val reblog: Status?,

@@ -39,7 +39,7 @@ data class StatusUiData(
   val repliesCount: Int,
   val reblogsCount: Int,
   val favouritesCount: Int,
-  val favourited: Boolean,
+  val favorited: Boolean,
   val inReplyToId: String?,
 ) {
   val itemType = "status"

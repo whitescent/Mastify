@@ -14,7 +14,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,31 +29,42 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.github.whitescent.R
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.viewModel.StatusMenuAction
+import com.github.whitescent.mastify.viewModel.StatusAction
 
 @Composable
 fun StatusDropdownMenu(
   expanded: Boolean,
-  fullname: String,
   enableCopyText: Boolean,
+  statusUiData: StatusUiData,
   modifier: Modifier = Modifier,
   offset: IntOffset = IntOffset.Zero,
   onDismissRequest: () -> Unit,
-  actionHandler: (StatusMenuAction) -> Unit
+  actionHandler: (StatusAction) -> Unit
 ) {
+  var bookmarkState by remember(statusUiData.bookmarked) { mutableStateOf(statusUiData.bookmarked) }
   if (expanded) {
     val actions = mutableListOf<MenuAction>().apply {
       if (enableCopyText)
-        add(MenuAction("复制文本内容", R.drawable.copy, StatusMenuAction.CopyText))
-      add(MenuAction("复制链接", R.drawable.link_simple, StatusMenuAction.CopyLink))
-      add(MenuAction("添加到书签", R.drawable.bookmark_simple, StatusMenuAction.Bookmark))
-      add(MenuAction("隐藏 $fullname", R.drawable.eye_hide, StatusMenuAction.Mute))
-      add(MenuAction("屏蔽 $fullname", R.drawable.block, StatusMenuAction.Block))
-      add(MenuAction("举报", R.drawable.report, StatusMenuAction.Report))
+        add(MenuAction("复制文本内容", R.drawable.copy, StatusAction.CopyText(statusUiData.parsedContent)))
+      add(MenuAction("复制链接", R.drawable.link_simple, StatusAction.CopyLink(statusUiData.link)))
+      add(
+        MenuAction(
+          text = if (bookmarkState) "取消收藏" else "收藏到书签",
+          icon = if (bookmarkState) R.drawable.bookmark_fill else R.drawable.bookmark_simple,
+          action = StatusAction.Bookmark(
+            id = statusUiData.actionableId,
+            bookmark = !bookmarkState
+          )
+        )
+      )
+      add(MenuAction("隐藏 $statusUiData.fullname", R.drawable.eye_hide, StatusAction.Mute))
+      add(MenuAction("屏蔽 $statusUiData.fullname", R.drawable.block, StatusAction.Block))
+      add(MenuAction("举报", R.drawable.report, StatusAction.Report))
     }
     Popup(
       onDismissRequest = onDismissRequest,
@@ -66,7 +80,10 @@ fun StatusDropdownMenu(
       ) {
         Column {
           actions.forEach {
-            StatusMenuListItem(it) { actionHandler(it.action) }
+            StatusMenuListItem(it) {
+              if (it.action is StatusAction.Bookmark) bookmarkState = !bookmarkState
+              actionHandler(it.action)
+            }
             if (it != actions.last()) AppHorizontalDivider()
           }
         }
@@ -113,5 +130,5 @@ private fun StatusMenuListItem(
 data class MenuAction(
   val text: String, // TODO switch to @StringRes
   @DrawableRes val icon: Int,
-  val action: StatusMenuAction
+  val action: StatusAction
 )

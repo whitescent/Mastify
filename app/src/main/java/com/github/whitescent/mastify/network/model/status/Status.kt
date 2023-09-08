@@ -18,7 +18,7 @@ data class Status(
   @SerialName("reblogs_count") val reblogsCount: Int,
   @SerialName("favourites_count") val favouritesCount: Int,
   @SerialName("edited_at") val editedAt: String?,
-  val favourited: Boolean,
+  @SerialName("favourited") val favorited: Boolean, // I prefer American English lol
   @SerialName("in_reply_to_id") val inReplyToId: String?,
   @SerialName("in_reply_to_account_id") val inReplyToAccountId: String?,
   val reblogged: Boolean,

@@ -22,15 +22,13 @@ import com.github.whitescent.mastify.data.model.ui.getReplyChainType
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
+import com.github.whitescent.mastify.viewModel.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.statusComment(
   descendants: ImmutableList<StatusUiData>,
-  favouriteStatus: (String) -> Unit,
-  unfavouriteStatus: (String) -> Unit,
-  reblogStatus: (String) -> Unit,
-  unreblogStatus: (String) -> Unit,
+  action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Status.Attachment>, Int) -> Unit,
@@ -47,13 +45,9 @@ fun LazyListScope.statusComment(
         val replyChainType = remember(item) { descendants.getReplyChainType(index) }
         StatusListItem(
           status = item,
-          menuAction = { },
+          action = action,
           replyChainType = replyChainType,
           hasUnloadedParent = false,
-          favouriteStatus = { favouriteStatus(item.actionableId) },
-          unfavouriteStatus = { unfavouriteStatus(item.actionableId) },
-          reblogStatus = { reblogStatus(item.actionableId) },
-          unreblogStatus = { unreblogStatus(item.actionableId) },
           navigateToDetail = { navigateToDetail(item.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,

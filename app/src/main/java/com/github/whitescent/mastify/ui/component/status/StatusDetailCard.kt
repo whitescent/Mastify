@@ -2,7 +2,6 @@ package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -46,9 +45,12 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
+import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.viewModel.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -56,8 +58,7 @@ fun StatusDetailCard(
   status: StatusUiData,
   modifier: Modifier = Modifier,
   inReply: Boolean = false,
-  favouriteStatus: () -> Unit,
-  unfavouriteStatus: () -> Unit,
+  action: (StatusAction) -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
@@ -180,30 +181,17 @@ fun StatusDetailCard(
         application = status.application
       )
       HeightSpacer(value = 8.dp)
-      StatusDetailActionsRow(
-        favourited = status.favourited,
-        favouriteStatus = favouriteStatus,
-        unfavouriteStatus = unfavouriteStatus,
-      )
+      StatusDetailActionsRow(statusUiData = status, action = action)
     }
   }
 }
 
 @Composable
 fun StatusDetailActionsRow(
-  favourited: Boolean,
-  favouriteStatus: () -> Unit,
-  unfavouriteStatus: () -> Unit,
+  statusUiData: StatusUiData,
+  action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val favouritedColor = AppTheme.colors.cardLike
-  val unfavouritedColor = AppTheme.colors.primaryContent
-
-  var favState by remember(favourited) { mutableStateOf(favourited) }
-  val animatedFavIconColor by animateColorAsState(
-    targetValue = if (favState) favouritedColor else unfavouritedColor,
-  )
-
   CenterRow(
     modifier = modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.spacedBy(20.dp)
@@ -213,20 +201,20 @@ fun StatusDetailActionsRow(
       modifier = Modifier.size(statusDetailActionsIconSize),
       tint = AppTheme.colors.primaryContent,
     )
-    ClickableIcon(
-      painter = painterResource(id = R.drawable.heart2),
+    FavoriteButton(
+      favorited = statusUiData.favorited,
       modifier = Modifier.size(statusDetailActionsIconSize),
-      tint = animatedFavIconColor,
+      unfavoritedColor = AppTheme.colors.primaryContent
     ) {
-      favState = !favState
-      if (favState) favouriteStatus()
-      else unfavouriteStatus()
+      action(StatusAction.Favorite(statusUiData.actionableId, it))
     }
-    ClickableIcon(
-      painter = painterResource(id = R.drawable.share_fat),
+    ReblogButton(
+      reblogged = statusUiData.reblogged,
       modifier = Modifier.size(statusDetailActionsIconSize),
-      tint = AppTheme.colors.primaryContent,
-    )
+      unreblogColor = AppTheme.colors.primaryContent
+    ) {
+      action(StatusAction.Reblog(statusUiData.actionableId, it))
+    }
     ClickableIcon(
       painter = painterResource(id = R.drawable.bookmark_simple),
       modifier = Modifier.size(statusDetailActionsIconSize),

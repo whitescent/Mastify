@@ -33,6 +33,7 @@ interface MastifyColorsInterface {
   val replyLine: Color
   val hintText: Color
     get() = Color(0xFF1d9bf0)
+  val reblogged: Color get() = Color(0xFF18BE64)
   val replyTextFieldBackground: Color
   val replyTextFieldBorder: Color
   val followButton: Color

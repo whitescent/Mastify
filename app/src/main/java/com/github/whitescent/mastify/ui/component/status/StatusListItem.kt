@@ -2,9 +2,6 @@ package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,15 +22,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -67,12 +61,13 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
+import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
-import com.github.whitescent.mastify.viewModel.StatusMenuAction
+import com.github.whitescent.mastify.viewModel.StatusAction
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -82,11 +77,7 @@ fun StatusListItem(
   replyChainType: ReplyChainType,
   hasUnloadedParent: Boolean,
   modifier: Modifier = Modifier,
-  menuAction: (StatusMenuAction) -> Unit,
-  favouriteStatus: () -> Unit,
-  unfavouriteStatus: () -> Unit,
-  reblogStatus: () -> Unit,
-  unreblogStatus: () -> Unit,
+  action: (StatusAction) -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
@@ -185,24 +176,8 @@ fun StatusListItem(
           ) { navigateToProfile(status.account) }
         }
         StatusContent(
-          avatar = status.avatar,
-          displayName = status.displayName,
-          fullname = status.fullname,
-          createdAt = status.createdAt,
-          content = status.content,
-          sensitive = status.sensitive,
-          spoilerText = status.spoilerText,
-          attachments = status.attachments,
-          repliesCount = status.repliesCount,
-          reblogsCount = status.reblogsCount,
-          menuAction = menuAction,
-          favouritesCount = status.favouritesCount,
-          favourited = status.favourited,
-          reblogged = status.reblogged,
-          favouriteStatus = favouriteStatus,
-          unfavouriteStatus = unfavouriteStatus,
-          reblogStatus = reblogStatus,
-          unreblogStatus = unreblogStatus,
+          statusUiData = status,
+          action = action,
           onClickMedia = {
             navigateToMedia(status.attachments, it)
           },
@@ -249,32 +224,16 @@ fun StatusSource(
 
 @Composable
 private fun StatusContent(
-  avatar: String,
-  displayName: String,
-  fullname: String,
-  createdAt: String,
-  content: String,
-  sensitive: Boolean,
-  spoilerText: String,
-  attachments: ImmutableList<Attachment>,
-  repliesCount: Int,
-  reblogsCount: Int,
-  favouritesCount: Int,
-  favourited: Boolean,
-  reblogged: Boolean,
-  menuAction: (StatusMenuAction) -> Unit,
-  favouriteStatus: () -> Unit,
-  unfavouriteStatus: () -> Unit,
-  reblogStatus: () -> Unit,
-  unreblogStatus: () -> Unit,
+  statusUiData: StatusUiData,
+  modifier: Modifier = Modifier,
+  action: (StatusAction) -> Unit,
   onClickMedia: (Int) -> Unit,
   navigateToProfile: () -> Unit,
-  modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
-  var hideSensitiveContent by rememberSaveable(sensitive, spoilerText) {
-    mutableStateOf(sensitive && spoilerText.isNotEmpty())
+  var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
+    mutableStateOf(statusUiData.sensitive && statusUiData.spoilerText.isNotEmpty())
   }
   var openMenu by remember { mutableStateOf(false) }
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
@@ -282,7 +241,7 @@ private fun StatusContent(
   Box(modifier = modifier) {
     Row(modifier = Modifier.padding(statusContentPadding)) {
       CircleShapeAsyncImage(
-        model = avatar,
+        model = statusUiData.avatar,
         modifier = Modifier.size(statusAvatarSize),
         shape = AppTheme.shape.avatarShape,
         onClick = { navigateToProfile() }
@@ -292,13 +251,13 @@ private fun StatusContent(
         CenterRow {
           Column(modifier = Modifier.weight(1f)) {
             HtmlText(
-              text = displayName,
+              text = statusUiData.displayName,
               style = AppTheme.typography.statusDisplayName,
               overflow = TextOverflow.Ellipsis,
               maxLines = 1
             )
             Text(
-              text = fullname,
+              text = statusUiData.fullname,
               style = AppTheme.typography.statusUsername.copy(
                 color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
               ),
@@ -310,10 +269,10 @@ private fun StatusContent(
           Column {
             CenterRow {
               Text(
-                text = remember(createdAt) {
+                text = remember(statusUiData.createdAt) {
                   getRelativeTimeSpanString(
                     context,
-                    createdAt.toInstant().toEpochMilliseconds(),
+                    statusUiData.createdAt.toInstant().toEpochMilliseconds(),
                     Clock.System.now().toEpochMilliseconds()
                   )
                 },
@@ -337,12 +296,11 @@ private fun StatusContent(
             }
             StatusDropdownMenu(
               expanded = openMenu,
-              enableCopyText = content.isNotEmpty(),
-              fullname = fullname,
-              offset = pressOffset,
+              enableCopyText = statusUiData.content.isNotEmpty(),
+              statusUiData = statusUiData,
               onDismissRequest = { openMenu = false },
             ) {
-              menuAction(it)
+              action(it)
               openMenu = false
             }
           }
@@ -352,15 +310,15 @@ private fun StatusContent(
             true -> {
               Column {
                 HeightSpacer(value = 4.dp)
-                SensitiveBar(spoilerText = spoilerText) { hideSensitiveContent = false }
+                SensitiveBar(spoilerText = statusUiData.spoilerText) { hideSensitiveContent = false }
               }
             }
             else -> {
               Column {
-                if (content.isNotEmpty()) {
+                if (statusUiData.content.isNotEmpty()) {
                   HeightSpacer(value = 4.dp)
                   HtmlText(
-                    text = content,
+                    text = statusUiData.content,
                     fontSize = 15.sp,
                     maxLines = 11,
                     onLinkClick = { span ->
@@ -373,10 +331,10 @@ private fun StatusContent(
                     overflow = TextOverflow.Ellipsis,
                   )
                 }
-                if (attachments.isNotEmpty()) {
+                if (statusUiData.attachments.isNotEmpty()) {
                   HeightSpacer(value = 4.dp)
                   StatusMedia(
-                    attachments = attachments,
+                    attachments = statusUiData.attachments,
                     onClick = onClickMedia,
                   )
                 }
@@ -386,15 +344,13 @@ private fun StatusContent(
         }
         HeightSpacer(value = 6.dp)
         StatusActionsRow(
-          repliesCount = repliesCount,
-          reblogsCount = reblogsCount,
-          favouritesCount = favouritesCount,
-          favourited = favourited,
-          reblogged = reblogged,
-          favouriteStatus = favouriteStatus,
-          unfavouriteStatus = unfavouriteStatus,
-          reblogStatus = reblogStatus,
-          unreblogStatus = unreblogStatus
+          statusId = statusUiData.actionableId,
+          repliesCount = statusUiData.repliesCount,
+          reblogsCount = statusUiData.reblogsCount,
+          favoritesCount = statusUiData.favouritesCount,
+          favorited = statusUiData.favorited,
+          reblogged = statusUiData.reblogged,
+          action = action
         )
       }
     }
@@ -403,38 +359,17 @@ private fun StatusContent(
 
 @Composable
 private fun StatusActionsRow(
+  statusId: String,
   repliesCount: Int,
   reblogsCount: Int,
-  favouritesCount: Int,
-  favourited: Boolean,
+  favoritesCount: Int,
+  favorited: Boolean,
   reblogged: Boolean,
-  favouriteStatus: () -> Unit,
-  unfavouriteStatus: () -> Unit,
-  reblogStatus: () -> Unit,
-  unreblogStatus: () -> Unit,
+  action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val scope = rememberCoroutineScope()
-
-  val favouriteColor = AppTheme.colors.cardLike
-  val unfavouriteColor = AppTheme.colors.cardAction
-
-  var favState by remember(favourited) { mutableStateOf(favourited) }
-  var animatedFavCount by remember(favouritesCount) { mutableIntStateOf(favouritesCount) }
-  val animatedFavIconColor by animateColorAsState(
-    targetValue = if (favState) favouriteColor else unfavouriteColor,
-  )
-
-  val reblogColor = Color(0xFF18BE64)
-  val unreblogColor = AppTheme.colors.cardAction
-
-  val reblogScaleAnimatable = remember { Animatable(1f) }
-  val reblogRotateAnimatable = remember { Animatable(0f) }
-  var reblogState by remember(reblogged) { mutableStateOf(reblogged) }
+  var animatedFavCount by remember(favoritesCount) { mutableIntStateOf(favoritesCount) }
   var animatedReblogCount by remember(reblogsCount) { mutableIntStateOf(reblogsCount) }
-  val animatedReblogIconColor by animateColorAsState(
-    targetValue = if (reblogState) reblogColor else unreblogColor,
-  )
 
   CenterRow(modifier = modifier) {
     CenterRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(22.dp)) {
@@ -451,19 +386,12 @@ private fun StatusActionsRow(
         )
       }
       CenterRow {
-        ClickableIcon(
-          painter = painterResource(id = if (favState) R.drawable.heart_fill else R.drawable.heart),
-          modifier = Modifier.size(statusActionsIconSize),
-          tint = animatedFavIconColor,
+        FavoriteButton(
+          favorited = favorited,
+          modifier = Modifier.size(statusActionsIconSize)
         ) {
-          favState = !favState
-          if (favState) {
-            animatedFavCount += 1
-            favouriteStatus()
-          } else {
-            animatedFavCount -= 1
-            unfavouriteStatus()
-          }
+          if (it) animatedFavCount += 1 else animatedFavCount -= 1
+          action(StatusAction.Favorite(statusId, it))
         }
         WidthSpacer(value = 2.dp)
         AnimatedCountText(
@@ -472,30 +400,12 @@ private fun StatusActionsRow(
         )
       }
       CenterRow {
-        ClickableIcon(
-          painter = painterResource(if (reblogState) R.drawable.share_fill else R.drawable.share_fat),
-          modifier = Modifier
-            .size(statusActionsIconSize)
-            .scale(reblogScaleAnimatable.value)
-            .rotate(reblogRotateAnimatable.value),
-          tint = animatedReblogIconColor,
+        ReblogButton(
+          reblogged = reblogged,
+          modifier = Modifier.size(statusActionsIconSize)
         ) {
-          reblogState = !reblogState
-          if (reblogState) {
-            animatedReblogCount += 1
-            reblogStatus()
-          } else {
-            animatedReblogCount -= 1
-            unreblogStatus()
-          }
-          scope.launch {
-            reblogRotateAnimatable.animateTo(
-              targetValue = if (reblogRotateAnimatable.value == 0f) 360f else 0f,
-              animationSpec = tween(durationMillis = 300)
-            )
-            reblogScaleAnimatable.animateTo(1.4f, animationSpec = tween(durationMillis = 150))
-            reblogScaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 150))
-          }
+          if (it) animatedReblogCount += 1 else animatedReblogCount -= 1
+          action(StatusAction.Reblog(statusId, it))
         }
         WidthSpacer(value = 2.dp)
         AnimatedCountText(

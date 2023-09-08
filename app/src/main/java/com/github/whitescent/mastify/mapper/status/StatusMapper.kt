@@ -38,7 +38,7 @@ fun Status.toUiData(): StatusUiData {
     repliesCount = reblog?.repliesCount ?: repliesCount,
     reblogsCount = reblog?.reblogsCount ?: reblogsCount,
     favouritesCount = reblog?.favouritesCount ?: favouritesCount,
-    favourited = reblog?.favourited ?: favourited,
+    favorited = reblog?.favorited ?: favorited,
     inReplyToId = reblog?.inReplyToId ?: inReplyToId,
     actionable = actionableStatus,
     actionableId = actionableStatus.id
@@ -63,7 +63,7 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     reblogsCount = reblogsCount,
     favouritesCount = favouritesCount,
     editedAt = editedAt,
-    favourited = favourited,
+    favorited = favorited,
     inReplyToId = inReplyToId,
     inReplyToAccountId = inReplyToAccountId,
     reblogged = reblogged,

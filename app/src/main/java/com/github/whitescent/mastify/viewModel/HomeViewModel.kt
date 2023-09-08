@@ -1,5 +1,7 @@
 package com.github.whitescent.mastify.viewModel
 
+import android.content.ClipData
+import android.content.Context
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -120,20 +122,32 @@ class HomeViewModel @Inject constructor(
 
   fun refreshTimeline() = viewModelScope.launch { paginator.refresh() }
 
-  fun favoriteStatus(id: String) = viewModelScope.launch { api.favouriteStatus(id) }
-
-  fun unfavoriteStatus(id: String) = viewModelScope.launch { api.unfavouriteStatus(id) }
-
-  fun reblogStatus(id: String) = viewModelScope.launch { api.reblogStatus(id) }
-
-  fun unreblogStatus(id: String) = viewModelScope.launch { api.unreblogStatus(id) }
-
-  fun bookmarkStatus(id: String) = viewModelScope.launch { api.bookmarkStatus(id) }
-
-  fun muteAccount(accountId: String, notifications: Boolean = false, duration: Int? = null) =
-    viewModelScope.launch { api.muteAccount(accountId, notifications, duration) }
-
-  fun blockAccount(accountId: String) = viewModelScope.launch { api.blockAccount(accountId) }
+  fun onStatusAction(action: StatusAction, context: Context) {
+    val clipManager =
+      context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+    viewModelScope.launch {
+      when (action) {
+        is StatusAction.Favorite -> {
+          if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)
+        }
+        is StatusAction.Reblog -> {
+          if (action.reblog) api.reblogStatus(action.id) else api.unreblogStatus(action.id)
+        }
+        is StatusAction.Bookmark -> {
+          if (action.bookmark) api.bookmarkStatus(action.id) else api.unbookmarkStatus(action.id)
+        }
+        is StatusAction.CopyText -> {
+          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.text))
+        }
+        is StatusAction.CopyLink -> {
+          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.link))
+        }
+        is StatusAction.Mute -> Unit
+        is StatusAction.Block -> Unit
+        is StatusAction.Report -> Unit
+      }
+    }
+  }
 
   fun dismissButton() {
     uiState = uiState.copy(showNewStatusButton = false)
@@ -164,11 +178,15 @@ data class HomeUiState(
 )
 
 @Stable
-sealed interface StatusMenuAction {
-  data object CopyText : StatusMenuAction
-  data object CopyLink : StatusMenuAction
-  data object Bookmark : StatusMenuAction
-  data object Mute : StatusMenuAction
-  data object Block : StatusMenuAction
-  data object Report : StatusMenuAction // TODO
+sealed interface StatusAction {
+  data class CopyText(val text: String) : StatusAction
+  data class CopyLink(val link: String) : StatusAction
+  data object Mute : StatusAction // TODO
+  data object Block : StatusAction // TODO
+  data object Report : StatusAction // TODO
+  data class Favorite(val id: String, val favorite: Boolean) : StatusAction
+  data class Bookmark(val id: String, val bookmark: Boolean) : StatusAction
+  data class Reblog(val id: String, val reblog: Boolean) : StatusAction
+
+  val canShowSnackBar get() = this is CopyText || this is CopyLink || this is Bookmark
 }

@@ -25,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,6 +60,7 @@ import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.statusComment
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.StatusDetailTransitions
+import com.github.whitescent.mastify.viewModel.StatusAction
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -86,6 +88,7 @@ fun StatusDetail(
   val sheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
   val keyboard = LocalSoftwareKeyboardController.current
+  val context = LocalContext.current
 
   val state = viewModel.uiState
   val replyText = viewModel.replyField
@@ -122,10 +125,7 @@ fun StatusDetail(
           ancestors = state.ancestors.toImmutableList(),
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
-          favouriteStatus = viewModel::favoriteStatus,
-          unfavouriteStatus = viewModel::unfavoriteStatus,
-          reblogStatus = viewModel::reblogStatus,
-          unreblogStatus = viewModel::unreblogStatus,
+          action = { viewModel.onStatusAction(it, context) },
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -156,10 +156,7 @@ fun StatusDetail(
           lazyState = lazyState,
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
-          favouriteStatus = viewModel::favoriteStatus,
-          unfavouriteStatus = viewModel::unfavoriteStatus,
-          reblogStatus = viewModel::reblogStatus,
-          unreblogStatus = viewModel::unreblogStatus,
+          action = { viewModel.onStatusAction(it, context) },
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -223,10 +220,7 @@ fun StatusDetailContent(
   descendants: ImmutableList<StatusUiData>,
   loading: Boolean,
   modifier: Modifier = Modifier,
-  favouriteStatus: (String) -> Unit,
-  unfavouriteStatus: (String) -> Unit,
-  reblogStatus: (String) -> Unit,
-  unreblogStatus: (String) -> Unit,
+  action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
@@ -240,8 +234,7 @@ fun StatusDetailContent(
     item {
       StatusDetailCard(
         status = status,
-        favouriteStatus = { favouriteStatus(status.actionableId) },
-        unfavouriteStatus = { unfavouriteStatus(status.actionableId) },
+        action = action,
         navigateToDetail = { navigateToDetail(status.actionable) },
         navigateToMedia = navigateToMedia,
         navigateToProfile = navigateToProfile
@@ -268,10 +261,7 @@ fun StatusDetailContent(
       else -> {
         statusComment(
           descendants = descendants,
-          favouriteStatus = favouriteStatus,
-          unfavouriteStatus = unfavouriteStatus,
-          reblogStatus = reblogStatus,
-          unreblogStatus = unreblogStatus,
+          action = action,
           navigateToDetail = navigateToDetail,
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile
@@ -289,10 +279,7 @@ fun StatusDetailInReply(
   descendants: ImmutableList<StatusUiData>,
   loading: Boolean,
   modifier: Modifier = Modifier,
-  favouriteStatus: (String) -> Unit,
-  unfavouriteStatus: (String) -> Unit,
-  reblogStatus: (String) -> Unit,
-  unreblogStatus: (String) -> Unit,
+  action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
@@ -305,8 +292,7 @@ fun StatusDetailInReply(
       if (repliedStatus == status) {
         StatusDetailCard(
           status = status,
-          favouriteStatus = { favouriteStatus(status.actionableId) },
-          unfavouriteStatus = { unfavouriteStatus(status.actionableId) },
+          action = action,
           navigateToDetail = { navigateToDetail(status.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
@@ -315,13 +301,9 @@ fun StatusDetailInReply(
       } else {
         StatusListItem(
           status = repliedStatus,
-          menuAction = { },
+          action = action,
           replyChainType = if (index == 0) Start else Continue,
           hasUnloadedParent = false,
-          favouriteStatus = { favouriteStatus(repliedStatus.actionableId) },
-          unfavouriteStatus = { unfavouriteStatus(repliedStatus.actionableId) },
-          reblogStatus = { reblogStatus(repliedStatus.actionableId) },
-          unreblogStatus = { unreblogStatus(repliedStatus.actionableId) },
           navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile
@@ -349,10 +331,7 @@ fun StatusDetailInReply(
       else -> {
         statusComment(
           descendants = descendants,
-          favouriteStatus = favouriteStatus,
-          unfavouriteStatus = unfavouriteStatus,
-          reblogStatus = reblogStatus,
-          unreblogStatus = unreblogStatus,
+          action = { },
           navigateToDetail = navigateToDetail,
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile

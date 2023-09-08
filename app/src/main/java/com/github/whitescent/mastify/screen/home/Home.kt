@@ -50,10 +50,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -88,7 +86,7 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.HomeViewModel
-import com.github.whitescent.mastify.viewModel.StatusMenuAction
+import com.github.whitescent.mastify.viewModel.StatusAction
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
@@ -118,7 +116,6 @@ fun Home(
   var snackBarType by remember { mutableStateOf(StatusSnackBarType.TEXT) }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
-  val clipboard = LocalClipboardManager.current
   val uiState = viewModel.uiState
 
   val pullRefreshState = rememberPullRefreshState(
@@ -180,30 +177,17 @@ fun Home(
                   status = status,
                   replyChainType = replyChainType,
                   hasUnloadedParent = hasUnloadedParent,
-                  menuAction = {
-                    when (it) {
-                      is StatusMenuAction.CopyText -> {
-                        clipboard.setText(AnnotatedString(status.parsedContent))
-                        snackBarType = StatusSnackBarType.TEXT
+                  action = {
+                    viewModel.onStatusAction(it, context)
+                    if (it.canShowSnackBar) { // There may be a better approach here
+                      snackBarType = when (it) {
+                        is StatusAction.CopyLink -> StatusSnackBarType.LINK
+                        is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
+                        else -> StatusSnackBarType.TEXT
                       }
-                      is StatusMenuAction.CopyLink -> {
-                        clipboard.setText(AnnotatedString(status.link))
-                        snackBarType = StatusSnackBarType.LINK
-                      }
-                      is StatusMenuAction.Bookmark -> {
-                        viewModel.bookmarkStatus(status.actionableId)
-                        snackBarType = StatusSnackBarType.BOOKMARK
-                      }
-                      is StatusMenuAction.Mute -> viewModel.muteAccount(status.actionable.account.id)
-                      is StatusMenuAction.Block -> viewModel.blockAccount(status.actionable.account.id)
-                      else -> Unit
+                      showSnackBar = true
                     }
-                    showSnackBar = true
                   },
-                  favouriteStatus = { viewModel.favoriteStatus(status.actionableId) },
-                  unfavouriteStatus = { viewModel.unfavoriteStatus(status.actionableId) },
-                  reblogStatus = { viewModel.reblogStatus(status.actionableId) },
-                  unreblogStatus = { viewModel.unreblogStatus(status.actionableId) },
                   navigateToDetail = {
                     navigator.navigate(
                       StatusDetailDestination(
