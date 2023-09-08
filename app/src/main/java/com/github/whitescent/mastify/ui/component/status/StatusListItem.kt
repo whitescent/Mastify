@@ -207,7 +207,7 @@ fun StatusSource(
     )
     WidthSpacer(value = 4.dp)
     HtmlText(
-      text = "$reblogDisplayName " + stringResource(id = R.string.post_boosted_format_suffix),
+      text = stringResource(id = R.string.user_boosted, reblogDisplayName),
       style = TextStyle(
         color = AppTheme.colors.cardCaption,
         fontSize = AppTheme.typography.statusRepost.fontSize,

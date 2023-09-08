@@ -12,7 +12,7 @@
 
   <!-- home screen -->
   <string name="home_title">主页</string>
-  <string name="post_boosted_format_suffix">转嘟了</string>
+  <string name="user_boosted">%s 转嘟了</string>
   <string name="title_add_account">添加账号</string>
   <string name="title_profile">个人资料</string>
   <string name="title_bookmarks">书签</string>
