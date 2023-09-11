@@ -23,6 +23,7 @@ data class StatusUiData(
   val application: Status.Application?,
   val reblogged: Boolean,
   val bookmarked: Boolean,
+  val visibility: Visibility,
   val rebloggedAvatar: String,
   val displayName: String,
   val content: String,
@@ -48,6 +49,36 @@ data class StatusUiData(
 
   enum class ReplyChainType {
     Start, Continue, End, Null
+  }
+
+  enum class Visibility {
+
+    PUBLIC, UNLISTED, PRIVATE, DIRECT, UNKNOWN;
+
+    val rebloggingAllowed get() = (this == PUBLIC || this == UNLISTED)
+
+    fun serverString(): String {
+      return when (this) {
+        PUBLIC -> "public"
+        UNLISTED -> "unlisted"
+        PRIVATE -> "private"
+        DIRECT -> "direct"
+        UNKNOWN -> "unknown"
+      }
+    }
+
+    companion object {
+      fun byString(s: String): Visibility {
+        return when (s) {
+          "public" -> PUBLIC
+          "unlisted" -> UNLISTED
+          "private" -> PRIVATE
+          "direct" -> DIRECT
+          "unknown" -> UNKNOWN
+          else -> UNKNOWN
+        }
+      }
+    }
   }
 }
 

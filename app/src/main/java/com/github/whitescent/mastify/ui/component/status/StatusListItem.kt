@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,7 +54,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.N
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
-import com.github.whitescent.mastify.ui.component.AnimatedCountText
+import com.github.whitescent.mastify.ui.component.AnimatedText
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
@@ -282,7 +283,25 @@ private fun StatusContent(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
               )
-              WidthSpacer(value = 4.dp)
+              when (statusUiData.visibility) {
+                StatusUiData.Visibility.PRIVATE -> {
+                  Icon(
+                    painter = painterResource(id = R.drawable.lock),
+                    contentDescription = null,
+                    modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
+                    tint = AppTheme.colors.cardMenu,
+                  )
+                }
+                StatusUiData.Visibility.UNLISTED -> {
+                  Icon(
+                    painter = painterResource(id = R.drawable.lock_open),
+                    contentDescription = null,
+                    modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
+                    tint = AppTheme.colors.cardMenu,
+                  )
+                }
+                else -> WidthSpacer(value = 4.dp)
+              }
               ClickableIcon(
                 painter = painterResource(id = R.drawable.more),
                 tint = AppTheme.colors.cardMenu,
@@ -299,6 +318,7 @@ private fun StatusContent(
               enableCopyText = statusUiData.content.isNotEmpty(),
               statusUiData = statusUiData,
               onDismissRequest = { openMenu = false },
+              offset = pressOffset
             ) {
               action(it)
               openMenu = false
@@ -350,6 +370,7 @@ private fun StatusContent(
           favoritesCount = statusUiData.favouritesCount,
           favorited = statusUiData.favorited,
           reblogged = statusUiData.reblogged,
+          rebloggingAllowed = statusUiData.visibility.rebloggingAllowed,
           action = action
         )
       }
@@ -365,6 +386,7 @@ private fun StatusActionsRow(
   favoritesCount: Int,
   favorited: Boolean,
   reblogged: Boolean,
+  rebloggingAllowed: Boolean,
   action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -379,37 +401,40 @@ private fun StatusActionsRow(
           modifier = Modifier.size(statusActionsIconSize),
           tint = AppTheme.colors.cardAction,
         )
-        WidthSpacer(value = 2.dp)
-        Text(
-          text = repliesCount.toString(),
-          style = AppTheme.typography.statusActions,
-        )
+        if (repliesCount != 0) {
+          WidthSpacer(value = 2.dp)
+          Text(
+            text = repliesCount.toString(),
+            style = AppTheme.typography.statusActions,
+          )
+        }
       }
       CenterRow {
         FavoriteButton(
           favorited = favorited,
           modifier = Modifier.size(statusActionsIconSize)
         ) {
-          if (it) animatedFavCount += 1 else animatedFavCount -= 1
+          if (it) animatedFavCount++ else animatedFavCount--
           action(StatusAction.Favorite(statusId, it))
         }
-        WidthSpacer(value = 2.dp)
-        AnimatedCountText(
-          count = animatedFavCount,
+        if (animatedFavCount != 0) WidthSpacer(value = 2.dp)
+        AnimatedText(
+          text = if (animatedFavCount != 0) animatedFavCount.toString() else "",
           style = AppTheme.typography.statusActions,
         )
       }
       CenterRow {
         ReblogButton(
           reblogged = reblogged,
+          enabled = rebloggingAllowed,
           modifier = Modifier.size(statusActionsIconSize)
         ) {
-          if (it) animatedReblogCount += 1 else animatedReblogCount -= 1
+          if (it) animatedReblogCount++ else animatedReblogCount--
           action(StatusAction.Reblog(statusId, it))
         }
         WidthSpacer(value = 2.dp)
-        AnimatedCountText(
-          count = animatedReblogCount,
+        AnimatedText(
+          text = if (animatedReblogCount != 0) animatedReblogCount.toString() else "",
           style = TextStyle(color = AppTheme.colors.cardAction),
         )
       }

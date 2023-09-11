@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.mapper.status
 
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Companion.byString
 import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
@@ -19,6 +20,7 @@ fun Status.toUiData(): StatusUiData {
     reblogged = reblog?.reblogged ?: reblogged,
     bookmarked = reblog?.bookmarked ?: bookmarked,
     rebloggedAvatar = account.avatar,
+    visibility = byString(visibility),
     fullname = reblog?.account?.fullname ?: account.fullname,
     createdAt = reblog?.createdAt ?: createdAt,
     accountEmojis = (reblog?.account?.emojis ?: account.emojis).toImmutableList(),

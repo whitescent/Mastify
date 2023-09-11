@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 fun ReblogButton(
   reblogged: Boolean,
   modifier: Modifier = Modifier,
+  enabled: Boolean = true,
   unreblogColor: Color = AppTheme.colors.cardAction,
   onClick: (Boolean) -> Unit,
 ) {
@@ -38,17 +39,20 @@ fun ReblogButton(
   ClickableIcon(
     painter = painterResource(if (reblogState) R.drawable.share_fill else R.drawable.share_fat),
     modifier = modifier.scale(reblogScaleAnimatable.value).rotate(reblogRotateAnimatable.value),
-    tint = animatedReblogIconColor,
+    tint = if (enabled) animatedReblogIconColor else unreblogColor.copy(0.34f),
+    enabled = enabled
   ) {
-    reblogState = !reblogState
-    onClick(reblogState)
-    scope.launch {
-      reblogRotateAnimatable.animateTo(
-        targetValue = if (reblogRotateAnimatable.value == 0f) 360f else 0f,
-        animationSpec = tween(durationMillis = 300)
-      )
-      reblogScaleAnimatable.animateTo(1.4f, animationSpec = tween(durationMillis = 150))
-      reblogScaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 150))
+    if (enabled) {
+      reblogState = !reblogState
+      onClick(reblogState)
+      scope.launch {
+        reblogRotateAnimatable.animateTo(
+          targetValue = if (reblogRotateAnimatable.value == 0f) 360f else 0f,
+          animationSpec = tween(durationMillis = 300)
+        )
+        reblogScaleAnimatable.animateTo(1.4f, animationSpec = tween(durationMillis = 150))
+        reblogScaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 150))
+      }
     }
   }
 }

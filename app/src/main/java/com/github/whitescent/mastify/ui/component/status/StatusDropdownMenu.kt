@@ -62,9 +62,10 @@ fun StatusDropdownMenu(
           )
         )
       )
-      add(MenuAction("隐藏 $statusUiData.fullname", R.drawable.eye_hide, StatusAction.Mute))
-      add(MenuAction("屏蔽 $statusUiData.fullname", R.drawable.block, StatusAction.Block))
+      add(MenuAction("隐藏 ${statusUiData.fullname}", R.drawable.eye_hide, StatusAction.Mute))
+      add(MenuAction("屏蔽 ${statusUiData.fullname}", R.drawable.block, StatusAction.Block))
       add(MenuAction("举报", R.drawable.report, StatusAction.Report))
+      // TODO Localized String
     }
     Popup(
       onDismissRequest = onDismissRequest,

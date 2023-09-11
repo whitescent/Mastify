@@ -14,13 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 
 @Composable
-fun AnimatedCountText(
-  count: Int,
+fun AnimatedText(
+  text: String,
   modifier: Modifier = Modifier,
   style: TextStyle = LocalTextStyle.current
 ) =
   AnimatedContent(
-    targetState = count,
+    targetState = text,
     transitionSpec = {
       if (targetState > initialState) {
         (slideInVertically { height -> height } + fadeIn())
@@ -34,6 +34,6 @@ fun AnimatedCountText(
     },
     label = "",
     modifier = modifier
-  ) { targetCount ->
-    Text(text = "$targetCount", style = style)
+  ) { targetText ->
+    Text(text = targetText, style = style)
   }

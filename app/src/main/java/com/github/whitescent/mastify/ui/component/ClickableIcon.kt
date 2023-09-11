@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 fun ClickableIcon(
   painter: Painter,
   modifier: Modifier = Modifier,
+  enabled: Boolean = true,
   tint: Color = LocalContentColor.current,
   onClick: (() -> Unit)? = null
 ) {
@@ -32,6 +33,7 @@ fun ClickableIcon(
         radius = 20.dp,
         color = Color.Gray
       ),
+      enabled = enabled
     ),
     tint = tint
   )
