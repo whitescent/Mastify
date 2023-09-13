@@ -252,8 +252,8 @@ fun Home(
                 modifier = Modifier
                   .padding(24.dp)
                   .align(Alignment.End)
-                  .background(AppTheme.colors.primaryGradient, CircleShape)
                   .shadow(6.dp, CircleShape)
+                  .background(AppTheme.colors.primaryGradient, CircleShape)
                   .clickable {
                     navigator.navigate(PostDestination)
                   }
