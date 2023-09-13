@@ -6,7 +6,6 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -15,16 +14,16 @@ import androidx.core.view.WindowCompat
 
 @Composable
 fun MastifyTheme(
-  darkTheme: Boolean = isSystemInDarkTheme(),
+  isDark: Boolean = isSystemInDarkTheme(),
   content: @Composable () -> Unit
 ) {
-  val colorScheme = LocalMastifyColors.current
+  val colorScheme = if (isDark) DarkColorScheme else LightColorScheme
   val view = LocalView.current
   if (!view.isInEditMode) {
     SideEffect {
       val window = (view.context as Activity).window
       window.statusBarColor = colorScheme.primaryContent.toArgb()
-      WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+      WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = isDark
     }
   }
   val customTextSelectionColors = TextSelectionColors(
@@ -33,10 +32,8 @@ fun MastifyTheme(
   )
   CompositionLocalProvider(
     LocalTextSelectionColors provides customTextSelectionColors,
+    LocalMastifyColors provides colorScheme,
   ) {
     content.invoke()
-  }
-  LaunchedEffect(darkTheme) {
-    if (darkTheme) colorScheme.toggleToDarkColor() else colorScheme.toggleToLightColor()
   }
 }

@@ -284,7 +284,7 @@ private fun StatusContent(
                 maxLines = 1,
               )
               when (statusUiData.visibility) {
-                StatusUiData.Visibility.PRIVATE -> {
+                StatusUiData.Visibility.Private -> {
                   Icon(
                     painter = painterResource(id = R.drawable.lock),
                     contentDescription = null,
@@ -292,7 +292,7 @@ private fun StatusContent(
                     tint = AppTheme.colors.cardMenu,
                   )
                 }
-                StatusUiData.Visibility.UNLISTED -> {
+                StatusUiData.Visibility.Unlisted -> {
                   Icon(
                     painter = painterResource(id = R.drawable.lock_open),
                     contentDescription = null,

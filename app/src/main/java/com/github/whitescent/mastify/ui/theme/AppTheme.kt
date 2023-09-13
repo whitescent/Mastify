@@ -1,14 +1,15 @@
 package com.github.whitescent.mastify.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 
 object AppTheme {
 
-  val colors: MastifyColorsInterface
+  val colors: MastifyColorScheme
     @Composable
     @ReadOnlyComposable
-    get() = LocalMastifyColors.current
+    get() = if (isSystemInDarkTheme()) DarkColorScheme else LightColorScheme
 
   val typography: MastifyTypography
     @Composable

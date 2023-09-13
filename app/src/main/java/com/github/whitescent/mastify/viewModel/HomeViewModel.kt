@@ -85,8 +85,8 @@ class HomeViewModel @Inject constructor(
             timelineDao.clearAll(activeAccount.id)
             timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
           } else {
-            val lastStatusInApi = items.last()
-            if (timelineFlow.value.any { it.id == lastStatusInApi.id }) {
+            val lastStatusOfApi = items.last()
+            if (timelineFlow.value.any { it.id == lastStatusOfApi.id }) {
               val newStatusList = items.filterNot {
                 timelineFlow.value.any { saved -> saved.id == it.id }
               }
@@ -101,6 +101,10 @@ class HomeViewModel @Inject constructor(
                 newStatusCount = newStatusCount.toString()
               )
               reinsertAllStatus(items + statusListAfterIndex, activeAccount.id)
+            } else {
+              // If the last status returned by the API cannot be found in the saved status list,
+              // This means that the number of statuses in the user's timeline exceeds
+              // the number of statuses in a single API request, and we need to display 'Load More'
             }
           }
         }

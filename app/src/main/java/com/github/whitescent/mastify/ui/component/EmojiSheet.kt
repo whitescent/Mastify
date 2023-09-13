@@ -52,7 +52,7 @@ fun EmojiSheet(
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,
     windowInsets = WindowInsets(0, WindowInsets.statusBars.getTop(LocalDensity.current), 0, 0),
-    containerColor = AppTheme.colors.background
+    containerColor = AppTheme.colors.bottomSheetBackground
   ) {
     val category by remember(emojis) { mutableStateOf(emojis.groupBy { it.category }) }
     Column {

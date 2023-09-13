@@ -53,29 +53,29 @@ data class StatusUiData(
 
   enum class Visibility {
 
-    PUBLIC, UNLISTED, PRIVATE, DIRECT, UNKNOWN;
+    Public, Unlisted, Private, Direct, Unknown;
 
-    val rebloggingAllowed get() = (this == PUBLIC || this == UNLISTED)
+    val rebloggingAllowed get() = (this == Public || this == Unlisted)
 
-    fun serverString(): String {
+    override fun toString(): String {
       return when (this) {
-        PUBLIC -> "public"
-        UNLISTED -> "unlisted"
-        PRIVATE -> "private"
-        DIRECT -> "direct"
-        UNKNOWN -> "unknown"
+        Public -> "public"
+        Unlisted -> "unlisted"
+        Private -> "private"
+        Direct -> "direct"
+        Unknown -> "unknown"
       }
     }
 
     companion object {
       fun byString(s: String): Visibility {
         return when (s) {
-          "public" -> PUBLIC
-          "unlisted" -> UNLISTED
-          "private" -> PRIVATE
-          "direct" -> DIRECT
-          "unknown" -> UNKNOWN
-          else -> UNKNOWN
+          "public" -> Public
+          "unlisted" -> Unlisted
+          "private" -> Private
+          "direct" -> Direct
+          "unknown" -> Unknown
+          else -> Unknown
         }
       }
     }

@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -50,6 +51,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Direct
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Private
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Public
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Unlisted
 import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.extensions.insertString
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
@@ -78,9 +83,11 @@ fun Post(
 ) {
   val focusRequester = remember { FocusRequester() }
   var isFocused by remember { mutableStateOf(false) }
-  var openSheet by remember { mutableStateOf(false) }
+  var openEmojiSheet by remember { mutableStateOf(false) }
+  var openVisibilitySheet by remember { mutableStateOf(false) }
 
-  val sheetState = rememberModalBottomSheetState()
+  val emojiSheetState = rememberModalBottomSheetState()
+  val visibilitySheetState = rememberModalBottomSheetState()
   val keyboard = LocalSoftwareKeyboardController.current
   val scope = rememberCoroutineScope()
   val postTextField = viewModel.postTextField
@@ -127,18 +134,33 @@ fun Post(
         Surface(
           color = AppTheme.colors.background,
           shape = RoundedCornerShape(6.dp),
-          border = BorderStroke(1.dp, Color(0xFF777777))
+          border = BorderStroke(1.dp, Color(0xFF777777)),
+          onClick = {
+            openVisibilitySheet = true
+          }
         ) {
           CenterRow(Modifier.padding(vertical = 6.dp, horizontal = 12.dp)) {
             Icon(
-              painter = painterResource(id = R.drawable.globe),
+              painter = when (state.visibility) {
+                Public -> painterResource(R.drawable.globe)
+                Unlisted -> painterResource(R.drawable.lock_open)
+                Private -> painterResource(R.drawable.lock)
+                Direct -> painterResource(R.drawable.at)
+                else -> throw IllegalArgumentException("Invalid visibility")
+              },
               contentDescription = null,
               modifier = Modifier.size(20.dp),
               tint = Color(0xFF777777)
             )
             WidthSpacer(value = 4.dp)
             Text(
-              text = "公开",
+              text = when (state.visibility) {
+                Public -> "对所有人公开"
+                Unlisted -> "在公共时间轴中隐藏"
+                Private -> "仅关注者可见"
+                Direct -> "仅提及的人可见"
+                else -> throw IllegalArgumentException("Invalid visibility")
+              },
               color = Color(0xFF777777)
             )
           }
@@ -165,34 +187,51 @@ fun Post(
       postState = state.postState,
       postStatus = viewModel::postStatus
     ) {
-      openSheet = true
+      openEmojiSheet = true
     }
   }
-  if (openSheet) {
-    EmojiSheet(
-      sheetState = sheetState,
-      emojis = state.emojis,
-      onDismissRequest = { openSheet = false },
-      onSelectEmoji = {
-        viewModel.updateTextFieldValue(
-          textFieldValue = viewModel.postTextField.copy(
-            text = viewModel.postTextField.text.insertString(
-              insert = it,
-              index = viewModel.postTextField.selection.start
-            ),
-            selection = TextRange(viewModel.postTextField.selection.start + it.length)
+  when {
+    openEmojiSheet -> {
+      EmojiSheet(
+        sheetState = emojiSheetState,
+        emojis = state.emojis,
+        onDismissRequest = { openEmojiSheet = false },
+        onSelectEmoji = {
+          viewModel.updateTextFieldValue(
+            textFieldValue = viewModel.postTextField.copy(
+              text = viewModel.postTextField.text.insertString(
+                insert = it,
+                index = viewModel.postTextField.selection.start
+              ),
+              selection = TextRange(viewModel.postTextField.selection.start + it.length)
+            )
           )
-        )
-        scope.launch {
-          sheetState.hide()
-        }.invokeOnCompletion {
-          openSheet = false
-          keyboard?.show()
+          scope.launch {
+            emojiSheetState.hide()
+          }.invokeOnCompletion {
+            openEmojiSheet = false
+            keyboard?.show()
+          }
         }
-      }
-    )
+      )
+    }
+    openVisibilitySheet -> {
+      PostVisibilitySheet(
+        sheetState = visibilitySheetState,
+        currentVisibility = state.visibility,
+        onDismissRequest = { openVisibilitySheet = false },
+        onVisibilityUpdated = {
+          viewModel.updateVisibility(it)
+          scope.launch {
+            visibilitySheetState.hide()
+          }.invokeOnCompletion {
+            openVisibilitySheet = false
+          }
+        },
+      )
+    }
   }
-  BackHandler(sheetState.isVisible) { openSheet = false }
+  BackHandler(emojiSheetState.isVisible) { openEmojiSheet = false }
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }
@@ -201,6 +240,7 @@ fun Post(
       navigator.popBackStack()
     }
   }
+  MaterialTheme
 }
 
 @Composable

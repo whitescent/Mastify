@@ -1,16 +1,12 @@
 package com.github.whitescent.mastify.ui.theme
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
 @Stable
-interface MastifyColorsInterface {
+interface MastifyColorScheme {
   val primaryContent: Color
   val primaryGradient: Brush
   val accent: Color
@@ -21,174 +17,111 @@ interface MastifyColorsInterface {
   val cardBackground: Color
   val secondaryContent: Color
   val cardCaption: Color
-    get() = Color(0xFFBAC9DF)
   val cardCaption60: Color
-    get() = Color(0x99BAC9DF)
   val cardMenu: Color
-    get() = Color(0xFFBAC9DF)
   val cardAction: Color
-    get() = Color(0xFF7E8C9F)
   val cardLike: Color
-    get() = Color(0xFFEF7096)
   val replyLine: Color
   val hintText: Color
-    get() = Color(0xFF1d9bf0)
-  val reblogged: Color get() = Color(0xFF18BE64)
+  val reblogged: Color
   val replyTextFieldBackground: Color
   val replyTextFieldBorder: Color
   val followButton: Color
   val unfollowButton: Color
   val defaultHeader: Color
   val divider: Color
+  val bottomSheetBackground: Color
+  val bottomSheetItemBackground: Color
+  val bottomSheetItemSelectedIcon: Color
+  val bottomSheetItemSelectedBackground: Color
+  val bottomSheetSelectedBorder: Color
+  val isLight: Boolean
 }
 
-private object LightColors : MastifyColorsInterface {
-  override val primaryContent: Color
-    get() = Color(0xFF081B34)
+open class ColorSchemeImpl(
+  override val primaryContent: Color,
+  override val primaryGradient: Brush,
+  override val accent: Color,
+  override val accent10: Color,
+  override val background: Color,
+  override val secondaryBackground: Color,
+  override val bottomBarBackground: Color,
+  override val cardBackground: Color,
+  override val secondaryContent: Color,
+  override val cardCaption: Color = Color(0xFFBAC9DF),
+  override val cardCaption60: Color = Color(0x99BAC9DF),
+  override val cardMenu: Color = Color(0xFFBAC9DF),
+  override val cardAction: Color = Color(0xFF7E8C9F),
+  override val cardLike: Color = Color(0xFFEF7096),
+  override val replyLine: Color,
+  override val hintText: Color,
+  override val reblogged: Color,
+  override val replyTextFieldBackground: Color,
+  override val replyTextFieldBorder: Color,
+  override val followButton: Color,
+  override val unfollowButton: Color,
+  override val defaultHeader: Color,
+  override val divider: Color,
+  override val bottomSheetBackground: Color,
+  override val bottomSheetItemBackground: Color,
+  override val bottomSheetItemSelectedIcon: Color,
+  override val bottomSheetItemSelectedBackground: Color,
+  override val bottomSheetSelectedBorder: Color,
+  override val isLight: Boolean,
+) : MastifyColorScheme
 
-  override val primaryGradient: Brush
-    get() = Brush.linearGradient(listOf(Color(0xFF143D73), Color(0xFF081B34)))
+object LightColorScheme : ColorSchemeImpl(
+  primaryContent = Color(0xFF081B34),
+  primaryGradient = Brush.linearGradient(listOf(Color(0xFF143D73), Color(0xFF081B34))),
+  accent = Color(0xFF046FFF),
+  accent10 = Color(0xE6046FFF).copy(alpha = 0.1f),
+  background = Color.White,
+  secondaryBackground = Color.White,
+  bottomBarBackground = Color.White,
+  cardBackground = Color.White,
+  secondaryContent = Color(0xFF7489A6),
+  replyLine = Color(0xFFcfd9de),
+  hintText = Color(0xFF7489A6),
+  reblogged = Color(0xFF046FFF),
+  replyTextFieldBackground = Color(0xFFF4F4F4),
+  replyTextFieldBorder = Color(0xFFE6E6E6),
+  followButton = Color(0xFF046FFF),
+  unfollowButton = Color.White,
+  defaultHeader = Color(0xFF046FFF),
+  divider = Color(0xFFD7D7D7).copy(0.5f),
+  bottomSheetBackground = Color.White,
+  bottomSheetItemBackground = Color(0xFFE2E4E9).copy(0.4f),
+  bottomSheetItemSelectedIcon = Color(0xFF1E72E2),
+  bottomSheetItemSelectedBackground = Color(0xFFE2E4E9).copy(0.4f),
+  bottomSheetSelectedBorder = Color(0xFFAAC8F5),
+  isLight = true
+)
 
-  override val accent: Color
-    get() = Color(0xFF046FFF)
+object DarkColorScheme : ColorSchemeImpl(
+  primaryContent = Color.White,
+  primaryGradient = Brush.linearGradient(listOf(Color(0xFF143D73), Color(0xFF081B34))),
+  accent = Color(0xFF046FFF),
+  accent10 = Color(0xE6046FFF).copy(alpha = 0.1f),
+  background = Color(0xFF141417),
+  secondaryBackground = Color.Black,
+  bottomBarBackground = Color(0xFF242424),
+  cardBackground = Color(0x0FFFFFFF),
+  secondaryContent = Color(0xFF7489A6),
+  replyLine = Color(0xFF333638),
+  hintText = Color(0xFF7489A6),
+  reblogged = Color(0xFF046FFF),
+  replyTextFieldBackground = Color(0xFF282828),
+  replyTextFieldBorder = Color(0xFF454545),
+  followButton = Color.White,
+  unfollowButton = Color.Black,
+  defaultHeader = Color(0xFF1f9ff1),
+  divider = Color(0xFFD7D7D7).copy(0.1f),
+  bottomSheetBackground = Color(0xFF31323A),
+  bottomSheetItemBackground = Color(0xFF24252B).copy(0.6f),
+  bottomSheetItemSelectedIcon = Color.White,
+  bottomSheetItemSelectedBackground = Color(0xFF4E5059).copy(0.4f),
+  bottomSheetSelectedBorder = Color.White.copy(0.2f),
+  isLight = false
+)
 
-  override val accent10: Color
-    get() = Color(0xE6046FFF).copy(alpha = 0.1f)
-
-  override val background: Color
-    get() = Color.White
-
-  override val secondaryBackground: Color
-    get() = Color(0xFFFFFFFF)
-
-  override val bottomBarBackground: Color
-    get() = secondaryBackground
-
-  override val cardBackground: Color
-    get() = secondaryBackground
-
-  override val secondaryContent: Color
-    get() = Color(0xFF7489A6)
-
-  override val replyLine: Color
-    get() = Color(0xFFcfd9de)
-
-  override val replyTextFieldBackground: Color
-    get() = Color(0xFFF4F4F4)
-
-  override val replyTextFieldBorder: Color
-    get() = Color(0xFFE6E6E6)
-
-  override val followButton: Color
-    get() = accent
-
-  override val unfollowButton: Color
-    get() = Color.White
-
-  override val defaultHeader: Color
-    get() = accent10
-
-  override val divider: Color
-    get() = Color(0xFFD7D7D7).copy(0.5f)
-}
-
-private object DarkColors : MastifyColorsInterface {
-  override val primaryContent: Color
-    get() = Color.White
-
-  override val primaryGradient: Brush
-    get() = Brush.linearGradient(listOf(Color(0xFF143D73), Color(0xFF081B34)))
-
-  override val accent: Color
-    get() = Color(0xFF046FFF)
-
-  override val accent10: Color
-    get() = Color(0xE6046FFF)
-
-  override val background: Color
-    get() = Color(0xFF141417)
-
-  override val secondaryBackground: Color
-    get() = Color.Black
-
-  override val bottomBarBackground: Color
-    get() = Color(0xFF242424)
-
-  override val cardBackground: Color
-    get() = Color(0x0FFFFFFF)
-
-  override val secondaryContent: Color
-    get() = Color(0xFF7489A6)
-
-  override val replyLine: Color
-    get() = Color(0xFF333638)
-
-  override val replyTextFieldBackground: Color
-    get() = Color(0xFF282828)
-
-  override val replyTextFieldBorder: Color
-    get() = Color(0xFF454545)
-
-  override val followButton: Color
-    get() = Color.White
-
-  override val unfollowButton: Color
-    get() = Color.Black
-
-  override val defaultHeader: Color
-    get() = Color(0xFF1f9ff1)
-
-  override val divider: Color
-    get() = Color(0xFFD7D7D7).copy(0.1f)
-}
-
-class MastifyColors : MastifyColorsInterface {
-
-  var isLight by mutableStateOf(true)
-    private set
-
-  private val currentColors by derivedStateOf {
-    if (isLight) LightColors else DarkColors
-  }
-
-  fun toggleTheme() { isLight = !isLight }
-  fun toggleToLightColor() { isLight = true }
-  fun toggleToDarkColor() { isLight = false }
-
-  override val primaryContent: Color
-    get() = currentColors.primaryContent
-  override val primaryGradient: Brush
-    get() = currentColors.primaryGradient
-  override val accent: Color
-    get() = currentColors.accent
-  override val accent10: Color
-    get() = currentColors.accent10
-  override val background: Color
-    get() = currentColors.background
-  override val secondaryBackground: Color
-    get() = currentColors.secondaryBackground
-  override val bottomBarBackground: Color
-    get() = currentColors.bottomBarBackground
-  override val cardBackground: Color
-    get() = currentColors.cardBackground
-  override val secondaryContent: Color
-    get() = currentColors.secondaryContent
-  override val replyLine: Color
-    get() = currentColors.replyLine
-  override val replyTextFieldBackground: Color
-    get() = currentColors.replyTextFieldBackground
-  override val replyTextFieldBorder: Color
-    get() = currentColors.replyTextFieldBorder
-  override val followButton: Color
-    get() = currentColors.followButton
-  override val unfollowButton: Color
-    get() = currentColors.unfollowButton
-  override val defaultHeader: Color
-    get() = currentColors.defaultHeader
-  override val divider: Color
-    get() = currentColors.divider
-}
-
-val LocalMastifyColors = staticCompositionLocalOf {
-  MastifyColors()
-}
+val LocalMastifyColors = staticCompositionLocalOf<MastifyColorScheme> { LightColorScheme }

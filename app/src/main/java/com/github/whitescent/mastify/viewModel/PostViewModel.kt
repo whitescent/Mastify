@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.InstanceUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.network.MastodonApi
@@ -55,7 +56,7 @@ class PostViewModel @Inject constructor(
           status = postTextField.text,
           warningText = "",
           inReplyToId = null,
-          visibility = "public", // TODO
+          visibility = uiState.visibility.toString(),
           sensitive = false, // TODO
           mediaIds = null,
           mediaAttributes = null,
@@ -75,11 +76,16 @@ class PostViewModel @Inject constructor(
     }
   }
 
+  fun updateVisibility(visibility: Visibility) {
+    uiState = uiState.copy(visibility = visibility)
+  }
+
   fun updateTextFieldValue(textFieldValue: TextFieldValue) { postTextField = textFieldValue }
 }
 
 data class PostUiState(
   val instanceUiData: InstanceUiData = InstanceUiData(),
   val emojis: ImmutableList<Emoji> = persistentListOf(),
-  val postState: PostState = PostState.Idle
+  val postState: PostState = PostState.Idle,
+  val visibility: Visibility = Visibility.Public
 )

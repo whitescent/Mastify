@@ -107,7 +107,8 @@ fun ReplyTextField(
                 Text(
                   text = targetAccount.realDisplayName,
                   fontSize = 16.sp,
-                  fontWeight = FontWeight.Medium
+                  fontWeight = FontWeight.Medium,
+                  color = AppTheme.colors.primaryContent
                 )
               }
               HeightSpacer(value = 8.dp)
