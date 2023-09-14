@@ -183,7 +183,7 @@ fun Post(
     AppHorizontalDivider()
     PostToolBar(
       modifier = Modifier.padding(12.dp),
-      enabledPostButton = viewModel.postTextField.text.isNotEmpty(),
+      enabledPostButton = viewModel.postTextField.text.isNotEmpty() && !state.textExceedLimit,
       postState = state.postState,
       postStatus = viewModel::postStatus
     ) {

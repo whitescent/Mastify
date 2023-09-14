@@ -80,12 +80,18 @@ class PostViewModel @Inject constructor(
     uiState = uiState.copy(visibility = visibility)
   }
 
-  fun updateTextFieldValue(textFieldValue: TextFieldValue) { postTextField = textFieldValue }
+  fun updateTextFieldValue(textFieldValue: TextFieldValue) {
+    postTextField = textFieldValue
+    uiState = uiState.copy(
+      textExceedLimit = postTextField.text.length > uiState.instanceUiData.maximumTootCharacters!!
+    )
+  }
 }
 
 data class PostUiState(
   val instanceUiData: InstanceUiData = InstanceUiData(),
   val emojis: ImmutableList<Emoji> = persistentListOf(),
   val postState: PostState = PostState.Idle,
-  val visibility: Visibility = Visibility.Public
+  val visibility: Visibility = Visibility.Public,
+  val textExceedLimit: Boolean = false,
 )
