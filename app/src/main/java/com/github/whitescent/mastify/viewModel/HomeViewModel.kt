@@ -34,7 +34,7 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
   private val timelineDao = db.timelineDao()
-  private val timelineFetchNumber = 30
+  private val timelineFetchNumber = 40
   private var initialKey: String? = null
   private var isInitialLoad = false
 
@@ -192,5 +192,6 @@ sealed interface StatusAction {
   data class Bookmark(val id: String, val bookmark: Boolean) : StatusAction
   data class Reblog(val id: String, val reblog: Boolean) : StatusAction
 
-  val canShowSnackBar get() = this is CopyText || this is CopyLink || this is Bookmark
+  val canShowSnackBar get() = this is CopyText || this is CopyLink ||
+    (this is Bookmark && this.bookmark)
 }

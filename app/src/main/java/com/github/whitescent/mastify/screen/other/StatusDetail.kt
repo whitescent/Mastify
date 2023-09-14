@@ -57,6 +57,8 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
+import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
+import com.github.whitescent.mastify.ui.component.status.StatusSnackBarType
 import com.github.whitescent.mastify.ui.component.statusComment
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.StatusDetailTransitions
@@ -98,6 +100,12 @@ fun StatusDetail(
   val threadInReply = status.reblog?.isInReplyTo ?: status.isInReplyTo
 
   var openSheet by remember { mutableStateOf(false) }
+  var showSnackBar by remember { mutableStateOf(false) }
+  var snackBarType by remember { mutableStateOf(StatusSnackBarType.TEXT) }
+
+  // We need to synchronize the status of the bookmark in two places on this page,
+  // so we create a bookmark state at the top level
+  var bookmarkState by remember(status.bookmarked) { mutableStateOf(status.bookmarked) }
 
   Column(Modifier.fillMaxSize()) {
     Spacer(Modifier.statusBarsPadding())
@@ -120,12 +128,23 @@ fun StatusDetail(
     when (threadInReply) {
       true -> {
         StatusDetailInReply(
-          status = status,
+          status = status.copy(bookmarked = bookmarkState),
           lazyState = lazyState,
           ancestors = state.ancestors.toImmutableList(),
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
-          action = { viewModel.onStatusAction(it, context) },
+          action = {
+            viewModel.onStatusAction(it, context)
+            if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
+            if (it.canShowSnackBar) {
+              snackBarType = when (it) {
+                is StatusAction.CopyLink -> StatusSnackBarType.LINK
+                is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
+                else -> StatusSnackBarType.TEXT
+              }
+              showSnackBar = true
+            }
+          },
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -152,11 +171,22 @@ fun StatusDetail(
       }
       else -> {
         StatusDetailContent(
-          status = status,
+          status = status.copy(bookmarked = bookmarkState),
           lazyState = lazyState,
           descendants = state.descendants.toImmutableList(),
           loading = state.loading,
-          action = { viewModel.onStatusAction(it, context) },
+          action = {
+            viewModel.onStatusAction(it, context)
+            if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
+            if (it.canShowSnackBar) {
+              snackBarType = when (it) {
+                is StatusAction.CopyLink -> StatusSnackBarType.LINK
+                is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
+                else -> StatusSnackBarType.TEXT
+              }
+              showSnackBar = true
+            }
+          },
           navigateToDetail = {
             if (it.id != status.actionableId) {
               navigator.navigate(
@@ -176,10 +206,15 @@ fun StatusDetail(
             )
           },
           navigateToProfile = { navigator.navigate(ProfileDestination(it)) },
-          modifier = Modifier.weight(1f)
+          modifier = Modifier.weight(1f),
         )
       }
     }
+    StatusSnackBar(
+      show = showSnackBar,
+      snackBarType = snackBarType,
+      modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+    ) { showSnackBar = false }
     ReplyTextField(
       targetAccount = viewModel.navArgs.status.account,
       fieldValue = replyText,
@@ -331,7 +366,7 @@ fun StatusDetailInReply(
       else -> {
         statusComment(
           descendants = descendants,
-          action = { },
+          action = action,
           navigateToDetail = navigateToDetail,
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile

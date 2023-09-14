@@ -103,7 +103,7 @@ object StatusDetailTransitions : DestinationStyle.Animated {
           towards = End,
           animationSpec = tween(slideAnimationTween)
         )
-      StatusDetailDestination ->
+      StatusDetailDestination, ProfileDestination ->
         slideOutOfContainer(
           towards = Start,
           animationSpec = tween(slideAnimationTween)
@@ -113,8 +113,7 @@ object StatusDetailTransitions : DestinationStyle.Animated {
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
     return when {
-      (initialState.appDestination() == StatusMediaScreenDestination ||
-        initialState.appDestination() == ProfileDestination) -> fadeIn()
+      initialState.appDestination() == StatusMediaScreenDestination -> fadeIn()
       else -> slideIntoContainer(
         towards = End,
         animationSpec = tween(slideAnimationTween)

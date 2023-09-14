@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -31,6 +33,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -45,6 +48,7 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.status.action.BookmarkButton
 import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
 import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -66,6 +70,8 @@ fun StatusDetailCard(
   var hideSensitiveContent by rememberSaveable(status.sensitive, status.spoilerText) {
     mutableStateOf(status.sensitive && status.spoilerText.isNotEmpty())
   }
+  var openMenu by remember { mutableStateOf(false) }
+  var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
@@ -132,8 +138,23 @@ fun StatusDetailCard(
         ClickableIcon(
           painter = painterResource(id = R.drawable.more),
           tint = AppTheme.colors.cardMenu,
-          modifier = Modifier.size(18.dp),
+          modifier = Modifier
+            .size(18.dp)
+            .onSizeChanged {
+              pressOffset = IntOffset(x = -it.width, y = it.height)
+            },
+          onClick = { openMenu = true }
         )
+        StatusDropdownMenu(
+          expanded = openMenu,
+          enableCopyText = status.content.isNotEmpty(),
+          statusUiData = status,
+          onDismissRequest = { openMenu = false },
+          offset = pressOffset
+        ) {
+          action(it)
+          openMenu = false
+        }
       }
       Crossfade(hideSensitiveContent) {
         when (it) {
@@ -147,18 +168,20 @@ fun StatusDetailCard(
             Column {
               if (status.content.isNotEmpty()) {
                 HeightSpacer(value = 4.dp)
-                HtmlText(
-                  text = status.content,
-                  style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-                  onLinkClick = { span ->
-                    launchCustomChromeTab(
-                      context = context,
-                      uri = Uri.parse(span),
-                      toolbarColor = primaryColor.toArgb(),
-                    )
-                  },
-                  overflow = TextOverflow.Ellipsis
-                )
+                SelectionContainer {
+                  HtmlText(
+                    text = status.content,
+                    style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
+                    onLinkClick = { span ->
+                      launchCustomChromeTab(
+                        context = context,
+                        uri = Uri.parse(span),
+                        toolbarColor = primaryColor.toArgb(),
+                      )
+                    },
+                    overflow = TextOverflow.Ellipsis
+                  )
+                }
               }
               if (status.attachments.isNotEmpty()) {
                 HeightSpacer(value = 4.dp)
@@ -187,7 +210,7 @@ fun StatusDetailCard(
 }
 
 @Composable
-fun StatusDetailActionsRow(
+private fun StatusDetailActionsRow(
   statusUiData: StatusUiData,
   action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
@@ -215,10 +238,12 @@ fun StatusDetailActionsRow(
     ) {
       action(StatusAction.Reblog(statusUiData.actionableId, it))
     }
-    ClickableIcon(
-      painter = painterResource(id = R.drawable.bookmark_simple),
+    BookmarkButton(
+      bookmarked = statusUiData.bookmarked,
       modifier = Modifier.size(statusDetailActionsIconSize),
-      tint = AppTheme.colors.primaryContent,
+      onClick = {
+        action(StatusAction.Bookmark(statusUiData.actionableId, it))
+      }
     )
     ClickableIcon(
       painter = painterResource(id = R.drawable.share_network),
@@ -229,7 +254,7 @@ fun StatusDetailActionsRow(
 }
 
 @Composable
-fun StatusDetailInfo(
+private fun StatusDetailInfo(
   reblogsCount: Int,
   favouritesCount: Int,
   createdAt: String,
