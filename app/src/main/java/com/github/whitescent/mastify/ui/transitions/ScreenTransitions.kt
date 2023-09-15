@@ -16,6 +16,7 @@ import com.github.whitescent.mastify.screen.appDestination
 import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.OauthDestination
+import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -25,7 +26,7 @@ object AppTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return when (initialState.appDestination()) {
       HomeDestination -> scaleIn(tween(500), initialScale = 0.5f) + fadeIn()
-      LoginDestination, StatusDetailDestination, ProfileDestination -> {
+      LoginDestination, StatusDetailDestination, ProfileDestination, PostDestination -> {
         slideIntoContainer(
           towards = End,
           animationSpec = tween(slideAnimationTween)
