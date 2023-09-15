@@ -53,6 +53,8 @@
   <string name="unlisted">不列出</string>
   <string name="private_title">仅限关注者</string>
   <string name="direct">私信</string>
+  <string name="reply_placeholder">最近有什么新鲜事？</string>
+  <string name="post_placeholder">与大家分享你此刻的想法吧！</string>
 
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
   <string name="status_created_at_now">刚刚</string>

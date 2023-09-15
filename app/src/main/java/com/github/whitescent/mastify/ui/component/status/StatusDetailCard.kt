@@ -279,7 +279,7 @@ private fun StatusDetailInfo(
       application?.let {
         if (it.name.isNotEmpty()) {
           Text(
-            text = "来自 ${application.name}",
+            text = application.name,
             color = AppTheme.colors.hintText
           )
         }

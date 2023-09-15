@@ -120,7 +120,7 @@ fun Post(
         Box {
           if (postTextField.text.isEmpty()) {
             Text(
-              text = "最近有什么新鲜事呢？",
+              text = stringResource(id = R.string.post_placeholder),
               color = Color(0xFFB6B6B6),
               style = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
             )

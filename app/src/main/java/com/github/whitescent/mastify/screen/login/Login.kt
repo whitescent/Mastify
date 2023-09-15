@@ -45,7 +45,6 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.LoginTransitions
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.LoginStatus
@@ -157,7 +156,7 @@ fun Login(
           shape = RoundedCornerShape(14.dp),
           colors = ButtonDefaults.elevatedButtonColors(
             contentColor = Color.White,
-            containerColor = AppTheme.colors.accent,
+            containerColor = Color(0xFF378BED),
             disabledContainerColor = Color(0xFFDADADA)
           ),
           enabled = !viewModel.instanceLocalError

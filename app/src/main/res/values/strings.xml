@@ -55,6 +55,8 @@
   <string name="unlisted">Unlisted</string>
   <string name="private_title">Private</string>
   <string name="direct">Direct</string>
+  <string name="reply_placeholder">Anything you\'d like to share?</string>
+  <string name="post_placeholder">Share your thoughts at the moment!</string>
 
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
   <string name="status_created_at_now">now</string>

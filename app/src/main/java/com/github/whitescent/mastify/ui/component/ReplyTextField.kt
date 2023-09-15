@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -113,7 +114,7 @@ fun ReplyTextField(
               HeightSpacer(value = 8.dp)
             }
             Text(
-              text = fieldValue.text.ifEmpty { "有什么想要分享的？" },
+              text = fieldValue.text.ifEmpty { stringResource(id = R.string.reply_placeholder) },
               color = when (fieldValue.text.isEmpty()) {
                 true -> Color(0xFFB6B6B6)
                 else -> AppTheme.colors.primaryContent
@@ -126,7 +127,7 @@ fun ReplyTextField(
                   },
                   indication = null,
                   interactionSource = remember { MutableInteractionSource() }
-                )
+                ),
             )
           }
         }
@@ -205,7 +206,7 @@ private fun ReplyTextFieldWithToolBar(
       Box {
         if (fieldValue.text.isEmpty()) {
           Text(
-            text = "有什么想要分享的？",
+            text = stringResource(id = R.string.reply_placeholder),
             color = Color(0xFFB6B6B6)
           )
         }
