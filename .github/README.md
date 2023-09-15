@@ -1,5 +1,5 @@
 
-![banner](https://github.com/whitescent/Mastify/assets/31311826/d83d9dd7-07f9-4e6c-96b8-c843faf29da1)
+![Frame 75](https://github.com/whitescent/Mastify/assets/31311826/a0864e33-c716-4c23-80d9-d2db8fefe972)
 
 ## Mastify [WIP]
 
