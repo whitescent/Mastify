@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -65,6 +66,7 @@ import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
+import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -289,6 +291,9 @@ fun ProfileTabs(
       )
     },
     containerColor = Color.Transparent,
+    divider = {
+      AppHorizontalDivider(thickness = 1.dp)
+    },
   ) {
     tabs.forEachIndexed { index, tab ->
       val selected = selectedIndex == index
@@ -297,7 +302,8 @@ fun ProfileTabs(
         onClick = {
           selectedIndex = index
           onTabClick(index)
-        }
+        },
+        modifier = Modifier.clip(RoundedCornerShape(12.dp))
       ) {
         Text(
           text = when (tab) {
@@ -305,8 +311,8 @@ fun ProfileTabs(
             ProfileTabItem.REPLY -> "回复"
             else -> "媒体"
           },
-          fontSize = 18.sp,
-          fontWeight = FontWeight.Medium,
+          fontSize = 17.sp,
+          fontWeight = FontWeight(700),
           color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,
           modifier = Modifier.padding(12.dp)
         )
