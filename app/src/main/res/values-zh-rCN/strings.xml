@@ -29,6 +29,13 @@
   <string name="text_copied">文本内容已复制到剪贴板</string>
   <string name="link_copied">嘟文链接已复制到剪贴板</string>
   <string name="bookmarked_snackBar">已收藏到你的书签</string>
+  <string name="copy_text">复制文本内容</string>
+  <string name="copy_link">复制嘟文链接</string>
+  <string name="bookmark">添加到书签</string>
+  <string name="delete_bookmark">从书签中移除</string>
+  <string name="mute_account">隐藏 %s</string>
+  <string name="block_account">屏蔽 %s</string>
+  <string name="report">举报</string>
 
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>
@@ -40,6 +47,12 @@
   <plurals name="reblogs">
     <item quantity="other">%d 次转嘟</item>
   </plurals>
+
+  <!--  post screen-->
+  <string name="public_title">公开</string>
+  <string name="unlisted">不列出</string>
+  <string name="private_title">仅限关注者</string>
+  <string name="direct">私信</string>
 
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
   <string name="status_created_at_now">刚刚</string>

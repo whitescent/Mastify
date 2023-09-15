@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -50,11 +52,23 @@ fun StatusDropdownMenu(
   if (expanded) {
     val actions = mutableListOf<MenuAction>().apply {
       if (enableCopyText)
-        add(MenuAction("复制文本内容", R.drawable.copy, StatusAction.CopyText(statusUiData.parsedContent)))
-      add(MenuAction("复制链接", R.drawable.link_simple, StatusAction.CopyLink(statusUiData.link)))
+        add(
+          MenuAction(
+            text = R.string.copy_text,
+            icon = R.drawable.copy,
+            action = StatusAction.CopyText(statusUiData.parsedContent)
+          )
+        )
       add(
         MenuAction(
-          text = if (bookmarkState) "取消收藏" else "收藏到书签",
+          text = R.string.copy_link,
+          icon = R.drawable.link_simple,
+          action = StatusAction.CopyLink(statusUiData.link)
+        )
+      )
+      add(
+        MenuAction(
+          text = if (bookmarkState) R.string.delete_bookmark else R.string.bookmark,
           icon = if (bookmarkState) R.drawable.bookmark_fill else R.drawable.bookmark_simple,
           action = StatusAction.Bookmark(
             id = statusUiData.actionableId,
@@ -62,10 +76,9 @@ fun StatusDropdownMenu(
           )
         )
       )
-      add(MenuAction("隐藏 ${statusUiData.fullname}", R.drawable.eye_hide, StatusAction.Mute))
-      add(MenuAction("屏蔽 ${statusUiData.fullname}", R.drawable.block, StatusAction.Block))
-      add(MenuAction("举报", R.drawable.report, StatusAction.Report))
-      // TODO Localized String
+      add(MenuAction(R.string.mute_account, R.drawable.eye_hide, StatusAction.Mute))
+      add(MenuAction(R.string.block_account, R.drawable.block, StatusAction.Block))
+      add(MenuAction(R.string.report, R.drawable.report, StatusAction.Report))
     }
     Popup(
       onDismissRequest = onDismissRequest,
@@ -81,7 +94,13 @@ fun StatusDropdownMenu(
       ) {
         Column {
           actions.forEach {
-            StatusMenuListItem(it) {
+            StatusMenuListItem(
+              action = it,
+              targetActionFullname = when (it.textHasArgs) {
+                true -> statusUiData.fullname
+                else -> null
+              }
+            ) {
               if (it.action is StatusAction.Bookmark) bookmarkState = !bookmarkState
               actionHandler(it.action)
             }
@@ -96,6 +115,7 @@ fun StatusDropdownMenu(
 @Composable
 private fun StatusMenuListItem(
   action: MenuAction,
+  targetActionFullname: String?,
   onClick: () -> Unit
 ) {
   CenterRow(
@@ -114,22 +134,25 @@ private fun StatusMenuListItem(
     Icon(
       painter = painterResource(id = action.icon),
       contentDescription = null,
-      tint = if (action.icon != R.drawable.report) AppTheme.colors.primaryContent else Color(0xFFE75656),
+      tint = if (action.isNormalAction) AppTheme.colors.primaryContent else Color(0xFFE75656),
       modifier = Modifier.size(22.dp)
     )
     WidthSpacer(value = 8.dp)
     Text(
-      text = action.text,
-      color = if (action.icon != R.drawable.report) AppTheme.colors.primaryContent else Color(0xFFE75656),
+      text = stringResource(id = action.text, targetActionFullname ?: ""),
+      color = if (action.isNormalAction) AppTheme.colors.primaryContent else Color(0xFFE75656),
       fontSize = 16.sp,
       maxLines = 1,
-      overflow = TextOverflow.Ellipsis
+      overflow = TextOverflow.Ellipsis,
     )
   }
 }
 
-data class MenuAction(
-  val text: String, // TODO switch to @StringRes
+private data class MenuAction(
+  @StringRes val text: Int,
   @DrawableRes val icon: Int,
   val action: StatusAction
-)
+) {
+  val isNormalAction get() = this.action != StatusAction.Report
+  val textHasArgs get() = this.action is StatusAction.Mute || this.action is StatusAction.Block
+}

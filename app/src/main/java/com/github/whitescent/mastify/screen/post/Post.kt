@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -154,13 +155,15 @@ fun Post(
             )
             WidthSpacer(value = 4.dp)
             Text(
-              text = when (state.visibility) {
-                Public -> "对所有人公开"
-                Unlisted -> "在公共时间轴中隐藏"
-                Private -> "仅关注者可见"
-                Direct -> "仅提及的人可见"
-                else -> throw IllegalArgumentException("Invalid visibility")
-              },
+              text = stringResource(
+                id = when (state.visibility) {
+                  Public -> R.string.public_title
+                  Unlisted -> R.string.unlisted
+                  Private -> R.string.private_title
+                  Direct -> R.string.direct
+                  else -> throw IllegalArgumentException("Invalid visibility")
+                },
+              ),
               color = Color(0xFF777777)
             )
           }
