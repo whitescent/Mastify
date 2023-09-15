@@ -47,7 +47,8 @@ fun HomeTopBar(
           .size(42.dp),
         onClick = {
           openDrawer()
-        }
+        },
+        shape = AppTheme.shape.avatarShape
       )
     }
   }

@@ -190,7 +190,7 @@ fun StatusListItem(
 }
 
 @Composable
-fun StatusSource(
+private fun StatusSource(
   reblogAvatar: String,
   reblogDisplayName: String,
   navigateToProfile: () -> Unit

@@ -3,8 +3,8 @@ package com.github.whitescent.mastify.screen.profile
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -122,7 +123,8 @@ fun Profile(
           avatar = {
             CircleShapeAsyncImage(
               model = uiState.account.avatar,
-              modifier = Modifier.size(80.dp * (1 - profileLayoutState.progress))
+              modifier = Modifier.size(80.dp * (1 - profileLayoutState.progress)),
+              shape = AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp))
             )
           },
         )
@@ -182,13 +184,15 @@ fun ProfileTopBar(
     )
     AnimatedVisibility(
       visible = alpha >= 1,
-      enter = scaleIn() + fadeIn(),
-      exit = scaleOut() + fadeOut()
+      enter = slideInVertically { it } + fadeIn(),
+      exit = slideOutVertically { it / 2 } + fadeOut(),
+      modifier = Modifier.fillMaxSize()
     ) {
       CenterRow(Modifier.statusBarsPadding().padding(start = 24.dp).width(280.dp)) {
         CircleShapeAsyncImage(
           model = account.avatar,
-          modifier = Modifier.size(36.dp)
+          modifier = Modifier.size(36.dp),
+          shape = AppTheme.shape.avatarShape
         )
         WidthSpacer(value = 8.dp)
         Column {

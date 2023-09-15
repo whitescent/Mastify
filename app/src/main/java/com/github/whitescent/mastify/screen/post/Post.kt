@@ -244,7 +244,7 @@ fun Post(
 }
 
 @Composable
-fun PostToolBar(
+private fun PostToolBar(
   modifier: Modifier = Modifier,
   enabledPostButton: Boolean,
   postState: PostState,
@@ -311,7 +311,7 @@ fun PostToolBar(
 }
 
 @Composable
-fun PostTopBar(
+private fun PostTopBar(
   account: AccountEntity,
   back: () -> Unit,
 ) {
@@ -333,7 +333,7 @@ fun PostTopBar(
       WidthSpacer(value = 8.dp)
       CircleShapeAsyncImage(
         model = account.profilePictureUrl,
-        modifier = Modifier.size(36.dp),
+        modifier = Modifier.size(40.dp),
         shape = AppTheme.shape.avatarShape,
         onClick = { }
       )

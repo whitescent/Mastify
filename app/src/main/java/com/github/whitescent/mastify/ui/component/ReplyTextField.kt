@@ -93,20 +93,19 @@ fun ReplyTextField(
             if (fieldValue.text.isNotEmpty()) {
               CenterRow {
                 Icon(
-                  painter = painterResource(id = R.drawable.arrow_bend_up_right),
+                  painter = painterResource(id = R.drawable.reply_border_0_5),
                   contentDescription = null,
                   tint = AppTheme.colors.primaryContent,
                   modifier = Modifier.size(20.dp)
                 )
-                WidthSpacer(value = 6.dp)
                 CircleShapeAsyncImage(
                   model = targetAccount.avatar,
-                  modifier = Modifier.size(28.dp)
+                  modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
+                  shape = AppTheme.shape.avatarShape
                 )
-                WidthSpacer(value = 4.dp)
                 Text(
                   text = targetAccount.realDisplayName,
-                  fontSize = 16.sp,
+                  fontSize = 18.sp,
                   fontWeight = FontWeight.Medium,
                   color = AppTheme.colors.primaryContent
                 )
@@ -164,17 +163,16 @@ private fun ReplyTextFieldWithToolBar(
     )
     CenterRow {
       Icon(
-        painter = painterResource(id = R.drawable.arrow_bend_up_right),
+        painter = painterResource(id = R.drawable.reply_border_0_5),
         contentDescription = null,
         tint = AppTheme.colors.primaryContent,
         modifier = Modifier.size(20.dp)
       )
-      WidthSpacer(value = 6.dp)
       CircleShapeAsyncImage(
         model = targetAccount.avatar,
-        modifier = Modifier.size(28.dp)
+        modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
+        shape = AppTheme.shape.avatarShape
       )
-      WidthSpacer(value = 4.dp)
       Text(
         text = buildAnnotatedString {
           annotateInlineEmojis(
@@ -182,7 +180,7 @@ private fun ReplyTextFieldWithToolBar(
             targetAccount.emojis.toShortCode()
           )
         },
-        fontSize = 16.sp,
+        fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
         color = AppTheme.colors.primaryContent,
         inlineContent = inlineTextContentWithEmoji(targetAccount.emojis),

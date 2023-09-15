@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
@@ -116,7 +117,8 @@ fun AppDrawer(
           modifier = Modifier.size(72.dp),
           onClick = {
             navigateToProfile(activeAccount.toAccount())
-          }
+          },
+          shape = AppTheme.shape.avatarShape.copy(CornerSize(20.dp))
         )
         HeightSpacer(value = 6.dp)
         CenterRow {
@@ -183,7 +185,8 @@ fun AppDrawer(
             ) {
               CircleShapeAsyncImage(
                 model = account.profilePictureUrl,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(40.dp),
+                shape = AppTheme.shape.avatarShape
               )
               WidthSpacer(value = 8.dp)
               Text(
@@ -254,7 +257,7 @@ fun AppDrawer(
 }
 
 @Composable
-fun DrawerMenu() {
+private fun DrawerMenu() {
   AppDrawerMenu.values().forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
       AppHorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -264,7 +267,7 @@ fun DrawerMenu() {
 }
 
 @Composable
-fun DrawerMenuItem(icon: Int, name: Int, onClick: () -> Unit) {
+private fun DrawerMenuItem(icon: Int, name: Int, onClick: () -> Unit) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
