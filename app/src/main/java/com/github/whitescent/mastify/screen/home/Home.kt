@@ -22,15 +22,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.HorizontalDivider
@@ -57,17 +54,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
-import com.github.whitescent.mastify.data.model.ui.getReplyChainType
-import com.github.whitescent.mastify.data.model.ui.hasUnloadedParent
+import com.github.whitescent.mastify.mapper.status.getReplyChainType
+import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
@@ -82,6 +74,9 @@ import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBarType
+import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
+import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
+import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.utils.AppState
@@ -149,9 +144,9 @@ fun Home(
       when (timeline.size) {
         0 -> {
           when (uiState.timelineLoadState) {
-            LoadState.Error -> Error { viewModel.refreshTimeline() }
-            LoadState.NotLoading -> EmptyTimeline()
-            else -> Loading()
+            LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
+            LoadState.NotLoading -> EmptyStatusListPlaceholder()
+            else -> StatusListLoading(Modifier.fillMaxSize())
           }
         }
         else -> {
@@ -366,67 +361,5 @@ private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
       }
     }
     HeightSpacer(value = 12.dp)
-  }
-}
-
-@Composable
-private fun EmptyTimeline() {
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .verticalScroll(rememberScrollState()),
-    contentAlignment = Alignment.Center
-  ) { Text("你似乎还没关注其他人哦", fontSize = 18.sp) }
-}
-
-@Composable
-private fun Loading() {
-  val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.car))
-  val progress by animateLottieCompositionAsState(composition)
-  Box(
-    modifier = Modifier.fillMaxSize(),
-    contentAlignment = Alignment.Center
-  ) {
-    LottieAnimation(
-      composition = composition,
-      progress = { progress },
-    )
-  }
-}
-
-@Composable
-private fun Error(retry: () -> Unit) {
-  val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error))
-  val progress by animateLottieCompositionAsState(
-    composition = composition,
-    iterations = LottieConstants.IterateForever
-  )
-  Box(
-    modifier = Modifier.fillMaxSize(),
-    contentAlignment = Alignment.Center
-  ) {
-    Column(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-      LottieAnimation(
-        composition = composition,
-        progress = { progress },
-        modifier = Modifier.size(160.dp)
-      )
-      HeightSpacer(value = 4.dp)
-      Text(
-        text = "获取嘟文失败... :(",
-        fontWeight = FontWeight.Bold
-      )
-      HeightSpacer(value = 4.dp)
-      Button(
-        onClick = retry,
-      ) {
-        Text(
-          text = "重新获取",
-        )
-      }
-    }
   }
 }

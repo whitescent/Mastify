@@ -22,7 +22,7 @@ fun AvatarWithCover(
     }
     val coverPlaceable = placeables[0]
     val avatarPlaceable = placeables[1]
-    layout(constraints.maxWidth, coverPlaceable.height + avatarPlaceable.height / 2) {
+    layout(coverPlaceable.width, coverPlaceable.height + avatarPlaceable.height / 2) {
       coverPlaceable.place(0, 0)
       avatarPlaceable.place(startPadding, coverPlaceable.height - avatarPlaceable.height / 2)
     }

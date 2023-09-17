@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,21 +36,24 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +62,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -65,6 +71,9 @@ import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
+import com.github.whitescent.mastify.screen.destinations.ProfileDestination
+import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
+import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
@@ -83,6 +92,7 @@ import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
 data class ProfileNavArgs(
@@ -95,11 +105,14 @@ data class ProfileNavArgs(
 @Composable
 fun Profile(
   appState: AppState,
+  navigator: DestinationsNavigator,
   viewModel: ProfileViewModel = hiltViewModel()
 ) {
   val uiState = viewModel.uiState
   val accountStatus = viewModel.pager.collectAsLazyPagingItems()
   val profileLayoutState = rememberProfileLayoutState()
+  val statusListState = rememberLazyListState()
+  val context = LocalContext.current
   ProfileLayout(
     state = profileLayoutState,
     collapsingTop = {
@@ -125,7 +138,12 @@ fun Profile(
           avatar = {
             CircleShapeAsyncImage(
               model = uiState.account.avatar,
-              modifier = Modifier.size(80.dp * (1 - profileLayoutState.progress)),
+              modifier = Modifier
+                .graphicsLayer {
+                  scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
+                  scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
+                }
+                .size(80.dp),
               shape = AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp))
             )
           },
@@ -134,17 +152,73 @@ fun Profile(
         ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
       }
     },
+    enabledScroll = accountStatus.loadState.refresh is LoadState.NotLoading,
     bodyContent = {
       val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
+      var selectedTab by remember { mutableStateOf(0) }
       val pagerState = rememberPagerState { tabs.size }
       val scope = rememberCoroutineScope()
-      Column {
-        ProfileTabs(tabs) {
+      Column(
+        Modifier.heightIn(
+          max = when (
+            accountStatus.loadState.refresh is LoadState.Loading ||
+              accountStatus.loadState.refresh is LoadState.Error
+          ) {
+            true -> profileLayoutState.bodyContentMaxHeight
+            else -> Dp.Unspecified
+          }
+        )
+      ) {
+        ProfileTabs(tabs, selectedTab) {
+          if (selectedTab == 0 && it == 0) {
+            scope.launch {
+              statusListState.scrollToItem(0)
+            }.invokeOnCompletion { profileLayoutState.animatedToTop() }
+          }
+          selectedTab = it
           scope.launch {
             pagerState.scrollToPage(it)
           }
         }
-        ProfilePager(state = pagerState, accountStatus = accountStatus)
+        ProfilePager(
+          state = pagerState,
+          accountStatus = accountStatus,
+          statusListState = statusListState,
+          action = {
+            viewModel.onStatusAction(it, context)
+            // if (it.canShowSnackBar) { // There may be a better approach here
+            //   snackBarType = when (it) {
+            //     is StatusAction.CopyLink -> StatusSnackBarType.LINK
+            //     is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
+            //     else -> StatusSnackBarType.TEXT
+            //   }
+            //   showSnackBar = true
+            // }
+          },
+          navigateToDetail = {
+            navigator.navigate(
+              StatusDetailDestination(
+                avatar = uiState.account.avatar,
+                status = it
+              )
+            )
+          },
+          navigateToMedia = { attachments, targetIndex ->
+            navigator.navigate(
+              StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+            )
+          },
+          navigateToProfile = {
+            navigator.navigate(
+              ProfileDestination(it)
+            )
+          },
+        )
+      }
+      LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.currentPage }.collect { page ->
+          selectedTab = page
+        }
       }
     },
     topBar = {
@@ -153,7 +227,7 @@ fun Profile(
         account = uiState.account,
         topPadding = appState.appPaddingValues.calculateTopPadding()
       )
-    },
+    }
   )
 }
 
@@ -163,7 +237,7 @@ fun ProfileTopBar(
   account: Account,
   topPadding: Dp,
 ) {
-  val defaultBackgroundColor = AppTheme.colors.accent
+  val defaultBackgroundColor = AppTheme.colors.defaultHeader
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -209,9 +283,9 @@ fun ProfileTopBar(
             inlineContent = inlineTextContentWithEmoji(account.emojis, 18.sp),
           )
           Text(
-            text = "${account.statusesCount} 条嘟文",
+            text = stringResource(id = R.string.post_count, account.statusesCount),
             fontSize = 14.sp,
-            color = Color.White
+            color = Color.White,
           )
         }
       }
@@ -266,7 +340,7 @@ fun ProfileInfo(
     }
     HeightSpacer(value = 8.dp)
     AccountFields(
-      account.fields,
+      account.fieldsWithEmoji,
       account.followingCount,
       account.followersCount,
       account.statusesCount
@@ -277,14 +351,14 @@ fun ProfileInfo(
 @Composable
 fun ProfileTabs(
   tabs: List<ProfileTabItem>,
+  selectedTab: Int,
   onTabClick: (Int) -> Unit
 ) {
-  var selectedIndex by remember { mutableIntStateOf(0) }
   TabRow(
-    selectedTabIndex = selectedIndex,
+    selectedTabIndex = selectedTab,
     indicator = {
       TabRowDefaults.PrimaryIndicator(
-        modifier = Modifier.tabIndicatorOffset(it[selectedIndex]),
+        modifier = Modifier.tabIndicatorOffset(it[selectedTab]),
         width = 40.dp,
         height = 5.dp,
         color = AppTheme.colors.accent
@@ -296,25 +370,26 @@ fun ProfileTabs(
     },
   ) {
     tabs.forEachIndexed { index, tab ->
-      val selected = selectedIndex == index
+      val selected = selectedTab == index
       Tab(
         selected = selected,
         onClick = {
-          selectedIndex = index
           onTabClick(index)
         },
-        modifier = Modifier.clip(RoundedCornerShape(12.dp))
+        modifier = Modifier.clip(RoundedCornerShape(18.dp))
       ) {
         Text(
-          text = when (tab) {
-            ProfileTabItem.POST -> "嘟文"
-            ProfileTabItem.REPLY -> "回复"
-            else -> "媒体"
-          },
+          text = stringResource(
+            id = when (tab) {
+              ProfileTabItem.POST -> R.string.post_title
+              ProfileTabItem.REPLY -> R.string.reply_title
+              else -> R.string.media_title
+            }
+          ),
           fontSize = 17.sp,
           fontWeight = FontWeight(700),
           color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,
-          modifier = Modifier.padding(12.dp)
+          modifier = Modifier.padding(12.dp),
         )
       }
     }
@@ -331,9 +406,9 @@ fun AccountFields(
   val icons by remember(followersCount, followersCount, statusesCount) {
     mutableStateOf(
       listOf(
-        ProfileButton(R.drawable.following, "$followingCount 正在关注"),
-        ProfileButton(R.drawable.follower, "$followersCount 关注者"),
-        ProfileButton(R.drawable.status, "$statusesCount 嘟文"),
+        ProfileInfoItem(R.drawable.following, followingCount),
+        ProfileInfoItem(R.drawable.follower, followersCount),
+        ProfileInfoItem(R.drawable.status, statusesCount),
       )
     )
   }
@@ -374,20 +449,27 @@ fun AccountFields(
       HeightSpacer(value = 10.dp)
     }
     CenterRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-      icons.forEach {
+      icons.forEachIndexed { index, item ->
         CenterRow {
           Icon(
-            painter = painterResource(id = it.icon),
+            painter = painterResource(id = item.icon),
             contentDescription = null,
             modifier = Modifier.size(24.dp),
             tint = AppTheme.colors.primaryContent.copy(0.7f)
           )
           WidthSpacer(value = 4.dp)
           Text(
-            text = it.text,
+            text = stringResource(
+              id = when (index) {
+                0 -> R.string.following_count
+                1 -> R.string.follower_count
+                else -> R.string.post_count
+              },
+              item.itemCount
+            ),
             color = AppTheme.colors.primaryContent.copy(0.7f),
             fontSize = 16.sp,
-            fontWeight = FontWeight(650)
+            fontWeight = FontWeight(650),
           )
         }
       }
@@ -439,9 +521,9 @@ fun EditProfileButton() {
 }
 
 @Immutable
-data class ProfileButton(
+data class ProfileInfoItem(
   @DrawableRes val icon: Int,
-  val text: String
+  val itemCount: Long
 )
 
 enum class ProfileTabItem {

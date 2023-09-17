@@ -390,8 +390,8 @@ private fun StatusActionsRow(
   action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var animatedFavCount by remember(favoritesCount) { mutableIntStateOf(favoritesCount) }
-  var animatedReblogCount by remember(reblogsCount) { mutableIntStateOf(reblogsCount) }
+  var animatedFavCount by rememberSaveable(favoritesCount) { mutableIntStateOf(favoritesCount) }
+  var animatedReblogCount by rememberSaveable(reblogsCount) { mutableIntStateOf(reblogsCount) }
 
   CenterRow(modifier = modifier) {
     CenterRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(22.dp)) {

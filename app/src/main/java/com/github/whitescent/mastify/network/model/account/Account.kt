@@ -27,6 +27,9 @@ data class Account(
 ) {
 
   val noteWithEmoji = generateHtmlContentWithEmoji(note, emojis)
+  val fieldsWithEmoji = fields.map {
+    it.copy(value = generateHtmlContentWithEmoji(it.value, emojis))
+  }
 
   val domain get() = FormatFactory.getInstanceName(url)
 

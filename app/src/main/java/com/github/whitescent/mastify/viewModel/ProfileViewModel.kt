@@ -1,5 +1,7 @@
 package com.github.whitescent.mastify.viewModel
 
+import android.content.ClipData
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -49,6 +51,33 @@ class ProfileViewModel @Inject constructor(
     viewModelScope.launch {
       getRelationship(navArgs.account.id)
       fetchAccount(navArgs.account.id)
+    }
+  }
+
+  fun onStatusAction(action: StatusAction, context: Context) {
+    val clipManager =
+      context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+    viewModelScope.launch {
+      when (action) {
+        is StatusAction.Favorite -> {
+          if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)
+        }
+        is StatusAction.Reblog -> {
+          if (action.reblog) api.reblogStatus(action.id) else api.unreblogStatus(action.id)
+        }
+        is StatusAction.Bookmark -> {
+          if (action.bookmark) api.bookmarkStatus(action.id) else api.unbookmarkStatus(action.id)
+        }
+        is StatusAction.CopyText -> {
+          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.text))
+        }
+        is StatusAction.CopyLink -> {
+          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.link))
+        }
+        is StatusAction.Mute -> Unit
+        is StatusAction.Block -> Unit
+        is StatusAction.Report -> Unit
+      }
     }
   }
 

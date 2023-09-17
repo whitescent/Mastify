@@ -89,7 +89,7 @@ object OauthTransitions : DestinationStyle.Animated {
 object StatusDetailTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return when (initialState.appDestination()) {
-      HomeDestination, StatusDetailDestination ->
+      HomeDestination, StatusDetailDestination, ProfileDestination ->
         slideIntoContainer(
           towards = Start,
           animationSpec = tween(slideAnimationTween)
@@ -123,7 +123,7 @@ object StatusDetailTransitions : DestinationStyle.Animated {
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
     return when (targetState.appDestination()) {
-      HomeDestination, StatusDetailDestination ->
+      HomeDestination, StatusDetailDestination, ProfileDestination ->
         slideOutOfContainer(
           towards = End,
           animationSpec = tween(slideAnimationTween)
@@ -151,10 +151,28 @@ object ProfileTransitions : DestinationStyle.Animated {
     ) + fadeIn()
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
+    return when (targetState.appDestination()) {
+      StatusDetailDestination, ProfileDestination -> slideOutOfContainer(
+        towards = Start,
+        animationSpec = tween(slideAnimationTween)
+      ) + fadeOut()
+      else -> fadeOut()
+    }
+  }
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
+    return when {
+      initialState.appDestination() == StatusMediaScreenDestination -> fadeIn()
+      else -> slideIntoContainer(
+        towards = End,
+        animationSpec = tween(slideAnimationTween)
+      )
+    }
+  }
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
     return slideOutOfContainer(
       towards = End,
       animationSpec = tween(slideAnimationTween)
-    ) + fadeOut()
+    )
   }
 }
 

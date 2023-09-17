@@ -58,6 +58,14 @@
   <string name="reply_placeholder">Anything you\'d like to share?</string>
   <string name="post_placeholder">Share your thoughts at the moment!</string>
 
+  <!--  profile screen-->
+  <string name="post_title">Posts</string>
+  <string name="post_count">%s Posts</string>
+  <string name="following_count">%s Following</string>
+  <string name="follower_count">%s Followers</string>
+  <string name="reply_title">Replies</string>
+  <string name="media_title">Media</string>
+
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
   <string name="status_created_at_now">now</string>
   <string name="abbreviated_in_years">in %dy</string>

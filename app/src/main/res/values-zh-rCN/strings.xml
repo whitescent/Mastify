@@ -56,6 +56,15 @@
   <string name="reply_placeholder">最近有什么新鲜事？</string>
   <string name="post_placeholder">与大家分享你此刻的想法吧！</string>
 
+  <!--  profile screen-->
+  <string name="post_title">嘟文</string>
+  <string name="post_count">%s 条嘟文</string>
+  <string name="following_count">%s 正在关注</string>
+  <string name="follower_count">%s 关注者</string>
+  <string name="reply_title">回复</string>
+  <string name="media_title">媒体</string>
+
+
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
   <string name="status_created_at_now">刚刚</string>
   <string name="abbreviated_in_years">%d 年内</string>
