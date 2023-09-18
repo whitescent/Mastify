@@ -234,7 +234,7 @@ private fun StatusContent(
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
-    mutableStateOf(statusUiData.sensitive && statusUiData.spoilerText.isNotEmpty())
+    mutableStateOf(statusUiData.sensitive || (statusUiData.spoilerText.isNotEmpty()))
   }
   var openMenu by remember { mutableStateOf(false) }
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
@@ -330,7 +330,12 @@ private fun StatusContent(
             true -> {
               Column {
                 HeightSpacer(value = 4.dp)
-                SensitiveBar(spoilerText = statusUiData.spoilerText) { hideSensitiveContent = false }
+                SensitiveBar(
+                  spoilerText = statusUiData.spoilerText.ifEmpty { statusUiData.parsedContent },
+                  onClick = {
+                    hideSensitiveContent = false
+                  }
+                )
               }
             }
             else -> {

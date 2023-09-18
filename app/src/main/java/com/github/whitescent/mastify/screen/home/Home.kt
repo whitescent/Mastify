@@ -73,7 +73,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
-import com.github.whitescent.mastify.ui.component.status.StatusSnackBarType
+import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
@@ -81,7 +81,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.AppTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.HomeViewModel
-import com.github.whitescent.mastify.viewModel.StatusAction
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
@@ -107,8 +106,7 @@ fun Home(
     }
   }
   var refreshing by remember { mutableStateOf(false) }
-  var showSnackBar by remember { mutableStateOf(false) }
-  var snackBarType by remember { mutableStateOf(StatusSnackBarType.TEXT) }
+  val snackbarState = remember { StatusSnackbarState() }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val uiState = viewModel.uiState
@@ -174,14 +172,6 @@ fun Home(
                   hasUnloadedParent = hasUnloadedParent,
                   action = {
                     viewModel.onStatusAction(it, context)
-                    if (it.canShowSnackBar) { // There may be a better approach here
-                      snackBarType = when (it) {
-                        is StatusAction.CopyLink -> StatusSnackBarType.LINK
-                        is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
-                        else -> StatusSnackBarType.TEXT
-                      }
-                      showSnackBar = true
-                    }
                   },
                   navigateToDetail = {
                     navigator.navigate(
@@ -255,16 +245,21 @@ fun Home(
                   .padding(16.dp)
               )
               StatusSnackBar(
-                show = showSnackBar,
-                snackBarType = snackBarType,
+                state = snackbarState,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-              ) { showSnackBar = false }
+              )
             }
           }
         }
       }
     }
     PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+  }
+
+  LaunchedEffect(Unit) {
+    viewModel.snackBarFlow.collect {
+      snackbarState.showSnackbar(it)
+    }
   }
   LaunchedEffect(firstVisibleIndex) {
     if (firstVisibleIndex == 0 && uiState.showNewStatusButton) viewModel.dismissButton()

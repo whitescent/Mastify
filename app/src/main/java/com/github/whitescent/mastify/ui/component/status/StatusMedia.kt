@@ -1,6 +1,7 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -65,6 +67,7 @@ fun StatusMedia(
           it.aspectRatio(ratio)
         } ?: it
       }
+      .border(0.4.dp, Color.Gray, RoundedCornerShape(12.dp))
       .clip(RoundedCornerShape(12.dp))
   ) {
     when (mediaCount) {

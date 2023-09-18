@@ -18,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +41,6 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.extensions.insertString
-import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -58,7 +58,7 @@ import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
-import com.github.whitescent.mastify.ui.component.status.StatusSnackBarType
+import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.component.statusComment
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.StatusDetailTransitions
@@ -95,15 +95,14 @@ fun StatusDetail(
   val state = viewModel.uiState
   val replyText = viewModel.replyField
 
-  val status = viewModel.navArgs.status.toUiData()
+  val status = viewModel.status
   val avatar = viewModel.navArgs.avatar
   val threadInReply = status.reblog?.isInReplyTo ?: status.isInReplyTo
 
   var openSheet by remember { mutableStateOf(false) }
-  var showSnackBar by remember { mutableStateOf(false) }
-  var snackBarType by remember { mutableStateOf(StatusSnackBarType.TEXT) }
+  val snackbarState = remember { StatusSnackbarState() }
 
-  // We need to synchronize the status of the bookmark in two places on this page,
+  // we need to synchronize the status of the bookmark in two places on this page,
   // so we create a bookmark state at the top level
   var bookmarkState by remember(status.bookmarked) { mutableStateOf(status.bookmarked) }
 
@@ -136,14 +135,6 @@ fun StatusDetail(
           action = {
             viewModel.onStatusAction(it, context)
             if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
-            if (it.canShowSnackBar) {
-              snackBarType = when (it) {
-                is StatusAction.CopyLink -> StatusSnackBarType.LINK
-                is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
-                else -> StatusSnackBarType.TEXT
-              }
-              showSnackBar = true
-            }
           },
           navigateToDetail = {
             if (it.id != status.actionableId) {
@@ -178,14 +169,6 @@ fun StatusDetail(
           action = {
             viewModel.onStatusAction(it, context)
             if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
-            if (it.canShowSnackBar) {
-              snackBarType = when (it) {
-                is StatusAction.CopyLink -> StatusSnackBarType.LINK
-                is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
-                else -> StatusSnackBarType.TEXT
-              }
-              showSnackBar = true
-            }
           },
           navigateToDetail = {
             if (it.id != status.actionableId) {
@@ -211,10 +194,9 @@ fun StatusDetail(
       }
     }
     StatusSnackBar(
-      show = showSnackBar,
-      snackBarType = snackBarType,
+      state = snackbarState,
       modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-    ) { showSnackBar = false }
+    )
     ReplyTextField(
       targetAccount = viewModel.navArgs.status.account,
       fieldValue = replyText,
@@ -246,6 +228,12 @@ fun StatusDetail(
     )
   }
   BackHandler(sheetState.isVisible) { openSheet = false }
+
+  LaunchedEffect(Unit) {
+    viewModel.snackBarFlow.collect {
+      snackbarState.showSnackbar(it)
+    }
+  }
 }
 
 @Composable

@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.screen.profile
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -37,50 +36,48 @@ fun ProfileStatusList(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
 ) {
-  Crossfade(targetState = accountStatus.itemCount) {
-    when (it) {
-      0 -> {
-        when (accountStatus.loadState.refresh) {
-          is LoadState.Error -> StatusListLoadError { accountStatus.refresh() }
-          is LoadState.NotLoading -> EmptyStatusListPlaceholder()
-          else -> StatusListLoading()
-        }
+  when (accountStatus.itemCount) {
+    0 -> {
+      when (accountStatus.loadState.refresh) {
+        is LoadState.Error -> StatusListLoadError { accountStatus.refresh() }
+        is LoadState.NotLoading -> EmptyStatusListPlaceholder()
+        else -> StatusListLoading()
       }
-      else -> {
-        LazyColumn(
-          state = statusListState,
-          modifier = Modifier.padding(bottom = 56.dp),
-        ) {
-          accountStatus.itemCount
-          items(
-            count = accountStatus.itemCount,
-            contentType = accountStatus.itemContentType(),
-            key = accountStatus.itemKey(),
-          ) { index ->
-            val status = accountStatus[index]
-            val replyChainType by remember(status, accountStatus.itemCount, index) {
-              mutableStateOf(accountStatus.getReplyChainType(index))
-            }
-            val hasUnloadedParent by remember(status, accountStatus.itemCount, index) {
-              mutableStateOf(accountStatus.hasUnloadedParent(index))
-            }
-            accountStatus[index]?.let {
-              StatusListItem(
-                status = it,
-                action = action,
-                replyChainType = replyChainType,
-                hasUnloadedParent = hasUnloadedParent,
-                navigateToDetail = { navigateToDetail(it.actionable) },
-                navigateToProfile = navigateToProfile,
-                navigateToMedia = navigateToMedia,
-                modifier = Modifier.padding(horizontal = 8.dp),
-              )
-            }
-            AppHorizontalDivider()
+    }
+    else -> {
+      LazyColumn(
+        state = statusListState,
+        modifier = Modifier.padding(bottom = 56.dp),
+      ) {
+        accountStatus.itemCount
+        items(
+          count = accountStatus.itemCount,
+          contentType = accountStatus.itemContentType(),
+          key = accountStatus.itemKey(),
+        ) { index ->
+          val status = accountStatus[index]
+          val replyChainType by remember(status, accountStatus.itemCount, index) {
+            mutableStateOf(accountStatus.getReplyChainType(index))
           }
-          item {
-            StatusEndIndicator(Modifier.padding(54.dp))
+          val hasUnloadedParent by remember(status, accountStatus.itemCount, index) {
+            mutableStateOf(accountStatus.hasUnloadedParent(index))
           }
+          accountStatus[index]?.let {
+            StatusListItem(
+              status = it,
+              action = action,
+              replyChainType = replyChainType,
+              hasUnloadedParent = hasUnloadedParent,
+              navigateToDetail = { navigateToDetail(it.actionable) },
+              navigateToProfile = navigateToProfile,
+              navigateToMedia = navigateToMedia,
+              modifier = Modifier.padding(horizontal = 8.dp),
+            )
+          }
+          AppHorizontalDivider()
+        }
+        item {
+          StatusEndIndicator(Modifier.padding(54.dp))
         }
       }
     }

@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.viewModel
 
-import android.content.ClipData
 import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -13,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.emoji.Emoji
@@ -34,11 +34,13 @@ import javax.inject.Inject
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   private val api: MastodonApi,
+  private val statusActionHandler: StatusActionHandler,
   private val instanceRepository: InstanceRepository
 ) : ViewModel() {
 
   private var isInitialLoad = false
 
+  val snackBarFlow = statusActionHandler.snackBarFlow
   val navArgs: StatusDetailNavArgs = savedStateHandle.navArgs()
 
   var replyField by mutableStateOf(TextFieldValue(""))
@@ -47,31 +49,11 @@ class StatusDetailViewModel @Inject constructor(
   var uiState by mutableStateOf(StatusDetailUiState())
     private set
 
-  fun onStatusAction(action: StatusAction, context: Context) {
-    val clipManager =
-      context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-    viewModelScope.launch {
-      when (action) {
-        is StatusAction.Favorite -> {
-          if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)
-        }
-        is StatusAction.Reblog -> {
-          if (action.reblog) api.reblogStatus(action.id) else api.unreblogStatus(action.id)
-        }
-        is StatusAction.Bookmark -> {
-          if (action.bookmark) api.bookmarkStatus(action.id) else api.unbookmarkStatus(action.id)
-        }
-        is StatusAction.CopyText -> {
-          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.text))
-        }
-        is StatusAction.CopyLink -> {
-          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.link))
-        }
-        is StatusAction.Mute -> Unit
-        is StatusAction.Block -> Unit
-        is StatusAction.Report -> Unit
-      }
-    }
+  var status by mutableStateOf(navArgs.status.toUiData())
+    private set
+
+  fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
+    statusActionHandler.onStatusAction(action, context)
   }
 
   fun replyToStatus() {
@@ -114,6 +96,14 @@ class StatusDetailViewModel @Inject constructor(
   init {
     uiState = uiState.copy(loading = true)
     viewModelScope.launch {
+      api.status(navArgs.status.id).fold(
+        {
+          status = it.toUiData() // fetch latest status
+        },
+        {
+          statusActionHandler.onStatusLoadError()
+        }
+      )
       api.statusContext(navArgs.status.actionableId).fold(
         {
           uiState = uiState.copy(

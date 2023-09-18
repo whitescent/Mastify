@@ -11,13 +11,17 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun AnimatedText(
   text: String,
   modifier: Modifier = Modifier,
-  style: TextStyle = LocalTextStyle.current
+  color: Color = Color.Unspecified,
+  style: TextStyle = LocalTextStyle.current.copy(
+    color = color
+  )
 ) =
   AnimatedContent(
     targetState = text,
@@ -35,5 +39,5 @@ fun AnimatedText(
     label = "",
     modifier = modifier
   ) { targetText ->
-    Text(text = targetText, style = style)
+    Text(text = targetText, style = style, color = color)
   }

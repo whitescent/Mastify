@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.viewModel
 
-import android.content.ClipData
 import android.content.Context
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -12,6 +11,7 @@ import androidx.room.withTransaction
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
@@ -28,9 +28,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
   private val db: AppDatabase,
+  private val api: MastodonApi,
+  private val statusActionHandler: StatusActionHandler,
   private val accountRepository: AccountRepository,
   private val homeRepository: HomeRepository,
-  private val api: MastodonApi,
 ) : ViewModel() {
 
   private val timelineDao = db.timelineDao()
@@ -40,6 +41,8 @@ class HomeViewModel @Inject constructor(
 
   private var timelineFlow = MutableStateFlow<List<Status>>(listOf())
   val timelineList = timelineFlow.map { splitReorderStatus(it).toUiData() }
+
+  val snackBarFlow = statusActionHandler.snackBarFlow
 
   val activeAccount get() = accountRepository.activeAccount!!
   var uiState by mutableStateOf(HomeUiState())
@@ -126,31 +129,8 @@ class HomeViewModel @Inject constructor(
 
   fun refreshTimeline() = viewModelScope.launch { paginator.refresh() }
 
-  fun onStatusAction(action: StatusAction, context: Context) {
-    val clipManager =
-      context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-    viewModelScope.launch {
-      when (action) {
-        is StatusAction.Favorite -> {
-          if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)
-        }
-        is StatusAction.Reblog -> {
-          if (action.reblog) api.reblogStatus(action.id) else api.unreblogStatus(action.id)
-        }
-        is StatusAction.Bookmark -> {
-          if (action.bookmark) api.bookmarkStatus(action.id) else api.unbookmarkStatus(action.id)
-        }
-        is StatusAction.CopyText -> {
-          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.text))
-        }
-        is StatusAction.CopyLink -> {
-          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.link))
-        }
-        is StatusAction.Mute -> Unit
-        is StatusAction.Block -> Unit
-        is StatusAction.Report -> Unit
-      }
-    }
+  fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
+    statusActionHandler.onStatusAction(action, context)
   }
 
   fun dismissButton() {
@@ -191,7 +171,4 @@ sealed interface StatusAction {
   data class Favorite(val id: String, val favorite: Boolean) : StatusAction
   data class Bookmark(val id: String, val bookmark: Boolean) : StatusAction
   data class Reblog(val id: String, val reblog: Boolean) : StatusAction
-
-  val canShowSnackBar get() = this is CopyText || this is CopyLink ||
-    (this is Bookmark && this.bookmark)
 }

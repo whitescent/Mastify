@@ -1,6 +1,5 @@
 package com.github.whitescent.mastify.viewModel
 
-import android.content.ClipData
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +12,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.paging.ProfilePagingSource
@@ -26,10 +26,12 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   accountRepository: AccountRepository,
+  private val statusActionHandler: StatusActionHandler,
   private val api: MastodonApi
 ) : ViewModel() {
 
   private val navArgs: ProfileNavArgs = savedStateHandle.navArgs()
+  val snackBarFlow = statusActionHandler.snackBarFlow
 
   var uiState by mutableStateOf(
     ProfileUiState(
@@ -54,31 +56,8 @@ class ProfileViewModel @Inject constructor(
     }
   }
 
-  fun onStatusAction(action: StatusAction, context: Context) {
-    val clipManager =
-      context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-    viewModelScope.launch {
-      when (action) {
-        is StatusAction.Favorite -> {
-          if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)
-        }
-        is StatusAction.Reblog -> {
-          if (action.reblog) api.reblogStatus(action.id) else api.unreblogStatus(action.id)
-        }
-        is StatusAction.Bookmark -> {
-          if (action.bookmark) api.bookmarkStatus(action.id) else api.unbookmarkStatus(action.id)
-        }
-        is StatusAction.CopyText -> {
-          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.text))
-        }
-        is StatusAction.CopyLink -> {
-          clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.link))
-        }
-        is StatusAction.Mute -> Unit
-        is StatusAction.Block -> Unit
-        is StatusAction.Report -> Unit
-      }
-    }
+  fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
+    statusActionHandler.onStatusAction(action, context)
   }
 
   private suspend fun fetchAccount(accountId: String) {

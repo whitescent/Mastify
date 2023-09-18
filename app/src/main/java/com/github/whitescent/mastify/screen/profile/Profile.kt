@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.screen.profile
 
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -50,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -87,9 +89,12 @@ import com.github.whitescent.mastify.ui.component.avatarStartPadding
 import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayout
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememberProfileLayoutState
+import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
+import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
 import com.github.whitescent.mastify.utils.AppState
+import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -113,122 +118,137 @@ fun Profile(
   val profileLayoutState = rememberProfileLayoutState()
   val statusListState = rememberLazyListState()
   val context = LocalContext.current
-  ProfileLayout(
-    state = profileLayoutState,
-    collapsingTop = {
-      Column {
-        AvatarWithCover(
-          cover = {
-            if (uiState.account.header.contains("missing.png")) {
-              Box(
+  val snackbarState = remember { StatusSnackbarState() }
+
+  Box {
+    ProfileLayout(
+      state = profileLayoutState,
+      collapsingTop = {
+        Column {
+          AvatarWithCover(
+            cover = {
+              if (uiState.account.header.contains("missing.png")) {
+                Box(
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .background(AppTheme.colors.defaultHeader),
+                )
+              } else {
+                AsyncImage(
+                  model = uiState.account.header,
+                  contentDescription = null,
+                  contentScale = ContentScale.Crop,
+                  modifier = Modifier.fillMaxWidth().height(200.dp),
+                )
+              }
+            },
+            avatar = {
+              CircleShapeAsyncImage(
+                model = uiState.account.avatar,
                 modifier = Modifier
-                  .fillMaxWidth()
-                  .height(200.dp)
-                  .background(AppTheme.colors.defaultHeader),
+                  .graphicsLayer {
+                    scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
+                    scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
+                  }
+                  .size(80.dp),
+                shape = AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp))
               )
-            } else {
-              AsyncImage(
-                model = uiState.account.header,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth().height(200.dp),
-              )
+            },
+          )
+          HeightSpacer(value = 6.dp)
+          ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
+        }
+      },
+      enabledScroll = accountStatus.loadState.refresh is LoadState.NotLoading,
+      bodyContent = {
+        val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
+        var selectedTab by remember { mutableStateOf(0) }
+        val pagerState = rememberPagerState { tabs.size }
+        val scope = rememberCoroutineScope()
+        Column(
+          Modifier.heightIn(
+            max = when (
+              accountStatus.loadState.refresh is LoadState.Loading ||
+                accountStatus.loadState.refresh is LoadState.Error
+            ) {
+              true -> profileLayoutState.bodyContentMaxHeight
+              else -> Dp.Unspecified
             }
-          },
-          avatar = {
-            CircleShapeAsyncImage(
-              model = uiState.account.avatar,
-              modifier = Modifier
-                .graphicsLayer {
-                  scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
-                  scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
-                }
-                .size(80.dp),
-              shape = AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp))
-            )
-          },
-        )
-        HeightSpacer(value = 6.dp)
-        ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
-      }
-    },
-    enabledScroll = accountStatus.loadState.refresh is LoadState.NotLoading,
-    bodyContent = {
-      val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
-      var selectedTab by remember { mutableStateOf(0) }
-      val pagerState = rememberPagerState { tabs.size }
-      val scope = rememberCoroutineScope()
-      Column(
-        Modifier.heightIn(
-          max = when (
-            accountStatus.loadState.refresh is LoadState.Loading ||
-              accountStatus.loadState.refresh is LoadState.Error
-          ) {
-            true -> profileLayoutState.bodyContentMaxHeight
-            else -> Dp.Unspecified
-          }
-        )
-      ) {
-        ProfileTabs(tabs, selectedTab) {
-          if (selectedTab == 0 && it == 0) {
+          )
+        ) {
+          ProfileTabs(tabs, selectedTab) {
+            if (selectedTab == 0 && it == 0) {
+              scope.launch {
+                statusListState.scrollToItem(0)
+              }.invokeOnCompletion { profileLayoutState.animatedToTop() }
+            }
+            selectedTab = it
             scope.launch {
-              statusListState.scrollToItem(0)
-            }.invokeOnCompletion { profileLayoutState.animatedToTop() }
+              pagerState.scrollToPage(it)
+            }
           }
-          selectedTab = it
-          scope.launch {
-            pagerState.scrollToPage(it)
+          ProfilePager(
+            state = pagerState,
+            accountStatus = accountStatus,
+            statusListState = statusListState,
+            action = {
+              viewModel.onStatusAction(it, context)
+              // if (it.canShowSnackBar) { // There may be a better approach here
+              //   snackBarType = when (it) {
+              //     is StatusAction.CopyLink -> StatusSnackBarType.LINK
+              //     is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
+              //     else -> StatusSnackBarType.TEXT
+              //   }
+              //   showSnackBar = true
+              // }
+            },
+            navigateToDetail = {
+              navigator.navigate(
+                StatusDetailDestination(
+                  avatar = uiState.account.avatar,
+                  status = it
+                )
+              )
+            },
+            navigateToMedia = { attachments, targetIndex ->
+              navigator.navigate(
+                StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+              )
+            },
+            navigateToProfile = {
+              navigator.navigate(
+                ProfileDestination(it)
+              )
+            },
+          )
+        }
+        LaunchedEffect(pagerState) {
+          snapshotFlow { pagerState.currentPage }.collect { page ->
+            selectedTab = page
           }
         }
-        ProfilePager(
-          state = pagerState,
-          accountStatus = accountStatus,
-          statusListState = statusListState,
-          action = {
-            viewModel.onStatusAction(it, context)
-            // if (it.canShowSnackBar) { // There may be a better approach here
-            //   snackBarType = when (it) {
-            //     is StatusAction.CopyLink -> StatusSnackBarType.LINK
-            //     is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
-            //     else -> StatusSnackBarType.TEXT
-            //   }
-            //   showSnackBar = true
-            // }
-          },
-          navigateToDetail = {
-            navigator.navigate(
-              StatusDetailDestination(
-                avatar = uiState.account.avatar,
-                status = it
-              )
-            )
-          },
-          navigateToMedia = { attachments, targetIndex ->
-            navigator.navigate(
-              StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-            )
-          },
-          navigateToProfile = {
-            navigator.navigate(
-              ProfileDestination(it)
-            )
-          },
+      },
+      topBar = {
+        ProfileTopBar(
+          alpha = profileLayoutState.progress,
+          account = uiState.account,
+          topPadding = appState.appPaddingValues.calculateTopPadding()
         )
       }
-      LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-          selectedTab = page
-        }
-      }
-    },
-    topBar = {
-      ProfileTopBar(
-        alpha = profileLayoutState.progress,
-        account = uiState.account,
-        topPadding = appState.appPaddingValues.calculateTopPadding()
-      )
+    )
+    StatusSnackBar(
+      state = snackbarState,
+      modifier = Modifier
+        .align(Alignment.BottomCenter)
+        .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+    )
+  }
+  LaunchedEffect(Unit) {
+    viewModel.snackBarFlow.collect {
+      snackbarState.showSnackbar(it)
     }
-  )
+  }
 }
 
 @Composable
@@ -403,6 +423,8 @@ fun AccountFields(
   followersCount: Long,
   statusesCount: Long,
 ) {
+  val context = LocalContext.current
+  val primaryColor = AppTheme.colors.primaryContent
   val icons by remember(followersCount, followersCount, statusesCount) {
     mutableStateOf(
       listOf(
@@ -441,7 +463,14 @@ fun AccountFields(
             maxLines = 1,
             fontSize = 16.sp,
             fontWeight = FontWeight(450),
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            onLinkClick = { url ->
+              launchCustomChromeTab(
+                context = context,
+                uri = Uri.parse(url),
+                toolbarColor = primaryColor.toArgb(),
+              )
+            }
           )
         }
         if (it != fields.last()) HeightSpacer(value = 4.dp)

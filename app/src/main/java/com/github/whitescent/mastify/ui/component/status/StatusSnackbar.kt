@@ -1,8 +1,5 @@
 package com.github.whitescent.mastify.ui.component.status
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,10 +9,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -29,35 +22,32 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun StatusSnackBar(
-  show: Boolean,
+  state: StatusSnackbarState,
   modifier: Modifier = Modifier,
-  snackBarType: StatusSnackBarType = StatusSnackBarType.TEXT,
-  onSnackBarClosed: () -> Unit = { }
 ) {
-  var visible by remember(show) { mutableStateOf(show) }
-  AnimatedVisibility(
-    visible = visible,
-    enter = fadeIn(),
-    exit = fadeOut(),
-    modifier = modifier.fillMaxWidth()
-  ) {
+  val snackbarType = state.currentSnackbarData?.type
+  snackbarType?.let {
+    val type = it
     Surface(
       shape = RoundedCornerShape(12.dp),
-      color = when (snackBarType) {
-        StatusSnackBarType.TEXT -> Color(0xFF35465E)
-        StatusSnackBarType.LINK -> Color(0xFF1B7CFF)
-        StatusSnackBarType.BOOKMARK -> Color(0xFF498AE0)
+      color = when (type) {
+        StatusSnackbarType.Text -> Color(0xFF35465E)
+        StatusSnackbarType.Link -> Color(0xFF1B7CFF)
+        StatusSnackbarType.Bookmark -> Color(0xFF498AE0)
+        StatusSnackbarType.Error -> Color(0xFFF53232)
       },
       contentColor = Color.White,
-      shadowElevation = 4.dp
+      shadowElevation = 4.dp,
+      modifier = modifier.fillMaxWidth()
     ) {
       CenterRow(Modifier.padding(horizontal = 22.dp, vertical = 16.dp)) {
         Icon(
           painter = painterResource(
-            id = when (snackBarType) {
-              StatusSnackBarType.TEXT -> R.drawable.copy_fill
-              StatusSnackBarType.LINK -> R.drawable.link_simple
-              StatusSnackBarType.BOOKMARK -> R.drawable.bookmark_fill
+            id = when (type) {
+              StatusSnackbarType.Text -> R.drawable.copy_fill
+              StatusSnackbarType.Link -> R.drawable.link_simple
+              StatusSnackbarType.Bookmark -> R.drawable.bookmark_fill
+              StatusSnackbarType.Error -> R.drawable.cloud_warning
             }
           ),
           contentDescription = null,
@@ -66,10 +56,11 @@ fun StatusSnackBar(
         WidthSpacer(value = 8.dp)
         Text(
           text = stringResource(
-            when (snackBarType) {
-              StatusSnackBarType.TEXT -> R.string.text_copied
-              StatusSnackBarType.LINK -> R.string.link_copied
-              StatusSnackBarType.BOOKMARK -> R.string.bookmarked_snackBar
+            when (type) {
+              StatusSnackbarType.Text -> R.string.text_copied
+              StatusSnackbarType.Link -> R.string.link_copied
+              StatusSnackbarType.Bookmark -> R.string.bookmarked_snackBar
+              StatusSnackbarType.Error -> R.string.load_post_error
             }
           ),
           fontSize = 16.sp,
@@ -77,15 +68,10 @@ fun StatusSnackBar(
       }
     }
   }
-  LaunchedEffect(show, snackBarType) {
-    if (show) {
+  LaunchedEffect(state.currentSnackbarData) {
+    state.currentSnackbarData?.let {
       delay(2500)
-      visible = false
-      onSnackBarClosed()
+      it.dismiss()
     }
   }
-}
-
-enum class StatusSnackBarType {
-  TEXT, LINK, BOOKMARK
 }
