@@ -15,12 +15,12 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +39,6 @@ fun PostVisibilitySheet(
   onVisibilityUpdated: (Visibility) -> Unit,
   onDismissRequest: () -> Unit,
 ) {
-  val scope = rememberCoroutineScope()
   ModalBottomSheet(
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,
@@ -48,19 +47,21 @@ fun PostVisibilitySheet(
   ) {
     Column(Modifier.padding(vertical = 10.dp)) {
       Text(
-        text = "更改嘟文可见性",
+        text = stringResource(id = R.string.change_post_visibility),
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
         modifier = Modifier.align(Alignment.CenterHorizontally),
-        color = AppTheme.colors.primaryContent
+        color = AppTheme.colors.primaryContent,
       )
       HeightSpacer(value = 6.dp)
       Text(
-        text = "更改嘟文的可见性设置，确保只有您想要的人群可以看到您的内容。",
+        text = stringResource(id = R.string.visibility_description),
         fontSize = 16.sp,
         fontWeight = FontWeight.Bold,
-        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 48.dp),
-        color = Color.Gray
+        modifier = Modifier
+          .align(Alignment.CenterHorizontally)
+          .padding(horizontal = 48.dp),
+        color = Color.Gray,
       )
       HeightSpacer(value = 6.dp)
       Column(Modifier.padding(horizontal = 12.dp)) {
@@ -110,16 +111,18 @@ private fun PostVisibilityItem(
         )
         WidthSpacer(value = 4.dp)
         Text(
-          text = when (visibility) {
-            Visibility.Public -> "对所有人公开"
-            Visibility.Unlisted -> "在公共时间轴中隐藏"
-            Visibility.Private -> "仅关注者可见"
-            Visibility.Direct -> "仅提及的人可见"
-            else -> throw IllegalArgumentException("Invalid visibility: $visibility")
-          },
+          text = stringResource(
+            id = when (visibility) {
+              Visibility.Public -> R.string.visibility_public
+              Visibility.Unlisted -> R.string.visibility_unlisted
+              Visibility.Private -> R.string.visibility_private
+              Visibility.Direct -> R.string.visibility_direct
+              else -> throw IllegalArgumentException("Invalid visibility: $visibility")
+            }
+          ),
           color = AppTheme.colors.primaryContent,
           fontWeight = FontWeight.Medium,
-          fontSize = 16.sp
+          fontSize = 16.sp,
         )
       }
       if (selected) {

@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.ui.component
 
+import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
@@ -41,8 +42,10 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,6 +59,7 @@ import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.mapper.account.toAccount
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
@@ -258,11 +262,23 @@ fun AppDrawer(
 
 @Composable
 private fun DrawerMenu() {
+  val context = LocalContext.current
+  val primaryColor = AppTheme.colors.primaryContent
   AppDrawerMenu.values().forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
       AppHorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
     }
-    DrawerMenuItem(it.icon, it.redId) { }
+    DrawerMenuItem(it.icon, it.redId) {
+      when (it.route) {
+        "about" -> {
+          launchCustomChromeTab(
+            context = context,
+            uri = Uri.parse("https://github.com/whitescent/Mastify"),
+            toolbarColor = primaryColor.toArgb(),
+          )
+        }
+      }
+    }
   }
 }
 
@@ -315,7 +331,7 @@ enum class AppDrawerMenu(
   Lists(R.drawable.list_bullets, R.string.title_lists, "lists"),
   Drafts(R.drawable.scroll, R.string.title_draft, "draft"),
   Settings(R.drawable.gear, R.string.title_settings, "settings"),
-  About(R.drawable.info, R.string.title_about, "about"),
+  About(R.drawable.info, R.string.title_about_mastify, "about"),
   Logout(R.drawable.sign_out, R.string.title_logout, "logout")
 }
 

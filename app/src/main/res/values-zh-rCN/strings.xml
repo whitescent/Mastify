@@ -20,7 +20,7 @@
   <string name="title_lists">列表</string>
   <string name="title_draft">草稿</string>
   <string name="title_settings">设置</string>
-  <string name="title_about">关于 Mastify</string>
+  <string name="title_about_mastify">关于 Mastify</string>
   <string name="title_logout">注销</string>
   <string name="sensitive_content">敏感内容</string>
   <string name="reply_a_post">回复了一个嘟文</string>
@@ -57,6 +57,12 @@
   <string name="direct">私信</string>
   <string name="reply_placeholder">最近有什么新鲜事？</string>
   <string name="post_placeholder">与大家分享你此刻的想法吧！</string>
+  <string name="change_post_visibility">更改嘟文可见性</string>
+  <string name="visibility_description">更改嘟文的可见性，确保只有您想要的人群可以看到您的内容。</string>
+  <string name="visibility_public">对所有人公开</string>
+  <string name="visibility_unlisted">在公共时间轴中隐藏</string>
+  <string name="visibility_private">仅关注者可见</string>
+  <string name="visibility_direct">仅提及的人可见</string>
 
   <!--  profile screen-->
   <string name="post_title">嘟文</string>
