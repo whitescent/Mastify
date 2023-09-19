@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
@@ -151,6 +152,7 @@ fun Profile(
                     scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
                     scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
                   }
+                  .shadow(12.dp, AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp)))
                   .size(80.dp),
                 shape = AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp))
               )
@@ -194,14 +196,6 @@ fun Profile(
             statusListState = statusListState,
             action = {
               viewModel.onStatusAction(it, context)
-              // if (it.canShowSnackBar) { // There may be a better approach here
-              //   snackBarType = when (it) {
-              //     is StatusAction.CopyLink -> StatusSnackBarType.LINK
-              //     is StatusAction.Bookmark -> StatusSnackBarType.BOOKMARK
-              //     else -> StatusSnackBarType.TEXT
-              //   }
-              //   showSnackBar = true
-              // }
             },
             navigateToDetail = {
               navigator.navigate(
@@ -319,6 +313,8 @@ fun ProfileInfo(
   isSelf: Boolean,
   isFollowing: Boolean?
 ) {
+  val context = LocalContext.current
+  val primaryColor = AppTheme.colors.primaryContent
   Column(Modifier.padding(horizontal = avatarStartPadding)) {
     Row(Modifier.fillMaxWidth()) {
       Column(Modifier.weight(1f)) {
@@ -356,6 +352,13 @@ fun ProfileInfo(
       HtmlText(
         text = account.noteWithEmoji,
         style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
+        onLinkClick = {
+          launchCustomChromeTab(
+            context = context,
+            uri = Uri.parse(it),
+            toolbarColor = primaryColor.toArgb(),
+          )
+        }
       )
     }
     HeightSpacer(value = 8.dp)
