@@ -23,8 +23,8 @@ android {
     applicationId = "com.github.whitescent.mastify"
     minSdk = 21
     targetSdk = 34
-    versionCode = 1
-    versionName = "1.0.0-pre-alpha"
+    versionCode = 2
+    versionName = "1.0.1-pre-alpha"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables {
       useSupportLibrary = true
