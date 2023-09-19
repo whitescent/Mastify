@@ -27,11 +27,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.github.whitescent.R
 import com.github.whitescent.mastify.extensions.getSizeOfIndex
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -54,32 +56,44 @@ fun EmojiSheet(
     windowInsets = WindowInsets(0, WindowInsets.statusBars.getTop(LocalDensity.current), 0, 0),
     containerColor = AppTheme.colors.bottomSheetBackground
   ) {
-    val category by remember(emojis) { mutableStateOf(emojis.groupBy { it.category }) }
+    val categorizedEmojis by remember(emojis) {
+      mutableStateOf(emojis.filter { it.category != null })
+    }
+    val uncategorizedEmojis by remember(emojis) {
+      mutableStateOf(emojis.filter { it.category == null })
+    }
+    val emojiGroup by remember(categorizedEmojis) {
+      mutableStateOf(categorizedEmojis.groupBy { it.category })
+    }
     Column {
-      LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
-        contentPadding = PaddingValues(24.dp),
-      ) {
-        category.onEachIndexed { index, (_, emoji) ->
-          item {
-            AsyncImage(
-              model = ImageRequest.Builder(LocalContext.current)
-                .data(emoji[0].url)
-                .crossfade(true)
-                .build(),
-              contentDescription = null,
-              modifier = Modifier
-                .clickable {
-                  scope.launch {
-                    lazyGridState.scrollToItem(category.getSizeOfIndex(index))
-                  }
-                }
-                .size(24.dp)
-            )
+      if (categorizedEmojis.isNotEmpty()) {
+        LazyRow(
+          horizontalArrangement = Arrangement.spacedBy(24.dp),
+          contentPadding = PaddingValues(24.dp),
+        ) {
+          emojiGroup.onEachIndexed { index, (categoryName, emoji) ->
+            categoryName?.let {
+              item {
+                AsyncImage(
+                  model = ImageRequest.Builder(LocalContext.current)
+                    .data(emoji[0].url)
+                    .crossfade(true)
+                    .build(),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .clickable {
+                      scope.launch {
+                        lazyGridState.scrollToItem(emojiGroup.getSizeOfIndex(index))
+                      }
+                    }
+                    .size(24.dp)
+                )
+              }
+            }
           }
         }
+        HorizontalDivider()
       }
-      HorizontalDivider()
       LazyVerticalGrid(
         columns = GridCells.Fixed(7),
         horizontalArrangement = Arrangement.spacedBy(28.dp),
@@ -87,7 +101,32 @@ fun EmojiSheet(
         contentPadding = PaddingValues(24.dp),
         state = lazyGridState
       ) {
-        category.forEach { (category, emoji) ->
+        if (uncategorizedEmojis.isNotEmpty()) {
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Text(
+              text = stringResource(id = R.string.uncategorized_title),
+              fontWeight = FontWeight.Bold,
+              fontSize = 16.sp,
+              modifier = Modifier.fillMaxWidth(),
+              color = AppTheme.colors.primaryContent,
+            )
+          }
+          items(
+            items = uncategorizedEmojis,
+            contentType = { it.itemType },
+            key = { it.url }
+          ) {
+            AsyncImage(
+              model = ImageRequest.Builder(LocalContext.current)
+                .data(it.url)
+                .crossfade(true)
+                .build(),
+              contentDescription = null,
+              modifier = Modifier.size(32.dp).clickable { onSelectEmoji(" :${it.shortcode}: ") },
+            )
+          }
+        }
+        emojiGroup.forEach { (category, emoji) ->
           category?.let {
             item(
               span = { GridItemSpan(maxLineSpan) }

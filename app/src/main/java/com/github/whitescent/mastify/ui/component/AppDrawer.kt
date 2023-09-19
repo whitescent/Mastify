@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateInt
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -91,17 +92,26 @@ fun AppDrawer(
     Box(
       Modifier.heightIn(max = 200.dp)
     ) {
-      AsyncImage(
-        model = activeAccount.header,
-        contentDescription = null,
-        modifier = Modifier
-          .fillMaxSize()
-          .drawWithContent {
-            this.drawContent()
-            drawRect(Color.Black.copy(0.35f))
-          },
-        contentScale = ContentScale.Crop,
-      )
+      when (activeAccount.isEmptyHeader) {
+        true -> {
+          Box(
+            modifier = Modifier.fillMaxSize().background(AppTheme.colors.defaultHeader),
+          )
+        }
+        else -> {
+          AsyncImage(
+            model = activeAccount.header,
+            contentDescription = null,
+            modifier = Modifier
+              .fillMaxSize()
+              .drawWithContent {
+                this.drawContent()
+                drawRect(Color.Black.copy(0.35f))
+              },
+            contentScale = ContentScale.Crop,
+          )
+        }
+      }
       Column(
         modifier = Modifier
           .let {
@@ -135,9 +145,11 @@ fun AppDrawer(
               color = Color.White
             )
             Text(
-              text = activeAccount.fullName,
+              text = activeAccount.fullname,
               fontSize = 16.sp,
-              color = Color.White
+              color = Color.White,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis
             )
           }
           IconButton(
@@ -177,8 +189,10 @@ fun AppDrawer(
                     radius = 250.dp,
                   ),
                   onClick = {
-                    if (account != activeAccount) changeAccount(account.id)
-                    else {
+                    if (account != activeAccount) {
+                      println("id is ${account.id.toLong()}")
+                      changeAccount(account.id.toLong())
+                    } else {
                       scope.launch {
                         drawerState.close()
                       }
@@ -194,7 +208,7 @@ fun AppDrawer(
               )
               WidthSpacer(value = 8.dp)
               Text(
-                text = account.fullName,
+                text = account.fullname,
                 fontSize = 16.sp,
                 color = AppTheme.colors.primaryContent,
                 modifier = Modifier.weight(1f),

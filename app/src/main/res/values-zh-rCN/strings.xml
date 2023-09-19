@@ -41,6 +41,7 @@
 
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>
+  <string name="uncategorized_title">未分类</string>
 
   <plurals name="favs">
     <item quantity="other">%d 次喜欢</item>
@@ -71,6 +72,7 @@
   <string name="follower_count">%s 关注者</string>
   <string name="reply_title">回复</string>
   <string name="media_title">媒体</string>
+  <string name="edit_profile">编辑个人资料</string>
 
 
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->

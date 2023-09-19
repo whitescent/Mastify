@@ -352,7 +352,7 @@ private fun PostTopBar(
         )
         HeightSpacer(value = 2.dp)
         Text(
-          text = account.fullName,
+          text = account.fullname,
           color = Color.White,
           overflow = TextOverflow.Ellipsis,
           maxLines = 1,

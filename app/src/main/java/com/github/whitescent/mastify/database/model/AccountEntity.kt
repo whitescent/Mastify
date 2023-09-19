@@ -27,10 +27,10 @@ data class AccountEntity(
   val statusesCount: Long
 ) {
 
-  val fullName: String
-    get() = "@$username@$domain"
+  val fullname: String get() = "@$username@$domain"
 
   val realDisplayName inline get() = this.displayName.ifEmpty { this.username }
+  val isEmptyHeader get() = this.header.contains("missing.png")
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

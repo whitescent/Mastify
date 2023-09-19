@@ -30,6 +30,7 @@ data class Account(
   val fieldsWithEmoji = fields.map {
     it.copy(value = generateHtmlContentWithEmoji(it.value, emojis))
   }
+  val isEmptyHeader = header.contains("missing.png")
 
   val domain get() = FormatFactory.getInstanceName(url)
 

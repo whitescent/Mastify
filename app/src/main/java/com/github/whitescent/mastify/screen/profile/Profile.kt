@@ -128,7 +128,7 @@ fun Profile(
         Column {
           AvatarWithCover(
             cover = {
-              if (uiState.account.header.contains("missing.png")) {
+              if (uiState.account.isEmptyHeader) {
                 Box(
                   modifier = Modifier
                     .fillMaxWidth()
@@ -544,9 +544,9 @@ fun EditProfileButton() {
       )
       WidthSpacer(value = 6.dp)
       Text(
-        text = "编辑个人资料",
+        text = stringResource(id = R.string.edit_profile),
         fontSize = 16.sp,
-        color = Color.White
+        color = Color.White,
       )
     }
   }
