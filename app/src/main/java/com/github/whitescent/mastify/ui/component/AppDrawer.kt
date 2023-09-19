@@ -190,8 +190,7 @@ fun AppDrawer(
                   ),
                   onClick = {
                     if (account != activeAccount) {
-                      println("id is ${account.id.toLong()}")
-                      changeAccount(account.id.toLong())
+                      changeAccount(account.id)
                     } else {
                       scope.launch {
                         drawerState.close()
