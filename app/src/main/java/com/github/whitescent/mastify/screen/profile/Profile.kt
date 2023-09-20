@@ -162,7 +162,7 @@ fun Profile(
           ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
         }
       },
-      enabledScroll = accountStatus.loadState.refresh is LoadState.NotLoading,
+      enabledScroll = (accountStatus.loadState.refresh is LoadState.NotLoading && accountStatus.itemCount > 0),
       bodyContent = {
         val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
         var selectedTab by remember { mutableStateOf(0) }
@@ -172,7 +172,8 @@ fun Profile(
           Modifier.heightIn(
             max = when (
               accountStatus.loadState.refresh is LoadState.Loading ||
-                accountStatus.loadState.refresh is LoadState.Error
+                accountStatus.loadState.refresh is LoadState.Error ||
+                (accountStatus.loadState.refresh is LoadState.NotLoading && accountStatus.itemCount == 0)
             ) {
               true -> profileLayoutState.bodyContentMaxHeight
               else -> Dp.Unspecified
@@ -229,7 +230,7 @@ fun Profile(
           account = uiState.account,
           topPadding = appState.appPaddingValues.calculateTopPadding()
         )
-      }
+      },
     )
     StatusSnackBar(
       state = snackbarState,

@@ -89,8 +89,9 @@ fun Post(
 
   val emojiSheetState = rememberModalBottomSheetState()
   val visibilitySheetState = rememberModalBottomSheetState()
-  val keyboard = LocalSoftwareKeyboardController.current
   val scope = rememberCoroutineScope()
+
+  val keyboard = LocalSoftwareKeyboardController.current
   val postTextField = viewModel.postTextField
   val state = viewModel.uiState
   val instanceUiData = state.instanceUiData

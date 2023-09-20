@@ -75,6 +75,7 @@ import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
+import com.github.whitescent.mastify.ui.component.status.paging.PageType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -143,7 +144,7 @@ fun Home(
         0 -> {
           when (uiState.timelineLoadState) {
             LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
-            LoadState.NotLoading -> EmptyStatusListPlaceholder()
+            LoadState.NotLoading -> EmptyStatusListPlaceholder(PageType.Timeline)
             else -> StatusListLoading(Modifier.fillMaxSize())
           }
         }

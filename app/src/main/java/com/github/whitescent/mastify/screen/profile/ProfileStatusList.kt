@@ -22,6 +22,7 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
+import com.github.whitescent.mastify.ui.component.status.paging.PageType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.viewModel.StatusAction
@@ -40,7 +41,7 @@ fun ProfileStatusList(
     0 -> {
       when (accountStatus.loadState.refresh) {
         is LoadState.Error -> StatusListLoadError { accountStatus.refresh() }
-        is LoadState.NotLoading -> EmptyStatusListPlaceholder()
+        is LoadState.NotLoading -> EmptyStatusListPlaceholder(PageType.Profile)
         else -> StatusListLoading()
       }
     }
@@ -49,7 +50,6 @@ fun ProfileStatusList(
         state = statusListState,
         modifier = Modifier.padding(bottom = 56.dp),
       ) {
-        accountStatus.itemCount
         items(
           count = accountStatus.itemCount,
           contentType = accountStatus.itemContentType(),

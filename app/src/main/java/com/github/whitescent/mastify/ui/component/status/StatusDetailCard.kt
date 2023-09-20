@@ -312,15 +312,25 @@ private fun StatusDetailInfo(
         Column {
           HeightSpacer(value = 8.dp)
           CenterRow {
-            AnimatedText(
-              text = pluralStringResource(id = R.plurals.favs, favouritesCount, favouritesCount),
-              color = Color(0xFFF91880),
-            )
-            WidthSpacer(value = 8.dp)
-            AnimatedText(
-              text = pluralStringResource(id = R.plurals.reblogs, reblogsCount, reblogsCount),
-              color = Color(0xFF00BA7C)
-            )
+            Crossfade(favouritesCount != 0) { showFavCount ->
+              CenterRow {
+                if (showFavCount) {
+                  AnimatedText(
+                    text = pluralStringResource(id = R.plurals.favs, favouritesCount, favouritesCount),
+                    color = Color(0xFFF91880),
+                  )
+                  WidthSpacer(value = 8.dp)
+                }
+              }
+            }
+            Crossfade(reblogsCount != 0) { showReblogCount ->
+              if (showReblogCount) {
+                AnimatedText(
+                  text = pluralStringResource(id = R.plurals.reblogs, reblogsCount, reblogsCount),
+                  color = Color(0xFF00BA7C)
+                )
+              }
+            }
           }
         }
       }

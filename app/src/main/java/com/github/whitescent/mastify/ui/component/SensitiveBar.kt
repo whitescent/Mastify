@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -44,9 +45,9 @@ fun SensitiveBar(
         )
         HeightSpacer(value = 6.dp)
         Text(
-          text = "单击以显示内容",
+          text = stringResource(id = R.string.click_to_display_content),
           color = sensitiveContentColor,
-          fontSize = 14.sp
+          fontSize = 14.sp,
         )
       }
     }
