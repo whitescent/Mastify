@@ -55,8 +55,8 @@ import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
 import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
+import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
-import com.github.whitescent.mastify.viewModel.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable

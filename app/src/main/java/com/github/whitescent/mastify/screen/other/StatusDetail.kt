@@ -62,7 +62,7 @@ import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.component.statusComment
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.StatusDetailTransitions
-import com.github.whitescent.mastify.viewModel.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator

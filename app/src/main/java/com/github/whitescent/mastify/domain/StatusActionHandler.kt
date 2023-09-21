@@ -4,7 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.ui.component.status.StatusSnackbarType
-import com.github.whitescent.mastify.viewModel.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction
 import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow

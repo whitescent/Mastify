@@ -21,6 +21,7 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.StatusAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

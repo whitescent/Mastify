@@ -2,17 +2,20 @@ package com.github.whitescent.mastify.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
-import com.github.whitescent.mastify.viewModel.ProfileViewModel
+import com.github.whitescent.mastify.network.model.status.Status
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
 class ProfilePagingSource @Inject constructor(
+  val onlyMedia: Boolean? = null,
+  val excludeReplies: Boolean? = null,
+  val accountId: String,
   private val api: MastodonApi,
-  private val viewModel: ProfileViewModel
 ) : PagingSource<String, StatusUiData>() {
 
   private var nextPageId: String? = null
@@ -24,12 +27,35 @@ class ProfilePagingSource @Inject constructor(
   override suspend fun load(params: LoadParams<String>): LoadResult<String, StatusUiData> {
     return try {
       val data = api.accountStatuses(
-        accountId = viewModel.uiState.account.id,
+        accountId = accountId,
         maxId = if (nextPageId != null) nextPageId else null,
-        excludeReplies = true
-      ).body()!!.toUiData()
+        excludeReplies = excludeReplies,
+        onlyMedia = onlyMedia
+      ).body()!!
+      var temp: MutableList<Status> = mutableListOf()
+      // If we need to request a status list containing replies,
+      // we need to obtain the requested status
+      // for good ux !
+      excludeReplies?.let {
+        if (!it) {
+          temp = data.toMutableList()
+          data.forEach { status ->
+            if (status.isInReplyTo) {
+              api.status(status.inReplyToId!!).fold(
+                { repliedStatus ->
+                  temp.add(temp.indexOf(status), repliedStatus)
+                },
+                { e ->
+                  e.printStackTrace()
+                }
+              )
+            }
+          }
+        }
+      }
+      val result = if (temp.size == 0) data.toUiData() else temp.toUiData()
       LoadResult.Page(
-        data = data,
+        data = result,
         prevKey = nextPageId,
         nextKey = if (data.isEmpty()) null else data.last().id
       ).also {

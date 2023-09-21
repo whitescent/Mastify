@@ -38,7 +38,7 @@ data class StatusUiData(
   val favorited: Boolean,
   val inReplyToId: String?,
 ) {
-  val itemType = "status"
+
   val parsedContent: String = Jsoup.parse(content).body().text()
   val isInReplyTo inline get() = inReplyToId != null
 
@@ -74,5 +74,9 @@ data class StatusUiData(
         }
       }
     }
+  }
+
+  companion object {
+    const val statusContentType = "status"
   }
 }

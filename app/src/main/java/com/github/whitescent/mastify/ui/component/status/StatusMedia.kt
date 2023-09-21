@@ -119,7 +119,7 @@ fun StatusMedia(
 }
 
 @Composable
-fun StatusMediaItem(
+private fun StatusMediaItem(
   media: Attachment,
   modifier: Modifier = Modifier,
   onClick: (() -> Unit)? = null

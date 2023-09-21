@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -115,11 +116,24 @@ fun Profile(
   viewModel: ProfileViewModel = hiltViewModel()
 ) {
   val uiState = viewModel.uiState
-  val accountStatus = viewModel.pager.collectAsLazyPagingItems()
+  val statusList = viewModel.statusPager.collectAsLazyPagingItems()
+  val statusWithReplyList = viewModel.statusWithReplyPager.collectAsLazyPagingItems()
+  val statusWithMediaList = viewModel.statusWithMediaPager.collectAsLazyPagingItems()
+
+  val scope = rememberCoroutineScope()
   val profileLayoutState = rememberProfileLayoutState()
   val statusListState = rememberLazyListState()
+  val statusWithReplyListState = rememberLazyListState()
+  val statusWithMediaListState = rememberLazyListState()
+
   val context = LocalContext.current
   val snackbarState = remember { StatusSnackbarState() }
+
+  val atPageTop by remember {
+    derivedStateOf {
+      profileLayoutState.progress == 0f
+    }
+  }
 
   Box {
     ProfileLayout(
@@ -162,28 +176,41 @@ fun Profile(
           ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
         }
       },
-      enabledScroll = (accountStatus.loadState.refresh is LoadState.NotLoading && accountStatus.itemCount > 0),
+      enabledScroll = (statusList.loadState.refresh is LoadState.NotLoading && statusList.itemCount > 0),
       bodyContent = {
         val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
         var selectedTab by remember { mutableStateOf(0) }
         val pagerState = rememberPagerState { tabs.size }
-        val scope = rememberCoroutineScope()
         Column(
+          // Maybe there's a better workaround
           Modifier.heightIn(
-            max = when (
-              accountStatus.loadState.refresh is LoadState.Loading ||
-                accountStatus.loadState.refresh is LoadState.Error ||
-                (accountStatus.loadState.refresh is LoadState.NotLoading && accountStatus.itemCount == 0)
-            ) {
-              true -> profileLayoutState.bodyContentMaxHeight
-              else -> Dp.Unspecified
+            max = when (selectedTab) {
+              0 -> {
+                if (statusList.loadState.refresh is LoadState.NotLoading && statusList.itemCount > 0)
+                  Dp.Unspecified
+                else profileLayoutState.bodyContentMaxHeight
+              }
+              1 -> {
+                if (statusWithReplyList.loadState.refresh is LoadState.NotLoading && statusWithReplyList.itemCount > 0)
+                  Dp.Unspecified
+                else profileLayoutState.bodyContentMaxHeight
+              }
+              else -> {
+                if (statusWithMediaList.loadState.refresh is LoadState.NotLoading && statusWithMediaList.itemCount > 0)
+                  Dp.Unspecified
+                else profileLayoutState.bodyContentMaxHeight
+              }
             }
           )
         ) {
           ProfileTabs(tabs, selectedTab) {
-            if (selectedTab == 0 && it == 0) {
+            if (selectedTab == it) {
               scope.launch {
-                statusListState.scrollToItem(0)
+                when (it) {
+                  0 -> statusListState.scrollToItem(0)
+                  1 -> statusWithReplyListState.scrollToItem(0)
+                  else -> statusWithMediaListState.scrollToItem(0)
+                }
               }.invokeOnCompletion { profileLayoutState.animatedToTop() }
             }
             selectedTab = it
@@ -193,8 +220,12 @@ fun Profile(
           }
           ProfilePager(
             state = pagerState,
-            accountStatus = accountStatus,
+            statusList = statusList,
+            statusWithReplyList = statusWithReplyList,
+            statusWithMediaList = statusWithMediaList,
             statusListState = statusListState,
+            statusWithReplyListState = statusWithReplyListState,
+            statusWithMediaListState = statusWithMediaListState,
             action = {
               viewModel.onStatusAction(it, context)
             },
@@ -239,6 +270,17 @@ fun Profile(
         .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
     )
   }
+
+  LaunchedEffect(atPageTop) {
+    if (atPageTop) {
+      scope.launch {
+        statusListState.scrollToItem(0)
+        statusWithReplyListState.scrollToItem(0)
+        statusWithMediaListState.scrollToItem(0)
+      }
+    }
+  }
+
   LaunchedEffect(Unit) {
     viewModel.snackBarFlow.collect {
       snackbarState.showSnackbar(it)

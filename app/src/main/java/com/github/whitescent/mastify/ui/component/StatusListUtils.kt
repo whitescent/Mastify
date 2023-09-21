@@ -22,7 +22,7 @@ import com.github.whitescent.mastify.mapper.status.getReplyChainType
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
-import com.github.whitescent.mastify.viewModel.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @OptIn(ExperimentalFoundationApi::class)

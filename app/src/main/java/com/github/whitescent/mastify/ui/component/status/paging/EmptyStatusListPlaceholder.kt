@@ -24,13 +24,15 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
 fun EmptyStatusListPlaceholder(
-  pageType: PageType
+  pageType: PageType,
+  modifier: Modifier = Modifier,
+  alignment: Alignment = Alignment.Center,
 ) {
   val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.empty_status))
   val progress by animateLottieCompositionAsState(composition, iterations = Int.MAX_VALUE)
   Box(
-    modifier = Modifier.fillMaxSize(),
-    contentAlignment = Alignment.TopCenter
+    modifier = modifier.fillMaxSize(),
+    contentAlignment = alignment
   ) {
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
       LottieAnimation(

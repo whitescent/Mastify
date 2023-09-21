@@ -37,7 +37,7 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.viewModel.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction
 
 @Composable
 fun StatusDropdownMenu(

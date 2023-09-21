@@ -15,6 +15,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.mapper.status.getReplyChainType
 import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
 import com.github.whitescent.mastify.network.model.account.Account
@@ -30,9 +32,9 @@ import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
-fun ProfileStatusList(
+fun ProfileStatusWithReplyList(
   statusList: LazyPagingItems<StatusUiData>,
-  statusListState: LazyListState,
+  statusListWithReplyState: LazyListState,
   action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
@@ -49,7 +51,7 @@ fun ProfileStatusList(
     }
     else -> {
       LazyColumn(
-        state = statusListState,
+        state = statusListWithReplyState,
         modifier = Modifier.padding(bottom = 56.dp),
       ) {
         items(
@@ -76,7 +78,7 @@ fun ProfileStatusList(
               modifier = Modifier.padding(horizontal = 8.dp),
             )
           }
-          AppHorizontalDivider()
+          if (replyChainType == End || replyChainType == Null) AppHorizontalDivider()
         }
         item {
           StatusEndIndicator(Modifier.padding(54.dp))

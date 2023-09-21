@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -49,6 +51,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,6 +60,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.mapper.status.getReplyChainType
@@ -144,7 +149,8 @@ fun Home(
         0 -> {
           when (uiState.timelineLoadState) {
             LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
-            LoadState.NotLoading -> EmptyStatusListPlaceholder(PageType.Timeline)
+            LoadState.NotLoading ->
+              EmptyStatusListPlaceholder(PageType.Timeline, Modifier.verticalScroll(rememberScrollState()))
             else -> StatusListLoading(Modifier.fillMaxSize())
           }
         }
@@ -158,7 +164,7 @@ fun Home(
             ) {
               itemsIndexed(
                 items = timeline,
-                contentType = { _, item -> item.itemType },
+                contentType = { _, _ -> StatusUiData.statusContentType },
                 key = { _, item -> item.id }
               ) { index, status ->
                 val replyChainType by remember(status, timeline.size, index) {
@@ -224,6 +230,7 @@ fun Home(
             NewStatusToast(
               visible = uiState.showNewStatusButton,
               count = uiState.newStatusCount,
+              limitExceeded = uiState.needSecondLoad,
               modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp)
             ) {
               scope.launch {
@@ -279,7 +286,8 @@ fun Home(
 @Composable
 private fun NewStatusToast(
   visible: Boolean,
-  count: String,
+  count: Int,
+  limitExceeded: Boolean,
   modifier: Modifier = Modifier,
   onDismiss: () -> Unit,
 ) {
@@ -307,10 +315,13 @@ private fun NewStatusToast(
         )
         WidthSpacer(value = 4.dp)
         Text(
-          text = "$count 条新嘟文",
+          text = when (limitExceeded) {
+            true -> stringResource(id = R.string.many_posts_title)
+            else -> pluralStringResource(id = R.plurals.new_post, count, count)
+          },
           fontSize = 16.sp,
           color = Color.White,
-          fontWeight = FontWeight(500)
+          fontWeight = FontWeight(500),
         )
       }
     }

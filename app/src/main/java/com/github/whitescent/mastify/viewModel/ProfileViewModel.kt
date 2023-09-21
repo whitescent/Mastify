@@ -18,9 +18,12 @@ import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.paging.ProfilePagingSource
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
+import com.github.whitescent.mastify.utils.StatusAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val profilePagerSize = 20
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -41,12 +44,39 @@ class ProfileViewModel @Inject constructor(
   )
     private set
 
-  val pager = Pager(
+  val statusPager = Pager(
     config = PagingConfig(
-      pageSize = 20,
+      pageSize = profilePagerSize,
       enablePlaceholders = false,
     ),
-    pagingSourceFactory = { ProfilePagingSource(api, this) },
+    pagingSourceFactory = {
+      ProfilePagingSource(
+        onlyMedia = false,
+        excludeReplies = true,
+        api = api,
+        accountId = uiState.account.id
+      )
+    },
+  ).flow.cachedIn(viewModelScope)
+
+  val statusWithReplyPager = Pager(
+    config = PagingConfig(
+      pageSize = profilePagerSize,
+      enablePlaceholders = false,
+    ),
+    pagingSourceFactory = {
+      ProfilePagingSource(excludeReplies = false, api = api, accountId = uiState.account.id)
+    },
+  ).flow.cachedIn(viewModelScope)
+
+  val statusWithMediaPager = Pager(
+    config = PagingConfig(
+      pageSize = profilePagerSize,
+      enablePlaceholders = false,
+    ),
+    pagingSourceFactory = {
+      ProfilePagingSource(onlyMedia = true, api = api, accountId = uiState.account.id)
+    },
   ).flow.cachedIn(viewModelScope)
 
   init {

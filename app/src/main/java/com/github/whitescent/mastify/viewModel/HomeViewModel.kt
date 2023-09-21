@@ -1,7 +1,6 @@
 package com.github.whitescent.mastify.viewModel
 
 import android.content.Context
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -18,6 +17,7 @@ import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
+import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.reorderStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,10 +101,11 @@ class HomeViewModel @Inject constructor(
               timelineFlow.emit(items + statusListAfterIndex)
               uiState = uiState.copy(
                 showNewStatusButton = newStatusCount != 0,
-                newStatusCount = newStatusCount.toString()
+                newStatusCount = newStatusCount
               )
               reinsertAllStatus(items + statusListAfterIndex, activeAccount.id)
             } else {
+              uiState = uiState.copy(needSecondLoad = true)
               // If the last status returned by the API cannot be found in the saved status list,
               // This means that the number of statuses in the user's timeline exceeds
               // the number of statuses in a single API request, and we need to display 'Load More'
@@ -155,20 +156,9 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeUiState(
-  val newStatusCount: String = "",
+  val newStatusCount: Int = 0,
+  val needSecondLoad: Boolean = false,
   val showNewStatusButton: Boolean = false,
   val endReached: Boolean = false,
   val timelineLoadState: LoadState = LoadState.NotLoading
 )
-
-@Stable
-sealed interface StatusAction {
-  data class CopyText(val text: String) : StatusAction
-  data class CopyLink(val link: String) : StatusAction
-  data object Mute : StatusAction // TODO
-  data object Block : StatusAction // TODO
-  data object Report : StatusAction // TODO
-  data class Favorite(val id: String, val favorite: Boolean) : StatusAction
-  data class Bookmark(val id: String, val bookmark: Boolean) : StatusAction
-  data class Reblog(val id: String, val reblog: Boolean) : StatusAction
-}

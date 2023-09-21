@@ -38,6 +38,11 @@
   <string name="mute_account">Mute %s</string>
   <string name="block_account">Block %s</string>
   <string name="report">Report</string>
+  <string name="many_posts_title">Many posts</string>
+  <plurals name="new_post">
+    <item quantity="one">%d new post</item>
+    <item quantity="other">%d new posts</item>
+  </plurals>
 
   <!-- status detail screen -->
   <string name="post_your_reply">post your reply</string>

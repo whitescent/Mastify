@@ -4,9 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -15,8 +12,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
-import com.github.whitescent.mastify.mapper.status.getReplyChainType
-import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
@@ -30,9 +26,9 @@ import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
-fun ProfileStatusList(
+fun ProfileStatusWithMediaList(
   statusList: LazyPagingItems<StatusUiData>,
-  statusListState: LazyListState,
+  statusListWithMediaState: LazyListState,
   action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
@@ -49,7 +45,7 @@ fun ProfileStatusList(
     }
     else -> {
       LazyColumn(
-        state = statusListState,
+        state = statusListWithMediaState,
         modifier = Modifier.padding(bottom = 56.dp),
       ) {
         items(
@@ -57,19 +53,12 @@ fun ProfileStatusList(
           contentType = statusList.itemContentType(),
           key = statusList.itemKey(),
         ) { index ->
-          val status = statusList[index]
-          val replyChainType by remember(status, statusList.itemCount, index) {
-            mutableStateOf(statusList.getReplyChainType(index))
-          }
-          val hasUnloadedParent by remember(status, statusList.itemCount, index) {
-            mutableStateOf(statusList.hasUnloadedParent(index))
-          }
           statusList[index]?.let {
             StatusListItem(
               status = it,
               action = action,
-              replyChainType = replyChainType,
-              hasUnloadedParent = hasUnloadedParent,
+              replyChainType = Null,
+              hasUnloadedParent = false,
               navigateToDetail = { navigateToDetail(it.actionable) },
               navigateToProfile = navigateToProfile,
               navigateToMedia = navigateToMedia,

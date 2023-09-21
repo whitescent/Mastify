@@ -38,6 +38,10 @@
   <string name="mute_account">隐藏 %s</string>
   <string name="block_account">屏蔽 %s</string>
   <string name="report">举报</string>
+  <string name="many_posts_title">很多嘟文</string>
+  <plurals name="new_post">
+    <item quantity="other">%d 条新嘟文</item>
+  </plurals>
 
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>

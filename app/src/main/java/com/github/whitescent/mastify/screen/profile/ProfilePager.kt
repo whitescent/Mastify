@@ -9,7 +9,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.viewModel.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -17,8 +17,12 @@ import kotlinx.collections.immutable.ImmutableList
 fun ProfilePager(
   state: PagerState,
   statusListState: LazyListState,
+  statusWithReplyListState: LazyListState,
+  statusWithMediaListState: LazyListState,
+  statusList: LazyPagingItems<StatusUiData>,
+  statusWithReplyList: LazyPagingItems<StatusUiData>,
+  statusWithMediaList: LazyPagingItems<StatusUiData>,
   action: (StatusAction) -> Unit,
-  accountStatus: LazyPagingItems<StatusUiData>,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
@@ -28,15 +32,29 @@ fun ProfilePager(
     pageContent = {
       when (it) {
         0 -> ProfileStatusList(
-          accountStatus = accountStatus,
+          statusList = statusList,
           statusListState = statusListState,
           action = action,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
-        1 -> Unit
-        2 -> Unit
+        1 -> ProfileStatusWithReplyList(
+          statusList = statusWithReplyList,
+          statusListWithReplyState = statusWithReplyListState,
+          action = action,
+          navigateToDetail = navigateToDetail,
+          navigateToProfile = navigateToProfile,
+          navigateToMedia = navigateToMedia,
+        )
+        2 -> ProfileStatusWithMediaList(
+          statusList = statusWithMediaList,
+          statusListWithMediaState = statusWithMediaListState,
+          action = action,
+          navigateToDetail = navigateToDetail,
+          navigateToProfile = navigateToProfile,
+          navigateToMedia = navigateToMedia,
+        )
       }
     }
   )
