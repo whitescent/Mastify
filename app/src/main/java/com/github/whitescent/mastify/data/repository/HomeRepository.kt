@@ -59,6 +59,9 @@ class HomeRepository @Inject constructor(
             newStatusList[newStatusList.lastIndex] =
               newStatusList[newStatusList.lastIndex].copy(hasUnloadedStatus = true)
             newItems.forEach {
+              // Here we need to consider whether status already
+              // contains the hasUnloadedStatus
+              // If so, we need to add a new status list on top of this instead of overwriting it
               if (oldItems.any { saved -> saved.id == it.id }) {
                 val removeIndex = oldItems.indexOfFirst { it.hasUnloadedStatus }.let {
                   if (it == -1) 0 else it + 1
