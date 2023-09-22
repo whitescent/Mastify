@@ -1,17 +1,17 @@
 package com.github.whitescent.mastify
 
+import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
-import androidx.core.view.WindowCompat
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.ui.component.AppScaffold
-import com.github.whitescent.mastify.ui.theme.LocalMastifyColors
 import com.github.whitescent.mastify.ui.theme.MastifyTheme
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -22,24 +22,20 @@ class MainActivity : ComponentActivity() {
   lateinit var accountRepository: AccountRepository
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    WindowCompat.setDecorFitsSystemWindows(window, false)
     super.onCreate(savedInstanceState)
+    enableEdgeToEdge()
     setContent {
       MastifyTheme {
-        val systemUiController = rememberSystemUiController()
-        val useDarkIcons = LocalMastifyColors.current.isLight
+        val darkTheme = isSystemInDarkTheme()
         val isLoggedIn = accountRepository.activeAccount != null
         SideEffect {
-          systemUiController.setSystemBarsColor(
-            color = Color.Transparent,
-            darkIcons = useDarkIcons
+          enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(TRANSPARENT, TRANSPARENT,) { darkTheme },
+            navigationBarStyle = SystemBarStyle.auto(TRANSPARENT, TRANSPARENT,) { darkTheme },
           )
-          // Support non-full screen gestures
-          systemUiController.isNavigationBarContrastEnforced = false
         }
         AppScaffold(
-          startRoute = if (isLoggedIn) NavGraphs.app else NavGraphs.login,
-          systemUiController = systemUiController
+          startRoute = if (isLoggedIn) NavGraphs.app else NavGraphs.login
         )
       }
     }

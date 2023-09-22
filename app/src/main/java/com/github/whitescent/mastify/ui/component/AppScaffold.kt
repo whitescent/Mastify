@@ -22,7 +22,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.rememberAppState
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
-import com.google.accompanist.systemuicontroller.SystemUiController
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
@@ -40,7 +39,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppScaffold(
   startRoute: Route,
-  systemUiController: SystemUiController,
   viewModel: AppViewModel = hiltViewModel()
 ) {
   val engine = rememberNavHostEngine()
@@ -60,7 +58,6 @@ fun AppScaffold(
     drawerContent = {
       if (destination.shouldShowScaffoldElements() && viewModel.activeAccount != null) {
         AppDrawer(
-          isSystemBarVisible = systemUiController.isSystemBarsVisible,
           drawerState = drawerState,
           activeAccount = viewModel.activeAccount!!,
           accounts = viewModel.accounts.toImmutableList(),

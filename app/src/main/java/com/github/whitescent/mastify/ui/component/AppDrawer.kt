@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DrawerState
@@ -66,7 +65,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AppDrawer(
-  isSystemBarVisible: Boolean,
   drawerState: DrawerState,
   activeAccount: AccountEntity,
   accounts: ImmutableList<AccountEntity>,
@@ -113,18 +111,7 @@ fun AppDrawer(
         }
       }
       Column(
-        modifier = Modifier
-          .let {
-            if (isSystemBarVisible) {
-              // Ensure correct padding is maintained
-              // when using this app in environments similar to WSA
-              it
-                .statusBarsPadding()
-                .padding(horizontal = 24.dp, vertical = 8.dp)
-            } else {
-              it.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 8.dp)
-            }
-          },
+        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 8.dp),
       ) {
         CircleShapeAsyncImage(
           model = activeAccount.profilePictureUrl,

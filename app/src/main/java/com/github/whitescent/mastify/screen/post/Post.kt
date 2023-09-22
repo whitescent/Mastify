@@ -338,8 +338,7 @@ private fun PostTopBar(
       CircleShapeAsyncImage(
         model = account.profilePictureUrl,
         modifier = Modifier.size(40.dp),
-        shape = AppTheme.shape.avatarShape,
-        onClick = { }
+        shape = AppTheme.shape.avatarShape
       )
       WidthSpacer(value = 6.dp)
       Column(modifier = Modifier.weight(1f)) {
