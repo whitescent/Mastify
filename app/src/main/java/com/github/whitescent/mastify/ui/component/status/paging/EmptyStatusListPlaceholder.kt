@@ -3,7 +3,6 @@ package com.github.whitescent.mastify.ui.component.status.paging
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,10 +30,10 @@ fun EmptyStatusListPlaceholder(
   val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.empty_status))
   val progress by animateLottieCompositionAsState(composition, iterations = Int.MAX_VALUE)
   Box(
-    modifier = modifier.fillMaxSize(),
+    modifier = modifier,
     contentAlignment = alignment
   ) {
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
       LottieAnimation(
         composition = composition,
         progress = { progress },

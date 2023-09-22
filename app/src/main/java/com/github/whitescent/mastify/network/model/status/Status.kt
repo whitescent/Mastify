@@ -30,7 +30,8 @@ data class Status(
   val tags: List<Tag>,
   val mentions: List<Mention>,
   val application: Application?,
-  @SerialName("media_attachments") val attachments: List<Attachment>
+  @SerialName("media_attachments") val attachments: List<Attachment>,
+  val hasUnloadedStatus: Boolean = false,
 ) {
 
   val actionableId inline get() = reblog?.id ?: id

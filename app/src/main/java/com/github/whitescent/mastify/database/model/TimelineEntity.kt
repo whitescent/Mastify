@@ -49,4 +49,5 @@ data class TimelineEntity(
   @ColumnInfo val mentions: List<Mention>,
   @ColumnInfo val application: Application?,
   @ColumnInfo val attachments: List<Attachment>,
+  @ColumnInfo(defaultValue = "false") val hasUnloadedStatus: Boolean
 )

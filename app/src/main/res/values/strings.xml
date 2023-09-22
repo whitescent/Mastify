@@ -43,6 +43,7 @@
     <item quantity="one">%d new post</item>
     <item quantity="other">%d new posts</item>
   </plurals>
+  <string name="load_more_title">Load More</string>
 
   <!-- status detail screen -->
   <string name="post_your_reply">post your reply</string>

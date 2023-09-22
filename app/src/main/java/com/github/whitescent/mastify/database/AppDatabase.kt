@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -17,7 +18,10 @@ import com.github.whitescent.mastify.database.util.Converters
     AccountEntity::class,
     InstanceEntity::class
   ],
-  version = 1
+  version = 2,
+  autoMigrations = [
+    AutoMigration(from = 1, to = 2)
+  ],
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

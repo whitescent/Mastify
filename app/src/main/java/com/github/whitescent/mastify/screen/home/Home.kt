@@ -72,7 +72,6 @@ import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
-import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
@@ -150,7 +149,10 @@ fun Home(
           when (uiState.timelineLoadState) {
             LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
             LoadState.NotLoading ->
-              EmptyStatusListPlaceholder(PageType.Timeline, Modifier.verticalScroll(rememberScrollState()))
+              EmptyStatusListPlaceholder(
+                pageType = PageType.Timeline,
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+              )
             else -> StatusListLoading(Modifier.fillMaxSize())
           }
         }
@@ -200,7 +202,10 @@ fun Home(
                   },
                   modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 )
-                if (replyChainType == End || replyChainType == Null) AppHorizontalDivider()
+                if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                  AppHorizontalDivider()
+                if (status.hasUnloadedStatus)
+                  LoadMorePlaceHolder { viewModel.loadUnloadedStatus(status.id) }
               }
               item {
                 when (uiState.timelineLoadState) {
@@ -334,7 +339,7 @@ private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
   Column {
     Surface(
       modifier = Modifier
-        .padding(horizontal = 24.dp)
+        .padding(24.dp)
         .fillMaxWidth()
         .height(56.dp),
       shape = RoundedCornerShape(18.dp),
@@ -354,19 +359,19 @@ private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
           when (it) {
             false -> {
               Text(
-                text = "加载更多",
+                text = stringResource(id = R.string.load_more_title),
                 color = AppTheme.colors.hintText,
-                fontSize = 16.sp
+                fontSize = 16.sp,
               )
             }
             true -> CircularProgressIndicator(
               modifier = Modifier.size(24.dp),
-              color = AppTheme.colors.primaryContent
+              color = AppTheme.colors.primaryContent,
+              strokeWidth = 1.5.dp
             )
           }
         }
       }
     }
-    HeightSpacer(value = 12.dp)
   }
 }

@@ -1,10 +1,11 @@
 package com.github.whitescent.mastify.paging
 
 class Paginator<Key, Item>(
-  private val initialKey: Key,
+  initialKey: Key,
+  private val refreshKey: Key,
   private inline val onLoadUpdated: (LoadState) -> Unit,
   private inline val onRequest: suspend (nextKey: Key) -> Result<List<Item>>,
-  private inline val getNextKey: suspend (List<Item>) -> Key,
+  private inline val getNextKey: suspend (List<Item>, loadState: LoadState) -> Key,
   private inline val onError: suspend (Throwable?) -> Unit,
   private inline val onAppend: suspend (items: List<Item>) -> Unit,
   private inline val onRefresh: suspend (items: List<Item>) -> Unit
@@ -24,7 +25,7 @@ class Paginator<Key, Item>(
         onLoadUpdated(loadState)
         return
       }
-      currentKey = getNextKey(result)
+      currentKey = getNextKey(result, loadState)
       onAppend(result)
       loadState = LoadState.NotLoading
       onLoadUpdated(loadState)
@@ -38,17 +39,16 @@ class Paginator<Key, Item>(
 
   override suspend fun refresh() {
     if (loadState == LoadState.Refresh) return
-    currentKey = initialKey
     loadState = LoadState.Refresh
     onLoadUpdated(loadState)
     try {
-      val result = onRequest(currentKey).getOrElse {
+      val result = onRequest(refreshKey).getOrElse {
         onError(it)
         loadState = LoadState.Error
         onLoadUpdated(loadState)
         return
       }
-      currentKey = getNextKey(result)
+      currentKey = getNextKey(result, loadState)
       onRefresh(result)
       loadState = LoadState.NotLoading
       onLoadUpdated(loadState)

@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository
+import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.timelineFetchNumber
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.mapper.status.toEntity
@@ -35,7 +36,6 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
   private val timelineDao = db.timelineDao()
-  private val timelineFetchNumber = 40
   private var initialKey: String? = null
   private var isInitialLoad = false
 
@@ -50,6 +50,7 @@ class HomeViewModel @Inject constructor(
 
   private val paginator = Paginator(
     initialKey = initialKey,
+    refreshKey = null,
     onLoadUpdated = { uiState = uiState.copy(timelineLoadState = it) },
     onRequest = { nextPage ->
       val response = api.homeTimeline(maxId = nextPage, limit = timelineFetchNumber)
@@ -60,10 +61,15 @@ class HomeViewModel @Inject constructor(
         Result.success(emptyList())
       }
     },
-    getNextKey = { items ->
+    getNextKey = { items, loadState ->
       // if timelineEntity is not empty, we need set nextPage to the last status id
-      if (!isInitialLoad && timelineFlow.value.isNotEmpty()) timelineFlow.value.last().id
-      else items.lastOrNull()?.id
+      if (loadState == LoadState.Append) {
+        if (!isInitialLoad && timelineFlow.value.isNotEmpty()) timelineFlow.value.last().id
+        else items.lastOrNull()?.id
+      } else {
+        if (timelineFlow.value.isNotEmpty()) timelineFlow.value.last().id
+        else items.lastOrNull()?.id
+      }
     },
     onError = {
       it?.printStackTrace()
@@ -76,44 +82,17 @@ class HomeViewModel @Inject constructor(
       }
     },
     onRefresh = { items ->
-      when (items.isEmpty()) {
-        true -> {
-          timelineFlow.emit(emptyList())
-          timelineDao.clearAll(activeAccount.id)
-        }
-        else -> {
-          if (timelineFlow.value.size < timelineFetchNumber || items.size < timelineFetchNumber) {
-            timelineFlow.emit(items)
-            uiState = uiState.copy(endReached = items.isEmpty())
-            timelineDao.clearAll(activeAccount.id)
-            timelineDao.insertAll(items.map { it.toEntity(activeAccount.id) })
-          } else {
-            val lastStatusOfApi = items.last()
-            if (timelineFlow.value.any { it.id == lastStatusOfApi.id }) {
-              val newStatusList = items.filterNot {
-                timelineFlow.value.any { saved -> saved.id == it.id }
-              }
-              val newStatusCount = newStatusList.size
-              // Add / Update / Remove posts obtained by api
-              val indexInSavedList = timelineFlow.value.indexOfFirst { it.id == items.last().id } + 1
-              val statusListAfterIndex =
-                timelineFlow.value.subList(indexInSavedList, timelineFlow.value.size)
-              timelineFlow.emit(items + statusListAfterIndex)
-              uiState = uiState.copy(
-                showNewStatusButton = newStatusCount != 0,
-                newStatusCount = newStatusCount
-              )
-              reinsertAllStatus(items + statusListAfterIndex, activeAccount.id)
-            } else {
-              uiState = uiState.copy(needSecondLoad = true)
-              // If the last status returned by the API cannot be found in the saved status list,
-              // This means that the number of statuses in the user's timeline exceeds
-              // the number of statuses in a single API request, and we need to display 'Load More'
-            }
-          }
-        }
-      }
-    }
+      val newStatusCount = items.filterNot {
+        timelineFlow.value.any { saved -> saved.id == it.id }
+      }.size
+      uiState = uiState.copy(
+        showNewStatusButton = newStatusCount != 0 && timelineFlow.value.isNotEmpty(),
+        newStatusCount = newStatusCount,
+        needSecondLoad = !timelineFlow.value.any { it.id == items.last().id }
+      )
+      timelineFlow.emit(homeRepository.timelineListHandler(timelineFlow.value, items))
+      reinsertAllStatus(timelineFlow.value, activeAccount.id)
+    },
   )
 
   init {
@@ -136,6 +115,39 @@ class HomeViewModel @Inject constructor(
 
   fun dismissButton() {
     uiState = uiState.copy(showNewStatusButton = false)
+  }
+
+  fun loadUnloadedStatus(statusId: String) {
+    val tempList = timelineFlow.value.toMutableList()
+    val insertIndex = tempList.indexOfFirst { it.id == statusId }
+    viewModelScope.launch {
+      val response = api.homeTimeline(
+        maxId = tempList.find { it.id == statusId }!!.id,
+        limit = timelineFetchNumber
+      )
+      if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+        val list = response.body()!!.toMutableList()
+        if (tempList.any { it.id == list.last().id }) {
+          tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
+          tempList.addAll(
+            index = insertIndex + 1,
+            elements = list.filterNot {
+              tempList.any { saved -> saved.id == it.id }
+            }
+          )
+        } else {
+          list[list.lastIndex] = list[list.lastIndex].copy(hasUnloadedStatus = true)
+          tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
+          tempList.addAll(insertIndex + 1, list)
+        }
+        timelineFlow.emit(tempList)
+        db.withTransaction {
+          reinsertAllStatus(timelineFlow.value, activeAccount.id)
+        }
+      } else {
+        // TODO error handling
+      }
+    }
   }
 
   private suspend fun reinsertAllStatus(statuses: List<Status>, accountId: Long) {

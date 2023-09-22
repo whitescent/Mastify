@@ -37,6 +37,7 @@ data class StatusUiData(
   val favouritesCount: Int,
   val favorited: Boolean,
   val inReplyToId: String?,
+  val hasUnloadedStatus: Boolean,
 ) {
 
   val parsedContent: String = Jsoup.parse(content).body().text()

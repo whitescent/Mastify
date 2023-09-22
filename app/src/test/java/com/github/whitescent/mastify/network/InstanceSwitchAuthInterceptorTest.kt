@@ -92,7 +92,12 @@ class InstanceSwitchAuthInterceptorTest {
           clientId = "fakeId",
           clientSecret = "fakeSecret",
           isActive = true,
-          accountId = "fakeId"
+          accountId = "fakeId",
+          emojis = listOf(),
+          fields = listOf(),
+          followingCount = 0,
+          followersCount = 0,
+          statusesCount = 0
         )
       }
     }

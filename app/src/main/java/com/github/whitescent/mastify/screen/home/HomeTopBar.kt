@@ -20,10 +20,11 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 @Composable
 fun HomeTopBar(
   avatar: String,
+  modifier: Modifier = Modifier,
   openDrawer: () -> Unit
 ) {
   CenterRow(
-    modifier = Modifier
+    modifier = modifier
       .statusBarsPadding()
       .fillMaxWidth()
       .padding(24.dp)

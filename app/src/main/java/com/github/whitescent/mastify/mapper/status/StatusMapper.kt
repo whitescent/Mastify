@@ -48,7 +48,8 @@ fun Status.toUiData(): StatusUiData {
     favorited = reblog?.favorited ?: favorited,
     inReplyToId = reblog?.inReplyToId ?: inReplyToId,
     actionable = actionableStatus,
-    actionableId = actionableStatus.id
+    actionableId = actionableStatus.id,
+    hasUnloadedStatus = hasUnloadedStatus
   )
 }
 
@@ -82,7 +83,8 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     mentions = mentions,
     account = account,
     application = application,
-    attachments = attachments
+    attachments = attachments,
+    hasUnloadedStatus = hasUnloadedStatus
   )
 }
 

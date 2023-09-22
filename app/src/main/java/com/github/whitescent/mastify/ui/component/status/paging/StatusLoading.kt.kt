@@ -15,7 +15,7 @@ import com.github.whitescent.R
 @Composable
 fun StatusListLoading(modifier: Modifier = Modifier) {
   val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.car))
-  val progress by animateLottieCompositionAsState(composition)
+  val progress by animateLottieCompositionAsState(composition, iterations = Int.MAX_VALUE)
   Box(modifier = modifier.fillMaxSize(), Alignment.Center) {
     LottieAnimation(
       composition = composition,

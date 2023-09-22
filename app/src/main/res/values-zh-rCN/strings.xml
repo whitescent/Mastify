@@ -42,6 +42,7 @@
   <plurals name="new_post">
     <item quantity="other">%d 条新嘟文</item>
   </plurals>
+  <string name="load_more_title">加载更多</string>
 
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>
