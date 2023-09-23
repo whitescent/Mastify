@@ -1,3 +1,20 @@
+<!--
+  ~ Copyright 2023 WhiteScent
+  ~
+  ~ This file is a part of Mastify.
+  ~
+  ~ This program is free software; you can redistribute it and/or modify it under the terms of the
+  ~ GNU General Public License as published by the Free Software Foundation; either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ Mastify is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+  ~ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+  ~ Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License along with Mastify; if not,
+  ~ see <http://www.gnu.org/licenses>.
+  -->
+
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
@@ -14,7 +31,7 @@
     <path
         android:pathData="M422.3,673.5C403.7,663.9 387.2,650.8 372.8,635.7C349.8,611.4 333.8,577.1 335,543.3C335.8,518.3 346.3,495.7 364,478.3C369.7,472.7 376.3,468 382.1,462.6C395.9,449.7 406,432.3 406.3,413C406.6,391.9 394.4,374.4 378.4,361.8C372.7,357.2 366.2,353.6 361.1,348.2C357.8,344.6 356.6,341.5 356.9,336.6C357.1,332.5 358.8,328.3 362,325.7C364.1,323.9 366.5,323.7 369.3,324C380.1,325.4 405.2,350.3 412.3,359.2C427.3,377.8 434,400.2 431.2,424C430,434.3 427.1,444.3 422.1,453.4C414.1,468 401.3,479.9 389,490.8C382.1,496.9 374.4,503.1 369.7,511.2C359.2,529.5 357.2,551.9 362.7,572C370.5,600.2 390,621.4 411.3,640.3L420.6,648.3C422.2,649.6 424,651.4 425.8,652.3L426.3,652.5L422.3,673.5Z">
       <aapt:attr name="android:fillColor">
-        <gradient 
+        <gradient
             android:startX="471.8"
             android:startY="433.9"
             android:endX="313.9"
@@ -28,7 +45,7 @@
     <path
         android:pathData="M585.5,388.1C591.4,390.4 596.9,393.6 602.4,396.7C634.5,414.8 660.7,443.6 675.4,477.3C691.4,514 693.8,555 678.8,592.4C662.5,633 630.5,664.3 590.3,681.1C563.4,692.4 536.5,695.6 507.5,695L508.4,669.7C510.7,650.1 519.2,631.7 534.4,618.8C539.7,614.3 545.7,610.6 551.6,607C565.9,598 581.2,590.1 594.4,579.5C620.5,558.4 641.6,530 645,495.8C648.6,460.2 629.2,426.8 604.3,403C601.4,400.2 598.3,397.6 595,395.3C592.3,393.3 588.1,391.4 586.1,388.9L585.5,388.1Z">
       <aapt:attr name="android:fillColor">
-        <gradient 
+        <gradient
             android:startX="682.5"
             android:startY="494.7"
             android:endX="463.6"
