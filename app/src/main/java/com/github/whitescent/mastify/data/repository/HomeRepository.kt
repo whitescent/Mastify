@@ -77,6 +77,6 @@ class HomeRepository @Inject constructor(
   }
 
   companion object {
-    const val timelineFetchNumber = 20
+    const val timelineFetchNumber = 40
   }
 }
