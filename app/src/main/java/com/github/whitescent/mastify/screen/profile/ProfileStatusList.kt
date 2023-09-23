@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.screen.profile
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -50,7 +51,7 @@ fun ProfileStatusList(
     else -> {
       LazyColumn(
         state = statusListState,
-        modifier = Modifier.padding(bottom = 56.dp),
+        modifier = Modifier.fillMaxSize().padding(bottom = 56.dp),
       ) {
         items(
           count = statusList.itemCount,
