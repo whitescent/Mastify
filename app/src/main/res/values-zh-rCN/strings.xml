@@ -61,7 +61,7 @@
   <string name="unlisted">不列出</string>
   <string name="private_title">仅限关注者</string>
   <string name="direct">私信</string>
-  <string name="reply_placeholder">最近有什么新鲜事？</string>
+  <string name="reply_placeholder">有什么想和大家分享的吗？</string>
   <string name="post_placeholder">与大家分享你此刻的想法吧！</string>
   <string name="change_post_visibility">更改嘟文可见性</string>
   <string name="visibility_description">更改嘟文的可见性，确保只有您想要的人群可以看到您的内容。</string>
