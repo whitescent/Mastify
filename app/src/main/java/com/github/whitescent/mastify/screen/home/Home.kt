@@ -197,7 +197,7 @@ fun Home(
                   replyChainType = replyChainType,
                   hasUnloadedParent = hasUnloadedParent,
                   action = {
-                    viewModel.onStatusAction(it, context)
+                    viewModel.onStatusAction(it, context, status.actionable)
                   },
                   navigateToDetail = {
                     navigator.navigate(

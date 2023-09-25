@@ -38,8 +38,10 @@ import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.reorderStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -105,7 +107,8 @@ class HomeViewModel @Inject constructor(
       uiState = uiState.copy(
         showNewStatusButton = newStatusCount != 0 && timelineFlow.value.isNotEmpty(),
         newStatusCount = newStatusCount,
-        needSecondLoad = !timelineFlow.value.any { it.id == items.last().id }
+        needSecondLoad = !timelineFlow.value.any { it.id == items.last().id },
+        endReached = items.size < timelineFetchNumber
       )
       timelineFlow.emit(homeRepository.timelineListHandler(timelineFlow.value, items))
       reinsertAllStatus(timelineFlow.value, activeAccount.id)
@@ -126,8 +129,27 @@ class HomeViewModel @Inject constructor(
 
   fun refreshTimeline() = viewModelScope.launch { paginator.refresh() }
 
-  fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
-    statusActionHandler.onStatusAction(action, context)
+  fun onStatusAction(action: StatusAction, context: Context, status: Status) {
+    viewModelScope.launch(Dispatchers.IO) {
+      // update newStatus to timelineFlow
+      timelineFlow.update {
+        it.toMutableList().also { list ->
+          val index = list.indexOfFirst { saved -> saved.id == status.id }
+          list[index] = list[index].copy(
+            favorited = if (action is StatusAction.Favorite) action.favorite else status.favorited,
+            favouritesCount = if (action is StatusAction.Favorite) {
+              if (action.favorite) status.favouritesCount + 1 else status.favouritesCount - 1
+            } else status.favouritesCount,
+            reblogged = if (action is StatusAction.Reblog) action.reblog else status.reblogged,
+            reblogsCount = if (action is StatusAction.Reblog) {
+              if (action.reblog) status.reblogsCount + 1 else status.reblogsCount - 1
+            } else status.reblogsCount,
+          )
+        }
+      }
+      statusActionHandler.onStatusAction(action, context)
+      reinsertAllStatus(timelineFlow.value, activeAccount.id)
+    }
   }
 
   fun dismissButton() {

@@ -48,7 +48,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -197,7 +196,8 @@ fun StatusDetailCard(
                 SelectionContainer {
                   HtmlText(
                     text = status.content,
-                    style = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
+                    fontSize = 18.sp,
+                    color = AppTheme.colors.primaryContent,
                     onLinkClick = { span ->
                       launchCustomChromeTab(
                         context = context,
@@ -272,7 +272,8 @@ private fun StatusDetailActionsRow(
     ReblogButton(
       reblogged = statusUiData.reblogged,
       modifier = Modifier.size(statusDetailActionsIconSize),
-      unreblogColor = AppTheme.colors.primaryContent
+      unreblogColor = AppTheme.colors.primaryContent,
+      enabled = statusUiData.visibility.rebloggingAllowed
     ) {
       onReblog(it)
       action(StatusAction.Reblog(statusUiData.actionableId, it))

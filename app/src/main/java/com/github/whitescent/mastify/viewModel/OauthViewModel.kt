@@ -28,8 +28,9 @@ import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.AccessToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,7 +45,10 @@ class OauthViewModel @Inject constructor(
   val instance = preferenceRepository.instance
   val code: String? = savedStateHandle["code"]
 
-  fun fetchAccessToken(navigateToApp: () -> Unit) {
+  private val navigateChannel = Channel<Boolean>()
+  val navigateFlow = navigateChannel.receiveAsFlow()
+
+  fun fetchAccessToken() {
     val domain = instance!!.name
     val clientId = instance.clientId
     val clientSecret = instance.clientSecret
@@ -60,9 +64,7 @@ class OauthViewModel @Inject constructor(
       ).fold(
         { accessToken ->
           fetchAccountDetails(accessToken, domain, clientId, clientSecret)
-          withContext(Dispatchers.Main) {
-            navigateToApp()
-          }
+          navigateChannel.send(true)
         },
         {
           it.printStackTrace()

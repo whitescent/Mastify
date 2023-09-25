@@ -15,8 +15,6 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-
 package com.github.whitescent.mastify.utils
 
 import androidx.compose.foundation.layout.PaddingValues

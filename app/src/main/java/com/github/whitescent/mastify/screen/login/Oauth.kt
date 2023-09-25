@@ -78,25 +78,30 @@ fun Oauth(
       ) {
         Text(text = stringResource(id = R.string.title_connecting), color = AppTheme.colors.primaryContent)
         WidthSpacer(value = 10.dp)
-        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+        CircularProgressIndicator(
+          modifier = Modifier.size(24.dp),
+          strokeWidth = 2.dp,
+          color = AppTheme.colors.accent
+        )
       }
     }
   }
   LaunchedEffect(Unit) {
     delay(300)
     viewModel.code?.let {
-      viewModel.fetchAccessToken(
-        navigateToApp = {
-          navigator.navigate(NavGraphs.app) {
-            popUpTo(NavGraphs.root) {
-              inclusive = true
-            }
-          }
-        }
-      )
+      viewModel.fetchAccessToken()
     } ?: run {
       // If the user refuses OAuth, we need to navigate to the login screen
       navigator.popBackStack()
+    }
+    viewModel.navigateFlow.collect {
+      if (it) {
+        navigator.navigate(NavGraphs.app) {
+          popUpTo(NavGraphs.root) {
+            inclusive = true
+          }
+        }
+      }
     }
   }
   BackHandler {

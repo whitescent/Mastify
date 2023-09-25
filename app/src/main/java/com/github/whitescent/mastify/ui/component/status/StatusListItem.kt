@@ -361,7 +361,7 @@ private fun StatusContent(
                   HeightSpacer(value = 4.dp)
                   HtmlText(
                     text = statusUiData.content,
-                    fontSize = 15.sp,
+                    fontSize = (15.5).sp,
                     maxLines = 11,
                     onLinkClick = { span ->
                       launchCustomChromeTab(
@@ -370,7 +370,7 @@ private fun StatusContent(
                         toolbarColor = primaryColor.toArgb(),
                       )
                     },
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                   )
                 }
                 if (statusUiData.attachments.isNotEmpty()) {
