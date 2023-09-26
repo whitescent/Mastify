@@ -117,7 +117,6 @@ fun AppScaffold(
         navGraph = NavGraphs.root,
         startRoute = startRoute,
         dependenciesContainerBuilder = {
-          // dependency(NavGraphs.app) { lazyState }
           dependency(NavGraphs.app) { drawerState }
           dependency(NavGraphs.app) { appState }
         }
