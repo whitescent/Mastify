@@ -114,7 +114,9 @@ class InstanceSwitchAuthInterceptorTest {
           fields = listOf(),
           followingCount = 0,
           followersCount = 0,
-          statusesCount = 0
+          statusesCount = 0,
+          firstVisibleItemIndex = 0,
+          offset = 0
         )
       }
     }

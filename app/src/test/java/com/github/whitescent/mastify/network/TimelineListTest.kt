@@ -238,6 +238,28 @@ class TimelineListTest {
     )
     savedList = timelineListHandler(savedList, apiList)
     Assert.assertEquals(expected, savedList)
+    // Simulating post addition
+    apiList = mutableListOf(
+      StatusTestItem("19"),
+      StatusTestItem("18"),
+      StatusTestItem("17"),
+    )
+    expected = mutableListOf(
+      StatusTestItem("19"),
+      StatusTestItem("18"),
+      StatusTestItem("17", true),
+      StatusTestItem("16"),
+      StatusTestItem("15"),
+      StatusTestItem("14", true),
+      StatusTestItem("13"),
+      StatusTestItem("12"),
+      StatusTestItem("11", true),
+      StatusTestItem("10"),
+      StatusTestItem("9"),
+      StatusTestItem("8")
+    )
+    savedList = timelineListHandler(savedList, apiList)
+    Assert.assertEquals(expected, savedList)
   }
 
   @Test

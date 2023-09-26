@@ -65,8 +65,8 @@ class HomeViewModel @Inject constructor(
 
   val activeAccount get() = accountRepository.activeAccount!!
 
-  val timelineScrollPosition get() = activeAccount!!.firstVisibleItemIndex
-  val timelineScrollPositionOffset get() = activeAccount!!.offset
+  val timelineScrollPosition get() = activeAccount.firstVisibleItemIndex
+  val timelineScrollPositionOffset get() = activeAccount.offset
   var uiState by mutableStateOf(HomeUiState())
     private set
 
@@ -192,17 +192,16 @@ class HomeViewModel @Inject constructor(
     }
   }
 
+  fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) {
+    accountRepository.updateActiveAccount(
+      activeAccount.copy(firstVisibleItemIndex = firstVisibleItemIndex, offset = offset)
+    )
+  }
+
   private suspend fun reinsertAllStatus(statuses: List<Status>, accountId: Long) {
     db.withTransaction {
       timelineDao.clearAll(accountId)
       timelineDao.insertAll(statuses.toEntity(accountId))
-    }
-  }
-  fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) {
-    activeAccount?.let {
-      accountRepository.updateActiveAccount(
-        it.copy(firstVisibleItemIndex = firstVisibleItemIndex, offset = offset)
-      )
     }
   }
 
