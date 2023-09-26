@@ -29,6 +29,9 @@ interface AccountDao {
   @Upsert(entity = AccountEntity::class)
   fun insertOrReplace(account: AccountEntity)
 
+  @Query("SELECT * FROM ACCOUNTENTITY WHERE id = :id")
+  fun getAccount(id: Long): AccountEntity
+
   @Delete
   fun delete(account: AccountEntity)
 

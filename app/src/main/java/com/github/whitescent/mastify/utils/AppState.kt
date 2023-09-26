@@ -27,12 +27,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @Stable
 class AppState(
   private val appContentPaddingTop: Dp,
   private val appContentPaddingBottom: Dp,
 ) {
+
+  private val scrollToTopChannel = Channel<Boolean>()
+  val scrollToTopFlow = scrollToTopChannel.receiveAsFlow()
 
   var appPaddingValues by mutableStateOf(
     PaddingValues(top = appContentPaddingTop, bottom = appContentPaddingBottom)
@@ -42,6 +47,8 @@ class AppState(
   fun setPaddingValues(paddingValues: PaddingValues) {
     appPaddingValues = paddingValues
   }
+
+  suspend fun scrollToTop() { scrollToTopChannel.send(true) }
 
   companion object {
     val saver = listSaver(

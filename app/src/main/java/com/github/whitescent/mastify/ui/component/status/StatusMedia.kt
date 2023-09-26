@@ -68,7 +68,7 @@ fun StatusMedia(
             if (it.isNaN()) DefaultAspectRatio else it
           }
         }
-      } ?: DefaultAspectRatio
+      }
       else -> null
     }
   }

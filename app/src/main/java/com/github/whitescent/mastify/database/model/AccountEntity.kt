@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.github.whitescent.mastify.network.model.account.Fields
@@ -41,7 +42,9 @@ data class AccountEntity(
   val fields: List<Fields>,
   val followersCount: Long,
   val followingCount: Long,
-  val statusesCount: Long
+  val statusesCount: Long,
+  @ColumnInfo(defaultValue = "0") val firstVisibleItemIndex: Int,
+  @ColumnInfo(defaultValue = "0") val offset: Int
 ) {
 
   val fullname: String get() = "@$username@$domain"

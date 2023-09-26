@@ -86,7 +86,9 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
         fields = newAccount.fields,
         note = newAccount.note,
         emojis = newAccount.emojis,
-        createdAt = newAccount.createdAt
+        createdAt = newAccount.createdAt,
+        firstVisibleItemIndex = 0,
+        offset = 0
       ).also { accounts.add(it) }
     }
     activeAccount = newAccountEntity
@@ -117,15 +119,17 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
     }
   }
 
+  fun updateActiveAccount(account: AccountEntity) {
+    activeAccount = account
+    accountDao.insertOrReplace(account)
+  }
+
   /**
    * changes the active account
    * @param accountId the database id of the new active account
    */
   fun setActiveAccount(accountId: Long) {
-    val newActiveAccount = accounts.find { (id) ->
-      id == accountId
-    } ?: return // invalid accountId passed, do nothing
-
+    val newActiveAccount = accountDao.getAccount(accountId)
     activeAccount?.copy(isActive = false)?.let {
       activeAccount = it
       saveAccount(it)
@@ -145,8 +149,6 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
    * @param account the account to save
    */
   private fun saveAccount(account: AccountEntity) {
-    if (account.id != 0L) {
-      accountDao.insertOrReplace(account)
-    }
+    if (account.id != 0L) accountDao.insertOrReplace(account)
   }
 }

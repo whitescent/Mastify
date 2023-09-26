@@ -86,6 +86,7 @@ import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -253,6 +254,9 @@ private fun StatusContent(
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
     mutableStateOf(statusUiData.sensitive || (statusUiData.spoilerText.isNotEmpty()))
   }
+  val displayAttachments by remember(statusUiData.attachments) {
+    mutableStateOf(statusUiData.attachments.filter { it.type != "unknown" })
+  }
   var openMenu by remember { mutableStateOf(false) }
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
@@ -373,10 +377,10 @@ private fun StatusContent(
                     overflow = TextOverflow.Ellipsis
                   )
                 }
-                if (statusUiData.attachments.isNotEmpty()) {
+                if (displayAttachments.isNotEmpty()) {
                   HeightSpacer(value = 4.dp)
                   StatusMedia(
-                    attachments = statusUiData.attachments,
+                    attachments = displayAttachments.toImmutableList(),
                     onClick = onClickMedia,
                   )
                 }

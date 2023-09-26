@@ -74,6 +74,7 @@ import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun StatusDetailCard(
@@ -87,6 +88,9 @@ fun StatusDetailCard(
 ) {
   var hideSensitiveContent by rememberSaveable(status.sensitive, status.spoilerText) {
     mutableStateOf(status.sensitive && status.spoilerText.isNotEmpty())
+  }
+  val displayAttachments by remember(status.attachments) {
+    mutableStateOf(status.attachments.filter { it.type != "unknown" }.toImmutableList())
   }
   var openMenu by remember { mutableStateOf(false) }
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
@@ -209,12 +213,12 @@ fun StatusDetailCard(
                   )
                 }
               }
-              if (status.attachments.isNotEmpty()) {
+              if (displayAttachments.isNotEmpty()) {
                 HeightSpacer(value = 4.dp)
                 StatusMedia(
-                  attachments = status.attachments,
+                  attachments = displayAttachments,
                   onClick = { targetIndex ->
-                    navigateToMedia(status.attachments, targetIndex)
+                    navigateToMedia(displayAttachments, targetIndex)
                   },
                 )
               }

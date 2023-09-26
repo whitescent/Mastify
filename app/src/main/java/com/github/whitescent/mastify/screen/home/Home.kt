@@ -37,8 +37,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -105,22 +105,28 @@ import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, FlowPreview::class)
 @AppNavGraph(start = true)
 @Destination(style = AppTransitions::class)
 @Composable
 fun Home(
   appState: AppState,
   drawerState: DrawerState,
-  lazyState: LazyListState,
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
+  val lazyState = rememberLazyListState(
+    initialFirstVisibleItemIndex = viewModel.timelineScrollPosition,
+    initialFirstVisibleItemScrollOffset = viewModel.timelineScrollPositionOffset
+  )
   val timeline by viewModel.timelineList.collectAsStateWithLifecycle(listOf())
   val firstVisibleIndex by remember {
     derivedStateOf {
@@ -132,7 +138,6 @@ fun Home(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val uiState = viewModel.uiState
-
   val pullRefreshState = rememberPullRefreshState(
     refreshing = refreshing,
     onRefresh = {
@@ -287,21 +292,37 @@ fun Home(
   }
 
   LaunchedEffect(Unit) {
-    viewModel.snackBarFlow.collect {
-      snackbarState.showSnackbar(it)
+    launch {
+      viewModel.snackBarFlow.collect {
+        snackbarState.showSnackbar(it)
+      }
+    }
+    launch {
+      appState.scrollToTopFlow.collect {
+        lazyState.scrollToItem(0)
+      }
     }
   }
   LaunchedEffect(firstVisibleIndex) {
     if (firstVisibleIndex == 0 && uiState.showNewStatusButton) viewModel.dismissButton()
-    snapshotFlow { firstVisibleIndex }
-      .map {
-        !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading &&
-          lazyState.firstVisibleItemIndex >= timeline.size - timeline.size / 3
-      }
-      .filter { it }
-      .collect {
-        viewModel.append()
-      }
+    launch {
+      snapshotFlow { firstVisibleIndex }
+        .map {
+          !uiState.endReached && uiState.timelineLoadState == LoadState.NotLoading &&
+            lazyState.firstVisibleItemIndex >= timeline.size - timeline.size / 3
+        }
+        .filter { it }
+        .collect {
+          viewModel.append()
+        }
+    }
+    launch {
+      snapshotFlow { firstVisibleIndex }
+        .debounce(500L)
+        .collectLatest {
+          viewModel.updateTimelinePosition(it, lazyState.firstVisibleItemScrollOffset)
+        }
+    }
   }
 }
 

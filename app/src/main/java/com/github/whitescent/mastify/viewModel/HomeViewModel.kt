@@ -64,6 +64,9 @@ class HomeViewModel @Inject constructor(
   val snackBarFlow = statusActionHandler.snackBarFlow
 
   val activeAccount get() = accountRepository.activeAccount!!
+
+  val timelineScrollPosition get() = activeAccount!!.firstVisibleItemIndex
+  val timelineScrollPositionOffset get() = activeAccount!!.offset
   var uiState by mutableStateOf(HomeUiState())
     private set
 
@@ -193,6 +196,13 @@ class HomeViewModel @Inject constructor(
     db.withTransaction {
       timelineDao.clearAll(accountId)
       timelineDao.insertAll(statuses.toEntity(accountId))
+    }
+  }
+  fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) {
+    activeAccount?.let {
+      accountRepository.updateActiveAccount(
+        it.copy(firstVisibleItemIndex = firstVisibleItemIndex, offset = offset)
+      )
     }
   }
 
