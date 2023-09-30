@@ -117,7 +117,7 @@ fun Post(
     modifier = Modifier.fillMaxSize(),
   ) {
     PostTopBar(viewModel.account!!) { navigator.popBackStack() }
-    AppHorizontalDivider(Modifier.padding(8.dp))
+    AppHorizontalDivider(Modifier.padding(6.dp))
     Column(
       modifier = Modifier
         .padding(horizontal = 16.dp)
