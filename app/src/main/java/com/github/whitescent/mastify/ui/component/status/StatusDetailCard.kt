@@ -142,7 +142,7 @@ fun StatusDetailCard(
         CircleShapeAsyncImage(
           model = status.avatar,
           modifier = Modifier.size(statusAvatarSize),
-          shape = AppTheme.shape.avatarShape,
+          shape = AppTheme.shape.smallAvatar,
           onClick = { navigateToProfile(status.actionable.account) }
         )
         WidthSpacer(value = 7.dp)

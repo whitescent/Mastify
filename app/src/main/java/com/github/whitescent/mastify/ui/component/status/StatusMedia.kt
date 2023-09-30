@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -44,6 +43,7 @@ import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.AsyncBlurImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import kotlinx.collections.immutable.ImmutableList
 
 private val ImageGridSpacing = 2.dp
@@ -84,8 +84,8 @@ fun StatusMedia(
           it.aspectRatio(ratio)
         } ?: it
       }
-      .border(0.4.dp, Color.Gray, RoundedCornerShape(12.dp))
-      .clip(RoundedCornerShape(12.dp))
+      .border(0.4.dp, Color.Gray, AppTheme.shape.normal)
+      .clip(AppTheme.shape.normal)
   ) {
     when (mediaCount) {
       3 -> {

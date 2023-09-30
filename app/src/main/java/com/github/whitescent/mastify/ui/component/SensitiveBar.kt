@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
 fun SensitiveBar(
@@ -43,7 +43,7 @@ fun SensitiveBar(
   Surface(
     modifier = Modifier.fillMaxWidth(),
     color = Color(0xFF7E7E7E),
-    shape = RoundedCornerShape(10.dp),
+    shape = AppTheme.shape.mediumAvatar,
     onClick = onClick
   ) {
     Row(Modifier.padding(20.dp)) {

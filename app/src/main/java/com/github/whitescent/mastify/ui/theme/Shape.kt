@@ -17,13 +17,16 @@
 
 package com.github.whitescent.mastify.ui.theme
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
+import com.github.whitescent.mastify.ui.theme.shape.SmoothCornerShape
 
 class MastifyShape {
-  val avatarShape @Composable get() = RoundedCornerShape(10.dp)
+  val smallAvatar @Composable get() = SmoothCornerShape(10.dp)
+  val mediumAvatar @Composable get() = SmoothCornerShape(20.dp)
+  val largeAvatar @Composable get() = SmoothCornerShape(25.dp)
+  val normal @Composable get() = SmoothCornerShape(15.dp)
 }
 
 val LocalMastifyShape = staticCompositionLocalOf {

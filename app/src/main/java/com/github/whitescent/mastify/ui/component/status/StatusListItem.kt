@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -221,7 +222,7 @@ private fun StatusSource(
     CircleShapeAsyncImage(
       model = reblogAvatar,
       modifier = Modifier.size(24.dp),
-      shape = AppTheme.shape.avatarShape,
+      shape = AppTheme.shape.smallAvatar.copy(CornerSize(8.dp)),
       onClick = { navigateToProfile() }
     )
     WidthSpacer(value = 4.dp)
@@ -265,7 +266,7 @@ private fun StatusContent(
       CircleShapeAsyncImage(
         model = statusUiData.avatar,
         modifier = Modifier.size(statusAvatarSize),
-        shape = AppTheme.shape.avatarShape,
+        shape = AppTheme.shape.smallAvatar,
         onClick = { navigateToProfile() }
       )
       WidthSpacer(value = 7.dp)

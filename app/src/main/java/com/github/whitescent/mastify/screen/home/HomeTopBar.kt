@@ -66,7 +66,7 @@ fun HomeTopBar(
         onClick = {
           openDrawer()
         },
-        shape = AppTheme.shape.avatarShape
+        shape = AppTheme.shape.smallAvatar
       )
     }
   }

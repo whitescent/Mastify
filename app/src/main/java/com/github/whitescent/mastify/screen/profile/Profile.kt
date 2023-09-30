@@ -41,7 +41,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -57,6 +56,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -183,9 +183,9 @@ fun Profile(
                     scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
                     scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
                   }
-                  .shadow(12.dp, AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp)))
+                  .shadow(12.dp, AppTheme.shape.largeAvatar)
                   .size(80.dp),
-                shape = AppTheme.shape.avatarShape.copy(all = CornerSize(20.dp))
+                shape = AppTheme.shape.largeAvatar
               )
             },
           )
@@ -196,7 +196,7 @@ fun Profile(
       enabledScroll = (statusList.loadState.refresh is LoadState.NotLoading && statusList.itemCount > 0),
       bodyContent = {
         val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
-        var selectedTab by remember { mutableStateOf(0) }
+        var selectedTab by remember { mutableIntStateOf(0) }
         val pagerState = rememberPagerState { tabs.size }
         Column(
           // Maybe there's a better workaround
@@ -342,7 +342,7 @@ fun ProfileTopBar(
         CircleShapeAsyncImage(
           model = account.avatar,
           modifier = Modifier.size(36.dp),
-          shape = AppTheme.shape.avatarShape
+          shape = AppTheme.shape.smallAvatar
         )
         WidthSpacer(value = 8.dp)
         Column {
@@ -459,7 +459,7 @@ fun ProfileTabs(
         onClick = {
           onTabClick(index)
         },
-        modifier = Modifier.clip(RoundedCornerShape(18.dp))
+        modifier = Modifier.clip(AppTheme.shape.normal)
       ) {
         Text(
           text = stringResource(
@@ -592,7 +592,7 @@ fun FollowButton(isFollowing: Boolean) {
 @Composable
 fun EditProfileButton() {
   Surface(
-    shape = RoundedCornerShape(12.dp),
+    shape = AppTheme.shape.normal,
     color = AppTheme.colors.secondaryContent
   ) {
     CenterRow(Modifier.padding(horizontal = 12.dp, vertical = 12.dp)) {

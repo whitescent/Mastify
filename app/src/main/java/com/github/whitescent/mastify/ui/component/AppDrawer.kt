@@ -36,7 +36,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
@@ -79,6 +79,7 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
+import org.jsoup.internal.StringUtil.padding
 
 @Composable
 fun AppDrawer(
@@ -105,7 +106,8 @@ fun AppDrawer(
       }
     }
     Box(
-      Modifier.heightIn(max = 200.dp)
+      modifier = Modifier.heightIn(max = 200.dp),
+      contentAlignment = Alignment.Center
     ) {
       when (activeAccount.isEmptyHeader) {
         true -> {
@@ -128,7 +130,7 @@ fun AppDrawer(
         }
       }
       Column(
-        modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 32.dp, bottom = 8.dp),
+        modifier = Modifier.statusBarsPadding().padding(horizontal = 20.dp)
       ) {
         CircleShapeAsyncImage(
           model = activeAccount.profilePictureUrl,
@@ -136,7 +138,7 @@ fun AppDrawer(
           onClick = {
             navigateToProfile(activeAccount.toAccount())
           },
-          shape = AppTheme.shape.avatarShape.copy(CornerSize(20.dp))
+          shape = AppTheme.shape.mediumAvatar
         )
         HeightSpacer(value = 6.dp)
         CenterRow {
@@ -176,10 +178,9 @@ fun AppDrawer(
         .offset { IntOffset(0, animatedHeight) }
     ) {
       Surface(
-        modifier = Modifier
-          .onGloballyPositioned {
-            accountListHeight = it.size.height
-          },
+        modifier = Modifier.onGloballyPositioned {
+          accountListHeight = it.size.height
+        },
         color = AppTheme.colors.background
       ) {
         Column {
@@ -207,7 +208,7 @@ fun AppDrawer(
               CircleShapeAsyncImage(
                 model = account.profilePictureUrl,
                 modifier = Modifier.size(40.dp),
-                shape = AppTheme.shape.avatarShape
+                shape = AppTheme.shape.smallAvatar
               )
               WidthSpacer(value = 8.dp)
               Text(

@@ -18,44 +18,22 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
-
-@Composable
-fun CircleShapeImage(
-  painter: Painter,
-  modifier: Modifier = Modifier,
-  border: BorderStroke? = null,
-  contentScale: ContentScale = ContentScale.Fit
-) {
-  Surface(
-    modifier = modifier,
-    shape = CircleShape,
-    border = border
-  ) {
-    Image(
-      painter = painter,
-      contentDescription = null,
-      contentScale = contentScale
-    )
-  }
-}
+import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
 fun CircleShapeAsyncImage(
   model: Any?,
   modifier: Modifier = Modifier,
   border: BorderStroke? = null,
-  shape: Shape = CircleShape,
+  shape: Shape = AppTheme.shape.smallAvatar,
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = 1f,
   colorFilter: ColorFilter? = null,

@@ -119,7 +119,7 @@ fun ReplyTextField(
                 CircleShapeAsyncImage(
                   model = targetAccount.avatar,
                   modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
-                  shape = AppTheme.shape.avatarShape
+                  shape = AppTheme.shape.smallAvatar
                 )
                 Text(
                   text = targetAccount.realDisplayName,
@@ -189,7 +189,7 @@ private fun ReplyTextFieldWithToolBar(
       CircleShapeAsyncImage(
         model = targetAccount.avatar,
         modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
-        shape = AppTheme.shape.avatarShape
+        shape = AppTheme.shape.smallAvatar
       )
       Text(
         text = buildAnnotatedString {
