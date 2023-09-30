@@ -117,7 +117,7 @@ fun Post(
     modifier = Modifier.fillMaxSize(),
   ) {
     PostTopBar(viewModel.account!!) { navigator.popBackStack() }
-    HeightSpacer(value = 4.dp)
+    AppHorizontalDivider(Modifier.padding(8.dp))
     Column(
       modifier = Modifier
         .padding(horizontal = 16.dp)
@@ -339,9 +339,9 @@ private fun PostTopBar(
   Column(
     modifier = Modifier
       .fillMaxWidth()
-      .background(AppTheme.colors.accent)
+      .background(AppTheme.colors.background)
       .padding(horizontal = 16.dp)
-      .padding(vertical = 12.dp)
+      .padding(vertical = 8.dp)
   ) {
     Spacer(Modifier.statusBarsPadding())
     CenterRow {
@@ -349,7 +349,7 @@ private fun PostTopBar(
         painter = painterResource(id = R.drawable.close),
         onClick = back,
         modifier = Modifier.size(28.dp),
-        tint = Color.White
+        tint = AppTheme.colors.primaryContent
       )
       WidthSpacer(value = 8.dp)
       CircleShapeAsyncImage(
@@ -365,12 +365,12 @@ private fun PostTopBar(
           overflow = TextOverflow.Ellipsis,
           maxLines = 1,
           fontWeight = FontWeight.Medium,
-          color = Color.White
+          color = AppTheme.colors.primaryContent
         )
         HeightSpacer(value = 2.dp)
         Text(
           text = account.fullname,
-          color = Color.White,
+          color = AppTheme.colors.primaryContent,
           overflow = TextOverflow.Ellipsis,
           maxLines = 1,
           fontSize = 14.sp
