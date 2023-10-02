@@ -156,18 +156,7 @@ fun Login(
       ) {
         Button(
           onClick = {
-            viewModel.checkInstance(context) { clientId ->
-              launchCustomChromeTab(
-                context = context,
-                uri = Uri.parse(
-                  "https://${state.text}/oauth/authorize?client_id=$clientId" +
-                    "&scope=read+write+push" +
-                    "&redirect_uri=mastify://oauth" +
-                    "&response_type=code"
-                ),
-                toolbarColor = Color(0xFF3F4366).toArgb()
-              )
-            }
+            viewModel.checkInstance(context)
           },
           modifier = Modifier.fillMaxWidth(),
           shape = RoundedCornerShape(14.dp),
@@ -200,6 +189,23 @@ fun Login(
   LaunchedEffect(state.authenticateError) {
     if (state.authenticateError) {
       Toast.makeText(context, instanceVerifyErrorMsg, Toast.LENGTH_LONG).show()
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    viewModel.navigateFlow.collect {
+      if (it.second.isNotEmpty()) {
+        launchCustomChromeTab(
+          context = context,
+          uri = Uri.parse(
+            "https://${it.first}/oauth/authorize?client_id=${it.second}" +
+              "&scope=read+write+push" +
+              "&redirect_uri=mastify://oauth" +
+              "&response_type=code"
+          ),
+          toolbarColor = Color(0xFF3F4366).toArgb()
+        )
+      }
     }
   }
 }

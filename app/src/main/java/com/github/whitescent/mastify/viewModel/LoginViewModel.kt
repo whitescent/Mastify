@@ -31,8 +31,9 @@ import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,6 +45,9 @@ class LoginViewModel @Inject constructor(
 
   var uiState by mutableStateOf(LoginUiState())
     private set
+
+  private val navigateChannel = Channel<Pair<String, String>>()
+  val navigateFlow = navigateChannel.receiveAsFlow()
 
   val instanceLocalError by derivedStateOf {
     !loginRepository.isInstanceCorrect(uiState.text)
@@ -57,12 +61,12 @@ class LoginViewModel @Inject constructor(
     uiState = uiState.copy(text = "")
   }
 
-  fun checkInstance(context: Context, navigateToOauth: (String) -> Unit) {
+  fun checkInstance(context: Context) {
     viewModelScope.launch {
       uiState = uiState.copy(loginStatus = LoginStatus.Loading)
       api.fetchInstanceInfo(uiState.text).fold(
         onSuccess = { _ ->
-          authenticateApp(context, navigateToOauth)
+          authenticateApp(context)
         },
         onFailure = {
           uiState = uiState.copy(loginStatus = LoginStatus.Failure)
@@ -71,17 +75,17 @@ class LoginViewModel @Inject constructor(
     }
   }
 
-  private fun authenticateApp(context: Context, navigateToOauth: (String) -> Unit) {
+  private fun authenticateApp(context: Context) {
     viewModelScope.launch(Dispatchers.IO) {
       loginRepository.authenticateApp(uiState.text, context.getString(R.string.app_name))
         .fold(
           onSuccess = {
             preferenceRepository.saveInstanceData(uiState.text, it.clientId, it.clientSecret)
-            uiState = uiState.copy(authenticateError = false)
-            withContext(Dispatchers.Main) {
-              navigateToOauth(it.clientId)
-              uiState = uiState.copy(loginStatus = LoginStatus.Idle)
-            }
+            uiState = uiState.copy(
+              authenticateError = false,
+              loginStatus = LoginStatus.Idle
+            )
+            navigateChannel.send(Pair(uiState.text, it.clientId))
           },
           onFailure = {
             it.printStackTrace()
