@@ -353,7 +353,11 @@ private fun StatusContent(
               Column {
                 HeightSpacer(value = 4.dp)
                 SensitiveBar(
-                  spoilerText = statusUiData.spoilerText.ifEmpty { statusUiData.parsedContent },
+                  spoilerText = statusUiData.spoilerText.ifEmpty {
+                    statusUiData.parsedContent.ifEmpty {
+                      stringResource(id = R.string.sensitive_content)
+                    }
+                  },
                   onClick = {
                     hideSensitiveContent = false
                   }
