@@ -47,8 +47,8 @@ class MainActivity : ComponentActivity() {
         val isLoggedIn = accountRepository.activeAccount != null
         SideEffect {
           enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(TRANSPARENT, TRANSPARENT,) { darkTheme },
-            navigationBarStyle = SystemBarStyle.auto(TRANSPARENT, TRANSPARENT,) { darkTheme },
+            statusBarStyle = SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { darkTheme },
+            navigationBarStyle = SystemBarStyle.auto(TRANSPARENT, TRANSPARENT) { darkTheme },
           )
         }
         AppScaffold(

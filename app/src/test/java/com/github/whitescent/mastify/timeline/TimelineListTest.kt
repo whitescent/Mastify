@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.network
+package com.github.whitescent.mastify.timeline
 
 import org.junit.Assert
 import org.junit.Test

@@ -17,8 +17,6 @@
 
 @file:Suppress("UnstableApiUsage")
 
-include(":app:benchmark")
-
 pluginManagement {
   repositories {
     gradlePluginPortal()
@@ -26,6 +24,7 @@ pluginManagement {
     mavenCentral()
   }
 }
+
 dependencyResolutionManagement {
   enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
@@ -35,5 +34,7 @@ dependencyResolutionManagement {
     maven("https://jitpack.io")
   }
 }
+
 rootProject.name = "Mastify"
 include(":app")
+include(":app:benchmark")
