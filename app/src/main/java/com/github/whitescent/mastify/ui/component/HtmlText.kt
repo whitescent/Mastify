@@ -83,7 +83,7 @@ fun HtmlText(
   urlSpanStyle: SpanStyle = SpanStyle(
     color = Color(0xFF0079D3),
     textDecoration = TextDecoration.None,
-    fontSize = fontSize
+    fontSize = style.fontSize
   )
 ) {
   val document = remember(text) { Jsoup.parse(text) }
