@@ -31,8 +31,6 @@ import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.network.MastodonApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -45,9 +43,6 @@ class LoginViewModel @Inject constructor(
 
   var uiState by mutableStateOf(LoginUiState())
     private set
-
-  private val navigateChannel = Channel<Pair<String, String>>()
-  val navigateFlow = navigateChannel.receiveAsFlow()
 
   val instanceLocalError by derivedStateOf {
     !loginRepository.isInstanceCorrect(uiState.text)
@@ -83,9 +78,9 @@ class LoginViewModel @Inject constructor(
             preferenceRepository.saveInstanceData(uiState.text, it.clientId, it.clientSecret)
             uiState = uiState.copy(
               authenticateError = false,
-              loginStatus = LoginStatus.Idle
+              loginStatus = LoginStatus.Idle,
+              clientId = it.clientId
             )
-            navigateChannel.send(Pair(uiState.text, it.clientId))
           },
           onFailure = {
             it.printStackTrace()
@@ -99,7 +94,8 @@ class LoginViewModel @Inject constructor(
 data class LoginUiState(
   val text: String = "",
   val authenticateError: Boolean = false,
-  val loginStatus: LoginStatus = LoginStatus.Idle
+  val loginStatus: LoginStatus = LoginStatus.Idle,
+  val clientId: String = ""
 )
 
 sealed class LoginStatus {

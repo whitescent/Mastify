@@ -274,9 +274,9 @@ fun Profile(
       },
       topBar = {
         ProfileTopBar(
-          alpha = profileLayoutState.progress,
+          alpha = { profileLayoutState.progress },
           account = uiState.account,
-          topPadding = appState.appPaddingValues.calculateTopPadding()
+          topPadding = appState.appPaddingValues.calculateTopPadding(),
         )
       },
     )
@@ -307,7 +307,7 @@ fun Profile(
 
 @Composable
 fun ProfileTopBar(
-  alpha: Float,
+  alpha: () -> Float,
   account: Account,
   topPadding: Dp,
 ) {
@@ -324,7 +324,7 @@ fun ProfileTopBar(
       contentDescription = null,
       modifier = Modifier
         .fillMaxSize()
-        .alpha(alpha)
+        .alpha(alpha())
         .drawWithContent {
           drawRect(defaultBackgroundColor)
           this.drawContent()
@@ -333,7 +333,7 @@ fun ProfileTopBar(
       contentScale = ContentScale.Crop
     )
     AnimatedVisibility(
-      visible = alpha >= 1,
+      visible = alpha() >= 1,
       enter = slideInVertically { it } + fadeIn(),
       exit = slideOutVertically { it / 2 } + fadeOut(),
       modifier = Modifier.fillMaxSize()
