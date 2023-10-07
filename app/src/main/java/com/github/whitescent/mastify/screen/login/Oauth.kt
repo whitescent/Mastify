@@ -46,7 +46,6 @@ import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.popUpTo
-import kotlinx.coroutines.delay
 
 @Composable
 @LoginNavGraph
@@ -87,7 +86,6 @@ fun Oauth(
     }
   }
   LaunchedEffect(Unit) {
-    delay(300)
     viewModel.code?.let {
       viewModel.fetchAccessToken()
     } ?: run {
