@@ -93,11 +93,9 @@ fun Oauth(
       navigator.popBackStack()
     }
     viewModel.navigateFlow.collect {
-      if (it) {
-        navigator.navigate(NavGraphs.app) {
-          popUpTo(NavGraphs.root) {
-            inclusive = true
-          }
+      navigator.navigate(NavGraphs.app) {
+        popUpTo(NavGraphs.root) {
+          inclusive = true
         }
       }
     }

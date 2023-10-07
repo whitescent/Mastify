@@ -45,7 +45,7 @@ class OauthViewModel @Inject constructor(
   val instance = preferenceRepository.instance
   val code: String? = savedStateHandle["code"]
 
-  private val navigateChannel = Channel<Boolean>()
+  private val navigateChannel = Channel<Unit>()
   val navigateFlow = navigateChannel.receiveAsFlow()
 
   fun fetchAccessToken() {
@@ -64,7 +64,7 @@ class OauthViewModel @Inject constructor(
       ).fold(
         { accessToken ->
           fetchAccountDetails(accessToken, domain, clientId, clientSecret)
-          navigateChannel.send(true)
+          navigateChannel.send(Unit)
         },
         {
           it.printStackTrace()
