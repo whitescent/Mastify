@@ -55,14 +55,13 @@ import com.github.whitescent.mastify.ui.component.player.ExoPlayerLifecycleEvent
 import com.github.whitescent.mastify.ui.component.player.rememberExoPlayerInstance
 import com.github.whitescent.mastify.ui.component.player.rememberPositionState
 import com.github.whitescent.mastify.ui.component.status.MediaType
-import com.github.whitescent.mastify.ui.transitions.StatusMediaTransitions
 import com.mxalbert.zoomable.Zoomable
 import com.ramcosta.composedestinations.annotation.Destination
 
 @OptIn(ExperimentalFoundationApi::class)
 @AppNavGraph
 @SuppressLint("UnsafeOptInUsageError")
-@Destination(style = StatusMediaTransitions::class)
+@Destination
 @Composable
 fun StatusMediaScreen(
   attachments: Array<Attachment>,

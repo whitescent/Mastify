@@ -111,7 +111,6 @@ import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememb
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.ProfileTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
@@ -125,7 +124,9 @@ data class ProfileNavArgs(
 
 @OptIn(ExperimentalFoundationApi::class)
 @AppNavGraph
-@Destination(navArgsDelegate = ProfileNavArgs::class, style = ProfileTransitions::class)
+@Destination(
+  navArgsDelegate = ProfileNavArgs::class
+)
 @Composable
 fun Profile(
   appState: AppState,

@@ -19,6 +19,12 @@ package com.github.whitescent.mastify.ui.component
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.End
+import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -34,27 +40,56 @@ import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.ui.transitions.slideAnimationTween
 import com.github.whitescent.mastify.utils.rememberAppState
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
+import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
-import com.ramcosta.composedestinations.rememberNavHostEngine
 import com.ramcosta.composedestinations.spec.Route
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(FlowPreview::class)
 @Composable
 fun AppScaffold(
   startRoute: Route,
   viewModel: AppViewModel = hiltViewModel()
 ) {
-  val engine = rememberNavHostEngine()
+  val engine = rememberAnimatedNavHostEngine(
+    rootDefaultAnimations = RootNavGraphDefaultAnimations(
+      enterTransition = {
+        slideIntoContainer(
+          towards = Start,
+          animationSpec = tween(slideAnimationTween)
+        ) + fadeIn()
+      },
+      exitTransition = {
+        slideOutOfContainer(
+          towards = Start,
+          animationSpec = tween(slideAnimationTween)
+        ) + fadeOut()
+      },
+      popEnterTransition = {
+        slideIntoContainer(
+          towards = End,
+          animationSpec = tween(slideAnimationTween)
+        ) + fadeIn()
+      },
+      popExitTransition = {
+        slideOutOfContainer(
+          towards = End,
+          animationSpec = tween(slideAnimationTween)
+        ) + fadeOut()
+      }
+    )
+  )
   val navController = engine.rememberNavController()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)

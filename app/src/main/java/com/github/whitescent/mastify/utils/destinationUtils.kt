@@ -18,8 +18,16 @@
 package com.github.whitescent.mastify.utils
 
 import com.github.whitescent.mastify.screen.destinations.Destination
+import com.github.whitescent.mastify.screen.destinations.DirectMessageDestination
+import com.github.whitescent.mastify.screen.destinations.ExplorerDestination
+import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
+import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.OauthDestination
+
+val Destination.isBottomBarScreen: Boolean
+  get() = this == HomeDestination || this == ExplorerDestination || this == NotificationDestination ||
+    this == DirectMessageDestination
 
 fun Destination.shouldShowScaffoldElements(): Boolean {
   if (this is LoginDestination || this is OauthDestination) return false

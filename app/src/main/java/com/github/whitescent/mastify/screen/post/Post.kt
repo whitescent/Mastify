@@ -84,7 +84,6 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.PostTransitions
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.PostViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -93,7 +92,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @AppNavGraph
-@Destination(style = PostTransitions::class)
+@Destination
 @Composable
 fun Post(
   viewModel: PostViewModel = hiltViewModel(),

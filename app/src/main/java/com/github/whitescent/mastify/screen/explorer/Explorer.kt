@@ -24,11 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.AppTransitions
+import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 
 @AppNavGraph
-@Destination(style = AppTransitions::class)
+@Destination(
+  style = BottomBarScreenTransitions::class
+)
 @Composable
 fun Explorer() {
   Box(Modifier.fillMaxSize().background(AppTheme.colors.cardLike))

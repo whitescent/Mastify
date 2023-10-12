@@ -121,7 +121,7 @@ compose-media = { module = "com.github.fengdai.compose:media", version.ref = "me
 zoomable = { module = "com.mxalbert.zoomable:zoomable", version.ref = "zoomable" }
 lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
 leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
-compose-destinations-core = { module = "io.github.raamcosta.compose-destinations:core", version.ref = "composeDestinations" }
+compose-destinations-animations-core = { module = "io.github.raamcosta.compose-destinations:animations-core", version.ref = "composeDestinations" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composeDestinations" }
 
 org-jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }

@@ -100,7 +100,7 @@ import com.github.whitescent.mastify.ui.component.status.paging.PageType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.AppTransitions
+import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -115,7 +115,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class, FlowPreview::class)
 @AppNavGraph(start = true)
-@Destination(style = AppTransitions::class)
+@Destination(style = BottomBarScreenTransitions::class)
 @Composable
 fun Home(
   appState: AppState,

@@ -19,9 +19,10 @@ package com.github.whitescent.mastify.screen.notification
 
 import androidx.compose.runtime.Composable
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.ramcosta.composedestinations.annotation.Destination
 
-@Destination
+@Destination(style = BottomBarScreenTransitions::class)
 @AppNavGraph
 @Composable
 fun Notification() {

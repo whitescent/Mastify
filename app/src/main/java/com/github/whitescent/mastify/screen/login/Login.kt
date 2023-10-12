@@ -62,14 +62,13 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.transitions.LoginTransitions
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.LoginStatus
 import com.github.whitescent.mastify.viewModel.LoginViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
 @LoginNavGraph(start = true)
-@Destination(style = LoginTransitions::class, route = "login_route")
+@Destination(route = "login_route")
 @Composable
 fun Login(
   viewModel: LoginViewModel = hiltViewModel()
