@@ -20,11 +20,7 @@ package com.github.whitescent.mastify.ui.component
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.End
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -40,7 +36,8 @@ import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.ui.transitions.slideAnimationTween
+import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
+import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
 import com.github.whitescent.mastify.utils.rememberAppState
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
@@ -65,28 +62,16 @@ fun AppScaffold(
   val engine = rememberAnimatedNavHostEngine(
     rootDefaultAnimations = RootNavGraphDefaultAnimations(
       enterTransition = {
-        slideIntoContainer(
-          towards = Start,
-          animationSpec = tween(slideAnimationTween)
-        ) + fadeIn()
+        defaultSlideIntoContainer()
       },
       exitTransition = {
-        slideOutOfContainer(
-          towards = Start,
-          animationSpec = tween(slideAnimationTween)
-        ) + fadeOut()
+        defaultSlideOutContainer()
       },
       popEnterTransition = {
-        slideIntoContainer(
-          towards = End,
-          animationSpec = tween(slideAnimationTween)
-        ) + fadeIn()
+        defaultSlideIntoContainer(End)
       },
       popExitTransition = {
-        slideOutOfContainer(
-          towards = End,
-          animationSpec = tween(slideAnimationTween)
-        ) + fadeOut()
+        defaultSlideOutContainer(End)
       }
     )
   )

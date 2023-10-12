@@ -17,56 +17,38 @@
 
 package com.github.whitescent.mastify.ui.component.status
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlin.coroutines.resume
 
 @Stable
 class StatusSnackbarState {
 
-  private val mutex = Mutex()
+  private var previous: StatusSnackbarType? = null
 
-  var currentSnackbarData by mutableStateOf<StatusSnackbarData?>(null)
+  var current by mutableStateOf<StatusSnackbarType?>(null)
     private set
 
-  suspend fun showSnackbar(
-    snackbarType: StatusSnackbarType
-  ): StatusSnackbarResult = mutex.withLock {
-    try {
-      return suspendCancellableCoroutine { continuation ->
-        currentSnackbarData = StatusSnackbarStateImpl(snackbarType, continuation)
-      }
-    } finally {
-      currentSnackbarData = null
-    }
+  val isSwitching = previous != null && previous != current && current != null
+
+  fun show(snackbarType: StatusSnackbarType) {
+    previous = current
+    current = snackbarType
   }
 
-  private class StatusSnackbarStateImpl(
-    override val type: StatusSnackbarType,
-    private val continuation: CancellableContinuation<StatusSnackbarResult>
-  ) : StatusSnackbarData {
-    override fun dismiss() {
-      if (continuation.isActive) continuation.resume(StatusSnackbarResult.Dismissed)
-    }
+  fun dismiss() {
+    current = null
   }
-}
-
-@Stable
-interface StatusSnackbarData {
-  val type: StatusSnackbarType
-  fun dismiss()
 }
 
 enum class StatusSnackbarType {
   Text, Link, Bookmark, Error
 }
 
-enum class StatusSnackbarResult {
-  Dismissed
+@Composable
+fun rememberStatusSnackBarState(): StatusSnackbarState = remember {
+  StatusSnackbarState()
 }

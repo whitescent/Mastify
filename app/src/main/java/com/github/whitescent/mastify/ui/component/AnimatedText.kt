@@ -39,7 +39,7 @@ fun AnimatedText(
   style: TextStyle = LocalTextStyle.current.copy(
     color = color
   )
-) =
+) {
   AnimatedContent(
     targetState = text,
     transitionSpec = {
@@ -58,3 +58,4 @@ fun AnimatedText(
   ) { targetText ->
     Text(text = targetText, style = style, color = color)
   }
+}

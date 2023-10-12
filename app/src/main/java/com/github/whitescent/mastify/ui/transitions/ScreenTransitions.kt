@@ -22,6 +22,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,41 +31,47 @@ import com.github.whitescent.mastify.screen.appDestination
 import com.github.whitescent.mastify.utils.isBottomBarScreen
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
+fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideIntoContainer(
+  towards: AnimatedContentTransitionScope.SlideDirection = Start
+): EnterTransition {
+  return slideIntoContainer(
+    towards = towards,
+    animationSpec = tween(slideAnimationTween, easing = FastOutSlowInEasing)
+  ) + fadeIn()
+}
+
+fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
+  towards: AnimatedContentTransitionScope.SlideDirection = Start
+): ExitTransition {
+  return slideOutOfContainer(
+    towards = towards,
+    animationSpec = tween(slideAnimationTween, easing = FastOutSlowInEasing)
+  ) + fadeOut()
+}
+
 object BottomBarScreenTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return when (initialState.appDestination().isBottomBarScreen) {
       true -> fadeIn()
-      else -> slideIntoContainer(
-        towards = Start,
-        animationSpec = tween(slideAnimationTween)
-      )
+      else -> defaultSlideIntoContainer()
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return when (targetState.appDestination().isBottomBarScreen) {
       true -> fadeOut()
-      else -> slideOutOfContainer(
-        towards = Start,
-        animationSpec = tween(slideAnimationTween)
-      )
+      else -> defaultSlideOutContainer()
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
     return when (initialState.appDestination().isBottomBarScreen) {
       true -> fadeIn()
-      else -> slideIntoContainer(
-        towards = End,
-        animationSpec = tween(slideAnimationTween)
-      )
+      else -> defaultSlideIntoContainer(End)
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
     return when (targetState.appDestination().isBottomBarScreen) {
       true -> fadeOut()
-      else -> slideOutOfContainer(
-        towards = End,
-        animationSpec = tween(slideAnimationTween)
-      )
+      else -> defaultSlideOutContainer(End)
     }
   }
 }

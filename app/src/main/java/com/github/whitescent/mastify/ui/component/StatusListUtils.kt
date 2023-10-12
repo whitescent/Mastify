@@ -20,12 +20,14 @@ package com.github.whitescent.mastify.ui.component
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -39,6 +41,7 @@ import com.github.whitescent.mastify.mapper.status.getReplyChainType
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
+import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
@@ -76,6 +79,21 @@ fun LazyListScope.statusComment(
       }
       item {
         StatusEndIndicator(Modifier.padding(36.dp))
+      }
+    }
+  }
+}
+
+fun LazyListScope.statusLoadingIndicator() {
+  item {
+    Box(Modifier.fillMaxWidth().padding(bottom = 56.dp), Alignment.Center) {
+      Column {
+        HeightSpacer(value = 8.dp)
+        CircularProgressIndicator(
+          modifier = Modifier.size(20.dp),
+          color = AppTheme.colors.primaryContent,
+          strokeWidth = 2.dp
+        )
       }
     }
   }

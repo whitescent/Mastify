@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -30,7 +29,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -68,15 +66,15 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.EmojiSheet
-import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.ReplyTextField
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
-import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
+import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.component.statusComment
+import com.github.whitescent.mastify.ui.component.statusLoadingIndicator
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
@@ -104,6 +102,7 @@ fun StatusDetail(
   val lazyState = rememberLazyListState()
   val sheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
+  val snackbarState = rememberStatusSnackBarState()
   val keyboard = LocalSoftwareKeyboardController.current
   val context = LocalContext.current
 
@@ -115,110 +114,113 @@ fun StatusDetail(
   val threadInReply = status.reblog?.isInReplyTo ?: status.isInReplyTo
 
   var openSheet by remember { mutableStateOf(false) }
-  val snackbarState = remember { StatusSnackbarState() }
 
   // we need to synchronize the status of the bookmark in two places on this page,
   // so we create a bookmark state at the top level
   var bookmarkState by remember(status.bookmarked) { mutableStateOf(status.bookmarked) }
 
-  Column(Modifier.fillMaxSize()) {
-    Spacer(Modifier.statusBarsPadding())
-    CenterRow(Modifier.padding(12.dp)) {
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.arrow_left),
-        onClick = { navigator.popBackStack() },
-        modifier = Modifier.size(28.dp),
-        tint = AppTheme.colors.primaryContent
-      )
-      WidthSpacer(value = 12.dp)
-      Text(
-        text = stringResource(id = R.string.home_title),
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Medium,
-        color = AppTheme.colors.primaryContent,
-      )
-    }
-    AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
-    when (threadInReply) {
-      true -> {
-        StatusDetailInReply(
-          status = status.copy(bookmarked = bookmarkState),
-          lazyState = lazyState,
-          ancestors = state.ancestors.toImmutableList(),
-          descendants = state.descendants.toImmutableList(),
-          loading = state.loading,
-          action = {
-            viewModel.onStatusAction(it, context)
-            if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
-          },
-          navigateToDetail = {
-            if (it.id != status.actionableId) {
-              navigator.navigate(
-                StatusDetailDestination(
-                  avatar = avatar,
-                  status = it
-                )
-              )
-            }
-          },
-          navigateToMedia = { attachments, index ->
-            navigator.navigate(
-              StatusMediaScreenDestination(
-                attachments = attachments.toTypedArray(),
-                targetMediaIndex = index
-              )
-            )
-          },
-          navigateToProfile = {
-            navigator.navigate(ProfileDestination(it))
-          },
-          modifier = Modifier.weight(1f)
+  Box((Modifier.fillMaxSize())) {
+    Column {
+      Spacer(Modifier.statusBarsPadding())
+      CenterRow(Modifier.padding(12.dp)) {
+        ClickableIcon(
+          painter = painterResource(id = R.drawable.arrow_left),
+          onClick = { navigator.popBackStack() },
+          modifier = Modifier.size(28.dp),
+          tint = AppTheme.colors.primaryContent
+        )
+        WidthSpacer(value = 12.dp)
+        Text(
+          text = stringResource(id = R.string.home_title),
+          fontSize = 20.sp,
+          fontWeight = FontWeight.Medium,
+          color = AppTheme.colors.primaryContent,
         )
       }
-      else -> {
-        StatusDetailContent(
-          status = status.copy(bookmarked = bookmarkState),
-          lazyState = lazyState,
-          descendants = state.descendants.toImmutableList(),
-          loading = state.loading,
-          action = {
-            viewModel.onStatusAction(it, context)
-            if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
-          },
-          navigateToDetail = {
-            if (it.id != status.actionableId) {
+      AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
+      when (threadInReply) {
+        true -> {
+          StatusDetailInReply(
+            status = status.copy(bookmarked = bookmarkState),
+            lazyState = lazyState,
+            ancestors = state.ancestors.toImmutableList(),
+            descendants = state.descendants.toImmutableList(),
+            loading = state.loading,
+            action = {
+              viewModel.onStatusAction(it, context)
+              if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
+            },
+            navigateToDetail = {
+              if (it.id != status.actionableId) {
+                navigator.navigate(
+                  StatusDetailDestination(
+                    avatar = avatar,
+                    status = it
+                  )
+                )
+              }
+            },
+            navigateToMedia = { attachments, index ->
               navigator.navigate(
-                StatusDetailDestination(
-                  avatar = avatar,
-                  status = it
+                StatusMediaScreenDestination(
+                  attachments = attachments.toTypedArray(),
+                  targetMediaIndex = index
                 )
               )
-            }
-          },
-          navigateToMedia = { attachments, index ->
-            navigator.navigate(
-              StatusMediaScreenDestination(
-                attachments = attachments.toTypedArray(),
-                targetMediaIndex = index
+            },
+            navigateToProfile = {
+              navigator.navigate(ProfileDestination(it))
+            },
+            modifier = Modifier.weight(1f)
+          )
+        }
+        else -> {
+          StatusDetailContent(
+            status = status.copy(bookmarked = bookmarkState),
+            lazyState = lazyState,
+            descendants = state.descendants.toImmutableList(),
+            loading = state.loading,
+            action = {
+              viewModel.onStatusAction(it, context)
+              if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
+            },
+            navigateToDetail = {
+              if (it.id != status.actionableId) {
+                navigator.navigate(
+                  StatusDetailDestination(
+                    avatar = avatar,
+                    status = it
+                  )
+                )
+              }
+            },
+            navigateToMedia = { attachments, index ->
+              navigator.navigate(
+                StatusMediaScreenDestination(
+                  attachments = attachments.toTypedArray(),
+                  targetMediaIndex = index
+                )
               )
-            )
-          },
-          navigateToProfile = { navigator.navigate(ProfileDestination(it)) },
-          modifier = Modifier.weight(1f),
-        )
+            },
+            navigateToProfile = { navigator.navigate(ProfileDestination(it)) },
+            modifier = Modifier.weight(1f),
+          )
+        }
       }
+      ReplyTextField(
+        targetAccount = viewModel.navArgs.status.account,
+        fieldValue = replyText,
+        postState = state.postState,
+        onValueChange = viewModel::updateTextFieldValue,
+        replyToStatus = viewModel::replyToStatus,
+        openEmojiPicker = { openSheet = true }
+      )
     }
     StatusSnackBar(
-      state = snackbarState,
-      modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-    )
-    ReplyTextField(
-      targetAccount = viewModel.navArgs.status.account,
-      fieldValue = replyText,
-      postState = state.postState,
-      onValueChange = viewModel::updateTextFieldValue,
-      replyToStatus = viewModel::replyToStatus,
-      openEmojiPicker = { openSheet = true }
+      snackbarState = snackbarState,
+      modifier = Modifier
+        .align(Alignment.BottomCenter)
+        .padding(start = 12.dp, end = 12.dp, bottom = 56.dp)
     )
   }
   if (openSheet) {
@@ -246,7 +248,7 @@ fun StatusDetail(
 
   LaunchedEffect(Unit) {
     viewModel.snackBarFlow.collect {
-      snackbarState.showSnackbar(it)
+      snackbarState.show(it)
     }
   }
 }
@@ -282,20 +284,7 @@ fun StatusDetailContent(
       AppHorizontalDivider()
     }
     when (loading) {
-      true -> {
-        item {
-          Box(Modifier.fillMaxWidth(), Alignment.Center) {
-            Column {
-              HeightSpacer(value = 8.dp)
-              CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = AppTheme.colors.primaryContent,
-                strokeWidth = 2.dp
-              )
-            }
-          }
-        }
-      }
+      true -> statusLoadingIndicator()
       else -> {
         statusComment(
           descendants = descendants,
@@ -352,20 +341,7 @@ fun StatusDetailInReply(
       AppHorizontalDivider()
     }
     when (loading) {
-      true -> {
-        item {
-          Box(Modifier.fillMaxWidth(), Alignment.Center) {
-            Column {
-              HeightSpacer(value = 8.dp)
-              CircularProgressIndicator(
-                modifier = Modifier.size(20.dp),
-                color = AppTheme.colors.primaryContent,
-                strokeWidth = 2.dp
-              )
-            }
-          }
-        }
-      }
+      true -> statusLoadingIndicator()
       else -> {
         statusComment(
           descendants = descendants,

@@ -94,11 +94,11 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
-import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PageType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
+import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.github.whitescent.mastify.utils.AppState
@@ -134,8 +134,8 @@ fun Home(
     }
   }
   var refreshing by remember { mutableStateOf(false) }
-  val snackbarState = remember { StatusSnackbarState() }
   val scope = rememberCoroutineScope()
+  val snackbarState = rememberStatusSnackBarState()
   val context = LocalContext.current
   val uiState = viewModel.uiState
   val pullRefreshState = rememberPullRefreshState(
@@ -280,7 +280,7 @@ fun Home(
                   .padding(16.dp)
               )
               StatusSnackBar(
-                state = snackbarState,
+                snackbarState = snackbarState,
                 modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
               )
             }
@@ -294,7 +294,7 @@ fun Home(
   LaunchedEffect(Unit) {
     launch {
       viewModel.snackBarFlow.collect {
-        snackbarState.showSnackbar(it)
+        snackbarState.show(it)
       }
     }
     launch {

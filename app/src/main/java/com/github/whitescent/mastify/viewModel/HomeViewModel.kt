@@ -137,7 +137,7 @@ class HomeViewModel @Inject constructor(
       // update newStatus to timelineFlow
       timelineFlow.update {
         it.toMutableList().also { list ->
-          val index = list.indexOfFirst { saved -> saved.id == status.id }
+          val index = list.indexOfFirst { saved -> saved.actionableId == status.id }
           list[index] = list[index].copy(
             favorited = if (action is StatusAction.Favorite) action.favorite else status.favorited,
             favouritesCount = if (action is StatusAction.Favorite) {

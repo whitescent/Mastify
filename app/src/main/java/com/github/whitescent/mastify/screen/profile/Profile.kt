@@ -109,7 +109,7 @@ import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayout
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememberProfileLayoutState
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
-import com.github.whitescent.mastify.ui.component.status.StatusSnackbarState
+import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
@@ -139,13 +139,13 @@ fun Profile(
   val statusWithMediaList = viewModel.statusWithMediaPager.collectAsLazyPagingItems()
 
   val scope = rememberCoroutineScope()
+  val snackbarState = rememberStatusSnackBarState()
   val profileLayoutState = rememberProfileLayoutState()
   val statusListState = rememberLazyListState()
   val statusWithReplyListState = rememberLazyListState()
   val statusWithMediaListState = rememberLazyListState()
 
   val context = LocalContext.current
-  val snackbarState = remember { StatusSnackbarState() }
 
   val atPageTop by remember {
     derivedStateOf {
@@ -282,7 +282,7 @@ fun Profile(
       },
     )
     StatusSnackBar(
-      state = snackbarState,
+      snackbarState = snackbarState,
       modifier = Modifier
         .align(Alignment.BottomCenter)
         .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
@@ -301,7 +301,7 @@ fun Profile(
 
   LaunchedEffect(Unit) {
     viewModel.snackBarFlow.collect {
-      snackbarState.showSnackbar(it)
+      snackbarState.show(it)
     }
   }
 }
