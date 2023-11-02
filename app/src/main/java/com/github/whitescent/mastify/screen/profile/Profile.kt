@@ -45,9 +45,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -438,7 +438,7 @@ fun ProfileTabs(
   selectedTab: Int,
   onTabClick: (Int) -> Unit
 ) {
-  TabRow(
+  PrimaryTabRow(
     selectedTabIndex = selectedTab,
     indicator = {
       TabRowDefaults.PrimaryIndicator(

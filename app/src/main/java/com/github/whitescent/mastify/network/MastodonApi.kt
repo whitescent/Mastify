@@ -89,6 +89,12 @@ interface MastodonApi {
     @Path("id") statusId: String
   ): NetworkResult<Status>
 
+  @GET("api/v1/trends/statuses")
+  suspend fun trendingStatus(
+    @Query("limit") limit: Int? = null,
+    @Query("offset") offset: Int = 0
+  ): Response<List<Status>>
+
   @POST("api/v1/statuses/{id}/bookmark")
   suspend fun bookmarkStatus(
     @Path("id") statusId: String,

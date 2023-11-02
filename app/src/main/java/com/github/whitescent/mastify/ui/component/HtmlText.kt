@@ -176,7 +176,7 @@ private fun AnnotatedString.Builder.renderElement(
 
     "br" -> renderText("\n", textStyle)
 
-    "code" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
+    "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 
     "span", "p" -> {
       element.childNodes().forEach {

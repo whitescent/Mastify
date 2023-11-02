@@ -24,6 +24,7 @@ import com.github.whitescent.mastify.ui.theme.shape.SmoothCornerShape
 
 class MastifyShape {
   val smallAvatar @Composable get() = SmoothCornerShape(10.dp)
+  val betweenSmallAndMediumAvatar @Composable get() = SmoothCornerShape(12.dp)
   val mediumAvatar @Composable get() = SmoothCornerShape(20.dp)
   val largeAvatar @Composable get() = SmoothCornerShape(25.dp)
   val normal @Composable get() = SmoothCornerShape(15.dp)

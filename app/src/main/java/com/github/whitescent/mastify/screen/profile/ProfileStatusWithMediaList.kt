@@ -79,8 +79,7 @@ fun ProfileStatusWithMediaList(
               hasUnloadedParent = false,
               navigateToDetail = { navigateToDetail(it.actionable) },
               navigateToProfile = navigateToProfile,
-              navigateToMedia = navigateToMedia,
-              modifier = Modifier.padding(horizontal = 8.dp),
+              navigateToMedia = navigateToMedia
             )
           }
           AppHorizontalDivider()

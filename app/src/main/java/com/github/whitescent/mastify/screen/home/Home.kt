@@ -163,7 +163,8 @@ fun Home(
           scope.launch {
             drawerState.open()
           }
-        }
+        },
+        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
       )
       HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
       when (timeline.size) {
@@ -221,8 +222,7 @@ fun Home(
                     navigator.navigate(
                       ProfileDestination(it)
                     )
-                  },
-                  modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                  }
                 )
                 if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
                   AppHorizontalDivider()
@@ -246,6 +246,7 @@ fun Home(
                     }
                   }
                   LoadState.Error -> {
+                    // TODO Localization
                     Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
                     viewModel.append() // retry
                   }

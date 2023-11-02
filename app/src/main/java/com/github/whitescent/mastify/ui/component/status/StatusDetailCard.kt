@@ -105,7 +105,7 @@ fun StatusDetailCard(
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
-  val contentPaddingPx = with(LocalDensity.current) { statusContentPadding.toPx() }
+  val contentPaddingPx = with(LocalDensity.current) { statusContentHorizontalPadding.toPx() }
   val avatarHalfSize = avatarSizePx / 2
   val avatarCenterX = avatarHalfSize + contentPaddingPx
   val replyLineColor = AppTheme.colors.replyLine
@@ -136,7 +136,7 @@ fun StatusDetailCard(
             }
           } else it
         }
-        .padding(statusContentPadding)
+        .padding(statusContentHorizontalPadding, statusContentVerticalPadding)
     ) {
       CenterRow(modifier = Modifier.fillMaxWidth()) {
         CircleShapeAsyncImage(
@@ -360,6 +360,4 @@ private fun StatusDetailInfo(
   }
 }
 
-private val statusContentPadding = 12.dp
-private val statusAvatarSize = 40.dp
 private val statusDetailActionsIconSize = 24.dp

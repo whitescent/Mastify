@@ -20,7 +20,6 @@ package com.github.whitescent.mastify.screen.home
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Icon
@@ -44,7 +43,6 @@ fun HomeTopBar(
     modifier = modifier
       .statusBarsPadding()
       .fillMaxWidth()
-      .padding(24.dp)
   ) {
     Icon(
       painter = painterResource(id = R.drawable.logo_text),
@@ -66,7 +64,7 @@ fun HomeTopBar(
         onClick = {
           openDrawer()
         },
-        shape = AppTheme.shape.smallAvatar
+        shape = AppTheme.shape.betweenSmallAndMediumAvatar
       )
     }
   }

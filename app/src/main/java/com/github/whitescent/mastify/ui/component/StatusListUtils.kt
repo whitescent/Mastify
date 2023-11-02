@@ -71,9 +71,7 @@ fun LazyListScope.statusComment(
           navigateToDetail = { navigateToDetail(item.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
-          modifier = Modifier.fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .animateItemPlacement(),
+          modifier = Modifier.fillMaxWidth().animateItemPlacement(),
         )
         if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()
       }

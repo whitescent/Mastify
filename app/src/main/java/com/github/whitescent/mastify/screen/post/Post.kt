@@ -353,7 +353,7 @@ private fun PostTopBar(
       WidthSpacer(value = 8.dp)
       CircleShapeAsyncImage(
         model = account.profilePictureUrl,
-        modifier = Modifier.size(40.dp),
+        modifier = Modifier.size(36.dp),
         shape = AppTheme.shape.smallAvatar
       )
       WidthSpacer(value = 6.dp)
@@ -369,7 +369,7 @@ private fun PostTopBar(
         HeightSpacer(value = 2.dp)
         Text(
           text = account.fullname,
-          color = AppTheme.colors.primaryContent,
+          color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
           overflow = TextOverflow.Ellipsis,
           maxLines = 1,
           fontSize = 14.sp

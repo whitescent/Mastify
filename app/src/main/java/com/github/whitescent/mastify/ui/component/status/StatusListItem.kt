@@ -49,7 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.onSizeChanged
@@ -68,7 +67,6 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -102,44 +100,24 @@ fun StatusListItem(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
-  val normalShape = remember { RoundedCornerShape(18.dp) }
-  val startShape = remember { RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp) }
-  val endShape = remember { RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp) }
-
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
-  val contentPaddingPx = with(LocalDensity.current) { statusContentPadding.toPx() }
+  val contentPaddingPx = with(LocalDensity.current) { statusContentHorizontalPadding.toPx() }
   val avatarHalfSize = avatarSizePx / 2
   val avatarCenterX = avatarHalfSize + contentPaddingPx
   val replyLineColor = AppTheme.colors.replyLine
 
   Surface(
     modifier = modifier,
-    shape = when (hasUnloadedParent) {
-      true -> {
-        when (replyChainType) {
-          Start, Continue -> startShape
-          else -> normalShape
-        }
-      }
-      else -> {
-        when (replyChainType) {
-          Start -> startShape
-          End -> endShape
-          Continue -> RectangleShape
-          Null -> normalShape
-        }
-      }
-    },
     color = Color.Transparent
   ) {
     Column {
       if (hasUnloadedParent && (status.reblog == null)) {
         CenterRow(
-          modifier = Modifier.padding(top = statusContentPadding)
+          modifier = Modifier.padding(top = statusContentVerticalPadding)
         ) {
           Box(
             modifier = Modifier
-              .padding(horizontal = statusContentPadding)
+              .padding(horizontal = statusContentHorizontalPadding)
               .size(statusAvatarSize),
             contentAlignment = Alignment.Center
           ) {
@@ -262,11 +240,13 @@ private fun StatusContent(
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
   Box(modifier = modifier) {
-    Row(modifier = Modifier.padding(statusContentPadding)) {
+    Row(
+      modifier = Modifier.padding(statusContentHorizontalPadding, statusContentVerticalPadding)
+    ) {
       CircleShapeAsyncImage(
         model = statusUiData.avatar,
         modifier = Modifier.size(statusAvatarSize),
-        shape = AppTheme.shape.smallAvatar,
+        shape = AppTheme.shape.smallAvatar.copy(CornerSize(12.dp)),
         onClick = { navigateToProfile() }
       )
       WidthSpacer(value = 7.dp)
@@ -487,6 +467,7 @@ private fun StatusActionsRow(
   }
 }
 
-private val statusContentPadding = 12.dp
-private val statusAvatarSize = 40.dp
+val statusContentHorizontalPadding = 12.dp
+val statusContentVerticalPadding = 10.dp
+val statusAvatarSize = 40.dp
 private val statusActionsIconSize = 20.dp
