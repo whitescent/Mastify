@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.screen.explorer
+package com.github.whitescent.mastify.screen.explore
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +33,7 @@ import kotlinx.collections.immutable.ImmutableList
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ExplorerPager(
+fun ExplorePager(
   state: PagerState,
   trendingStatusListState: LazyListState,
   trendingStatusList: LazyPagingItems<StatusUiData>,

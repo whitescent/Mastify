@@ -127,7 +127,7 @@ fun Home(
     initialFirstVisibleItemIndex = viewModel.timelineScrollPosition,
     initialFirstVisibleItemScrollOffset = viewModel.timelineScrollPositionOffset
   )
-  val timeline by viewModel.timelineList.collectAsStateWithLifecycle(listOf())
+  val timeline by viewModel.timelineList.collectAsStateWithLifecycle()
   val firstVisibleIndex by remember {
     derivedStateOf {
       lazyState.firstVisibleItemIndex

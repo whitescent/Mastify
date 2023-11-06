@@ -57,7 +57,7 @@ fun BottomBar(
     color = AppTheme.colors.bottomBarBackground,
   ) {
     CenterRow {
-      BottomBarItem.values().forEachIndexed { _, screen ->
+      BottomBarItem.entries.forEachIndexed { _, screen ->
         Column(
           modifier = Modifier
             .weight(1f)

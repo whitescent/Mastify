@@ -40,7 +40,9 @@ import com.github.whitescent.mastify.utils.reorderStatuses
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -59,7 +61,13 @@ class HomeViewModel @Inject constructor(
   private var isInitialLoad = false
 
   private var timelineFlow = MutableStateFlow<List<Status>>(listOf())
-  val timelineList = timelineFlow.map { splitReorderStatus(it).toUiData() }
+  val timelineList = timelineFlow
+    .map { splitReorderStatus(it).toUiData() }
+    .stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.WhileSubscribed(0),
+      initialValue = listOf()
+    )
 
   val snackBarFlow = statusActionHandler.snackBarFlow
 

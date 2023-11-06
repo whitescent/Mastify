@@ -52,6 +52,8 @@ interface MastifyColorScheme {
   val bottomSheetItemSelectedIcon: Color
   val bottomSheetItemSelectedBackground: Color
   val bottomSheetSelectedBorder: Color
+  val exploreSearchBarBorder: Color
+  val exploreSearchBarBackground: Color
   val isLight: Boolean
 }
 
@@ -84,6 +86,8 @@ open class ColorSchemeImpl(
   override val bottomSheetItemSelectedIcon: Color,
   override val bottomSheetItemSelectedBackground: Color,
   override val bottomSheetSelectedBorder: Color,
+  override val exploreSearchBarBorder: Color,
+  override val exploreSearchBarBackground: Color,
   override val isLight: Boolean,
 ) : MastifyColorScheme
 
@@ -111,6 +115,8 @@ object LightColorScheme : ColorSchemeImpl(
   bottomSheetItemSelectedIcon = Color(0xFF1E72E2),
   bottomSheetItemSelectedBackground = Color(0xFFE2E4E9).copy(0.4f),
   bottomSheetSelectedBorder = Color(0xFFAAC8F5),
+  exploreSearchBarBorder = Color(0xFFF1F1F1),
+  exploreSearchBarBackground = Color.White,
   isLight = true
 )
 
@@ -138,6 +144,8 @@ object DarkColorScheme : ColorSchemeImpl(
   bottomSheetItemSelectedIcon = Color.White,
   bottomSheetItemSelectedBackground = Color(0xFF4E5059).copy(0.4f),
   bottomSheetSelectedBorder = Color.White.copy(0.2f),
+  exploreSearchBarBorder = Color(0xFF222222),
+  exploreSearchBarBackground = Color(0xFF1D1D1D),
   isLight = false
 )
 

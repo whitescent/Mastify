@@ -52,28 +52,28 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
 object BottomBarScreenTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return when (initialState.appDestination().isBottomBarScreen) {
-      true -> fadeIn()
+      true -> EnterTransition.None
       else -> defaultSlideIntoContainer()
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return when (targetState.appDestination().isBottomBarScreen) {
-      true -> fadeOut()
+      true -> ExitTransition.None
       else -> defaultSlideOutContainer()
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
     return when (initialState.appDestination().isBottomBarScreen) {
-      true -> fadeIn()
+      true -> EnterTransition.None
       else -> defaultSlideIntoContainer(End)
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
     return when (targetState.appDestination().isBottomBarScreen) {
-      true -> fadeOut()
+      true -> ExitTransition.None
       else -> defaultSlideOutContainer(End)
     }
   }
 }
 
-const val slideAnimationTween = 300
+private const val slideAnimationTween = 300

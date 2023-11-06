@@ -40,9 +40,7 @@ fun HomeTopBar(
   openDrawer: () -> Unit
 ) {
   CenterRow(
-    modifier = modifier
-      .statusBarsPadding()
-      .fillMaxWidth()
+    modifier = modifier.statusBarsPadding().fillMaxWidth()
   ) {
     Icon(
       painter = painterResource(id = R.drawable.logo_text),
@@ -60,7 +58,7 @@ fun HomeTopBar(
       CircleShapeAsyncImage(
         model = avatar,
         modifier = Modifier
-          .size(42.dp),
+          .size(36.dp),
         onClick = {
           openDrawer()
         },
