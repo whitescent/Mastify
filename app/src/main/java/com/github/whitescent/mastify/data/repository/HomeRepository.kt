@@ -50,7 +50,7 @@ class HomeRepository @Inject constructor(
     when (newItems.isEmpty()) {
       true -> return emptyList()
       else -> {
-        if (oldItems.size < timelineFetchNumber || newItems.size < timelineFetchNumber) return newItems
+        if (oldItems.size < FETCHNUMBER || newItems.size < FETCHNUMBER) return newItems
         else {
           val lastStatusOfNewItems = newItems.last()
           if (oldItems.any { it.id == lastStatusOfNewItems.id }) {
@@ -94,6 +94,6 @@ class HomeRepository @Inject constructor(
   }
 
   companion object {
-    const val timelineFetchNumber = 40
+    const val FETCHNUMBER = 40
   }
 }

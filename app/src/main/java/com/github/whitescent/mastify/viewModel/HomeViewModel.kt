@@ -26,7 +26,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.room.withTransaction
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository
-import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.timelineFetchNumber
+import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.mapper.status.toEntity
@@ -83,7 +83,7 @@ class HomeViewModel @Inject constructor(
     refreshKey = null,
     onLoadUpdated = { uiState = uiState.copy(timelineLoadState = it) },
     onRequest = { nextPage ->
-      val response = api.homeTimeline(maxId = nextPage, limit = timelineFetchNumber)
+      val response = api.homeTimeline(maxId = nextPage, limit = FETCHNUMBER)
       if (response.isSuccessful && !response.body().isNullOrEmpty()) {
         val body = response.body()!!
         Result.success(body)
@@ -119,7 +119,7 @@ class HomeViewModel @Inject constructor(
         showNewStatusButton = newStatusCount != 0 && timelineFlow.value.isNotEmpty(),
         newStatusCount = newStatusCount,
         needSecondLoad = !timelineFlow.value.any { it.id == items.last().id },
-        endReached = items.size < timelineFetchNumber
+        endReached = items.size < FETCHNUMBER
       )
       timelineFlow.emit(homeRepository.timelineListHandler(timelineFlow.value, items))
       reinsertAllStatus(timelineFlow.value, activeAccount.id)
@@ -173,7 +173,7 @@ class HomeViewModel @Inject constructor(
     viewModelScope.launch {
       val response = api.homeTimeline(
         maxId = tempList.find { it.id == statusId }!!.id,
-        limit = timelineFetchNumber
+        limit = FETCHNUMBER
       )
       if (response.isSuccessful && !response.body().isNullOrEmpty()) {
         val list = response.body()!!.toMutableList()
@@ -214,10 +214,10 @@ class HomeViewModel @Inject constructor(
   }
 
   private fun splitReorderStatus(statuses: List<Status>): List<Status> {
-    if (statuses.size <= timelineFetchNumber) return reorderStatuses(statuses)
+    if (statuses.size <= FETCHNUMBER) return reorderStatuses(statuses)
     val result = mutableListOf<Status>()
-    val prefix = reorderStatuses(statuses.subList(0, timelineFetchNumber))
-    val suffix = reorderStatuses(statuses.subList(timelineFetchNumber, statuses.size))
+    val prefix = reorderStatuses(statuses.subList(0, FETCHNUMBER))
+    val suffix = reorderStatuses(statuses.subList(FETCHNUMBER, statuses.size))
     result.addAll(prefix + suffix)
     return result
   }

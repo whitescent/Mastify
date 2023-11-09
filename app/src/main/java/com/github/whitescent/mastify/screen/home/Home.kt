@@ -23,8 +23,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -337,8 +338,9 @@ private fun NewStatusToast(
 ) {
   AnimatedVisibility(
     visible = visible,
-    enter = scaleIn() + fadeIn(tween(400)),
-    exit = scaleOut() + fadeOut(tween(400)),
+    enter = slideInVertically(tween(300)) + fadeIn(),
+    exit = scaleOut(targetScale = 0.8f) +
+      slideOutVertically(tween(300)) { -it } + fadeOut(),
     modifier = modifier
   ) {
     Surface(
