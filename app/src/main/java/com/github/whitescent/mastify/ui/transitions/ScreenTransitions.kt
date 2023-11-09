@@ -51,15 +51,23 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
 
 object BottomBarScreenTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
-    return when (initialState.appDestination().isBottomBarScreen) {
-      true -> EnterTransition.None
-      else -> defaultSlideIntoContainer()
+    return if (initialState.destination == targetState.destination) {
+      defaultSlideIntoContainer(Start) // transition when change account
+    } else {
+      when (initialState.appDestination().isBottomBarScreen) {
+        true -> EnterTransition.None
+        else -> defaultSlideIntoContainer()
+      }
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
-    return when (targetState.appDestination().isBottomBarScreen) {
-      true -> ExitTransition.None
-      else -> defaultSlideOutContainer()
+    return if (initialState.destination == targetState.destination) {
+      defaultSlideOutContainer(Start)
+    } else {
+      when (targetState.appDestination().isBottomBarScreen) {
+        true -> ExitTransition.None
+        else -> defaultSlideOutContainer()
+      }
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
