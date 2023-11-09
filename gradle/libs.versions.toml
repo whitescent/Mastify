@@ -14,6 +14,7 @@ androidDesugar = "2.0.3"
 
 compose = "1.6.0-alpha08"
 composeCompiler = "1.5.1"
+composeShadowsPlus = "1.0.4"
 constraintlayoutCompose = "1.0.1"
 material3 = "1.2.0-alpha10"
 okhttp3 = "4.11.0"
@@ -123,6 +124,7 @@ lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" 
 leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 compose-destinations-animations-core = { module = "io.github.raamcosta.compose-destinations:animations-core", version.ref = "composeDestinations" }
 compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composeDestinations" }
+compose-shadow-plus = { module = "com.github.GIGAMOLE:ComposeShadowsPlus", version.ref = "composeShadowsPlus" }
 
 org-jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }

@@ -165,6 +165,7 @@ dependencies {
   implementation(libs.coil.gif)
   implementation(libs.coil.video)
   implementation(libs.compose.media)
+  implementation(libs.compose.shadow.plus)
   implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
