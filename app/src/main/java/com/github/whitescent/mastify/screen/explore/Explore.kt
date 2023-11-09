@@ -17,15 +17,16 @@
 
 package com.github.whitescent.mastify.screen.explore
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Down
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Up
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,9 +38,12 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Badge
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -64,14 +68,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -85,6 +95,7 @@ import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarS
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.github.whitescent.mastify.utils.AppState
+import com.github.whitescent.mastify.viewModel.ExplorerKind
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -99,21 +110,23 @@ import kotlinx.coroutines.launch
 fun Explore(
   viewModel: ExplorerViewModel = hiltViewModel(),
   appState: AppState,
+  drawerState: DrawerState,
   navigator: DestinationsNavigator
 ) {
   val uiState = viewModel.uiState
   val context = LocalContext.current
-  val tabs = listOf("热门嘟文", "新闻", "公共时间轴")
+
   var selectedTab by remember { mutableIntStateOf(0) }
   var hideContent by remember { mutableStateOf(false) }
   // when user focus on searchBar, we need hide content
 
-  val pagerState = rememberPagerState { tabs.size }
+  val pagerState = rememberPagerState { ExplorerKind.entries.size }
   val focusRequester = remember { FocusRequester() }
 
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
   val trendingStatusListState = rememberLazyListState()
+  val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
   val trendingStatusList = viewModel.trendingStatusPager.collectAsLazyPagingItems()
 
   Box(
@@ -135,18 +148,23 @@ fun Explore(
             Column {
               CenterRow {
                 Text(
-                  text = "探索 m.cmx.im",
+                  text = stringResource(id = R.string.explore_instance, uiState.userInstance),
                   fontSize = 24.sp,
                   fontWeight = FontWeight.Bold,
                   color = AppTheme.colors.primaryContent,
-                  modifier = Modifier.weight(1f)
+                  modifier = Modifier.weight(1f),
                 )
                 CircleShapeAsyncImage(
                   model = uiState.avatar,
                   modifier = Modifier
                     .size(36.dp)
                     .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
-                  shape = AppTheme.shape.betweenSmallAndMediumAvatar
+                  shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+                  onClick = {
+                    scope.launch {
+                      drawerState.open()
+                    }
+                  }
                 )
               }
               HeightSpacer(value = 6.dp)
@@ -167,12 +185,14 @@ fun Explore(
       ) {
         when (it) {
           true -> {
-            ExploreSearchContent(isTextEmpty = uiState.text.isEmpty())
+            ExploreSearchContent(
+              isTextEmpty = uiState.text.isEmpty(),
+              searchingResult = searchingResult
+            )
           }
           else -> {
             Column {
               ExploreTabBar(
-                tabs = listOf("热门嘟文", "新闻", "公共时间轴"),
                 selectedTab = selectedTab,
                 modifier = Modifier
                   .padding(horizontal = 12.dp)
@@ -243,6 +263,11 @@ fun Explore(
         trendingStatusListState.scrollToItem(0)
       }
     }
+    launch {
+      viewModel.searchErrorFlow.collect {
+        Toast.makeText(context, "搜索失败", Toast.LENGTH_LONG).show()
+      }
+    }
   }
 }
 
@@ -256,7 +281,7 @@ fun ExploreSearchBar(
   BasicTextField(
     value = text,
     onValueChange = onValueChange,
-    textStyle = TextStyle(fontSize = 16.sp),
+    textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
     singleLine = true,
     cursorBrush = SolidColor(AppTheme.colors.primaryContent),
     modifier = Modifier
@@ -264,16 +289,34 @@ fun ExploreSearchBar(
       .focusRequester(focusRequester)
       .onFocusChanged {
         onFocusChange(it.isFocused)
-      }
+      },
+    keyboardActions = KeyboardActions(
+      onSearch = { }
+    ),
+    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
   ) {
-    Surface(
-      modifier = Modifier.fillMaxWidth(),
-      shadowElevation = 1.dp,
-      shape = AppTheme.shape.betweenSmallAndMediumAvatar,
-      color = AppTheme.colors.exploreSearchBarBackground,
-      border = BorderStroke(1.dp, AppTheme.colors.exploreSearchBarBorder),
+    Box(
+      modifier = Modifier
+        .fillMaxWidth()
+        .rsBlurShadow(
+          radius = 12.dp,
+          color = Color(0xFF000000).copy(alpha = 0.01f),
+          offset = DpOffset(0.dp, 10.dp)
+        )
+        .clip(AppTheme.shape.betweenSmallAndMediumAvatar)
+        .border(
+          width = 1.dp,
+          color = AppTheme.colors.exploreSearchBarBorder,
+          shape = AppTheme.shape.betweenSmallAndMediumAvatar
+        )
     ) {
-      CenterRow(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+      CenterRow(
+        modifier = Modifier
+          .fillMaxWidth()
+          .background(AppTheme.colors.exploreSearchBarBackground)
+          .clip(AppTheme.shape.betweenSmallAndMediumAvatar)
+          .padding(horizontal = 12.dp, vertical = 10.dp)
+      ) {
         Icon(
           painter = painterResource(id = R.drawable.search),
           contentDescription = null,
@@ -284,10 +327,10 @@ fun ExploreSearchBar(
         Box(contentAlignment = Alignment.CenterStart) {
           if (text.isEmpty()) {
             Text(
-              text = "搜索", // TODO Localization
+              text = stringResource(id = R.string.search_title),
               color = AppTheme.colors.primaryContent.copy(0.5f),
               fontWeight = FontWeight.Bold,
-              fontSize = 16.sp
+              fontSize = 16.sp,
             )
           }
           it()
@@ -299,7 +342,6 @@ fun ExploreSearchBar(
 
 @Composable
 fun ExploreTabBar(
-  tabs: List<String>,
   selectedTab: Int,
   modifier: Modifier = Modifier,
   onTabClick: (Int) -> Unit
@@ -318,7 +360,7 @@ fun ExploreTabBar(
     containerColor = Color.Transparent,
     modifier = modifier
   ) {
-    tabs.forEachIndexed { index, tab ->
+    ExplorerKind.entries.forEachIndexed { index, tab ->
       val selected = selectedTab == index
       Tab(
         selected = selected,
@@ -330,7 +372,7 @@ fun ExploreTabBar(
         unselectedContentColor = Color.Transparent
       ) {
         Text(
-          text = tab,
+          text = stringResource(tab.stringRes),
           fontSize = 14.sp,
           fontWeight = FontWeight(700),
           color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,
@@ -343,16 +385,99 @@ fun ExploreTabBar(
 
 @Composable
 fun ExploreSearchContent(
-  isTextEmpty: Boolean
+  isTextEmpty: Boolean,
+  searchingResult: SearchResult?
 ) {
   Crossfade(targetState = isTextEmpty) {
     when (it) {
       true -> {
-        Column {
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+          horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+          Text(
+            text = "Try searching for people, topics or keywords",
+            color = AppTheme.colors.primaryContent.copy(0.5f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.ExtraBold
+          )
         }
       }
       else -> {
+        if (searchingResult?.accounts?.isNotEmpty() == true) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(horizontal = 12.dp, vertical = 8.dp)
+          ) {
+            CenterRow {
+              Icon(
+                painter = painterResource(id = R.drawable.user),
+                contentDescription = null,
+                tint = AppTheme.colors.primaryContent,
+                modifier = Modifier.size(24.dp)
+              )
+              WidthSpacer(value = 4.dp)
+              Text(
+                text = "用户",
+                color = AppTheme.colors.primaryContent,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+              )
+              WidthSpacer(value = 4.dp)
+              Badge(
+                containerColor = AppTheme.colors.accent,
+                contentColor = Color.White,
+                modifier = Modifier.align(Alignment.CenterVertically)
+              ) {
+                Text(
+                  text = when (searchingResult.accounts.size > 10) {
+                    true -> "10+"
+                    else -> searchingResult.accounts.size.toString()
+                  }
+                )
+              }
+            }
+            HeightSpacer(value = 8.dp)
+            Column(Modifier.padding(start = 8.dp)) {
+              searchingResult.accounts.forEach { user ->
+                SearchPreviewResultUserItem(user.avatar, user.realDisplayName, user.fullname)
+                HeightSpacer(value = 8.dp)
+              }
+            }
+          }
+        }
       }
+    }
+  }
+}
+
+@Composable
+private fun SearchPreviewResultUserItem(
+  avatar: String,
+  username: String,
+  instance: String,
+) {
+  CenterRow {
+    CircleShapeAsyncImage(
+      model = avatar,
+      shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+      modifier = Modifier.size(42.dp)
+    )
+    WidthSpacer(value = 6.dp)
+    Column {
+      Text(
+        text = username,
+        color = AppTheme.colors.primaryContent,
+        fontSize = 18.sp
+      )
+      Text(
+        text = instance,
+        color = AppTheme.colors.primaryContent.copy(0.5f),
+        fontSize = 14.sp
+      )
     }
   }
 }

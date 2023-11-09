@@ -46,7 +46,7 @@
   <string name="text_copied">Text copied to clipboard</string>
   <string name="link_copied">Post link copied to clipboard</string>
   <string name="bookmarked_snackBar">Saved to your bookmarks</string>
-  <string name="load_post_error">An error occurred while loading Post</string>
+  <string name="load_post_error">An error occurred while loading post</string>
   <string name="click_to_display_content">Click to display content</string>
   <string name="copy_text">Copy Text</string>
   <string name="copy_link">Copy Link</string>
@@ -113,5 +113,12 @@
   <string name="abbreviated_hours_ago">%dh</string>
   <string name="abbreviated_minutes_ago">%dm</string>
   <string name="abbreviated_seconds_ago">%ds</string>
+
+  <!-- Explore screen -->
+  <string name="explore_instance">Explore %s</string>
+  <string name="trending_title">Trending</string>
+  <string name="public_timeline">Public Timeline</string>
+  <string name="news_title">News</string>
+  <string name="search_title">Search</string>
 
 </resources>

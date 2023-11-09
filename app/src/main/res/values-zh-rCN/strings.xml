@@ -111,4 +111,11 @@
   <string name="abbreviated_hours_ago">%d 小时前</string>
   <string name="abbreviated_minutes_ago">%d 分钟前</string>
   <string name="abbreviated_seconds_ago">%d 秒前</string>
+
+  <!-- Explore screen -->
+  <string name="explore_instance">探索 %s</string>
+  <string name="trending_title">热门嘟文</string>
+  <string name="public_timeline">公共时间轴</string>
+  <string name="news_title">新闻</string>
+  <string name="search_title">搜索</string>
 </resources>

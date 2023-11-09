@@ -94,8 +94,10 @@ fun AppScaffold(
           changeAccount = {
             scope.launch { drawerState.close() }
             viewModel.changeActiveAccount(it)
-            navController.navigate(NavGraphs.app) {
-              popUpTo(NavGraphs.root)
+            navController.navigate(destination.route) {
+              popUpTo(NavGraphs.app) {
+                inclusive = true
+              }
             }
           },
           navigateToLogin = {

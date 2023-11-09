@@ -44,7 +44,7 @@ data class Status(
   val content: String,
   val account: Account,
   val emojis: List<Emoji>,
-  val tags: List<Tag>,
+  val tags: List<Hashtag>,
   val mentions: List<Mention>,
   val application: Application?,
   @SerialName("media_attachments") val attachments: List<Attachment>,
@@ -55,9 +55,6 @@ data class Status(
   val actionableStatus: Status inline get() = reblog ?: this
 
   val isInReplyTo inline get() = inReplyToId != null
-
-  @Serializable
-  data class Tag(val name: String, val url: String, val following: Boolean? = null)
 
   @Serializable
   data class Application(val name: String, val website: String?)

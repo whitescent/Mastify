@@ -21,6 +21,7 @@ import androidx.room.TypeConverter
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -50,10 +51,10 @@ class Converters {
   fun accountToJson(account: Account): String = json.encodeToString(account)
 
   @TypeConverter
-  fun jsonToTag(json: String): List<Status.Tag> = this.json.decodeFromString(json)
+  fun jsonToTag(json: String): List<Hashtag> = this.json.decodeFromString(json)
 
   @TypeConverter
-  fun tagToJson(tag: List<Status.Tag>): String = json.encodeToString(tag)
+  fun tagToJson(tag: List<Hashtag>): String = json.encodeToString(tag)
 
   @TypeConverter
   fun jsonToFields(json: String): List<Fields> = this.json.decodeFromString(json)

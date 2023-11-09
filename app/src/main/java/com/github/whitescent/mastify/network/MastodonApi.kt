@@ -24,6 +24,7 @@ import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
+import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
@@ -182,4 +183,14 @@ interface MastodonApi {
 
   @GET("/api/v1/custom_emojis")
   suspend fun getCustomEmojis(): NetworkResult<List<Emoji>>
+
+  @GET("api/v2/search")
+  suspend fun searchSync(
+    @Query("q") query: String?,
+    @Query("type") type: String? = null,
+    @Query("resolve") resolve: Boolean? = null,
+    @Query("limit") limit: Int? = null,
+    @Query("offset") offset: Int? = null,
+    @Query("following") following: Boolean? = null,
+  ): NetworkResult<SearchResult>
 }
