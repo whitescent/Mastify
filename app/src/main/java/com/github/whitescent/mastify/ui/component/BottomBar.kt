@@ -65,7 +65,9 @@ fun BottomBar(
               onClick = {
                 if (destination.route == screen.direction.route) scrollToTop()
                 navController.navigate(screen.direction) {
-                  popUpTo(destination.route)
+                  popUpTo(destination.route) {
+                    inclusive = true
+                  }
                   launchSingleTop = true
                 }
               },
