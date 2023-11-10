@@ -27,7 +27,9 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +39,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -180,6 +183,7 @@ fun Explore(
           text = uiState.text,
           focusRequester = focusRequester,
           onValueChange = viewModel::onValueChange,
+          clearText = viewModel::clearInputText,
           onFocusChange = { hideContent = it }
         )
         HeightSpacer(value = 4.dp)
@@ -283,6 +287,7 @@ fun ExploreSearchBar(
   text: String,
   focusRequester: FocusRequester,
   onValueChange: (String) -> Unit,
+  clearText: () -> Unit,
   onFocusChange: (Boolean) -> Unit
 ) {
   BasicTextField(
@@ -337,10 +342,30 @@ fun ExploreSearchBar(
               text = stringResource(id = R.string.search_title),
               color = AppTheme.colors.primaryContent.copy(0.5f),
               fontWeight = FontWeight.Bold,
-              fontSize = 16.sp,
+              fontSize = 16.sp
             )
           }
-          it()
+          CenterRow(Modifier.fillMaxWidth()) {
+            Box(Modifier.weight(1f)) { it() }
+            if (text.isNotEmpty()) {
+              Box(
+                modifier = Modifier
+                  .background(AppTheme.colors.cardAction, CircleShape)
+                  .clickable(
+                    onClick = clearText,
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                  )
+              ) {
+                Icon(
+                  painter = painterResource(id = R.drawable.close),
+                  contentDescription = null,
+                  modifier = Modifier.size(20.dp).padding(2.dp),
+                  tint = Color.White
+                )
+              }
+            }
+          }
         }
       }
     }

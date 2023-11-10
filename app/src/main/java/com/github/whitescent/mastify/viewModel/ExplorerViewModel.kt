@@ -122,6 +122,10 @@ class ExplorerViewModel @Inject constructor(
     uiState = uiState.copy(text = text)
   }
 
+  fun clearInputText() {
+    uiState = uiState.copy(text = "")
+  }
+
   fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
     statusActionHandler.onStatusAction(action, context)
   }
