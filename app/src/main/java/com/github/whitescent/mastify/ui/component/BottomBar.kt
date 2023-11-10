@@ -64,11 +64,12 @@ fun BottomBar(
             .clickable(
               onClick = {
                 if (destination.route == screen.direction.route) scrollToTop()
-                navController.navigate(screen.direction) {
-                  popUpTo(destination.route) {
-                    inclusive = true
+                else {
+                  navController.navigate(screen.direction) {
+                    popUpTo(destination.route) {
+                      inclusive = true
+                    }
                   }
-                  launchSingleTop = true
                 }
               },
               indication = null,
