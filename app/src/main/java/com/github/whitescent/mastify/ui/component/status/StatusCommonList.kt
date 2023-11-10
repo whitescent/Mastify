@@ -15,8 +15,9 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.screen.explore
+package com.github.whitescent.mastify.ui.component.status
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -34,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -45,8 +47,8 @@ import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
+import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
-import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PageType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
@@ -58,14 +60,16 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun TrendingStatusList(
+fun StatusCommonList(
   statusList: LazyPagingItems<StatusUiData>,
   statusListState: LazyListState,
+  enablePullRefresh: Boolean = false,
   action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
 ) {
+  val context = LocalContext.current
   var refreshing by remember { mutableStateOf(false) }
   val scope = rememberCoroutineScope()
   val pullRefreshState = rememberPullRefreshState(
@@ -82,7 +86,9 @@ fun TrendingStatusList(
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .pullRefresh(pullRefreshState)
+      .let {
+        if (enablePullRefresh) it.pullRefresh(pullRefreshState) else it
+      }
   ) {
     when (statusList.itemCount) {
       0 -> {
@@ -90,16 +96,13 @@ fun TrendingStatusList(
           is LoadState.Error -> StatusListLoadError { statusList.refresh() }
           is LoadState.NotLoading ->
             EmptyStatusListPlaceholder(PageType.Profile, alignment = Alignment.TopCenter)
-
           else -> StatusListLoading()
         }
       }
       else -> {
         LazyColumn(
           state = statusListState,
-          modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 56.dp),
+          modifier = Modifier.fillMaxSize().padding(bottom = 100.dp),
         ) {
           items(
             count = statusList.itemCount,
@@ -127,7 +130,17 @@ fun TrendingStatusList(
             AppHorizontalDivider()
           }
           item {
-            StatusEndIndicator(Modifier.padding(54.dp))
+            when (statusList.loadState.append) {
+              is LoadState.Loading -> StatusAppendingIndicator()
+              is LoadState.Error -> {
+                // TODO Localization
+                Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
+                statusList.retry() // retry
+              }
+              is LoadState.NotLoading -> Unit
+            }
+            if (statusList.loadState.append.endOfPaginationReached)
+              StatusEndIndicator(Modifier.padding(54.dp))
           }
         }
         PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))

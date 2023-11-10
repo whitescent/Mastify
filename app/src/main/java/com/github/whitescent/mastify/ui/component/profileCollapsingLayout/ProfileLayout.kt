@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 
 @Composable
@@ -36,7 +35,6 @@ fun ProfileLayout(
   bodyContent: @Composable () -> Unit,
   topBar: @Composable () -> Unit,
 ) {
-  val density = LocalDensity.current
   Layout(
     modifier = modifier
       .scrollable(
@@ -56,9 +54,7 @@ fun ProfileLayout(
     val collapsingTopPlaceable = measurables[0].measure(constraints)
     val bodyContentPlaceable = measurables[1].measure(constraints)
     val topBarPlaceable = measurables[2].measure(constraints)
-    state.bodyContentMaxHeight = with(density) {
-      (constraints.maxHeight - collapsingTopPlaceable.height).toDp()
-    }
+    state.bodyContentMaxHeight = (constraints.maxHeight - collapsingTopPlaceable.height).toDp()
     layout(constraints.maxWidth, constraints.maxHeight) {
       state.updateBounds((collapsingTopPlaceable.height - topBarPlaceable.height).toFloat())
       collapsingTopPlaceable.place(0, state.offset.value.roundToInt())

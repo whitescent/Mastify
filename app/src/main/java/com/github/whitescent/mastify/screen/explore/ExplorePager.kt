@@ -28,6 +28,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.ui.component.status.StatusCommonList
 import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
@@ -37,6 +38,8 @@ fun ExplorePager(
   state: PagerState,
   trendingStatusListState: LazyListState,
   trendingStatusList: LazyPagingItems<StatusUiData>,
+  publicTimelineListState: LazyListState,
+  publicTimelineList: LazyPagingItems<StatusUiData>,
   modifier: Modifier = Modifier,
   action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
@@ -47,10 +50,20 @@ fun ExplorePager(
     state = state,
     pageContent = {
       when (it) {
-        0 -> TrendingStatusList(
+        0 -> StatusCommonList(
           statusList = trendingStatusList,
           statusListState = trendingStatusListState,
           action = action,
+          enablePullRefresh = true,
+          navigateToDetail = navigateToDetail,
+          navigateToProfile = navigateToProfile,
+          navigateToMedia = navigateToMedia,
+        )
+        1 -> StatusCommonList(
+          statusList = publicTimelineList,
+          statusListState = publicTimelineListState,
+          action = action,
+          enablePullRefresh = true,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,

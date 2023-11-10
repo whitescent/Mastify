@@ -31,10 +31,12 @@ import androidx.paging.cachedIn
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.ExploreRepository
+import com.github.whitescent.mastify.data.repository.SearchPreviewResult
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
+import com.github.whitescent.mastify.paging.PublicTimelinePagingSource
 import com.github.whitescent.mastify.paging.TrendingPagingSource
 import com.github.whitescent.mastify.utils.StatusAction
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,13 +76,13 @@ class ExplorerViewModel @Inject constructor(
     snapshotFlow { uiState.text }
       .debounce(200)
       .mapLatest {
-        // reset search result when query is empty
-        if (it.isEmpty()) {
-          null
-        } else {
-          val result = exploreRepository.getPreviewResultsForSearch(it)
-          if (result == null) searchErrorChannel.send(Unit) // tell the user that the search failed
-          result
+        // reset search response when query is empty
+        when (val api = exploreRepository.getPreviewResultsForSearch(it)) {
+          is SearchPreviewResult.Success -> api.response
+          is SearchPreviewResult.Failure -> {
+            searchErrorChannel.send(Unit)
+            null
+          }
         }
       }
       .stateIn(
@@ -96,6 +98,16 @@ class ExplorerViewModel @Inject constructor(
     ),
     pagingSourceFactory = {
       TrendingPagingSource(api = api)
+    },
+  ).flow.cachedIn(viewModelScope)
+
+  val publicTimelinePager = Pager(
+    config = PagingConfig(
+      pageSize = 20,
+      enablePlaceholders = false,
+    ),
+    pagingSourceFactory = {
+      PublicTimelinePagingSource(api = api)
     },
   ).flow.cachedIn(viewModelScope)
 

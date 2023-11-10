@@ -98,6 +98,20 @@ fun LazyListScope.statusLoadingIndicator() {
 }
 
 @Composable
+fun StatusAppendingIndicator(modifier: Modifier = Modifier) {
+  Box(
+    modifier = modifier.padding(top = 24.dp, bottom = 56.dp).fillMaxWidth(),
+    contentAlignment = Alignment.TopCenter
+  ) {
+    CircularProgressIndicator(
+      modifier = Modifier.size(24.dp).align(Alignment.TopCenter),
+      color = AppTheme.colors.primaryContent,
+      strokeWidth = 2.dp
+    )
+  }
+}
+
+@Composable
 fun StatusEndIndicator(
   modifier: Modifier = Modifier
 ) {

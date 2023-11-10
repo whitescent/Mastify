@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
     .map { splitReorderStatus(it).toUiData() }
     .stateIn(
       scope = viewModelScope,
-      started = SharingStarted.WhileSubscribed(0),
+      started = SharingStarted.Eagerly,
       initialValue = listOf()
     )
 

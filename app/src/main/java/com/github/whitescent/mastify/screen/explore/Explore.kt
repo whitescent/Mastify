@@ -125,9 +125,14 @@ fun Explore(
 
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
+
   val trendingStatusListState = rememberLazyListState()
-  val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
   val trendingStatusList = viewModel.trendingStatusPager.collectAsLazyPagingItems()
+
+  val publicTimelineListState = rememberLazyListState()
+  val publicTimelineList = viewModel.publicTimelinePager.collectAsLazyPagingItems()
+
+  val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
 
   Box(
     modifier = Modifier
@@ -208,6 +213,8 @@ fun Explore(
                 state = pagerState,
                 trendingStatusListState = trendingStatusListState,
                 trendingStatusList = trendingStatusList,
+                publicTimelineListState = publicTimelineListState,
+                publicTimelineList = publicTimelineList,
                 action = { action ->
                   viewModel.onStatusAction(action, context)
                 },
@@ -265,7 +272,7 @@ fun Explore(
     }
     launch {
       viewModel.searchErrorFlow.collect {
-        Toast.makeText(context, "搜索失败", Toast.LENGTH_LONG).show()
+        Toast.makeText(context, "搜索失败", Toast.LENGTH_SHORT).show()
       }
     }
   }

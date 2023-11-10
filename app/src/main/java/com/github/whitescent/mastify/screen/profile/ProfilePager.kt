@@ -26,6 +26,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.ui.component.status.StatusCommonList
 import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
@@ -48,7 +49,7 @@ fun ProfilePager(
     state = state,
     pageContent = {
       when (it) {
-        0 -> ProfileStatusList(
+        0 -> StatusCommonList(
           statusList = statusList,
           statusListState = statusListState,
           action = action,
@@ -56,17 +57,17 @@ fun ProfilePager(
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
-        1 -> ProfileStatusWithReplyList(
+        1 -> StatusCommonList(
           statusList = statusWithReplyList,
-          statusListWithReplyState = statusWithReplyListState,
+          statusListState = statusWithReplyListState,
           action = action,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
-        2 -> ProfileStatusWithMediaList(
+        2 -> StatusCommonList(
           statusList = statusWithMediaList,
-          statusListWithMediaState = statusWithMediaListState,
+          statusListState = statusWithMediaListState,
           action = action,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,

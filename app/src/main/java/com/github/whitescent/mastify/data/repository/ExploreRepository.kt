@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.data.repository
 
+import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import javax.inject.Inject
@@ -26,6 +27,21 @@ import javax.inject.Singleton
 class ExploreRepository @Inject constructor(
   private val api: MastodonApi
 ) {
-  suspend fun getPreviewResultsForSearch(q: String): SearchResult? =
-    api.searchSync(query = q, limit = 10).getOrNull()
+  suspend fun getPreviewResultsForSearch(keyword: String): SearchPreviewResult {
+    if (keyword.isBlank()) return SearchPreviewResult.Success(null)
+    return api.searchSync(query = keyword, limit = 10).fold(
+      {
+        SearchPreviewResult.Success(it)
+      },
+      {
+        it.printStackTrace()
+        SearchPreviewResult.Failure(it)
+      }
+    )
+  }
+}
+
+sealed interface SearchPreviewResult {
+  data class Success(val response: SearchResult?) : SearchPreviewResult
+  data class Failure(val exception: Throwable) : SearchPreviewResult
 }

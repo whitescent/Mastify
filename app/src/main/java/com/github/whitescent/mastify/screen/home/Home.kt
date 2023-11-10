@@ -90,6 +90,7 @@ import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
+import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
@@ -232,20 +233,7 @@ fun Home(
               }
               item {
                 when (uiState.timelineLoadState) {
-                  LoadState.Append -> {
-                    Box(
-                      modifier = Modifier
-                        .padding(24.dp)
-                        .fillMaxWidth(),
-                      contentAlignment = Alignment.Center
-                    ) {
-                      CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = AppTheme.colors.primaryContent,
-                        strokeWidth = 2.dp
-                      )
-                    }
-                  }
+                  LoadState.Append -> StatusAppendingIndicator()
                   LoadState.Error -> {
                     // TODO Localization
                     Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
