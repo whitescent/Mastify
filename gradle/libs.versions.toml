@@ -5,12 +5,12 @@ androidxLifecycle = "2.6.2"
 androidxActivity = "1.8.0"
 androidxTestExt = "1.1.5"
 androidxTestEspresso = "3.5.1"
-androidxNavigation = "2.7.4"
-androidxHilt = "1.0.0"
+androidxNavigation = "2.7.5"
+androidxHilt = "1.1.0"
 androidxStartup = "1.1.1"
 androidxMedia3 = "1.1.1"
 androidxBrowser = "1.6.0"
-androidDesugar = "2.0.3"
+androidDesugar = "2.0.4"
 
 compose = "1.6.0-alpha08"
 composeCompiler = "1.5.1"
@@ -42,8 +42,7 @@ lottie = "6.0.0"
 leakcanary = "2.12"
 composeDestinations = "1.9.52"
 hilt = "2.46"
-pagingRuntime = "3.2.1"
-pagingCompose = "3.2.1"
+paging3 = "3.2.1"
 splashScreen = "1.0.1"
 junit = "4.13.2"
 jsoup = "1.16.1"
@@ -131,8 +130,8 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinxCollections" }
 
-androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "pagingRuntime" }
-androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "pagingCompose" }
+androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging3" }
+androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging3" }
 
 android-gradle-plugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
