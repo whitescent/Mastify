@@ -39,6 +39,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -164,7 +165,7 @@ private fun AnnotatedString.Builder.renderElement(
   textStyle: TextStyle
 ) {
   if (skipElement(element = element)) return
-  when (element.normalName()) {
+  when (val normalName = element.normalName()) {
     "a" -> {
       val href = element.attr("href")
       pushStringAnnotation(tag = URL_TAG, annotation = href)
@@ -178,9 +179,14 @@ private fun AnnotatedString.Builder.renderElement(
 
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 
-    "span", "p" -> {
+    "span", "p", "i" -> {
+      if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
       element.childNodes().forEach {
-        renderNode(node = it, urlSpanStyle, textStyle)
+        renderNode(
+          node = it,
+          urlSpanStyle = urlSpanStyle,
+          textStyle = if (normalName == "i") textStyle.copy(fontStyle = Italic) else textStyle
+        )
       }
     }
 
