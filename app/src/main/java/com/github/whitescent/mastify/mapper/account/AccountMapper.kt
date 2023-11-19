@@ -38,3 +38,37 @@ fun AccountEntity.toAccount(): Account {
     fields = fields
   )
 }
+
+fun Account.toEntity(
+  accessToken: String,
+  clientId: String?,
+  clientSecret: String?,
+  isActive: Boolean,
+  id: Long,
+  accountId: String,
+  firstVisibleItemIndex: Int,
+  offset: Int,
+): AccountEntity {
+  return AccountEntity(
+    accountId = accountId,
+    username = username,
+    displayName = displayName,
+    note = note,
+    domain = domain,
+    profilePictureUrl = avatar,
+    header = header,
+    followersCount = followersCount,
+    followingCount = followingCount,
+    statusesCount = statusesCount,
+    createdAt = createdAt,
+    emojis = emojis,
+    fields = fields,
+    accessToken = accessToken,
+    clientId = clientId,
+    clientSecret = clientSecret,
+    isActive = isActive,
+    id = id,
+    firstVisibleItemIndex = firstVisibleItemIndex,
+    offset = offset,
+  )
+}

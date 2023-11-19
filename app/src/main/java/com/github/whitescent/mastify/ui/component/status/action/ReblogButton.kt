@@ -25,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -49,7 +48,7 @@ fun ReblogButton(
 
   val reblogScaleAnimatable = remember { Animatable(1f) }
   val reblogRotateAnimatable = remember { Animatable(0f) }
-  var reblogState by rememberSaveable(reblogged) { mutableStateOf(reblogged) }
+  var reblogState by remember(reblogged) { mutableStateOf(reblogged) }
   val animatedReblogIconColor by animateColorAsState(
     targetValue = if (reblogState) AppTheme.colors.reblogged else unreblogColor,
   )

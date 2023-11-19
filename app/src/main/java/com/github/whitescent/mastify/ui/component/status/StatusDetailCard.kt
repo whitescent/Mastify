@@ -32,7 +32,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -95,12 +94,12 @@ fun StatusDetailCard(
   var openMenu by remember { mutableStateOf(false) }
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
-  var animatedFavCount by rememberSaveable(status.favouritesCount) {
-    mutableIntStateOf(status.favouritesCount)
-  }
-  var animatedReblogCount by rememberSaveable(status.reblogsCount) {
-    mutableIntStateOf(status.reblogsCount)
-  }
+  // var animatedFavCount by rememberSaveable(status.favouritesCount) {
+  //   mutableIntStateOf(status.favouritesCount)
+  // }
+  // var animatedReblogCount by rememberSaveable(status.reblogsCount) {
+  //   mutableIntStateOf(status.reblogsCount)
+  // }
 
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
@@ -228,21 +227,15 @@ fun StatusDetailCard(
       }
       HeightSpacer(value = 8.dp)
       StatusDetailInfo(
-        reblogsCount = animatedReblogCount,
-        favouritesCount = animatedFavCount,
+        reblogsCount = status.reblogsCount,
+        favouritesCount = status.favouritesCount,
         createdAt = status.createdAt,
         application = status.application
       )
       HeightSpacer(value = 8.dp)
       StatusDetailActionsRow(
         statusUiData = status,
-        action = action,
-        onFavorite = {
-          if (it) animatedFavCount++ else animatedFavCount--
-        },
-        onReblog = {
-          if (it) animatedReblogCount++ else animatedReblogCount--
-        }
+        action = action
       )
     }
   }
@@ -252,8 +245,6 @@ fun StatusDetailCard(
 private fun StatusDetailActionsRow(
   statusUiData: StatusUiData,
   action: (StatusAction) -> Unit,
-  onFavorite: (Boolean) -> Unit,
-  onReblog: (Boolean) -> Unit,
   modifier: Modifier = Modifier
 ) {
   CenterRow(
@@ -270,7 +261,6 @@ private fun StatusDetailActionsRow(
       modifier = Modifier.size(statusDetailActionsIconSize),
       unfavoritedColor = AppTheme.colors.primaryContent
     ) {
-      onFavorite(it)
       action(StatusAction.Favorite(statusUiData.actionableId, it))
     }
     ReblogButton(
@@ -279,7 +269,6 @@ private fun StatusDetailActionsRow(
       unreblogColor = AppTheme.colors.primaryContent,
       enabled = statusUiData.visibility.rebloggingAllowed
     ) {
-      onReblog(it)
       action(StatusAction.Reblog(statusUiData.actionableId, it))
     }
     BookmarkButton(

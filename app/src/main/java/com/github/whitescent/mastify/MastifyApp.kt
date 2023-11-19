@@ -26,9 +26,12 @@ import coil.decode.ImageDecoderDecoder
 import coil.decode.VideoFrameDecoder
 import com.github.whitescent.R
 import dagger.hilt.android.HiltAndroidApp
+import logcat.AndroidLogcatLogger
+import logcat.LogPriority
 
 @HiltAndroidApp
 class MastifyApp : Application(), ImageLoaderFactory {
+
   override fun newImageLoader(): ImageLoader {
     val context = this.applicationContext
     return ImageLoader.Builder(context)
@@ -42,5 +45,10 @@ class MastifyApp : Application(), ImageLoaderFactory {
       }
       .placeholder(R.drawable.image_placeholder)
       .build()
+  }
+
+  override fun onCreate() {
+    super.onCreate()
+    AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = LogPriority.VERBOSE)
   }
 }

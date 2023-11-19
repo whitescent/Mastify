@@ -93,8 +93,5 @@ data class StatusUiData(
       }
     }
   }
-
-  companion object {
-    const val statusContentType = "status"
-  }
+  companion object
 }

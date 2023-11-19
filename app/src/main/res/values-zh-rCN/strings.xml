@@ -61,7 +61,7 @@
   </plurals>
   <string name="load_more_title">加载更多</string>
 
-  <!-- status detail screen -->
+  <!-- currentStatus detail screen -->
   <string name="post_your_reply">发布你的回复</string>
   <string name="uncategorized_title">未分类</string>
 

@@ -19,22 +19,42 @@ package com.github.whitescent.mastify.database.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
-import androidx.room.Upsert
 import com.github.whitescent.mastify.database.model.AccountEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
 
-  @Upsert(entity = AccountEntity::class)
-  fun insertOrReplace(account: AccountEntity)
+  @Insert(onConflict = REPLACE)
+  suspend fun insertOrUpdate(account: AccountEntity)
+
+  @Insert(entity = AccountEntity::class)
+  suspend fun insert(account: AccountEntity)
 
   @Query("SELECT * FROM ACCOUNTENTITY WHERE id = :id")
-  fun getAccount(id: Long): AccountEntity
+  suspend fun getAccount(id: Long): AccountEntity
+
+  @Query("SELECT * FROM ACCOUNTENTITY")
+  fun getAccountListFlow(): Flow<List<AccountEntity>>
+
+  @Query("SELECT * FROM ACCOUNTENTITY")
+  suspend fun getAccountList(): List<AccountEntity>
+
+  @Query("SELECT * FROM ACCOUNTENTITY WHERE isActive = 1 LIMIT 1")
+  fun getActiveAccountFlow(): Flow<AccountEntity?>
+
+  @Query("SELECT * FROM ACCOUNTENTITY WHERE isActive = 1 LIMIT 1")
+  suspend fun getActiveAccount(): AccountEntity?
+
+  @Query("SELECT * FROM ACCOUNTENTITY WHERE accountId = :accountId")
+  suspend fun getAccountByAccountId(accountId: String): AccountEntity?
 
   @Delete
-  fun delete(account: AccountEntity)
+  suspend fun delete(account: AccountEntity)
 
   @Query("SELECT * FROM AccountEntity ORDER BY id ASC")
-  fun loadAll(): List<AccountEntity>
+  suspend fun loadAll(): List<AccountEntity>
 }

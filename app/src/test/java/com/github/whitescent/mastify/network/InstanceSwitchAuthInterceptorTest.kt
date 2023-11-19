@@ -17,8 +17,13 @@
 
 package com.github.whitescent.mastify.network
 
-import com.github.whitescent.mastify.data.repository.AccountRepository
+import android.content.Context
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.database.dao.AccountDao
 import com.github.whitescent.mastify.database.model.AccountEntity
+import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.mockwebserver.MockResponse
@@ -27,17 +32,20 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.kotlin.doAnswer
-import org.mockito.kotlin.mock
 
 // This test verifies whether our custom interceptor is effective
 class InstanceSwitchAuthInterceptorTest {
 
   private val mockWebServer = MockWebServer()
+  private lateinit var db: AppDatabase
+  private lateinit var accountDao: AccountDao
 
   @Before
   fun setup() {
     mockWebServer.start()
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+    accountDao = db.accountDao()
   }
 
   @After
@@ -49,12 +57,8 @@ class InstanceSwitchAuthInterceptorTest {
   fun `should make regular request when requested`() {
     mockWebServer.enqueue(MockResponse())
 
-    val accountManager: AccountRepository = mock {
-      on { activeAccount } doAnswer { null }
-    }
-
     val okHttpClient = OkHttpClient.Builder()
-      .addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
+      .addInterceptor(InstanceSwitchAuthInterceptor(db))
       .build()
 
     val request = Request.Builder()
@@ -71,12 +75,8 @@ class InstanceSwitchAuthInterceptorTest {
   fun `should changed request hostname when request url with domain header`() {
     mockWebServer.enqueue(MockResponse())
 
-    val accountManager: AccountRepository = mock {
-      on { activeAccount } doAnswer { null }
-    }
-
     val okHttpClient = OkHttpClient.Builder()
-      .addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
+      .addInterceptor(InstanceSwitchAuthInterceptor(db))
       .build()
 
     val request = Request.Builder()
@@ -97,32 +97,34 @@ class InstanceSwitchAuthInterceptorTest {
   }
 
   @Test
-  fun `should use user's instance name as request hostname when user is logged in`() {
+  fun `should use user's instance name as request hostname when user is logged in`() = runTest {
     mockWebServer.enqueue(MockResponse())
-
-    val accountManager: AccountRepository = mock {
-      on { activeAccount } doAnswer {
-        AccountEntity(
-          id = 1,
-          domain = mockWebServer.hostName,
-          accessToken = "fakeToken",
-          clientId = "fakeId",
-          clientSecret = "fakeSecret",
-          isActive = true,
-          accountId = "fakeId",
-          emojis = listOf(),
-          fields = listOf(),
-          followingCount = 0,
-          followersCount = 0,
-          statusesCount = 0,
-          firstVisibleItemIndex = 0,
-          offset = 0
-        )
-      }
-    }
+    val fakeAccount = AccountEntity(
+      accountId = "fake",
+      username = "username",
+      displayName = "displayName",
+      note = "note",
+      domain = "mydomain",
+      profilePictureUrl = "avatar",
+      header = "header",
+      followersCount = 0,
+      followingCount = 0,
+      statusesCount = 0,
+      createdAt = "createdAt",
+      emojis = emptyList(),
+      fields = emptyList(),
+      accessToken = "accessToken",
+      clientId = "clientId",
+      clientSecret = "clientSecret",
+      isActive = true,
+      id = 0,
+      firstVisibleItemIndex = 0,
+      offset = 0,
+    )
+    accountDao.insert(fakeAccount)
 
     val okHttpClient = OkHttpClient.Builder()
-      .addInterceptor(InstanceSwitchAuthInterceptor(accountManager))
+      .addInterceptor(InstanceSwitchAuthInterceptor(db))
       .build()
 
     val request = Request.Builder()
@@ -136,7 +138,7 @@ class InstanceSwitchAuthInterceptorTest {
 
     // request hostname should be the user's instance name
     Assert.assertEquals(
-      "http://${accountManager.activeAccount!!.domain}:${mockWebServer.port}/test",
+      "http://${fakeAccount.domain}:${mockWebServer.port}/test",
       mockWebServer.takeRequest().requestUrl.toString()
     )
   }

@@ -225,8 +225,8 @@ fun Explore(
                 navigateToDetail = { targetStatus ->
                   navigator.navigate(
                     StatusDetailDestination(
-                      avatar = uiState.avatar,
-                      status = targetStatus
+                      status = targetStatus,
+                      originStatusId = null
                     )
                   )
                 },

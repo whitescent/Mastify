@@ -23,12 +23,13 @@ import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TimelineDao {
 
   @Insert(onConflict = REPLACE)
-  suspend fun insert(vararg timelineEntity: TimelineEntity)
+  suspend fun insertOrUpdate(vararg timelineEntity: TimelineEntity)
 
   @Insert(onConflict = REPLACE)
   suspend fun insertAll(timelineEntity: List<TimelineEntity>)
@@ -39,10 +40,25 @@ interface TimelineDao {
       ORDER BY LENGTH(id) DESC, id DESC
     """
   )
-  fun getStatuses(accountId: Long): List<Status>
+  suspend fun getStatusList(accountId: Long): List<Status>
+
+  @Query(
+    """
+      SELECT * FROM timelineentity WHERE timelineUserId = :accountId AND id = :statusId LIMIT 1
+    """
+  )
+  suspend fun getSingleStatusWithId(accountId: Long, statusId: String): Status?
+
+  @Query(
+    """
+      SELECT * FROM timelineentity WHERE timelineUserId = :accountId
+      ORDER BY LENGTH(id) DESC, id DESC
+    """
+  )
+  fun getStatusListWithFlow(accountId: Long): Flow<List<Status>>
 
   @Query("SELECT * FROM timelineentity WHERE timelineUserId = :accountId")
-  fun getAll(accountId: Long): List<Status>
+  suspend fun getAll(accountId: Long): List<Status>
 
   @Query(
     """
@@ -51,18 +67,6 @@ interface TimelineDao {
     """
   )
   suspend fun getTopId(accountId: Long): String?
-
-  @Query(
-    """
-    DELETE FROM timelineentity WHERE
-    timelineUserId = :accountId
-    AND
-    (LENGTH(id) < LENGTH(:maxId) OR LENGTH(id) == LENGTH(:maxId) AND id <= :maxId)
-    AND
-    (LENGTH(id) > LENGTH(:minId) OR LENGTH(id) == LENGTH(:minId) AND id >= :minId)
-    """
-  )
-  suspend fun deleteRange(accountId: Long, minId: String, maxId: String)
 
   @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId")
   suspend fun clearAll(accountId: Long)

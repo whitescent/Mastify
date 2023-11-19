@@ -28,7 +28,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import at.connyduck.calladapter.networkresult.fold
-import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
@@ -45,20 +45,17 @@ private const val profilePagerSize = 20
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
-  accountRepository: AccountRepository,
+  db: AppDatabase,
   private val statusActionHandler: StatusActionHandler,
-  private val api: MastodonApi
+  private val api: MastodonApi,
 ) : ViewModel() {
 
   private val navArgs: ProfileNavArgs = savedStateHandle.navArgs()
+  private val accountDao = db.accountDao()
+
   val snackBarFlow = statusActionHandler.snackBarFlow
 
-  var uiState by mutableStateOf(
-    ProfileUiState(
-      account = navArgs.account,
-      isSelf = navArgs.account.id == accountRepository.activeAccount!!.accountId
-    )
-  )
+  var uiState by mutableStateOf(ProfileUiState(account = navArgs.account))
     private set
 
   val statusPager = Pager(
@@ -121,7 +118,10 @@ class ProfileViewModel @Inject constructor(
   private suspend fun getRelationship(accountId: String) {
     api.relationships(listOf(accountId)).fold(
       {
-        uiState = uiState.copy(isFollowing = it.first().following)
+        uiState = uiState.copy(
+          isSelf = navArgs.account.id == accountDao.getActiveAccount()!!.accountId,
+          isFollowing = it.first().following
+        )
       },
       {
         it.printStackTrace()
@@ -132,6 +132,6 @@ class ProfileViewModel @Inject constructor(
 
 data class ProfileUiState(
   val account: Account,
-  val isSelf: Boolean,
+  val isSelf: Boolean? = null,
   val isFollowing: Boolean? = null,
 )

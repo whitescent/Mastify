@@ -332,7 +332,7 @@ private fun timelineListHandler(
           }
           return statusListBeforeFetchNumber + statusListAfterFetchNumber
         } else {
-          // If the last status returned by the API cannot be found in the saved status list,
+          // If the last currentStatus returned by the API cannot be found in the saved currentStatus list,
           // This means that the number of statuses in the user's timeline exceeds
           // the number of statuses in a single API request,
           // and we need to display 'Load More' button
@@ -340,9 +340,9 @@ private fun timelineListHandler(
           newStatusList[newStatusList.lastIndex] =
             newStatusList[newStatusList.lastIndex].copy(hasUnloadedStatus = true)
           newItems.forEach {
-            // Here we need to consider whether status already
+            // Here we need to consider whether currentStatus already
             // contains the hasUnloadedStatus
-            // If so, we need to add a new status list on top of this instead of overwriting it
+            // If so, we need to add a new currentStatus list on top of this instead of overwriting it
             if (oldItems.any { saved -> saved.id == it.id }) {
               val removeIndex = oldItems.indexOfFirst { it.hasUnloadedStatus }.let {
                 if (it == -1) 0 else it + 1

@@ -29,7 +29,9 @@ import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.emoji.Emoji
@@ -51,12 +53,15 @@ import javax.inject.Inject
 @HiltViewModel
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
+  db: AppDatabase,
   private val api: MastodonApi,
   private val statusActionHandler: StatusActionHandler,
   private val instanceRepository: InstanceRepository
 ) : ViewModel() {
 
   private var isInitialLoad = false
+  private val timelineDao = db.timelineDao()
+  private val accountDao = db.accountDao()
 
   val snackBarFlow = statusActionHandler.snackBarFlow
   val navArgs: StatusDetailNavArgs = savedStateHandle.navArgs()
@@ -67,10 +72,43 @@ class StatusDetailViewModel @Inject constructor(
   var uiState by mutableStateOf(StatusDetailUiState())
     private set
 
-  var status by mutableStateOf(navArgs.status.toUiData())
+  var currentStatus by mutableStateOf(navArgs.status.toUiData())
     private set
 
   fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
+    when (action) {
+      is StatusAction.Favorite -> {
+        if (action.id == currentStatus.id) {
+          currentStatus = currentStatus.copy(
+            favorited = action.favorite,
+            favouritesCount = when (action.favorite) {
+              true -> currentStatus.favouritesCount + 1
+              else -> currentStatus.favouritesCount - 1
+            }
+          )
+          updateStatusInDatabase()
+        }
+      }
+      is StatusAction.Reblog -> {
+        if (action.id == currentStatus.id) {
+          currentStatus = currentStatus.copy(
+            reblogged = action.reblog,
+            reblogsCount = when (action.reblog) {
+              true -> currentStatus.reblogsCount + 1
+              else -> currentStatus.reblogsCount - 1
+            }
+          )
+        }
+        updateStatusInDatabase()
+      }
+      is StatusAction.Bookmark -> {
+        if (action.id == currentStatus.id) {
+          currentStatus = currentStatus.copy(bookmarked = action.bookmark)
+          updateStatusInDatabase()
+        }
+      }
+      else -> Unit
+    }
     statusActionHandler.onStatusAction(action, context)
   }
 
@@ -109,6 +147,8 @@ class StatusDetailViewModel @Inject constructor(
         }
       )
     }
+    currentStatus = currentStatus.copy(repliesCount = currentStatus.repliesCount + 1)
+    updateStatusInDatabase()
   }
 
   init {
@@ -116,7 +156,8 @@ class StatusDetailViewModel @Inject constructor(
     viewModelScope.launch {
       api.status(navArgs.status.id).fold(
         {
-          status = it.toUiData() // fetch latest status
+          currentStatus = it.toUiData() // fetch latest currentStatus
+          updateStatusInDatabase()
         },
         {
           statusActionHandler.onStatusLoadError()
@@ -142,11 +183,57 @@ class StatusDetailViewModel @Inject constructor(
 
   fun updateTextFieldValue(textFieldValue: TextFieldValue) { replyField = textFieldValue }
 
+  /**
+   * we need sync the latest status data to database, because if the user performs some action
+   * from detail screen, the status data in database will be outdated.
+   * if we update the status data in database, the timeline screen will be the latest data when user
+   * back to timeline screen
+   */
+  private fun updateStatusInDatabase() {
+    // if origin status id is null, it means the currentStatus if not from timeline screen
+    // so we don't need to update the status in database
+    if (navArgs.originStatusId == null) return
+    viewModelScope.launch {
+      val activeAccountId = accountDao.getActiveAccount()!!.id
+      var savedStatus =
+        timelineDao.getSingleStatusWithId(activeAccountId, navArgs.originStatusId)
+      savedStatus?.let {
+        when (it.reblog == null) {
+          true -> {
+            savedStatus = navArgs.status.copy(
+              favorited = currentStatus.favorited,
+              favouritesCount = currentStatus.favouritesCount,
+              reblog = currentStatus.reblog,
+              reblogged = currentStatus.reblogged,
+              bookmarked = currentStatus.bookmarked,
+              reblogsCount = currentStatus.reblogsCount,
+              repliesCount = currentStatus.repliesCount,
+            )
+          }
+          else -> {
+            savedStatus = it.copy(
+              reblog = navArgs.status.copy(
+                favorited = currentStatus.favorited,
+                favouritesCount = currentStatus.favouritesCount,
+                reblog = currentStatus.reblog,
+                reblogged = currentStatus.reblogged,
+                bookmarked = currentStatus.bookmarked,
+                reblogsCount = currentStatus.reblogsCount,
+                repliesCount = currentStatus.repliesCount,
+              )
+            )
+          }
+        }
+        timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccountId))
+      }
+    }
+  }
+
   private fun reorderDescendants(descendants: List<Status>): ImmutableList<StatusUiData> {
     if (descendants.isEmpty() || descendants.size == 1)
       return descendants.toUiData().toImmutableList()
 
-    // remove some replies that did not reply to the main status
+    // remove some replies that did not reply to the currentStatus
     val replyList = descendants.filter { it.inReplyToId == navArgs.status.actionableId }
     val finalList = mutableListOf<Status>()
 

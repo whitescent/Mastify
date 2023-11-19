@@ -105,7 +105,6 @@ fun StatusListItem(
   val avatarHalfSize = avatarSizePx / 2
   val avatarCenterX = avatarHalfSize + contentPaddingPx
   val replyLineColor = AppTheme.colors.replyLine
-
   Surface(
     modifier = modifier,
     color = Color.Transparent
@@ -401,11 +400,14 @@ private fun StatusActionsRow(
   action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var animatedFavCount by rememberSaveable(favoritesCount) { mutableIntStateOf(favoritesCount) }
-  var animatedReblogCount by rememberSaveable(reblogsCount) { mutableIntStateOf(reblogsCount) }
+  var animatedFavCount by remember(favoritesCount) { mutableIntStateOf(favoritesCount) }
+  var animatedReblogCount by remember(reblogsCount) { mutableIntStateOf(reblogsCount) }
 
   CenterRow(modifier = modifier) {
-    CenterRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(22.dp)) {
+    CenterRow(
+      modifier = Modifier.weight(1f),
+      horizontalArrangement = Arrangement.spacedBy(22.dp)
+    ) {
       CenterRow {
         ClickableIcon(
           painter = painterResource(id = R.drawable.chat),

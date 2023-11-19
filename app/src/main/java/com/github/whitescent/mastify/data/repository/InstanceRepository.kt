@@ -34,11 +34,12 @@ import javax.inject.Inject
 class InstanceRepository @Inject constructor(
   db: AppDatabase,
   private val api: MastodonApi,
-  private val accountRepository: AccountRepository,
 ) {
 
-  private val dao = db.instanceDao()
-  private val instanceName get() = accountRepository.activeAccount!!.domain
+  private val instanceDao = db.instanceDao()
+  private val accountDao = db.accountDao()
+
+  // private val instanceName get() = accountRepository.activeAccount.value!!.domain
 
   /**
    * Returns the custom emojis of the instance.
@@ -46,11 +47,12 @@ class InstanceRepository @Inject constructor(
    * Never throws, returns empty list in case of error.
    */
   suspend fun getEmojis(): List<Emoji> = withContext(Dispatchers.IO) {
+    val instanceName = accountDao.getActiveAccount()!!.domain
     api.getCustomEmojis()
-      .onSuccess { emojiList -> dao.upsert(EmojisEntity(instanceName, emojiList)) }
+      .onSuccess { emojiList -> instanceDao.upsert(EmojisEntity(instanceName, emojiList)) }
       .getOrElse { throwable ->
         Log.w(TAG, "failed to load custom emojis, falling back to cache", throwable)
-        dao.getEmojiInfo(instanceName)?.emojiList.orEmpty()
+        instanceDao.getEmojiInfo(instanceName)?.emojiList.orEmpty()
       }
   }
 
@@ -60,6 +62,7 @@ class InstanceRepository @Inject constructor(
    * Never throws, returns defaults of vanilla Mastodon in case of error.
    */
   suspend fun getAndUpdateInstanceInfo(): InstanceUiData = withContext(Dispatchers.IO) {
+    val instanceName = accountDao.getActiveAccount()!!.domain
     api.fetchInstanceInfo()
       .fold(
         { instance ->
@@ -75,12 +78,12 @@ class InstanceRepository @Inject constructor(
             imageMatrixLimit = instance.configuration?.mediaAttachments?.imageMatrixLimit,
             maxMediaAttachments = instance.configuration?.statuses?.maxMediaAttachments,
           )
-          dao.upsert(instanceEntity)
+          instanceDao.upsert(instanceEntity)
           instanceEntity
         },
         { throwable ->
           Log.w(TAG, "failed to instance, falling back to cache and default values", throwable)
-          dao.getInstanceInfo(instanceName)
+          instanceDao.getInstanceInfo(instanceName)
         },
       ).let { instanceInfo: InstanceInfoEntity? ->
         InstanceUiData(

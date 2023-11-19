@@ -42,6 +42,8 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.mapper.status.getReplyChainType
 import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
 import com.github.whitescent.mastify.network.model.account.Account
@@ -57,6 +59,7 @@ import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import logcat.logcat
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -100,6 +103,7 @@ fun StatusCommonList(
         }
       }
       else -> {
+        logcat { "content type is ${statusList.itemContentType()}" }
         LazyColumn(
           state = statusListState,
           modifier = Modifier.fillMaxSize().padding(bottom = 100.dp),
@@ -126,8 +130,9 @@ fun StatusCommonList(
                 navigateToProfile = navigateToProfile,
                 navigateToMedia = navigateToMedia
               )
+              if (!it.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                AppHorizontalDivider()
             }
-            AppHorizontalDivider()
           }
           item {
             when (statusList.loadState.append) {

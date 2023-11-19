@@ -26,8 +26,8 @@ import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
-import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.NewStatus
@@ -36,18 +36,28 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class PostViewModel @Inject constructor(
-  private val accountRepository: AccountRepository,
+  db: AppDatabase,
   private val instanceRepository: InstanceRepository,
   private val api: MastodonApi
 ) : ViewModel() {
 
-  val account get() = accountRepository.activeAccount
+  private val accountDao = db.accountDao()
+
+  val activeAccount = accountDao
+    .getActiveAccountFlow()
+    .stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.Eagerly,
+      initialValue = null
+    )
 
   var postTextField by mutableStateOf(TextFieldValue(""))
     private set
@@ -82,7 +92,7 @@ class PostViewModel @Inject constructor(
           language = null,
         ),
       ).fold(
-        { status ->
+        { _ ->
           uiState = uiState.copy(postState = PostState.Success)
         },
         {

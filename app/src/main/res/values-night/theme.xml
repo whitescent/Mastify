@@ -18,6 +18,10 @@
 
 <resources>
   <style name="Theme.Mastify" parent="android:Theme.Material.Light.NoActionBar">
-    <item name="android:windowBackground">@color/app_background</item>
+    <item name="android:windowBackground">@color/black</item>
+  </style>
+  <style name="Theme.Mastify.Splash" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenBackground">@color/app_background</item>
+    <item name="postSplashScreenTheme">@style/Theme.Mastify</item>>
   </style>
 </resources>

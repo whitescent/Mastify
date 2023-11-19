@@ -62,7 +62,7 @@
   </plurals>
   <string name="load_more_title">Load More</string>
 
-  <!-- status detail screen -->
+  <!-- currentStatus detail screen -->
   <string name="post_your_reply">post your reply</string>
   <string name="uncategorized_title">Uncategorized</string>
 

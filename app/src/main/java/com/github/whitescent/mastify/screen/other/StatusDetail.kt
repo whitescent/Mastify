@@ -85,8 +85,8 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 data class StatusDetailNavArgs(
-  val avatar: String,
-  val status: Status
+  val status: Status,
+  val originStatusId: String?
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,15 +109,16 @@ fun StatusDetail(
   val state = viewModel.uiState
   val replyText = viewModel.replyField
 
-  val status = viewModel.status
-  val avatar = viewModel.navArgs.avatar
-  val threadInReply = status.reblog?.isInReplyTo ?: status.isInReplyTo
+  val currentStatus = viewModel.currentStatus
+  val threadInReply = currentStatus.reblog?.isInReplyTo ?: currentStatus.isInReplyTo
 
   var openSheet by remember { mutableStateOf(false) }
 
-  // we need to synchronize the status of the bookmark in two places on this page,
+  // we need to synchronize the currentStatus of the bookmark in two places on this page,
   // so we create a bookmark state at the top level
-  var bookmarkState by remember(status.bookmarked) { mutableStateOf(status.bookmarked) }
+  var bookmarkState by remember(currentStatus.bookmarked) {
+    mutableStateOf(currentStatus.bookmarked)
+  }
 
   Box((Modifier.fillMaxSize())) {
     Column {
@@ -141,21 +142,22 @@ fun StatusDetail(
       when (threadInReply) {
         true -> {
           StatusDetailInReply(
-            status = status.copy(bookmarked = bookmarkState),
+            status = currentStatus.copy(bookmarked = bookmarkState),
             lazyState = lazyState,
             ancestors = state.ancestors.toImmutableList(),
             descendants = state.descendants.toImmutableList(),
             loading = state.loading,
             action = {
               viewModel.onStatusAction(it, context)
-              if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
+              if (it is StatusAction.Bookmark && it.id == currentStatus.id)
+                bookmarkState = it.bookmark
             },
             navigateToDetail = {
-              if (it.id != status.actionableId) {
+              if (it.id != currentStatus.actionableId) {
                 navigator.navigate(
                   StatusDetailDestination(
-                    avatar = avatar,
-                    status = it
+                    status = it,
+                    originStatusId = null
                   )
                 )
               }
@@ -176,20 +178,20 @@ fun StatusDetail(
         }
         else -> {
           StatusDetailContent(
-            status = status.copy(bookmarked = bookmarkState),
+            status = currentStatus.copy(bookmarked = bookmarkState),
             lazyState = lazyState,
             descendants = state.descendants.toImmutableList(),
             loading = state.loading,
             action = {
               viewModel.onStatusAction(it, context)
-              if (it is StatusAction.Bookmark && it.id == status.id) bookmarkState = it.bookmark
+              if (it is StatusAction.Bookmark && it.id == currentStatus.id) bookmarkState = it.bookmark
             },
             navigateToDetail = {
-              if (it.id != status.actionableId) {
+              if (it.id != currentStatus.actionableId) {
                 navigator.navigate(
                   StatusDetailDestination(
-                    avatar = avatar,
-                    status = it
+                    status = it,
+                    originStatusId = null
                   )
                 )
               }

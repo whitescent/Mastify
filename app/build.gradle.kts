@@ -15,12 +15,6 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-import java.util.Properties
-
-val localProps = Properties().apply {
-  load(rootDir.resolve("local.properties").bufferedReader())
-}
-
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
@@ -47,19 +41,10 @@ android {
       useSupportLibrary = true
     }
   }
-  signingConfigs {
-    create("main") {
-      storeFile = file(localProps.getProperty("sign.file"))
-      storePassword = localProps.getProperty("sign.password")
-      keyAlias = localProps.getProperty("sign.alias")
-      keyPassword = storePassword
-    }
-  }
   buildTypes {
     release {
       isMinifyEnabled = true
       isShrinkResources = true
-      signingConfig = signingConfigs["main"]
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
@@ -75,6 +60,11 @@ android {
   }
   kotlinOptions {
     jvmTarget = "17"
+  }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -127,10 +117,6 @@ dependencies {
   implementation(libs.androidx.monitor)
   implementation(libs.androidx.junit.ktx)
   implementation(libs.androidx.media3.ui)
-  testImplementation(libs.junit)
-  androidTestImplementation(libs.androidx.test.ext.junit)
-  androidTestImplementation(libs.androidx.test.espresso.core)
-  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   debugImplementation(libs.androidx.compose.ui.tooling)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   implementation(libs.constraintlayout.compose)
@@ -141,21 +127,27 @@ dependencies {
 
   implementation(libs.retrofit2)
   implementation(libs.okhttp3)
-  testImplementation(libs.okhttp3.mockwebserver)
   implementation(libs.org.jetbrains.kotlinx.serialization.json)
   implementation(libs.kotlinx.serialization.converter)
   implementation(libs.okhttp3.logging.interceptor)
   implementation(libs.networkresult.calladapter)
 
+  testImplementation(libs.junit)
+  testImplementation(libs.robolectric)
+  testImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.espresso.core)
+  androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+  testImplementation(libs.okhttp3.mockwebserver)
   testImplementation(libs.mockk)
   testImplementation(libs.mockk.agent)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockito.kotlin)
+  testImplementation(libs.room.testing)
 
   implementation(libs.room.runtime)
   ksp(libs.room.compiler)
   implementation(libs.room.ktx)
   implementation(libs.room.paging)
-  implementation(libs.room.testing)
 
   implementation(libs.ktsoup.core)
   implementation(libs.ktsoup.fx)
@@ -169,10 +161,11 @@ dependencies {
   implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
-  testImplementation(libs.mockito.kotlin)
+  implementation(libs.logcat)
   implementation(libs.jsoup)
   implementation(libs.zoomable)
   implementation(libs.lottie)
+  implementation(libs.splash)
   debugImplementation(libs.leakcanary)
 
   implementation(libs.kotlinx.datetime)

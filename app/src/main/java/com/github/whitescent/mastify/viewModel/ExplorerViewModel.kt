@@ -25,27 +25,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.github.whitescent.R
-import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.data.repository.SearchPreviewResult
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
-import com.github.whitescent.mastify.paging.PublicTimelinePagingSource
-import com.github.whitescent.mastify.paging.TrendingPagingSource
 import com.github.whitescent.mastify.utils.StatusAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -55,21 +56,20 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class ExplorerViewModel @Inject constructor(
-  private val db: AppDatabase,
-  private val api: MastodonApi,
+  db: AppDatabase,
   private val statusActionHandler: StatusActionHandler,
   private val exploreRepository: ExploreRepository,
-  private val accountRepository: AccountRepository,
 ) : ViewModel() {
 
-  private val activityAccount get() = accountRepository.activeAccount!!
+  private val accountDao = db.accountDao()
+  private val activityAccountFlow = accountDao.getActiveAccountFlow()
 
   private val searchErrorChannel = Channel<Unit>()
   val searchErrorFlow = searchErrorChannel.receiveAsFlow()
 
   val snackBarFlow = statusActionHandler.snackBarFlow
 
-  var uiState by mutableStateOf(ExplorerUiState())
+  var uiState by mutableStateOf(ExploreUiState())
     private set
 
   val searchPreviewResult: StateFlow<SearchResult?> =
@@ -91,31 +91,31 @@ class ExplorerViewModel @Inject constructor(
         initialValue = null
       )
 
-  val trendingStatusPager = Pager(
-    config = PagingConfig(
-      pageSize = 20,
-      enablePlaceholders = false,
-    ),
-    pagingSourceFactory = {
-      TrendingPagingSource(api = api)
-    },
-  ).flow.cachedIn(viewModelScope)
+  val trendingStatusPager: Flow<PagingData<StatusUiData>> = activityAccountFlow
+    .filterNotNull()
+    .map { it.id }
+    .distinctUntilChanged()
+    .flatMapLatest { exploreRepository.getTrendingStatusPager() }
+    .cachedIn(viewModelScope)
 
-  val publicTimelinePager = Pager(
-    config = PagingConfig(
-      pageSize = 20,
-      enablePlaceholders = false,
-    ),
-    pagingSourceFactory = {
-      PublicTimelinePagingSource(api = api)
-    },
-  ).flow.cachedIn(viewModelScope)
+  val publicTimelinePager: Flow<PagingData<StatusUiData>> = activityAccountFlow
+    .filterNotNull()
+    .map { it.id }
+    .distinctUntilChanged()
+    .flatMapLatest { exploreRepository.getPublicTimelinePager() }
+    .cachedIn(viewModelScope)
 
   init {
-    uiState = uiState.copy(
-      avatar = activityAccount.profilePictureUrl,
-      userInstance = activityAccount.domain
-    )
+    viewModelScope.launch {
+      activityAccountFlow.collect {
+        it?.let {
+          uiState = uiState.copy(
+            avatar = it.profilePictureUrl,
+            userInstance = it.domain
+          )
+        }
+      }
+    }
   }
 
   fun onValueChange(text: String) {
@@ -131,7 +131,7 @@ class ExplorerViewModel @Inject constructor(
   }
 }
 
-data class ExplorerUiState(
+data class ExploreUiState(
   val avatar: String = "",
   val text: String = "",
   val userInstance: String = ""

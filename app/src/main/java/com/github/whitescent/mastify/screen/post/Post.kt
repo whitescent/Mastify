@@ -67,6 +67,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Direct
@@ -108,6 +109,7 @@ fun Post(
   val scope = rememberCoroutineScope()
 
   val keyboard = LocalSoftwareKeyboardController.current
+  val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
   val postTextField = viewModel.postTextField
   val state = viewModel.uiState
   val instanceUiData = state.instanceUiData
@@ -115,7 +117,7 @@ fun Post(
   Column(
     modifier = Modifier.fillMaxSize(),
   ) {
-    PostTopBar(viewModel.account!!) { navigator.popBackStack() }
+    PostTopBar(activeAccount) { navigator.popBackStack() }
     AppHorizontalDivider(Modifier.padding(6.dp))
     Column(
       modifier = Modifier
@@ -332,48 +334,50 @@ private fun PostToolBar(
 
 @Composable
 private fun PostTopBar(
-  account: AccountEntity,
+  account: AccountEntity?,
   back: () -> Unit,
 ) {
-  Column(
-    modifier = Modifier
-      .fillMaxWidth()
-      .background(AppTheme.colors.background)
-      .padding(horizontal = 16.dp)
-      .padding(vertical = 8.dp)
-  ) {
-    Spacer(Modifier.statusBarsPadding())
-    CenterRow {
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.close),
-        onClick = back,
-        modifier = Modifier.size(28.dp),
-        tint = AppTheme.colors.primaryContent
-      )
-      WidthSpacer(value = 8.dp)
-      CircleShapeAsyncImage(
-        model = account.profilePictureUrl,
-        modifier = Modifier.size(36.dp),
-        shape = AppTheme.shape.smallAvatar
-      )
-      WidthSpacer(value = 6.dp)
-      Column(modifier = Modifier.weight(1f)) {
-        HtmlText(
-          text = account.realDisplayName,
-          fontSize = 16.sp,
-          overflow = TextOverflow.Ellipsis,
-          maxLines = 1,
-          fontWeight = FontWeight.Medium,
-          color = AppTheme.colors.primaryContent
+  account?.let {
+    Column(
+      modifier = Modifier
+        .fillMaxWidth()
+        .background(AppTheme.colors.background)
+        .padding(horizontal = 16.dp)
+        .padding(vertical = 8.dp)
+    ) {
+      Spacer(Modifier.statusBarsPadding())
+      CenterRow {
+        ClickableIcon(
+          painter = painterResource(id = R.drawable.close),
+          onClick = back,
+          modifier = Modifier.size(28.dp),
+          tint = AppTheme.colors.primaryContent
         )
-        HeightSpacer(value = 2.dp)
-        Text(
-          text = account.fullname,
-          color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-          overflow = TextOverflow.Ellipsis,
-          maxLines = 1,
-          fontSize = 14.sp
+        WidthSpacer(value = 8.dp)
+        CircleShapeAsyncImage(
+          model = account.profilePictureUrl,
+          modifier = Modifier.size(36.dp),
+          shape = AppTheme.shape.smallAvatar
         )
+        WidthSpacer(value = 6.dp)
+        Column(modifier = Modifier.weight(1f)) {
+          HtmlText(
+            text = account.realDisplayName,
+            fontSize = 16.sp,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            fontWeight = FontWeight.Medium,
+            color = AppTheme.colors.primaryContent
+          )
+          HeightSpacer(value = 2.dp)
+          Text(
+            text = account.fullname,
+            color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            fontSize = 14.sp
+          )
+        }
       }
     }
   }

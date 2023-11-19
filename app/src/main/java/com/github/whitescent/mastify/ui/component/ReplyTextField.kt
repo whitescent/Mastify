@@ -218,7 +218,7 @@ private fun ReplyTextFieldWithToolBar(
           isFocused = it.isFocused
         },
       textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-      cursorBrush = SolidColor(AppTheme.colors.primaryContent),
+      cursorBrush = SolidColor(AppTheme.colors.primaryContent)
     ) {
       Box {
         if (fieldValue.text.isEmpty()) {

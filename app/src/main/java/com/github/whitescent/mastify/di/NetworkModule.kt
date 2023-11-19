@@ -20,7 +20,7 @@ package com.github.whitescent.mastify.di
 import android.os.Build
 import at.connyduck.calladapter.networkresult.NetworkResultCallAdapterFactory
 import com.github.whitescent.BuildConfig
-import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.network.InstanceSwitchAuthInterceptor
 import com.github.whitescent.mastify.network.MastodonApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -55,7 +55,7 @@ object NetworkModule {
   @Provides
   @Singleton
   fun providesHttpClient(
-    accountRepository: AccountRepository
+    db: AppDatabase
   ): OkHttpClient {
     return OkHttpClient.Builder()
       .readTimeout(30, TimeUnit.SECONDS)
@@ -80,7 +80,7 @@ object NetworkModule {
           .build()
         chain.proceed(requestWithUserAgent)
       }
-      .addInterceptor(InstanceSwitchAuthInterceptor(accountRepository))
+      .addInterceptor(InstanceSwitchAuthInterceptor(db))
       .build()
   }
 

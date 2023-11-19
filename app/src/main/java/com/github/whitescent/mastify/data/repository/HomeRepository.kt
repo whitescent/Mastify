@@ -17,7 +17,10 @@
 
 package com.github.whitescent.mastify.data.repository
 
+import androidx.room.withTransaction
 import at.connyduck.calladapter.networkresult.fold
+import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.mapper.account.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import javax.inject.Inject
@@ -26,19 +29,34 @@ import javax.inject.Singleton
 @Singleton
 class HomeRepository @Inject constructor(
   private val api: MastodonApi,
+  private val db: AppDatabase,
   private val accountRepository: AccountRepository
 ) {
-
-  val activeAccount get() = accountRepository.activeAccount!!
+  private val accountDao = db.accountDao()
 
   suspend fun updateAccountInfo() {
+    val activeAccount = accountDao.getActiveAccount()!!
+
     api.accountVerifyCredentials(
       domain = activeAccount.domain,
       auth = "Bearer ${activeAccount.accessToken}"
     )
       .fold(
-        {
-          accountRepository.updateActiveAccount(it)
+        { response ->
+          db.withTransaction {
+            accountRepository.updateActiveAccount(
+              response.toEntity(
+                accessToken = activeAccount.accessToken,
+                clientId = activeAccount.clientId,
+                clientSecret = activeAccount.clientSecret,
+                isActive = activeAccount.isActive,
+                accountId = activeAccount.accountId,
+                id = activeAccount.id,
+                firstVisibleItemIndex = activeAccount.firstVisibleItemIndex,
+                offset = activeAccount.offset
+              )
+            )
+          }
         },
         {
           it.printStackTrace()
@@ -46,7 +64,7 @@ class HomeRepository @Inject constructor(
       )
   }
 
-  fun timelineListHandler(oldItems: List<Status>, newItems: List<Status>): List<Status> {
+  fun updateTimelineOnRefresh(oldItems: List<Status>, newItems: List<Status>): List<Status> {
     when (newItems.isEmpty()) {
       true -> return emptyList()
       else -> {
@@ -68,7 +86,7 @@ class HomeRepository @Inject constructor(
             }
             return statusListBeforeFetchNumber + statusListAfterFetchNumber
           } else {
-            // If the last status returned by the API cannot be found in the saved status list,
+            // If the last currentStatus returned by the API cannot be found in the saved currentStatus list,
             // This means that the number of statuses in the user's timeline exceeds
             // the number of statuses in a single API request,
             // and we need to display 'Load More' button
@@ -76,9 +94,9 @@ class HomeRepository @Inject constructor(
             newStatusList[newStatusList.lastIndex] =
               newStatusList[newStatusList.lastIndex].copy(hasUnloadedStatus = true)
             newItems.forEach {
-              // Here we need to consider whether status already
+              // Here we need to consider whether currentStatus already
               // contains the hasUnloadedStatus
-              // If so, we need to add a new status list on top of this instead of overwriting it
+              // If so, we need to add a new currentStatus list on top of this instead of overwriting it
               if (oldItems.any { saved -> saved.id == it.id }) {
                 val removeIndex = oldItems.indexOfFirst { it.hasUnloadedStatus }.let {
                   if (it == -1) 0 else it + 1
@@ -95,5 +113,6 @@ class HomeRepository @Inject constructor(
 
   companion object {
     const val FETCHNUMBER = 40
+    const val PAGINGTHRESHOLD = 10
   }
 }

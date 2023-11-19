@@ -250,8 +250,8 @@ fun Profile(
             navigateToDetail = {
               navigator.navigate(
                 StatusDetailDestination(
-                  avatar = uiState.account.avatar,
-                  status = it
+                  status = it,
+                  originStatusId = null
                 )
               )
             },
@@ -371,7 +371,7 @@ fun ProfileTopBar(
 @Composable
 fun ProfileInfo(
   account: Account,
-  isSelf: Boolean,
+  isSelf: Boolean?,
   isFollowing: Boolean?
 ) {
   val context = LocalContext.current
@@ -399,11 +399,13 @@ fun ProfileInfo(
           fontSize = 16.sp,
         )
       }
-      when (isSelf) {
-        true -> EditProfileButton()
-        else -> {
-          isFollowing?.let {
-            FollowButton(it)
+      isSelf?.let {
+        when (isSelf) {
+          true -> EditProfileButton()
+          else -> {
+            isFollowing?.let {
+              FollowButton(it)
+            }
           }
         }
       }

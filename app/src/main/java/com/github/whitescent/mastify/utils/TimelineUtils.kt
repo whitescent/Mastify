@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.utils
 
+import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.network.model.status.Status
 
 /*
@@ -86,4 +87,13 @@ fun List<StatusNode>.getMaxRecursively(): StatusNode? {
   val maxNode = this.maxByOrNull { it.contentId } ?: return null
   val maxChild = maxNode.children.getMaxRecursively()
   return if (maxChild != null && maxChild.contentId > maxNode.contentId) maxChild else maxNode
+}
+
+fun splitReorderStatus(statuses: List<Status>): List<Status> {
+  if (statuses.size <= HomeRepository.FETCHNUMBER) return reorderStatuses(statuses)
+  val result = mutableListOf<Status>()
+  val prefix = reorderStatuses(statuses.subList(0, HomeRepository.FETCHNUMBER))
+  val suffix = reorderStatuses(statuses.subList(HomeRepository.FETCHNUMBER, statuses.size))
+  result.addAll(prefix + suffix)
+  return result
 }

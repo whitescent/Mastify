@@ -27,13 +27,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
+import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
+import com.github.whitescent.mastify.screen.home.Home
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
@@ -45,6 +48,7 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
+import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
@@ -57,8 +61,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun AppScaffold(
   startRoute: Route,
-  viewModel: AppViewModel = hiltViewModel()
+  viewModel: AppViewModel
 ) {
+  // val homeViewModel: HomeViewModel = hiltViewModel()
+  val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
+  val accounts by viewModel.accountList.collectAsStateWithLifecycle()
+  val timeline by viewModel.timeline.collectAsStateWithLifecycle()
+  val timelinePosition by viewModel.timelinePosition.collectAsStateWithLifecycle()
+
   val engine = rememberAnimatedNavHostEngine(
     rootDefaultAnimations = RootNavGraphDefaultAnimations(
       enterTransition = {
@@ -86,19 +96,14 @@ fun AppScaffold(
   ModalNavigationDrawer(
     drawerState = drawerState,
     drawerContent = {
-      if (destination.shouldShowScaffoldElements() && viewModel.activeAccount != null) {
+      if (destination.shouldShowScaffoldElements() && activeAccount != null) {
         AppDrawer(
           drawerState = drawerState,
-          activeAccount = viewModel.activeAccount!!,
-          accounts = viewModel.accounts.toImmutableList(),
+          activeAccount = activeAccount!!,
+          accounts = accounts.toImmutableList(),
           changeAccount = {
             scope.launch { drawerState.close() }
             viewModel.changeActiveAccount(it)
-            navController.navigate(destination.route) {
-              popUpTo(NavGraphs.app) {
-                inclusive = true
-              }
-            }
           },
           navigateToLogin = {
             navController.navigate(LoginDestination) {
@@ -141,10 +146,33 @@ fun AppScaffold(
         dependenciesContainerBuilder = {
           dependency(NavGraphs.app) { drawerState }
           dependency(NavGraphs.app) { appState }
+          // dependency(HomeDestination) { viewModel.timelinePosition }
         }
-      )
+      ) {
+        composable(HomeDestination) {
+          timeline?.let { timeline ->
+            Home(
+              appState = appState,
+              drawerState = drawerState,
+              timeline = timeline,
+              timelinePosition = timelinePosition,
+              navigator = destinationsNavigator,
+            )
+          }
+        }
+      }
       LaunchedEffect(it) {
         appState.setPaddingValues(it)
+      }
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    viewModel.changeAccountFlow.collect {
+      navController.navigate(navController.currentDestination!!.route!!) {
+        popUpTo(NavGraphs.app) {
+          inclusive = true
+        }
       }
     }
   }

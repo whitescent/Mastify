@@ -30,45 +30,43 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
 import kotlinx.collections.immutable.toImmutableList
 
-fun Status.toUiData(): StatusUiData {
-  return StatusUiData(
-    id = id,
-    reblog = reblog,
-    account = account,
-    link = actionableStatus.uri,
-    accountId = account.id,
-    avatar = reblog?.account?.avatar ?: account.avatar,
-    application = reblog?.application ?: application,
-    reblogged = reblog?.reblogged ?: reblogged,
-    bookmarked = reblog?.bookmarked ?: bookmarked,
-    rebloggedAvatar = account.avatar,
-    visibility = byString(visibility),
-    fullname = reblog?.account?.fullname ?: account.fullname,
-    createdAt = reblog?.createdAt ?: createdAt,
-    accountEmojis = (reblog?.account?.emojis ?: account.emojis).toImmutableList(),
-    emojis = (reblog?.emojis ?: emojis).toImmutableList(),
-    displayName = generateHtmlContentWithEmoji(
-      reblog?.account?.realDisplayName ?: account.realDisplayName,
-      reblog?.account?.emojis ?: account.emojis
-    ),
-    reblogDisplayName = generateHtmlContentWithEmoji(account.realDisplayName, account.emojis),
-    content = generateHtmlContentWithEmoji(
-      content = reblog?.content ?: content,
-      emojis = reblog?.emojis ?: emojis
-    ),
-    sensitive = reblog?.sensitive ?: sensitive,
-    spoilerText = reblog?.spoilerText ?: spoilerText,
-    attachments = reblog?.attachments?.toImmutableList() ?: attachments.toImmutableList(),
-    repliesCount = reblog?.repliesCount ?: repliesCount,
-    reblogsCount = reblog?.reblogsCount ?: reblogsCount,
-    favouritesCount = reblog?.favouritesCount ?: favouritesCount,
-    favorited = reblog?.favorited ?: favorited,
-    inReplyToId = reblog?.inReplyToId ?: inReplyToId,
-    actionable = actionableStatus,
-    actionableId = actionableStatus.id,
-    hasUnloadedStatus = hasUnloadedStatus
-  )
-}
+fun Status.toUiData(): StatusUiData = StatusUiData(
+  id = id,
+  reblog = reblog,
+  account = account,
+  link = actionableStatus.uri,
+  accountId = account.id,
+  avatar = reblog?.account?.avatar ?: account.avatar,
+  application = reblog?.application ?: application,
+  reblogged = reblog?.reblogged ?: reblogged,
+  bookmarked = reblog?.bookmarked ?: bookmarked,
+  rebloggedAvatar = account.avatar,
+  visibility = byString(visibility),
+  fullname = reblog?.account?.fullname ?: account.fullname,
+  createdAt = reblog?.createdAt ?: createdAt,
+  accountEmojis = (reblog?.account?.emojis ?: account.emojis).toImmutableList(),
+  emojis = (reblog?.emojis ?: emojis).toImmutableList(),
+  displayName = generateHtmlContentWithEmoji(
+    reblog?.account?.realDisplayName ?: account.realDisplayName,
+    reblog?.account?.emojis ?: account.emojis
+  ),
+  reblogDisplayName = generateHtmlContentWithEmoji(account.realDisplayName, account.emojis),
+  content = generateHtmlContentWithEmoji(
+    content = reblog?.content ?: content,
+    emojis = reblog?.emojis ?: emojis
+  ),
+  sensitive = reblog?.sensitive ?: sensitive,
+  spoilerText = reblog?.spoilerText ?: spoilerText,
+  attachments = reblog?.attachments?.toImmutableList() ?: attachments.toImmutableList(),
+  repliesCount = reblog?.repliesCount ?: repliesCount,
+  reblogsCount = reblog?.reblogsCount ?: reblogsCount,
+  favouritesCount = reblog?.favouritesCount ?: favouritesCount,
+  favorited = reblog?.favorited ?: favorited,
+  inReplyToId = reblog?.inReplyToId ?: inReplyToId,
+  actionable = actionableStatus,
+  actionableId = actionableStatus.id,
+  hasUnloadedStatus = hasUnloadedStatus
+)
 
 fun List<Status>.toEntity(timelineUserId: Long): List<TimelineEntity> {
   return this.map { it.toEntity(timelineUserId) }

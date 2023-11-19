@@ -79,7 +79,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
-import org.jsoup.internal.StringUtil.padding
 
 @Composable
 fun AppDrawer(
@@ -110,11 +109,7 @@ fun AppDrawer(
       contentAlignment = Alignment.Center
     ) {
       when (activeAccount.isEmptyHeader) {
-        true -> {
-          Box(
-            modifier = Modifier.fillMaxSize().background(AppTheme.colors.defaultHeader),
-          )
-        }
+        true -> Box(modifier = Modifier.fillMaxSize().background(AppTheme.colors.defaultHeader))
         else -> {
           AsyncImage(
             model = activeAccount.header,
@@ -282,7 +277,7 @@ fun AppDrawer(
 private fun DrawerMenu() {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
-  AppDrawerMenu.values().forEach {
+  AppDrawerMenu.entries.forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
       AppHorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
     }

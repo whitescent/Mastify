@@ -17,8 +17,9 @@
 
 package com.github.whitescent.mastify.network
 
-import android.util.Log
-import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.database.AppDatabase
+import kotlinx.coroutines.runBlocking
+import logcat.logcat
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -28,9 +29,7 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.IOException
 
-class InstanceSwitchAuthInterceptor(
-  private val accountRepository: AccountRepository
-) : Interceptor {
+class InstanceSwitchAuthInterceptor(private val db: AppDatabase) : Interceptor {
 
   @Throws(IOException::class)
   override fun intercept(chain: Interceptor.Chain): Response {
@@ -45,21 +44,24 @@ class InstanceSwitchAuthInterceptor(
         builder.url(swapHost(originalRequest.url, instanceHeader))
         builder.removeHeader(MastodonApi.DOMAIN_HEADER)
       } else {
-        val currentAccount = accountRepository.activeAccount
-        if (currentAccount != null) {
-          val accessToken = currentAccount.accessToken
-          if (accessToken.isNotEmpty()) {
-            // use domain of current account
-            builder.url(swapHost(originalRequest.url, currentAccount.domain))
-              .header("Authorization", "Bearer %s".format(accessToken))
+        runBlocking {
+          val currentAccount = db.accountDao().getActiveAccount()
+          logcat { "currentAccount $currentAccount" }
+          if (currentAccount != null) {
+            val accessToken = currentAccount.accessToken
+            if (accessToken.isNotEmpty()) {
+              // use domain of current account
+              builder.url(swapHost(originalRequest.url, currentAccount.domain))
+                .header("Authorization", "Bearer %s".format(accessToken))
+            }
           }
         }
       }
-
       val newRequest: Request = builder.build()
-
       if (MastodonApi.PLACEHOLDER_DOMAIN == newRequest.url.host) {
-        Log.w("ISAInterceptor", "no user logged in or no domain header specified - can't make request to " + newRequest.url)
+        logcat {
+          "no user logged in or no domain header specified - can't make request to ${newRequest.url}"
+        }
         return Response.Builder()
           .code(400)
           .message("Bad Request")
@@ -68,7 +70,6 @@ class InstanceSwitchAuthInterceptor(
           .request(chain.request())
           .build()
       }
-
       chain.proceed(newRequest)
     } else {
       chain.proceed(originalRequest)

@@ -17,9 +17,16 @@
 
 package com.github.whitescent.mastify.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import at.connyduck.calladapter.networkresult.fold
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
+import com.github.whitescent.mastify.paging.PublicTimelinePagingSource
+import com.github.whitescent.mastify.paging.TrendingPagingSource
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,6 +34,7 @@ import javax.inject.Singleton
 class ExploreRepository @Inject constructor(
   private val api: MastodonApi
 ) {
+
   suspend fun getPreviewResultsForSearch(keyword: String): SearchPreviewResult {
     if (keyword.isBlank()) return SearchPreviewResult.Success(null)
     return api.searchSync(query = keyword, limit = 10).fold(
@@ -39,6 +47,28 @@ class ExploreRepository @Inject constructor(
       }
     )
   }
+
+  fun getTrendingStatusPager(): Flow<PagingData<StatusUiData>> =
+    Pager(
+      config = PagingConfig(
+        pageSize = 20,
+        enablePlaceholders = false,
+      ),
+      pagingSourceFactory = {
+        TrendingPagingSource(api = api)
+      },
+    ).flow
+
+  fun getPublicTimelinePager(): Flow<PagingData<StatusUiData>> =
+    Pager(
+      config = PagingConfig(
+        pageSize = 20,
+        enablePlaceholders = false,
+      ),
+      pagingSourceFactory = {
+        PublicTimelinePagingSource(api = api)
+      },
+    ).flow
 }
 
 sealed interface SearchPreviewResult {
