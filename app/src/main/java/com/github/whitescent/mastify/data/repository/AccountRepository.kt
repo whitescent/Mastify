@@ -34,13 +34,7 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
   // }
 
   suspend fun setActiveAccount(accountId: Long) {
-    var currentActiveAccount = accountDao.getActiveAccount()
-    currentActiveAccount?.let {
-      currentActiveAccount = it.copy(isActive = false)
-      accountDao.insertOrUpdate(currentActiveAccount!!)
-      val newActiveAccount = accountDao.getAccount(accountId).copy(isActive = true)
-      accountDao.insertOrUpdate(newActiveAccount)
-    }
+    accountDao.setActiveAccount(accountId)
   }
 
   suspend fun updateActiveAccount(account: AccountEntity) {
@@ -48,19 +42,6 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
   }
 
   suspend fun addAccount(newAccount: AccountEntity) {
-    var activeAccount = accountDao.getActiveAccount()
-    activeAccount?.let {
-      activeAccount = it.copy(isActive = false)
-      accountDao.insertOrUpdate(activeAccount!!)
-    }
-    // check if this is a relogin with an existing account,
-    // if yes update it, otherwise create a new one
-    val accounts = accountDao.getAccountList().toMutableList()
-    val existingAccountIndex = accounts.indexOfFirst { account ->
-      newAccount.domain == account.domain && newAccount.accountId == account.accountId
-    }
-    if (existingAccountIndex != -1)
-      accountDao.insertOrUpdate(newAccount.copy(id = accounts[existingAccountIndex].id))
-    else accountDao.insert(newAccount)
+    accountDao.addAccount(newAccount)
   }
 }
