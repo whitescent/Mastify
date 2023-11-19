@@ -107,8 +107,12 @@ class AppViewModel @Inject constructor(
     viewModelScope.launch {
       val activeAccount = accountDao.getActiveAccount()
       isLoggedIn = activeAccount != null
-      timeline.collect {
-        if (it != null) prepared = true
+      if (isLoggedIn == true) {
+        timeline.collect {
+          if (it != null) prepared = true
+        }
+      } else {
+        prepared = true
       }
     }
   }
