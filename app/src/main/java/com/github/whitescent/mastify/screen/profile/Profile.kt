@@ -44,6 +44,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
@@ -434,6 +435,7 @@ fun ProfileInfo(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTabs(
   tabs: List<ProfileTabItem>,

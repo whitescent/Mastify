@@ -54,9 +54,7 @@ fun LazyListScope.statusComment(
   navigateToMedia: (List<Status.Attachment>, Int) -> Unit,
 ) {
   when (descendants.isEmpty()) {
-    true -> item {
-      StatusEndIndicator(Modifier.padding(36.dp))
-    }
+    true -> item { StatusEndIndicator(Modifier.padding(36.dp)) }
     else -> {
       itemsIndexed(
         items = descendants,
@@ -75,9 +73,7 @@ fun LazyListScope.statusComment(
         )
         if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()
       }
-      item {
-        StatusEndIndicator(Modifier.padding(36.dp))
-      }
+      item { StatusEndIndicator(Modifier.padding(36.dp)) }
     }
   }
 }

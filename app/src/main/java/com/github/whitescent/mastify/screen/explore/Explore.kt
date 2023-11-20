@@ -45,6 +45,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Badge
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
@@ -372,6 +373,7 @@ fun ExploreSearchBar(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreTabBar(
   selectedTab: Int,

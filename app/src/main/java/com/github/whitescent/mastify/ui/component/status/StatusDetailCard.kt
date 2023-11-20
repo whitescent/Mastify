@@ -94,13 +94,6 @@ fun StatusDetailCard(
   var openMenu by remember { mutableStateOf(false) }
   var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
-  // var animatedFavCount by rememberSaveable(status.favouritesCount) {
-  //   mutableIntStateOf(status.favouritesCount)
-  // }
-  // var animatedReblogCount by rememberSaveable(status.reblogsCount) {
-  //   mutableIntStateOf(status.reblogsCount)
-  // }
-
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }

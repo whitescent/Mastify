@@ -114,12 +114,6 @@ fun StatusDetail(
 
   var openSheet by remember { mutableStateOf(false) }
 
-  // we need to synchronize the currentStatus of the bookmark in two places on this page,
-  // so we create a bookmark state at the top level
-  var bookmarkState by remember(currentStatus.bookmarked) {
-    mutableStateOf(currentStatus.bookmarked)
-  }
-
   Box((Modifier.fillMaxSize())) {
     Column {
       Spacer(Modifier.statusBarsPadding())
@@ -142,15 +136,13 @@ fun StatusDetail(
       when (threadInReply) {
         true -> {
           StatusDetailInReply(
-            status = currentStatus.copy(bookmarked = bookmarkState),
+            status = currentStatus,
             lazyState = lazyState,
             ancestors = state.ancestors.toImmutableList(),
             descendants = state.descendants.toImmutableList(),
             loading = state.loading,
             action = {
               viewModel.onStatusAction(it, context)
-              if (it is StatusAction.Bookmark && it.id == currentStatus.id)
-                bookmarkState = it.bookmark
             },
             navigateToDetail = {
               if (it.id != currentStatus.actionableId) {
@@ -178,13 +170,12 @@ fun StatusDetail(
         }
         else -> {
           StatusDetailContent(
-            status = currentStatus.copy(bookmarked = bookmarkState),
+            status = currentStatus,
             lazyState = lazyState,
             descendants = state.descendants.toImmutableList(),
             loading = state.loading,
             action = {
               viewModel.onStatusAction(it, context)
-              if (it is StatusAction.Bookmark && it.id == currentStatus.id) bookmarkState = it.bookmark
             },
             navigateToDetail = {
               if (it.id != currentStatus.actionableId) {

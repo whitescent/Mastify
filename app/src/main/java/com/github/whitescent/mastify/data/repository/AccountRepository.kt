@@ -28,11 +28,6 @@ class AccountRepository @Inject constructor(db: AppDatabase) {
 
   private val accountDao: AccountDao = db.accountDao()
 
-  // suspend fun initAccount() {
-  //   accountList.value = accountDao.loadAll().toMutableList()
-  //   activeAccount.value = accountList.value.find { it.isActive }
-  // }
-
   suspend fun setActiveAccount(accountId: Long) {
     accountDao.setActiveAccount(accountId)
   }

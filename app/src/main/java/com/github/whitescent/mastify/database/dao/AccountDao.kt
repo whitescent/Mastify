@@ -41,9 +41,6 @@ interface AccountDao {
   @Query("SELECT * FROM ACCOUNTENTITY")
   fun getAccountListFlow(): Flow<List<AccountEntity>>
 
-  @Query("SELECT * FROM ACCOUNTENTITY")
-  suspend fun getAccountList(): List<AccountEntity>
-
   @Query("SELECT * FROM ACCOUNTENTITY WHERE isActive = 1 LIMIT 1")
   fun getActiveAccountFlow(): Flow<AccountEntity?>
 
@@ -58,9 +55,6 @@ interface AccountDao {
 
   @Delete
   suspend fun delete(account: AccountEntity)
-
-  @Query("SELECT * FROM AccountEntity ORDER BY id ASC")
-  suspend fun loadAll(): List<AccountEntity>
 
   @Query("UPDATE AccountEntity SET isActive = :isActive WHERE id = :accountId")
   suspend fun setAccountActiveState(accountId: Long, isActive: Boolean)
