@@ -182,9 +182,9 @@ fun Home(
       logcat { "loadState ${uiState.timelineLoadState} size ${timeline.size}" }
       when (timeline.size) {
         0 -> {
-          when (uiState.timelineLoadState) {
-            LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
-            LoadState.NotLoading ->
+          when {
+            uiState.timelineLoadState == LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
+            uiState.timelineLoadState == LoadState.NotLoading && uiState.endReached ->
               EmptyStatusListPlaceholder(
                 pageType = PageType.Timeline,
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())

@@ -20,15 +20,16 @@ package com.github.whitescent.mastify.database.dao
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Upsert
 import com.github.whitescent.mastify.database.model.AccountEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AccountDao {
 
-  @Insert(onConflict = REPLACE)
+  @Upsert
   suspend fun insertOrUpdate(account: AccountEntity)
 
   @Insert(entity = AccountEntity::class)
@@ -52,9 +53,40 @@ interface AccountDao {
   @Query("SELECT * FROM ACCOUNTENTITY WHERE accountId = :accountId")
   suspend fun getAccountByAccountId(accountId: String): AccountEntity?
 
+  @Query("SELECT * FROM ACCOUNTENTITY WHERE accountId = :instanceAccountId AND domain = :domain")
+  suspend fun getAccountByInstanceInfo(instanceAccountId: String, domain: String): AccountEntity?
+
   @Delete
   suspend fun delete(account: AccountEntity)
 
   @Query("SELECT * FROM AccountEntity ORDER BY id ASC")
   suspend fun loadAll(): List<AccountEntity>
+
+  @Query("UPDATE AccountEntity SET isActive = :isActive WHERE id = :accountId")
+  suspend fun setAccountActiveState(accountId: Long, isActive: Boolean)
+
+  @Transaction
+  suspend fun setActiveAccount(accountId: Long) {
+    deactivateCurrentlyActiveAccount()
+    setAccountActiveState(accountId, true)
+  }
+
+  @Transaction
+  suspend fun addAccount(account: AccountEntity) {
+    deactivateCurrentlyActiveAccount()
+    val existingAccount =
+      getAccountByInstanceInfo(instanceAccountId = account.accountId, domain = account.domain)
+
+    if (existingAccount != null) {
+      insertOrUpdate(account.copy(id = existingAccount.id, isActive = true))
+    } else {
+      insertOrUpdate(account.copy(isActive = true))
+    }
+  }
+
+  private suspend fun deactivateCurrentlyActiveAccount() {
+    getActiveAccount()?.id?.let { currentAccountId ->
+      setAccountActiveState(currentAccountId, false)
+    }
+  }
 }
