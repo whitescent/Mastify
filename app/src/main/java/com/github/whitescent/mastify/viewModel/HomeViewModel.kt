@@ -76,17 +76,6 @@ class HomeViewModel @Inject constructor(
       initialValue = ""
     )
 
-  // val timelineListStateFlow = activeAccountFlow
-  //   .map { it.id }
-  //   .distinctUntilChanged()
-  //   .flatMapLatest { timelineDao.getStatusListWithFlow(it) }
-  //   .map { splitReorderStatus(it).toUiData().toImmutableList() }
-  //   .stateIn(
-  //     scope = viewModelScope,
-  //     started = SharingStarted.Eagerly,
-  //     initialValue = persistentListOf()
-  //   )
-
   private val paginator = Paginator(
     getAppendKey = {
       timelineMemoryFlow.value.lastOrNull()?.id
