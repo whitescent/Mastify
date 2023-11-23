@@ -25,13 +25,15 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AvatarWithCover(
   cover: @Composable () -> Unit,
-  avatar: @Composable () -> Unit
+  avatar: @Composable () -> Unit,
+  actions: @Composable (() -> Unit)? = null,
 ) {
   val startPadding = with(LocalDensity.current) { avatarStartPadding.roundToPx() }
   Layout(
     content = {
       cover()
       avatar()
+      actions?.invoke()
     }
   ) { measurables, constraints ->
     val placeables = measurables.map { measurable ->
@@ -39,9 +41,14 @@ fun AvatarWithCover(
     }
     val coverPlaceable = placeables[0]
     val avatarPlaceable = placeables[1]
+    val actionsPlaceable = placeables.getOrNull(2)
     layout(coverPlaceable.width, coverPlaceable.height + avatarPlaceable.height / 2) {
       coverPlaceable.place(0, 0)
       avatarPlaceable.place(startPadding, coverPlaceable.height - avatarPlaceable.height / 2)
+      actionsPlaceable?.place(
+        x = coverPlaceable.width - actionsPlaceable.width - startPadding,
+        y = coverPlaceable.height
+      )
     }
   }
 }

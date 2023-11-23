@@ -18,19 +18,17 @@
 package com.github.whitescent.mastify.screen.profile
 
 import android.net.Uri
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,9 +39,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
@@ -53,12 +48,10 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -113,6 +106,7 @@ import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.AppState
+import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -190,9 +184,32 @@ fun Profile(
                 shape = AppTheme.shape.largeAvatar
               )
             },
+            actions = {
+              CenterRow(
+                modifier = Modifier.padding(12.dp)
+              ) {
+                Text(
+                  text = stringResource(
+                    id = R.string.account_joined,
+                    FormatFactory.getLocalizedDateTime(uiState.account.createdAt)
+                  ),
+                  color = AppTheme.colors.primaryContent.copy(0.6f),
+                  fontSize = 16.sp,
+                  fontWeight = FontWeight.Medium,
+                )
+                WidthSpacer(value = 6.dp)
+                Icon(
+                  painter = painterResource(R.drawable.shooting_star),
+                  contentDescription = null,
+                  modifier = Modifier.size(24.dp),
+                  tint = AppTheme.colors.primaryContent
+                )
+              }
+            },
           )
-          HeightSpacer(value = 6.dp)
+          HeightSpacer(value = 10.dp)
           ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
+          HeightSpacer(value = 6.dp)
         }
       },
       enabledScroll = (statusList.loadState.refresh is LoadState.NotLoading && statusList.itemCount > 0),
@@ -370,11 +387,7 @@ fun ProfileTopBar(
 }
 
 @Composable
-fun ProfileInfo(
-  account: Account,
-  isSelf: Boolean?,
-  isFollowing: Boolean?
-) {
+fun ProfileInfo(account: Account, isSelf: Boolean?, isFollowing: Boolean?) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   Column(Modifier.padding(horizontal = avatarStartPadding)) {
@@ -384,8 +397,8 @@ fun ProfileInfo(
           text = buildAnnotatedString {
             annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
           },
-          fontSize = 24.sp,
-          fontWeight = FontWeight(500),
+          fontSize = 22.sp,
+          fontWeight = FontWeight(650),
           color = AppTheme.colors.primaryContent,
           inlineContent = inlineTextContentWithEmoji(account.emojis, 24.sp),
         )
@@ -399,16 +412,6 @@ fun ProfileInfo(
           maxLines = 1,
           fontSize = 16.sp,
         )
-      }
-      isSelf?.let {
-        when (isSelf) {
-          true -> EditProfileButton()
-          else -> {
-            isFollowing?.let {
-              FollowButton(it)
-            }
-          }
-        }
       }
     }
     if (account.note.isNotEmpty()) {
@@ -430,7 +433,9 @@ fun ProfileInfo(
       account.fieldsWithEmoji,
       account.followingCount,
       account.followersCount,
-      account.statusesCount
+      account.statusesCount,
+      isSelf,
+      isFollowing
     )
   }
 }
@@ -490,42 +495,38 @@ fun AccountFields(
   followingCount: Long,
   followersCount: Long,
   statusesCount: Long,
+  isSelf: Boolean?,
+  isFollowing: Boolean?
 ) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
-  val icons by remember(followersCount, followersCount, statusesCount) {
-    mutableStateOf(
-      listOf(
-        ProfileInfoItem(R.drawable.following, followingCount),
-        ProfileInfoItem(R.drawable.follower, followersCount),
-        ProfileInfoItem(R.drawable.status, statusesCount),
-      )
-    )
-  }
+  val items = listOf(statusesCount, followingCount, followersCount)
   Column(Modifier.fillMaxWidth()) {
     if (fields.isNotEmpty()) {
       fields.forEach {
         CenterRow(Modifier.fillMaxWidth()) {
-          Box(Modifier.width(150.dp), Alignment.CenterStart) {
-            CenterRow {
-              Text(
-                text = it.name,
-                color = Color(0xFF8B8B8B),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-              )
-              it.verifiedAt?.let {
-                WidthSpacer(value = 4.dp)
-                Icon(
-                  painter = painterResource(id = R.drawable.seal_check),
-                  contentDescription = null,
-                  modifier = Modifier.size(20.dp),
-                  tint = Color(0xFF00BA7C)
+          CenterRow {
+            Box(Modifier.width(120.dp), Alignment.CenterStart) {
+              CenterRow {
+                Text(
+                  text = it.name,
+                  color = Color(0xFF8B8B8B),
+                  fontSize = 16.sp,
+                  fontWeight = FontWeight.Bold
                 )
+                it.verifiedAt?.let {
+                  WidthSpacer(value = 4.dp)
+                  Icon(
+                    painter = painterResource(id = R.drawable.seal_check),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = Color(0xFF00BA7C)
+                  )
+                }
               }
             }
           }
-          Spacer(Modifier.weight(1f).padding(horizontal = 154.dp))
+          WidthSpacer(value = 8.dp)
           HtmlText(
             text = it.value,
             maxLines = 1,
@@ -538,69 +539,87 @@ fun AccountFields(
                 uri = Uri.parse(url),
                 toolbarColor = primaryColor.toArgb(),
               )
-            }
+            },
+            modifier = Modifier.weight(1f)
           )
         }
         if (it != fields.last()) HeightSpacer(value = 4.dp)
       }
       HeightSpacer(value = 10.dp)
     }
-    CenterRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-      icons.forEachIndexed { index, item ->
-        CenterRow {
-          Icon(
-            painter = painterResource(id = item.icon),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = AppTheme.colors.primaryContent.copy(0.7f)
+    CenterRow(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(36.dp)
+    ) {
+      items.forEachIndexed { index, item ->
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Text(
+            text = "$item",
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 20.sp,
+            color = AppTheme.colors.primaryContent
           )
           WidthSpacer(value = 4.dp)
           Text(
             text = stringResource(
               id = when (index) {
-                0 -> R.string.following_count
-                1 -> R.string.follower_count
-                else -> R.string.post_count
-              },
-              item.itemCount
+                0 -> R.string.post_title
+                1 -> R.string.following_title
+                else -> R.string.follower_title
+              }
             ),
-            color = AppTheme.colors.primaryContent.copy(0.7f),
-            fontSize = 16.sp,
-            fontWeight = FontWeight(650),
+            color = AppTheme.colors.primaryContent.copy(0.5f),
+            fontSize = 14.sp
           )
         }
       }
+    }
+    isSelf?.let {
+      HeightSpacer(value = 10.dp)
+      when (it) {
+        true -> EditProfileButton(Modifier.fillMaxWidth())
+        else -> isFollowing?.let { FollowButton(isFollowing) }
+      }
+      HeightSpacer(value = 4.dp)
     }
   }
 }
 
 @Composable
 fun FollowButton(isFollowing: Boolean) {
-  Button(
-    onClick = { },
-    colors = ButtonDefaults.buttonColors(
-      containerColor = if (isFollowing) AppTheme.colors.unfollowButton
-      else AppTheme.colors.followButton
-    ),
-    border = BorderStroke(1.dp, Color(0xFFA1A1A1).copy(0.6f)),
-    modifier = Modifier.width(140.dp),
-    shape = RoundedCornerShape(12.dp)
+  Box(
+    modifier = Modifier.fillMaxWidth()
+      .border(
+        width = 2.dp,
+        color = if (isFollowing) AppTheme.colors.unfollowButton else AppTheme.colors.followButton,
+        shape = AppTheme.shape.mediumAvatar
+      )
+      .clip(AppTheme.shape.mediumAvatar),
+    contentAlignment = Alignment.Center
   ) {
     Text(
-      text = if (isFollowing) "正在关注" else "关注",
-      color = if (isFollowing) AppTheme.colors.primaryContent else AppTheme.colors.bottomBarBackground,
-      fontSize = 16.sp
+      text = stringResource(
+        id = if (isFollowing) R.string.unfollow_title else R.string.follow_title
+      ),
+      color = AppTheme.colors.primaryContent,
+      modifier = Modifier.padding(10.dp),
+      fontSize = 18.sp,
+      fontWeight = FontWeight.Bold
     )
   }
 }
 
 @Composable
-fun EditProfileButton() {
+fun EditProfileButton(modifier: Modifier = Modifier) {
   Surface(
     shape = AppTheme.shape.normal,
-    color = AppTheme.colors.secondaryContent
+    color = AppTheme.colors.secondaryContent,
+    modifier = modifier
   ) {
-    CenterRow(Modifier.padding(horizontal = 12.dp, vertical = 12.dp)) {
+    CenterRow(
+      modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp).fillMaxWidth(),
+      horizontalArrangement = Arrangement.Center
+    ) {
       Icon(
         painter = painterResource(id = R.drawable.pencil_simple_line),
         contentDescription = null,
@@ -616,12 +635,6 @@ fun EditProfileButton() {
     }
   }
 }
-
-@Immutable
-data class ProfileInfoItem(
-  @DrawableRes val icon: Int,
-  val itemCount: Long
-)
 
 enum class ProfileTabItem {
   POST, REPLY, MEDIA
