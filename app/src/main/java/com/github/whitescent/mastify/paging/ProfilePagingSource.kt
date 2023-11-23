@@ -48,36 +48,38 @@ class ProfilePagingSource @Inject constructor(
         maxId = nextPageId,
         excludeReplies = excludeReplies,
         onlyMedia = onlyMedia
-      ).body()!!
-      var temp: MutableList<Status> = mutableListOf()
-      // If we need to request a status list containing replies,
-      // we need to obtain the requested status
-      // for good ux !
-      excludeReplies?.let {
-        if (!it) {
-          temp = data.toMutableList()
-          data.forEach { status ->
-            if (status.isInReplyTo) {
-              api.status(status.inReplyToId!!).fold(
-                { repliedStatus ->
-                  temp.add(temp.indexOf(status), repliedStatus)
-                },
-                { e ->
-                  e.printStackTrace()
-                }
-              )
+      ).body()
+      if (data != null) {
+        var temp: MutableList<Status> = mutableListOf()
+        // If we need to request a status list containing replies,
+        // we need to obtain the requested status
+        // for good ux !
+        excludeReplies?.let {
+          if (!it) {
+            temp = data.toMutableList()
+            data.forEach { status ->
+              if (status.isInReplyTo) {
+                api.status(status.inReplyToId!!).fold(
+                  { repliedStatus ->
+                    temp.add(temp.indexOf(status), repliedStatus)
+                  },
+                  { e ->
+                    e.printStackTrace()
+                  }
+                )
+              }
             }
           }
         }
-      }
-      val result = if (temp.size == 0) data.toUiData() else temp.toUiData()
-      LoadResult.Page(
-        data = result,
-        prevKey = nextPageId,
-        nextKey = if (data.isEmpty()) null else data.last().id
-      ).also {
-        it.nextKey?.let { id -> nextPageId = id }
-      }
+        val result = if (temp.size == 0) data.toUiData() else temp.toUiData()
+        LoadResult.Page(
+          data = result,
+          prevKey = nextPageId,
+          nextKey = if (data.isEmpty()) null else data.last().id
+        ).also {
+          it.nextKey?.let { id -> nextPageId = id }
+        }
+      } else LoadResult.Invalid()
     } catch (exception: IOException) {
       exception.printStackTrace()
       return LoadResult.Error(exception)

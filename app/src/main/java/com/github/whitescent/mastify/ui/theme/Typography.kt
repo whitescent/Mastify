@@ -28,7 +28,7 @@ class MastifyTypography {
   val statusDisplayName @Composable
   get() = TextStyle(
     fontSize = 15.sp,
-    fontWeight = FontWeight(550),
+    fontWeight = FontWeight(650),
     color = AppTheme.colors.primaryContent
   )
 

@@ -88,10 +88,13 @@
   <string name="visibility_direct">仅提及的人可见</string>
 
   <!--  profile screen-->
+  <string name="account_joined">%s 加入</string>
   <string name="post_title">嘟文</string>
   <string name="post_count">%s 条嘟文</string>
-  <string name="following_count">%s 正在关注</string>
-  <string name="follower_count">%s 关注者</string>
+  <string name="follow_title">关注</string>
+  <string name="unfollow_title">取消关注</string>
+  <string name="following_title">正在关注</string>
+  <string name="follower_title">关注者</string>
   <string name="reply_title">回复</string>
   <string name="media_title">媒体</string>
   <string name="edit_profile">编辑个人资料</string>

@@ -95,6 +95,9 @@ class ProfileViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
+      uiState = uiState.copy(
+        isSelf = navArgs.account.id == accountDao.getActiveAccount()!!.accountId
+      )
       getRelationship(navArgs.account.id)
       fetchAccount(navArgs.account.id)
     }
@@ -118,10 +121,7 @@ class ProfileViewModel @Inject constructor(
   private suspend fun getRelationship(accountId: String) {
     api.relationships(listOf(accountId)).fold(
       {
-        uiState = uiState.copy(
-          isSelf = navArgs.account.id == accountDao.getActiveAccount()!!.accountId,
-          isFollowing = it.first().following
-        )
+        uiState = uiState.copy(isFollowing = it.first().following)
       },
       {
         it.printStackTrace()

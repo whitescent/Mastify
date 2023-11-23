@@ -2,7 +2,7 @@
 
 androidxCore = "1.12.0"
 androidxLifecycle = "2.6.2"
-androidxActivity = "1.8.0"
+androidxActivity = "1.8.1"
 androidxTestExt = "1.1.5"
 androidxTestEspresso = "3.5.1"
 androidxNavigation = "2.7.5"
@@ -12,7 +12,7 @@ androidxMedia3 = "1.1.1"
 androidxBrowser = "1.7.0"
 androidDesugar = "2.0.4"
 
-compose = "1.6.0-beta01"
+compose = "1.6.0-alpha08"
 composeCompiler = "1.5.1"
 composeShadowsPlus = "1.0.4"
 constraintlayoutCompose = "1.0.1"

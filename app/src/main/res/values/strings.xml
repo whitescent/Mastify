@@ -91,10 +91,13 @@
   <string name="visibility_direct">Visible only to those mentioned</string>
 
   <!--  profile screen-->
+  <string name="account_joined">Joined %s</string>
   <string name="post_title">Posts</string>
   <string name="post_count">%s Posts</string>
-  <string name="following_count">%s Following</string>
-  <string name="follower_count">%s Followers</string>
+  <string name="follow_title">Follow</string>
+  <string name="unfollow_title">Unfollow</string>
+  <string name="following_title">Following</string>
+  <string name="follower_title">Followers</string>
   <string name="reply_title">Replies</string>
   <string name="media_title">Media</string>
   <string name="edit_profile">Edit Profile</string>
