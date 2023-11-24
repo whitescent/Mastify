@@ -38,6 +38,7 @@ import com.github.whitescent.mastify.utils.StatusAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
@@ -100,10 +101,14 @@ class HomeViewModel @Inject constructor(
       when (loadState) {
         LoadState.Append -> {
           uiState = uiState.copy(endReached = items.isEmpty())
+          val activeAccount = accountDao.getActiveAccount()!!
           db.withTransaction {
-            val activeAccount = accountDao.getActiveAccount()!!
             timelineDao.insertAll(items.toEntity(activeAccount.id))
           }
+          // We need to wait for db to emit the latest List before we can end onSuccess,
+          // otherwise loadState will be equal to NotLoading in advance,
+          // and the List has not been updated, which will cause LazyColumn to jitter
+          delay(200)
         }
         LoadState.Refresh -> {
           val newStatusCount = items.filterNot {
