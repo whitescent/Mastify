@@ -107,12 +107,7 @@ class AppViewModel @Inject constructor(
   fun changeActiveAccount(accountId: Long) {
     viewModelScope.launch {
       accountRepository.setActiveAccount(accountId)
-      // activeAccount.collect {
-      //   if (it != null) {
-      //     timelinePosition = TimelinePosition(it.firstVisibleItemIndex, it.offset)
-      //     changeAccountChannel.send(Unit)
-      //   }
-      // }
+      changeAccountChannel.send(Unit)
     }
   }
 }

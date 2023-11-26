@@ -121,7 +121,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import logcat.logcat
 
 @OptIn(ExperimentalMaterialApi::class, FlowPreview::class)
 @AppNavGraph(start = true)
@@ -284,16 +283,16 @@ fun Home(
     }
     PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
 
+    LaunchedEffect(activeAccount.id) {
+      appState.scrollToTopFlow.collect {
+        lazyState.scrollToItem(0)
+      }
+    }
+
     LaunchedEffect(Unit) {
       launch {
         viewModel.snackBarFlow.collect {
           snackbarState.show(it)
-        }
-      }
-      launch {
-        appState.scrollToTopFlow.collect {
-          logcat { "caught event !" }
-          lazyState.scrollToItem(0)
         }
       }
       viewModel.fetchLatestAccountData()
