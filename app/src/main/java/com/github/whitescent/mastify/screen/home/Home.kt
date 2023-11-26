@@ -38,8 +38,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,6 +61,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -75,7 +76,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
@@ -83,9 +83,12 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.PAGINGTHRESHOLD
+import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.mapper.status.getReplyChainType
 import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
 import com.github.whitescent.mastify.paging.LoadState
+import com.github.whitescent.mastify.paging.LoadState.Error
+import com.github.whitescent.mastify.paging.LoadState.NotLoading
 import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -118,7 +121,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import logcat.logcat
 
 @OptIn(ExperimentalMaterialApi::class, FlowPreview::class)
 @AppNavGraph(start = true)
@@ -127,25 +129,21 @@ import logcat.logcat
 fun Home(
   appState: AppState,
   drawerState: DrawerState,
+  activeAccount: AccountEntity,
   timeline: ImmutableList<StatusUiData>,
   timelinePosition: TimelinePosition,
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
-  val lazyState = rememberLazyListState(
-    initialFirstVisibleItemIndex = timelinePosition.index,
-    initialFirstVisibleItemScrollOffset = timelinePosition.offset
-  )
-  val firstVisibleIndex by remember {
+  val lazyState = rememberSaveable(activeAccount.id, saver = LazyListState.Saver) {
+    LazyListState(timelinePosition.index, timelinePosition.offset)
+  }
+  val firstVisibleIndex by remember(lazyState) {
     derivedStateOf {
       lazyState.firstVisibleItemIndex
     }
   }
-  // val timeline by viewModel.timelineListStateFlow.collectAsStateWithLifecycle()
-  val avatar by viewModel.currentAccountAvatar.collectAsStateWithLifecycle()
-
   var refreshing by remember { mutableStateOf(false) }
-
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
   val uiState = viewModel.uiState
@@ -170,7 +168,7 @@ fun Home(
   ) {
     Column {
       HomeTopBar(
-        avatar = avatar,
+        avatar = activeAccount.profilePictureUrl,
         openDrawer = {
           scope.launch {
             drawerState.open()
@@ -179,12 +177,12 @@ fun Home(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
       )
       HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
-      logcat { "loadState ${uiState.timelineLoadState} size ${timeline.size}" }
       when (timeline.size) {
         0 -> {
           when {
-            uiState.timelineLoadState == LoadState.Error -> StatusListLoadError { viewModel.refreshTimeline() }
-            uiState.timelineLoadState == LoadState.NotLoading && uiState.endReached ->
+            uiState.timelineLoadState == Error ->
+              StatusListLoadError { viewModel.refreshTimeline() }
+            uiState.timelineLoadState == NotLoading && uiState.endReached ->
               EmptyStatusListPlaceholder(
                 pageType = PageType.Timeline,
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
@@ -241,7 +239,7 @@ fun Home(
               item {
                 when (uiState.timelineLoadState) {
                   LoadState.Append -> StatusAppendingIndicator()
-                  LoadState.Error -> {
+                  Error -> {
                     // TODO Localization
                     Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
                     viewModel.append() // retry
@@ -285,15 +283,16 @@ fun Home(
     }
     PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
 
+    LaunchedEffect(activeAccount.id) {
+      appState.scrollToTopFlow.collect {
+        lazyState.scrollToItem(0)
+      }
+    }
+
     LaunchedEffect(Unit) {
       launch {
         viewModel.snackBarFlow.collect {
           snackbarState.show(it)
-        }
-      }
-      launch {
-        appState.scrollToTopFlow.collect {
-          lazyState.scrollToItem(0)
         }
       }
       viewModel.fetchLatestAccountData()
@@ -306,7 +305,7 @@ fun Home(
         snapshotFlow { firstVisibleIndex }
           .filter { timeline.isNotEmpty() }
           .map {
-            !uiState.endReached && uiState.timelineLoadState != LoadState.Append &&
+            !uiState.endReached && uiState.timelineLoadState == NotLoading &&
               lazyState.firstVisibleItemIndex >= (timeline.size - ((timeline.size / FETCHNUMBER) * PAGINGTHRESHOLD))
           }
           .filter { it }
@@ -317,7 +316,6 @@ fun Home(
       launch {
         snapshotFlow { firstVisibleIndex }
           .debounce(500L)
-          .filter { firstVisibleIndex != timelinePosition.index }
           .collectLatest {
             viewModel.updateTimelinePosition(it, lazyState.firstVisibleItemScrollOffset)
           }

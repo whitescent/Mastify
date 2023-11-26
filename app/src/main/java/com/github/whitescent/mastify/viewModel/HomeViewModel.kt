@@ -40,11 +40,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -68,14 +65,6 @@ class HomeViewModel @Inject constructor(
     }
 
   private var timelineMemoryFlow = MutableStateFlow<List<Status>>(emptyList())
-
-  val currentAccountAvatar = activeAccountFlow
-    .map { it.profilePictureUrl }
-    .stateIn(
-      scope = viewModelScope,
-      started = SharingStarted.Eagerly,
-      initialValue = ""
-    )
 
   private val paginator = Paginator(
     getAppendKey = {
@@ -131,13 +120,10 @@ class HomeViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      launch { // sync memory list
-        timelineWithAccountFlow.collect {
-          timelineMemoryFlow.emit(it)
-        }
+      // sync memory list
+      timelineWithAccountFlow.collect {
+        timelineMemoryFlow.emit(it)
       }
-      // fetchLatestAccountData()
-      // refreshTimeline()
     }
   }
 

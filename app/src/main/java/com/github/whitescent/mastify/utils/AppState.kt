@@ -36,7 +36,7 @@ class AppState(
   private val appContentPaddingBottom: Dp,
 ) {
 
-  private val scrollToTopChannel = Channel<Boolean>()
+  private val scrollToTopChannel = Channel<Unit>()
   val scrollToTopFlow = scrollToTopChannel.receiveAsFlow()
 
   var appPaddingValues by mutableStateOf(
@@ -48,7 +48,7 @@ class AppState(
     appPaddingValues = paddingValues
   }
 
-  suspend fun scrollToTop() { scrollToTopChannel.send(true) }
+  suspend fun scrollToTop() { scrollToTopChannel.send(Unit) }
 
   companion object {
     val saver = listSaver(

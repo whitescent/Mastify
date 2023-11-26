@@ -59,7 +59,6 @@ import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import logcat.logcat
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -103,7 +102,6 @@ fun StatusCommonList(
         }
       }
       else -> {
-        logcat { "content type is ${statusList.itemContentType()}" }
         LazyColumn(
           state = statusListState,
           modifier = Modifier.fillMaxSize().padding(bottom = 100.dp),
