@@ -63,11 +63,9 @@ fun AppScaffold(
   startRoute: Route,
   viewModel: AppViewModel
 ) {
-  // val homeViewModel: HomeViewModel = hiltViewModel()
-  val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
   val accounts by viewModel.accountList.collectAsStateWithLifecycle()
-  val timeline by viewModel.timeline.collectAsStateWithLifecycle()
-  val timelinePosition by viewModel.timelinePosition.collectAsStateWithLifecycle()
+  val userData by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
+  val activeAccount = userData?.activeAccount
 
   val engine = rememberAnimatedNavHostEngine(
     rootDefaultAnimations = RootNavGraphDefaultAnimations(
@@ -99,7 +97,7 @@ fun AppScaffold(
       if (destination.shouldShowScaffoldElements() && activeAccount != null) {
         AppDrawer(
           drawerState = drawerState,
-          activeAccount = activeAccount!!,
+          activeAccount = activeAccount,
           accounts = accounts.toImmutableList(),
           changeAccount = {
             scope.launch { drawerState.close() }
@@ -146,16 +144,16 @@ fun AppScaffold(
         dependenciesContainerBuilder = {
           dependency(NavGraphs.app) { drawerState }
           dependency(NavGraphs.app) { appState }
-          // dependency(HomeDestination) { viewModel.timelinePosition }
         }
       ) {
         composable(HomeDestination) {
-          timeline?.let { timeline ->
+          userData?.let { data ->
             Home(
               appState = appState,
               drawerState = drawerState,
-              timeline = timeline,
-              timelinePosition = timelinePosition,
+              activeAccount = data.activeAccount,
+              timeline = data.timeline,
+              timelinePosition = data.position,
               navigator = destinationsNavigator,
             )
           }
