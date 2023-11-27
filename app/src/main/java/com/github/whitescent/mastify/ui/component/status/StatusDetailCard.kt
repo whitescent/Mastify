@@ -19,8 +19,6 @@ package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -81,7 +79,6 @@ fun StatusDetailCard(
   modifier: Modifier = Modifier,
   inReply: Boolean = false,
   action: (StatusAction) -> Unit,
-  navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
@@ -108,11 +105,6 @@ fun StatusDetailCard(
   ) {
     Column(
       modifier = Modifier
-        .clickable(
-          onClick = navigateToDetail,
-          indication = null,
-          interactionSource = remember { MutableInteractionSource() }
-        )
         .let {
           if (inReply) {
             it.drawWithContent {

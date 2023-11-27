@@ -268,7 +268,6 @@ fun StatusDetailContent(
       StatusDetailCard(
         status = status,
         action = action,
-        navigateToDetail = { navigateToDetail(status.actionable) },
         navigateToMedia = navigateToMedia,
         navigateToProfile = navigateToProfile
       )
@@ -313,7 +312,6 @@ fun StatusDetailInReply(
         StatusDetailCard(
           status = status,
           action = action,
-          navigateToDetail = { navigateToDetail(status.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
           inReply = true

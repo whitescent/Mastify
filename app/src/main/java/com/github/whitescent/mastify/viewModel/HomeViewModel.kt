@@ -35,6 +35,9 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction.Bookmark
+import com.github.whitescent.mastify.utils.StatusAction.Favorite
+import com.github.whitescent.mastify.utils.StatusAction.Reblog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -90,8 +93,8 @@ class HomeViewModel @Inject constructor(
       when (loadState) {
         LoadState.Append -> {
           uiState = uiState.copy(endReached = items.isEmpty())
-          val activeAccount = accountDao.getActiveAccount()!!
           db.withTransaction {
+            val activeAccount = accountDao.getActiveAccount()!!
             timelineDao.insertAll(items.toEntity(activeAccount.id))
           }
           // We need to wait for db to emit the latest List before we can end onSuccess,
@@ -147,32 +150,37 @@ class HomeViewModel @Inject constructor(
       }
       savedStatus?.let {
         // if this status include reblog's status, we should update reblog's status
+
+        val favorite = (action as? Favorite)?.favorite ?: actionableStatus.favorited
+        val favouritesCount = (action as? Favorite)?.let { state ->
+          actionableStatus.favouritesCount + if (state.favorite) 1 else -1
+        } ?: actionableStatus.favouritesCount
+
+        val reblog = (action as? Reblog)?.reblog ?: actionableStatus.reblogged
+        val reblogsCount = (action as? Reblog)?.let { state ->
+          actionableStatus.reblogsCount + if (state.reblog) 1 else -1
+        } ?: actionableStatus.reblogsCount
+
+        val bookmark = (action as? Bookmark)?.bookmark ?: actionableStatus.bookmarked
+
         when (it.reblog == null) {
           true -> {
             savedStatus = it.copy(
-              favorited = if (action is StatusAction.Favorite) action.favorite else actionableStatus.favorited,
-              favouritesCount = if (action is StatusAction.Favorite) {
-                if (action.favorite) actionableStatus.favouritesCount + 1 else actionableStatus.favouritesCount - 1
-              } else actionableStatus.favouritesCount,
-              reblogged = if (action is StatusAction.Reblog) action.reblog else actionableStatus.reblogged,
-              reblogsCount = if (action is StatusAction.Reblog) {
-                if (action.reblog) actionableStatus.reblogsCount + 1 else actionableStatus.reblogsCount - 1
-              } else actionableStatus.reblogsCount,
-              bookmarked = if (action is StatusAction.Bookmark) action.bookmark else actionableStatus.bookmarked
+              favorited = favorite,
+              favouritesCount = favouritesCount,
+              reblogged = reblog,
+              reblogsCount = reblogsCount,
+              bookmarked = bookmark
             )
           }
           else -> {
-            savedStatus = savedStatus!!.copy(
+            savedStatus = it.copy(
               reblog = it.reblog.copy(
-                favorited = if (action is StatusAction.Favorite) action.favorite else actionableStatus.favorited,
-                favouritesCount = if (action is StatusAction.Favorite) {
-                  if (action.favorite) actionableStatus.favouritesCount + 1 else actionableStatus.favouritesCount - 1
-                } else actionableStatus.favouritesCount,
-                reblogged = if (action is StatusAction.Reblog) action.reblog else actionableStatus.reblogged,
-                reblogsCount = if (action is StatusAction.Reblog) {
-                  if (action.reblog) actionableStatus.reblogsCount + 1 else actionableStatus.reblogsCount - 1
-                } else actionableStatus.reblogsCount,
-                bookmarked = if (action is StatusAction.Bookmark) action.bookmark else actionableStatus.bookmarked
+                favorited = favorite,
+                favouritesCount = favouritesCount,
+                reblogged = reblog,
+                reblogsCount = reblogsCount,
+                bookmarked = bookmark
               )
             )
           }
@@ -201,6 +209,8 @@ class HomeViewModel @Inject constructor(
         limit = FETCHNUMBER
       )
       if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+        // If the data in this request contains the first data from the database,
+        // we need connect the data in this request with the data in the database
         val list = response.body()!!.toMutableList()
         if (tempList.any { it.id == list.last().id }) {
           tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
@@ -211,6 +221,8 @@ class HomeViewModel @Inject constructor(
             }
           )
         } else {
+          // If the data in this request doesn't contain the first data from the database,
+          // we need to add it and mark the last post as Unloaded
           list[list.lastIndex] = list[list.lastIndex].copy(hasUnloadedStatus = true)
           tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
           tempList.addAll(insertIndex + 1, list)
