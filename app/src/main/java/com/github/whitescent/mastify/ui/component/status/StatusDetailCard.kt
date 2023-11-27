@@ -134,7 +134,7 @@ fun StatusDetailCard(
           HtmlText(
             text = status.displayName,
             fontSize = 17.sp,
-            fontWeight = FontWeight(550),
+            fontWeight = FontWeight(650),
             overflow = TextOverflow.Ellipsis,
             color = AppTheme.colors.primaryContent,
             maxLines = 1
