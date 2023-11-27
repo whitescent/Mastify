@@ -144,13 +144,11 @@ class HomeViewModel @Inject constructor(
   fun onStatusAction(action: StatusAction, context: Context, actionableStatus: Status) {
     viewModelScope.launch(Dispatchers.IO) {
       val activeAccount = accountDao.getActiveAccount()!!
-      // update the currentStatus in the db, if the action is about currentStatus
+      // update the currentStatus in the db, if the action is about (fav, reblog, bookmark)
       var savedStatus = timelineMemoryFlow.value.firstOrNull {
         it.actionableId == actionableStatus.id
       }
       savedStatus?.let {
-        // if this status include reblog's status, we should update reblog's status
-
         val favorite = (action as? Favorite)?.favorite ?: actionableStatus.favorited
         val favouritesCount = (action as? Favorite)?.let { state ->
           actionableStatus.favouritesCount + if (state.favorite) 1 else -1
@@ -163,6 +161,7 @@ class HomeViewModel @Inject constructor(
 
         val bookmark = (action as? Bookmark)?.bookmark ?: actionableStatus.bookmarked
 
+        // if this status include reblog's status, we should update reblog's status
         when (it.reblog == null) {
           true -> {
             savedStatus = it.copy(
