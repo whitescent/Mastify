@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.ui.component.status
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -165,6 +166,7 @@ fun StatusCommonList(
 fun StatusCommonList(
   statusCommonListData: StatusCommonListData<StatusUiData>,
   statusListState: LazyListState,
+  modifier: Modifier = Modifier,
   enablePullRefresh: Boolean = false,
   action: (StatusAction, Status) -> Unit,
   refreshList: () -> Unit,
@@ -216,7 +218,8 @@ fun StatusCommonList(
       else -> {
         LazyColumn(
           state = statusListState,
-          modifier = Modifier.fillMaxSize().padding(bottom = 100.dp),
+          modifier = modifier.fillMaxSize(),
+          contentPadding = PaddingValues(bottom = 100.dp)
         ) {
           itemsIndexed(
             items = statusCommonListData.timeline,

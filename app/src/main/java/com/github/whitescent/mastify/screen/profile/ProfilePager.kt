@@ -26,6 +26,7 @@ import androidx.paging.compose.LazyPagingItems
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.status.StatusCommonList
 import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
@@ -43,7 +44,7 @@ fun ProfilePager(
   action: (StatusAction) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
-  navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
+  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   HorizontalPager(
     state = state,

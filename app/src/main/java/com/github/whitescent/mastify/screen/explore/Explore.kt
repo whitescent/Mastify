@@ -83,8 +83,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.PAGINGTHRESHOLD
 import com.github.whitescent.mastify.network.model.search.SearchResult
-import com.github.whitescent.mastify.paging.LaunchPaginatorListener
+import com.github.whitescent.mastify.paging.LoadState.NotLoading
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -99,10 +100,14 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.ExplorerKind
+import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
+import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -265,7 +270,7 @@ fun Explore(
     )
   }
 
-  LaunchedEffect(currentExploreKind) {
+  LaunchedEffect(Unit) {
     launch {
       viewModel.snackBarFlow.collect {
         snackbarState.show(it)
@@ -273,8 +278,11 @@ fun Explore(
     }
     launch {
       appState.scrollToTopFlow.collect {
-        trendingStatusListState.scrollToItem(0)
-        publicTimelineListState.scrollToItem(0)
+        when (currentExploreKind) {
+          Trending -> trendingStatusListState.scrollToItem(0)
+          PublicTimeline -> publicTimelineListState.scrollToItem(0)
+          else -> Unit
+        }
       }
     }
     launch {
@@ -282,19 +290,34 @@ fun Explore(
         Toast.makeText(context, "搜索失败", Toast.LENGTH_SHORT).show()
       }
     }
+    // TODO There is a need to encapsulate a layer of methods for the pagination's append request,
+    // but I haven't thought of a suitable way to do this yet,
+    // I tried wrapping it into a @Composable, but it causes LeftCompositionCancellationException
+    launch {
+      snapshotFlow { trendingStatusListState.firstVisibleItemIndex }
+        .filter { trendingStatusList.timeline.isNotEmpty() }
+        .map {
+          !viewModel.trendingPaginator.endReached && viewModel.trendingPaginator.loadState == NotLoading &&
+            it >= (trendingStatusList.timeline.size - ((trendingStatusList.timeline.size / EXPLOREPAGINGFETCHNUMBER) * PAGINGTHRESHOLD))
+        }
+        .filter { it }
+        .collect {
+          viewModel.trendingPaginator.append()
+        }
+    }
+    launch {
+      snapshotFlow { publicTimelineListState.firstVisibleItemIndex }
+        .filter { publicTimelineList.timeline.isNotEmpty() }
+        .map {
+          !viewModel.publicTimelinePaginator.endReached && viewModel.publicTimelinePaginator.loadState == NotLoading &&
+            it >= (publicTimelineList.timeline.size - ((publicTimelineList.timeline.size / EXPLOREPAGINGFETCHNUMBER) * PAGINGTHRESHOLD))
+        }
+        .filter { it }
+        .collect {
+          viewModel.publicTimelinePaginator.append()
+        }
+    }
   }
-  LaunchPaginatorListener(
-    lazyListState = trendingStatusListState,
-    list = trendingStatusList.timeline,
-    paginator = viewModel.trendingPaginator,
-    fetchNumber = EXPLOREPAGINGFETCHNUMBER
-  )
-  LaunchPaginatorListener(
-    lazyListState = publicTimelineListState,
-    list = publicTimelineList.timeline,
-    paginator = viewModel.publicTimelinePaginator,
-    fetchNumber = EXPLOREPAGINGFETCHNUMBER
-  )
 }
 
 @Composable

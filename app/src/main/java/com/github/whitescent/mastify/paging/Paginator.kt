@@ -17,15 +17,8 @@
 
 package com.github.whitescent.mastify.paging
 
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import com.github.whitescent.mastify.paging.LoadState.Error
 import com.github.whitescent.mastify.paging.LoadState.NotLoading
-import kotlinx.coroutines.launch
 
 class Paginator<Key, Item>(
   private val refreshKey: Key,
@@ -86,31 +79,6 @@ class Paginator<Key, Item>(
       loadState = Error
       onLoadUpdated(loadState)
       return
-    }
-  }
-}
-
-@Composable
-fun <T> LaunchPaginatorListener(
-  lazyListState: LazyListState,
-  list: List<T>,
-  paginator: Paginator<*, *>,
-  fetchNumber: Int,
-  threshold: Int = 10
-) {
-  val firstVisibleItemIndex by remember(lazyListState) {
-    derivedStateOf {
-      lazyListState.firstVisibleItemIndex
-    }
-  }
-  if (list.isNotEmpty()) {
-    if (!paginator.endReached && paginator.loadState == NotLoading &&
-      firstVisibleItemIndex >= (list.size - ((list.size / fetchNumber) * threshold))
-    ) {
-      val scope = rememberCoroutineScope()
-      scope.launch {
-        paginator.append()
-      }
     }
   }
 }
