@@ -86,6 +86,7 @@ import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.PA
 import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.mapper.status.getReplyChainType
 import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
+import com.github.whitescent.mastify.paging.LaunchPaginatorListener
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.LoadState.Error
 import com.github.whitescent.mastify.paging.LoadState.NotLoading
@@ -118,8 +119,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class, FlowPreview::class)
@@ -303,18 +302,6 @@ fun Home(
       if (firstVisibleIndex == 0 && uiState.showNewStatusButton) viewModel.dismissButton()
       launch {
         snapshotFlow { firstVisibleIndex }
-          .filter { timeline.isNotEmpty() }
-          .map {
-            !uiState.endReached && uiState.timelineLoadState == NotLoading &&
-              lazyState.firstVisibleItemIndex >= (timeline.size - ((timeline.size / FETCHNUMBER) * PAGINGTHRESHOLD))
-          }
-          .filter { it }
-          .collect {
-            viewModel.append()
-          }
-      }
-      launch {
-        snapshotFlow { firstVisibleIndex }
           .debounce(500L)
           .collectLatest {
             viewModel.updateTimelinePosition(it, lazyState.firstVisibleItemScrollOffset)
@@ -322,6 +309,14 @@ fun Home(
       }
     }
   }
+
+  LaunchPaginatorListener(
+    lazyListState = lazyState,
+    list = timeline,
+    paginator = viewModel.paginator,
+    fetchNumber = FETCHNUMBER,
+    threshold = PAGINGTHRESHOLD
+  )
 }
 
 @Composable

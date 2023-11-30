@@ -195,8 +195,7 @@ class StatusDetailViewModel @Inject constructor(
     if (navArgs.originStatusId == null) return
     viewModelScope.launch {
       val activeAccountId = accountDao.getActiveAccount()!!.id
-      var savedStatus =
-        timelineDao.getSingleStatusWithId(activeAccountId, navArgs.originStatusId)
+      var savedStatus = timelineDao.getSingleStatusWithId(activeAccountId, navArgs.originStatusId)
       savedStatus?.let {
         when (it.reblog == null) {
           true -> {

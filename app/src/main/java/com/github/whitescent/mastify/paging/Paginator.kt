@@ -17,6 +17,16 @@
 
 package com.github.whitescent.mastify.paging
 
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import com.github.whitescent.mastify.paging.LoadState.Error
+import com.github.whitescent.mastify.paging.LoadState.NotLoading
+import kotlinx.coroutines.launch
+
 class Paginator<Key, Item>(
   private val refreshKey: Key,
   private inline val getAppendKey: suspend () -> Key,
@@ -25,7 +35,12 @@ class Paginator<Key, Item>(
   private inline val onRequest: suspend (Key) -> Result<List<Item>>,
   private inline val onSuccess: suspend (loadState: LoadState, items: List<Item>) -> Unit,
 ) : PaginatorInterface<Key, Item> {
-  private var loadState = LoadState.NotLoading
+
+  var loadState = NotLoading
+    private set
+
+  var endReached: Boolean = false
+    private set
 
   override suspend fun append() {
     if (loadState == LoadState.Append) return
@@ -35,16 +50,17 @@ class Paginator<Key, Item>(
       val appendKey = getAppendKey()
       val result = onRequest(appendKey).getOrElse {
         onError(it)
-        loadState = LoadState.Error
+        loadState = Error
         onLoadUpdated(loadState)
         return
       }
+      if (result.isEmpty()) endReached = true
       onSuccess(loadState, result)
-      loadState = LoadState.NotLoading
+      loadState = NotLoading
       onLoadUpdated(loadState)
     } catch (e: Exception) {
       onError(e)
-      loadState = LoadState.Error
+      loadState = Error
       onLoadUpdated(loadState)
       return
     }
@@ -57,18 +73,44 @@ class Paginator<Key, Item>(
     try {
       val result = onRequest(refreshKey).getOrElse {
         onError(it)
-        loadState = LoadState.Error
+        loadState = Error
         onLoadUpdated(loadState)
         return
       }
+      if (result.isEmpty()) endReached = true
       onSuccess(loadState, result)
-      loadState = LoadState.NotLoading
+      loadState = NotLoading
       onLoadUpdated(loadState)
     } catch (e: Exception) {
       onError(e)
-      loadState = LoadState.Error
+      loadState = Error
       onLoadUpdated(loadState)
       return
+    }
+  }
+}
+
+@Composable
+fun <T> LaunchPaginatorListener(
+  lazyListState: LazyListState,
+  list: List<T>,
+  paginator: Paginator<*, *>,
+  fetchNumber: Int,
+  threshold: Int = 10
+) {
+  val firstVisibleItemIndex by remember(lazyListState) {
+    derivedStateOf {
+      lazyListState.firstVisibleItemIndex
+    }
+  }
+  if (list.isNotEmpty()) {
+    if (!paginator.endReached && paginator.loadState == NotLoading &&
+      firstVisibleItemIndex >= (list.size - ((list.size / fetchNumber) * threshold))
+    ) {
+      val scope = rememberCoroutineScope()
+      scope.launch {
+        paginator.append()
+      }
     }
   }
 }

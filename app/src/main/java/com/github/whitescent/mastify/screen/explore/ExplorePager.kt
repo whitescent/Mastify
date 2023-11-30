@@ -24,12 +24,15 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.paging.compose.LazyPagingItems
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusCommonList
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.viewModel.ExplorerKind
+import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
+import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
+import com.github.whitescent.mastify.viewModel.StatusCommonListData
 import kotlinx.collections.immutable.ImmutableList
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -37,11 +40,13 @@ import kotlinx.collections.immutable.ImmutableList
 fun ExplorePager(
   state: PagerState,
   trendingStatusListState: LazyListState,
-  trendingStatusList: LazyPagingItems<StatusUiData>,
+  trendingStatusList: StatusCommonListData<StatusUiData>,
   publicTimelineListState: LazyListState,
-  publicTimelineList: LazyPagingItems<StatusUiData>,
+  publicTimelineList: StatusCommonListData<StatusUiData>,
   modifier: Modifier = Modifier,
-  action: (StatusAction) -> Unit,
+  action: (StatusAction, ExplorerKind, Status) -> Unit,
+  refreshKind: (ExplorerKind) -> Unit,
+  append: (ExplorerKind) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
@@ -51,25 +56,29 @@ fun ExplorePager(
     pageContent = {
       when (it) {
         0 -> StatusCommonList(
-          statusList = trendingStatusList,
+          statusCommonListData = trendingStatusList,
           statusListState = trendingStatusListState,
-          action = action,
+          action = { action, status -> action(action, Trending, status) },
           enablePullRefresh = true,
+          refreshList = { refreshKind(Trending) },
+          append = { append(Trending) },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
         1 -> StatusCommonList(
-          statusList = publicTimelineList,
+          statusCommonListData = publicTimelineList,
           statusListState = publicTimelineListState,
-          action = action,
+          action = { action, status -> action(action, PublicTimeline, status) },
           enablePullRefresh = true,
+          refreshList = { refreshKind(PublicTimeline) },
+          append = { append(PublicTimeline) },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
       }
     },
-    modifier = modifier.fillMaxSize()
+    modifier = modifier.fillMaxSize(),
   )
 }

@@ -55,7 +55,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -81,11 +80,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.network.model.search.SearchResult
+import com.github.whitescent.mastify.paging.LaunchPaginatorListener
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -101,6 +100,7 @@ import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.ExplorerKind
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel
+import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -120,9 +120,10 @@ fun Explore(
   val uiState = viewModel.uiState
   val context = LocalContext.current
 
-  var selectedTab by remember { mutableIntStateOf(0) }
-  var hideContent by remember { mutableStateOf(false) }
+  val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
+
   // when user focus on searchBar, we need hide content
+  var hideContent by remember { mutableStateOf(false) }
 
   val pagerState = rememberPagerState { ExplorerKind.entries.size }
   val focusRequester = remember { FocusRequester() }
@@ -131,10 +132,10 @@ fun Explore(
   val snackbarState = rememberStatusSnackBarState()
 
   val trendingStatusListState = rememberLazyListState()
-  val trendingStatusList = viewModel.trendingStatusPager.collectAsLazyPagingItems()
+  val trendingStatusList by viewModel.trending.collectAsStateWithLifecycle()
 
   val publicTimelineListState = rememberLazyListState()
-  val publicTimelineList = viewModel.publicTimelinePager.collectAsLazyPagingItems()
+  val publicTimelineList by viewModel.publicTimeline.collectAsStateWithLifecycle()
 
   val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
 
@@ -203,14 +204,12 @@ fun Explore(
           else -> {
             Column {
               ExploreTabBar(
-                selectedTab = selectedTab,
-                modifier = Modifier
-                  .padding(horizontal = 12.dp)
-                  .fillMaxWidth()
-              ) { currentTab ->
-                selectedTab = currentTab
+                currentExploreKind = currentExploreKind,
+                modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
+              ) { kind ->
+                viewModel.syncExploreKind(kind)
                 scope.launch {
-                  pagerState.scrollToPage(currentTab)
+                  pagerState.scrollToPage(kind)
                 }
               }
               AppHorizontalDivider(thickness = 1.dp)
@@ -220,8 +219,8 @@ fun Explore(
                 trendingStatusList = trendingStatusList,
                 publicTimelineListState = publicTimelineListState,
                 publicTimelineList = publicTimelineList,
-                action = { action ->
-                  viewModel.onStatusAction(action, context)
+                action = { action, kind, status ->
+                  viewModel.onStatusAction(action, context, kind, status)
                 },
                 navigateToDetail = { targetStatus ->
                   navigator.navigate(
@@ -231,6 +230,8 @@ fun Explore(
                     )
                   )
                 },
+                refreshKind = viewModel::refreshExploreKind,
+                append = viewModel::appendExploreKind,
                 navigateToMedia = { attachments, targetIndex ->
                   navigator.navigate(
                     StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
@@ -244,7 +245,7 @@ fun Explore(
               )
               LaunchedEffect(pagerState) {
                 snapshotFlow { pagerState.currentPage }.collect { page ->
-                  selectedTab = page
+                  viewModel.syncExploreKind(page)
                 }
               }
             }
@@ -264,7 +265,7 @@ fun Explore(
     )
   }
 
-  LaunchedEffect(Unit) {
+  LaunchedEffect(currentExploreKind) {
     launch {
       viewModel.snackBarFlow.collect {
         snackbarState.show(it)
@@ -273,6 +274,7 @@ fun Explore(
     launch {
       appState.scrollToTopFlow.collect {
         trendingStatusListState.scrollToItem(0)
+        publicTimelineListState.scrollToItem(0)
       }
     }
     launch {
@@ -281,6 +283,18 @@ fun Explore(
       }
     }
   }
+  LaunchPaginatorListener(
+    lazyListState = trendingStatusListState,
+    list = trendingStatusList.timeline,
+    paginator = viewModel.trendingPaginator,
+    fetchNumber = EXPLOREPAGINGFETCHNUMBER
+  )
+  LaunchPaginatorListener(
+    lazyListState = publicTimelineListState,
+    list = publicTimelineList.timeline,
+    paginator = viewModel.publicTimelinePaginator,
+    fetchNumber = EXPLOREPAGINGFETCHNUMBER
+  )
 }
 
 @Composable
@@ -376,15 +390,15 @@ fun ExploreSearchBar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreTabBar(
-  selectedTab: Int,
+  currentExploreKind: ExplorerKind,
   modifier: Modifier = Modifier,
   onTabClick: (Int) -> Unit
 ) {
   PrimaryTabRow(
-    selectedTabIndex = selectedTab,
+    selectedTabIndex = currentExploreKind.ordinal,
     indicator = {
       TabRowDefaults.PrimaryIndicator(
-        modifier = Modifier.tabIndicatorOffset(it[selectedTab]),
+        modifier = Modifier.tabIndicatorOffset(it[currentExploreKind.ordinal]),
         width = 40.dp,
         height = 5.dp,
         color = AppTheme.colors.accent
@@ -394,8 +408,8 @@ fun ExploreTabBar(
     containerColor = Color.Transparent,
     modifier = modifier
   ) {
-    ExplorerKind.entries.forEachIndexed { index, tab ->
-      val selected = selectedTab == index
+    ExplorerKind.entries.forEachIndexed { index, kind ->
+      val selected = currentExploreKind == kind
       Tab(
         selected = selected,
         onClick = {
@@ -406,7 +420,7 @@ fun ExploreTabBar(
         unselectedContentColor = Color.Transparent
       ) {
         Text(
-          text = stringResource(tab.stringRes),
+          text = stringResource(kind.stringRes),
           fontSize = 14.sp,
           fontWeight = FontWeight(700),
           color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,

@@ -36,9 +36,7 @@ fun AnimatedText(
   text: String,
   modifier: Modifier = Modifier,
   color: Color = Color.Unspecified,
-  style: TextStyle = LocalTextStyle.current.copy(
-    color = color
-  )
+  style: TextStyle = LocalTextStyle.current.copy(color = color)
 ) {
   AnimatedContent(
     targetState = text,
