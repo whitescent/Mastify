@@ -17,61 +17,28 @@
 
 package com.github.whitescent.mastify.data.repository
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
+import at.connyduck.calladapter.networkresult.NetworkResult
 import at.connyduck.calladapter.networkresult.fold
-import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
-import com.github.whitescent.mastify.paging.PublicTimelinePagingSource
-import com.github.whitescent.mastify.paging.TrendingPagingSource
-import kotlinx.coroutines.flow.Flow
+import com.github.whitescent.mastify.network.model.trends.News
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class ExploreRepository @Inject constructor(
   private val api: MastodonApi
 ) {
-
-  suspend fun getPreviewResultsForSearch(keyword: String): SearchPreviewResult {
-    if (keyword.isBlank()) return SearchPreviewResult.Success(null)
+  suspend fun getPreviewResultsForSearch(keyword: String): NetworkResult<SearchResult?> {
+    if (keyword.isBlank()) return NetworkResult.success(null)
     return api.searchSync(query = keyword, limit = 10).fold(
       {
-        SearchPreviewResult.Success(it)
+        NetworkResult.success(it)
       },
       {
         it.printStackTrace()
-        SearchPreviewResult.Failure(it)
+        NetworkResult.failure(it)
       }
     )
   }
 
-  fun getTrendingStatusPager(): Flow<PagingData<StatusUiData>> =
-    Pager(
-      config = PagingConfig(
-        pageSize = 20,
-        enablePlaceholders = false,
-      ),
-      pagingSourceFactory = {
-        TrendingPagingSource(api = api)
-      },
-    ).flow
-
-  fun getPublicTimelinePager(): Flow<PagingData<StatusUiData>> =
-    Pager(
-      config = PagingConfig(
-        pageSize = 20,
-        enablePlaceholders = false,
-      ),
-      pagingSourceFactory = {
-        PublicTimelinePagingSource(api = api)
-      },
-    ).flow
-}
-
-sealed interface SearchPreviewResult {
-  data class Success(val response: SearchResult?) : SearchPreviewResult
-  data class Failure(val exception: Throwable) : SearchPreviewResult
+  suspend fun getNews(): NetworkResult<List<News>> = api.trendingNews(10)
 }

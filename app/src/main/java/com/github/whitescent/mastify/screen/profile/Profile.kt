@@ -346,7 +346,7 @@ fun ProfileTopBar(
         .alpha(alpha())
         .drawWithContent {
           drawRect(defaultBackgroundColor)
-          this.drawContent()
+          drawContent()
           drawRect(Color.Black.copy(0.35f))
         },
       contentScale = ContentScale.Crop

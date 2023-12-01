@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.domain
 
 import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.ui.component.status.StatusSnackbarType
@@ -33,8 +34,7 @@ class StatusActionHandler(private val api: MastodonApi) {
   val snackBarFlow = snackBarChanel.receiveAsFlow()
 
   suspend fun onStatusAction(action: StatusAction, context: Context) {
-    val clipManager =
-      context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+    val clipManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     when (action) {
       is StatusAction.Favorite -> {
         if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)

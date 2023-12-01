@@ -15,23 +15,13 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.utils
+package com.github.whitescent.mastify.network.model.status
 
-import android.content.Context
-import android.net.Uri
-import androidx.annotation.ColorInt
-import androidx.browser.customtabs.CustomTabColorSchemeParams
-import androidx.browser.customtabs.CustomTabsIntent
+import kotlinx.serialization.Serializable
 
-fun launchCustomChromeTab(
-  context: Context,
-  uri: Uri,
-  @ColorInt toolbarColor: Int
-) {
-  val customTabBarColor = CustomTabColorSchemeParams.Builder()
-    .setToolbarColor(toolbarColor).build()
-  val customTabsIntent = CustomTabsIntent.Builder()
-    .setDefaultColorSchemeParams(customTabBarColor)
-    .build()
-  customTabsIntent.launchUrl(context, uri)
-}
+@Serializable
+data class History(
+  val day: String,
+  val uses: String,
+  val accounts: String
+)

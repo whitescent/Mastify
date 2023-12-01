@@ -113,7 +113,7 @@ fun StatusEndIndicator(
 ) {
   Box(
     modifier = modifier.fillMaxWidth(),
-    contentAlignment = Alignment.Center
+    contentAlignment = Alignment.TopCenter
   ) {
     Box(Modifier.size(4.dp).background(Color.Gray, CircleShape))
   }

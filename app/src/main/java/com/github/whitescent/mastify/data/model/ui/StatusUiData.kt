@@ -43,7 +43,6 @@ data class StatusUiData(
   val emojis: ImmutableList<Emoji>,
   val attachments: ImmutableList<Status.Attachment>,
   val actionable: Status,
-  val actionableId: String,
   val reblogDisplayName: String,
   val fullname: String,
   val createdAt: String,
@@ -56,6 +55,8 @@ data class StatusUiData(
   val inReplyToId: String?,
   val hasUnloadedStatus: Boolean,
 ) {
+
+  val actionableId inline get() = reblog?.id ?: id
 
   val parsedContent: String = Jsoup.parse(content).body().text()
   val isInReplyTo inline get() = inReplyToId != null

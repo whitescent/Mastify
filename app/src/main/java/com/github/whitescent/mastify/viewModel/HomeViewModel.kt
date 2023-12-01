@@ -69,7 +69,7 @@ class HomeViewModel @Inject constructor(
 
   private var timelineMemoryFlow = MutableStateFlow<List<Status>>(emptyList())
 
-  private val paginator = Paginator(
+  val paginator = Paginator(
     getAppendKey = {
       timelineMemoryFlow.value.lastOrNull()?.id
     },

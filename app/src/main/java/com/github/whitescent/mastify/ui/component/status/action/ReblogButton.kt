@@ -22,10 +22,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
@@ -46,29 +44,27 @@ fun ReblogButton(
 ) {
   val scope = rememberCoroutineScope()
 
-  val reblogScaleAnimatable = remember { Animatable(1f) }
-  val reblogRotateAnimatable = remember { Animatable(0f) }
-  var reblogState by remember(reblogged) { mutableStateOf(reblogged) }
+  val scaleAnimatable = remember { Animatable(1f) }
+  val rotateAnimatable = remember { Animatable(0f) }
   val animatedReblogIconColor by animateColorAsState(
-    targetValue = if (reblogState) AppTheme.colors.reblogged else unreblogColor,
+    targetValue = if (reblogged) AppTheme.colors.reblogged else unreblogColor,
   )
 
   ClickableIcon(
-    painter = painterResource(if (reblogState) R.drawable.share_fill else R.drawable.share_fat),
-    modifier = modifier.scale(reblogScaleAnimatable.value).rotate(reblogRotateAnimatable.value),
+    painter = painterResource(if (reblogged) R.drawable.share_fill else R.drawable.share_fat),
+    modifier = modifier.scale(scaleAnimatable.value).rotate(rotateAnimatable.value),
     tint = if (enabled) animatedReblogIconColor else unreblogColor.copy(0.34f),
     enabled = enabled
   ) {
     if (enabled) {
-      reblogState = !reblogState
-      onClick(reblogState)
+      onClick(!reblogged)
       scope.launch {
-        reblogRotateAnimatable.animateTo(
-          targetValue = if (reblogRotateAnimatable.value == 0f) 360f else 0f,
+        rotateAnimatable.animateTo(
+          targetValue = if (rotateAnimatable.value == 0f) 360f else 0f,
           animationSpec = tween(durationMillis = 300)
         )
-        reblogScaleAnimatable.animateTo(1.4f, animationSpec = tween(durationMillis = 150))
-        reblogScaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 150))
+        scaleAnimatable.animateTo(1.4f, animationSpec = tween(durationMillis = 150))
+        scaleAnimatable.animateTo(1f, animationSpec = tween(durationMillis = 150))
       }
     }
   }

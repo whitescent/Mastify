@@ -20,7 +20,6 @@ package com.github.whitescent.mastify.ui.component.status.action
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -35,17 +34,14 @@ fun FavoriteButton(
   unfavoritedColor: Color = AppTheme.colors.cardAction,
   onClick: (Boolean) -> Unit,
 ) {
-  // var favState by remember(favorited) { mutableStateOf(favorited) }
   val animatedFavIconColor by animateColorAsState(
     targetValue = if (favorited) AppTheme.colors.cardLike else unfavoritedColor,
   )
-
   ClickableIcon(
     painter = painterResource(id = if (favorited) R.drawable.heart_fill else R.drawable.heart),
     modifier = modifier,
     tint = animatedFavIconColor,
   ) {
-    // favState = !favState
     onClick(!favorited)
   }
 }

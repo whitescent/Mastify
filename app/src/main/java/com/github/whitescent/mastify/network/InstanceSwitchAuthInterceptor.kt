@@ -46,7 +46,6 @@ class InstanceSwitchAuthInterceptor(private val db: AppDatabase) : Interceptor {
       } else {
         runBlocking {
           val currentAccount = db.accountDao().getActiveAccount()
-          logcat { "currentAccount $currentAccount" }
           if (currentAccount != null) {
             val accessToken = currentAccount.accessToken
             if (accessToken.isNotEmpty()) {

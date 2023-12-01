@@ -38,7 +38,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -400,9 +399,6 @@ private fun StatusActionsRow(
   action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  var animatedFavCount by remember(favoritesCount) { mutableIntStateOf(favoritesCount) }
-  var animatedReblogCount by remember(reblogsCount) { mutableIntStateOf(reblogsCount) }
-
   CenterRow(modifier = modifier) {
     CenterRow(
       modifier = Modifier.weight(1f),
@@ -427,12 +423,11 @@ private fun StatusActionsRow(
           favorited = favorited,
           modifier = Modifier.size(statusActionsIconSize)
         ) {
-          if (it) animatedFavCount++ else animatedFavCount--
           action(StatusAction.Favorite(statusId, it))
         }
-        if (animatedFavCount != 0) WidthSpacer(value = 2.dp)
+        if (favoritesCount != 0) WidthSpacer(value = 2.dp)
         AnimatedText(
-          text = if (animatedFavCount != 0) animatedFavCount.toString() else "",
+          text = if (favoritesCount != 0) favoritesCount.toString() else "",
           style = AppTheme.typography.statusActions,
         )
       }
@@ -442,12 +437,11 @@ private fun StatusActionsRow(
           enabled = rebloggingAllowed,
           modifier = Modifier.size(statusActionsIconSize)
         ) {
-          if (it) animatedReblogCount++ else animatedReblogCount--
           action(StatusAction.Reblog(statusId, it))
         }
         WidthSpacer(value = 2.dp)
         AnimatedText(
-          text = if (animatedReblogCount != 0) animatedReblogCount.toString() else "",
+          text = if (reblogsCount != 0) reblogsCount.toString() else "",
           style = TextStyle(color = AppTheme.colors.cardAction),
         )
       }

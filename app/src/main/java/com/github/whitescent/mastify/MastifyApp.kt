@@ -44,6 +44,7 @@ class MastifyApp : Application(), ImageLoaderFactory {
         add(VideoFrameDecoder.Factory())
       }
       .placeholder(R.drawable.image_placeholder)
+      .crossfade(true)
       .build()
   }
 

@@ -63,8 +63,9 @@ fun Status.toUiData(): StatusUiData = StatusUiData(
   favouritesCount = reblog?.favouritesCount ?: favouritesCount,
   favorited = reblog?.favorited ?: favorited,
   inReplyToId = reblog?.inReplyToId ?: inReplyToId,
+  // NOTE: make sure that you need to do a conversion whenever you use this property,
+  // otherwise it may cause inconsistencies between StatusUiData and StatusUiData.actionable
   actionable = actionableStatus,
-  actionableId = actionableStatus.id,
   hasUnloadedStatus = hasUnloadedStatus
 )
 

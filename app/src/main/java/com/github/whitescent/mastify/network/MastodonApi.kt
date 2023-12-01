@@ -28,6 +28,7 @@ import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
+import com.github.whitescent.mastify.network.model.trends.News
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -95,6 +96,12 @@ interface MastodonApi {
     @Query("limit") limit: Int? = null,
     @Query("offset") offset: Int = 0
   ): Response<List<Status>>
+
+  @GET("api/v1/trends/links")
+  suspend fun trendingNews(
+    @Query("limit") limit: Int? = null,
+    @Query("offset") offset: Int = 0
+  ): NetworkResult<List<News>>
 
   @POST("api/v1/statuses/{id}/bookmark")
   suspend fun bookmarkStatus(
