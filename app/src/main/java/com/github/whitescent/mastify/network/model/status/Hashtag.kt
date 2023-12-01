@@ -20,4 +20,9 @@ package com.github.whitescent.mastify.network.model.status
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Hashtag(val name: String, val url: String, val following: Boolean? = null)
+data class Hashtag(
+  val name: String,
+  val url: String,
+  val following: Boolean?,
+  val history: List<History>?
+)

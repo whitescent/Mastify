@@ -26,16 +26,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.connyduck.calladapter.networkresult.getOrDefault
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.ExploreRepository
-import com.github.whitescent.mastify.data.repository.SearchPreviewResult
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
+import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.trends.News
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
@@ -202,12 +204,9 @@ class ExplorerViewModel @Inject constructor(
       .debounce(200)
       .mapLatest {
         // reset search response when query is empty
-        when (val api = exploreRepository.getPreviewResultsForSearch(it)) {
-          is SearchPreviewResult.Success -> api.response
-          is SearchPreviewResult.Failure -> {
-            searchErrorChannel.send(Unit)
-            null
-          }
+        val api = exploreRepository.getPreviewResultsForSearch(it)
+        api.getOrNull().also {
+          if (api.isFailure) searchErrorChannel.send(Unit)
         }
       }
       .stateIn(
@@ -228,6 +227,9 @@ class ExplorerViewModel @Inject constructor(
       }
       trendingPaginator.refresh()
       publicTimelinePaginator.refresh()
+      uiState = uiState.copy(
+        trendingNews = exploreRepository.getNews().getOrDefault(emptyList())
+      )
     }
   }
 
@@ -320,7 +322,9 @@ data class StatusCommonListData<T> (
 data class ExploreUiState(
   val avatar: String = "",
   val text: String = "",
-  val userInstance: String = ""
+  val userInstance: String = "",
+  val trendingNews: List<News>? = null,
+  val topics: List<Hashtag> = emptyList()
 )
 
 enum class ExplorerKind(

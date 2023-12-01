@@ -142,6 +142,9 @@ fun Explore(
   val publicTimelineListState = rememberLazyListState()
   val publicTimelineList by viewModel.publicTimeline.collectAsStateWithLifecycle()
 
+  val newsListState = rememberLazyListState()
+  val newsList = uiState.trendingNews
+
   val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
 
   Box(
@@ -224,6 +227,8 @@ fun Explore(
                 trendingStatusList = trendingStatusList,
                 publicTimelineListState = publicTimelineListState,
                 publicTimelineList = publicTimelineList,
+                newsListState = newsListState,
+                newsList = newsList,
                 action = { action, kind, status ->
                   viewModel.onStatusAction(action, context, kind, status)
                 },

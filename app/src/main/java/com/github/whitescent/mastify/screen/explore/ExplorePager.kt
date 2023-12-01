@@ -18,16 +18,23 @@
 package com.github.whitescent.mastify.screen.explore
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.network.model.trends.News
+import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusCommonList
+import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.ExplorerKind
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
@@ -43,6 +50,8 @@ fun ExplorePager(
   trendingStatusList: StatusCommonListData<StatusUiData>,
   publicTimelineListState: LazyListState,
   publicTimelineList: StatusCommonListData<StatusUiData>,
+  newsListState: LazyListState,
+  newsList: List<News>?,
   modifier: Modifier = Modifier,
   action: (StatusAction, ExplorerKind, Status) -> Unit,
   refreshKind: (ExplorerKind) -> Unit,
@@ -77,6 +86,28 @@ fun ExplorePager(
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
+        2 -> {
+          when (newsList) {
+            null -> StatusListLoading(Modifier.fillMaxSize())
+            else -> {
+              LazyColumn(
+                state = newsListState,
+                modifier = modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                  start = 16.dp,
+                  end = 16.dp,
+                  top = 12.dp,
+                  bottom = 150.dp
+                )
+              ) {
+                items(newsList) { news ->
+                  ExploreNewsItem(news)
+                  HeightSpacer(value = 8.dp)
+                }
+              }
+            }
+          }
+        }
       }
     },
     modifier = modifier.fillMaxSize(),
