@@ -59,7 +59,6 @@ class StatusDetailViewModel @Inject constructor(
   private val instanceRepository: InstanceRepository
 ) : ViewModel() {
 
-  private var isInitialLoad = false
   private val timelineDao = db.timelineDao()
   private val accountDao = db.accountDao()
 
@@ -171,7 +170,6 @@ class StatusDetailViewModel @Inject constructor(
             ancestors = it.ancestors.toUiData().toImmutableList(),
             descendants = reorderDescendants(it.descendants),
           )
-          isInitialLoad = true
         },
         {
           it.printStackTrace()
