@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -40,14 +41,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -70,8 +69,10 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.microsoft.fluentui.tokenized.drawer.rememberBottomDrawerState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
 
 @Composable
 fun StatusDetailCard(
@@ -80,16 +81,17 @@ fun StatusDetailCard(
   inReply: Boolean = false,
   action: (StatusAction) -> Unit,
   navigateToProfile: (Account) -> Unit,
-  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
+  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit
 ) {
+  val drawerState = rememberBottomDrawerState()
+  val scope = rememberCoroutineScope()
+
   var hideSensitiveContent by rememberSaveable(status.sensitive, status.spoilerText) {
     mutableStateOf(status.sensitive && status.spoilerText.isNotEmpty())
   }
   val displayAttachments by remember(status.attachments) {
     mutableStateOf(status.attachments.filter { it.type != "unknown" }.toImmutableList())
   }
-  var openMenu by remember { mutableStateOf(false) }
-  var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
 
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
@@ -152,22 +154,9 @@ fun StatusDetailCard(
           painter = painterResource(id = R.drawable.more),
           tint = AppTheme.colors.cardMenu,
           modifier = Modifier
-            .size(18.dp)
-            .onSizeChanged {
-              pressOffset = IntOffset(x = -it.width, y = it.height)
-            },
-          onClick = { openMenu = true }
+            .size(18.dp),
+          onClick = { scope.launch { drawerState.open() } },
         )
-        StatusDropdownMenu(
-          expanded = openMenu,
-          enableCopyText = status.content.isNotEmpty(),
-          statusUiData = status,
-          onDismissRequest = { openMenu = false },
-          offset = pressOffset
-        ) {
-          action(it)
-          openMenu = false
-        }
       }
       Crossfade(hideSensitiveContent) {
         when (it) {
@@ -224,6 +213,11 @@ fun StatusDetailCard(
       )
     }
   }
+  StatusActionDrawer(
+    drawerState = drawerState,
+    statusUiData = status,
+    actionHandler = action
+  )
 }
 
 @Composable

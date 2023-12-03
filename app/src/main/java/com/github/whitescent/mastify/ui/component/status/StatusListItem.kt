@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,10 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -58,7 +57,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -83,8 +81,10 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.microsoft.fluentui.tokenized.drawer.rememberBottomDrawerState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -97,7 +97,7 @@ fun StatusListItem(
   action: (StatusAction) -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
-  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
+  navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit
 ) {
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
   val contentPaddingPx = with(LocalDensity.current) { statusContentHorizontalPadding.toPx() }
@@ -106,7 +106,7 @@ fun StatusListItem(
   val replyLineColor = AppTheme.colors.replyLine
   Surface(
     modifier = modifier,
-    color = Color.Transparent
+    color = AppTheme.colors.background
   ) {
     Column {
       if (hasUnloadedParent && (status.reblog == null)) {
@@ -121,7 +121,10 @@ fun StatusListItem(
           ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
               repeat(3) {
-                Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
+                Box(
+                  Modifier
+                    .size(3.dp)
+                    .background(replyLineColor, CircleShape))
               }
             }
           }
@@ -149,6 +152,7 @@ fun StatusListItem(
                     if (!hasUnloadedParent) avatarHalfSize to itemHeight
                     else 0f to itemHeight
                   }
+
                   Continue -> 0f to itemHeight
                   End -> 0f to avatarHalfSize
                   else -> 0f to 0f
@@ -226,6 +230,7 @@ private fun StatusContent(
   onClickMedia: (Int) -> Unit,
   navigateToProfile: () -> Unit,
 ) {
+  val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
@@ -234,8 +239,7 @@ private fun StatusContent(
   val displayAttachments by remember(statusUiData.attachments) {
     mutableStateOf(statusUiData.attachments.filter { it.type != "unknown" })
   }
-  var openMenu by remember { mutableStateOf(false) }
-  var pressOffset by remember { mutableStateOf(IntOffset.Zero) }
+  val drawerState = rememberBottomDrawerState()
 
   Box(modifier = modifier) {
     Row(
@@ -288,7 +292,9 @@ private fun StatusContent(
                   Icon(
                     painter = painterResource(id = R.drawable.lock),
                     contentDescription = null,
-                    modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
+                    modifier = Modifier
+                      .padding(horizontal = 8.dp)
+                      .size(20.dp),
                     tint = AppTheme.colors.cardMenu,
                   )
                 }
@@ -296,7 +302,9 @@ private fun StatusContent(
                   Icon(
                     painter = painterResource(id = R.drawable.lock_open),
                     contentDescription = null,
-                    modifier = Modifier.padding(horizontal = 8.dp).size(20.dp),
+                    modifier = Modifier
+                      .padding(horizontal = 8.dp)
+                      .size(20.dp),
                     tint = AppTheme.colors.cardMenu,
                   )
                 }
@@ -306,23 +314,23 @@ private fun StatusContent(
                 painter = painterResource(id = R.drawable.more),
                 tint = AppTheme.colors.cardMenu,
                 modifier = Modifier
-                  .size(18.dp)
-                  .onSizeChanged {
-                    pressOffset = IntOffset(x = -it.width, y = it.height)
-                  },
-                onClick = { openMenu = true }
+                  .size(18.dp),
+                // .onSizeChanged {
+                //   pressOffset = IntOffset(x = -it.width, y = it.height)
+                // },
+                onClick = { scope.launch { drawerState.open() } }
               )
             }
-            StatusDropdownMenu(
-              expanded = openMenu,
-              enableCopyText = statusUiData.content.isNotEmpty(),
-              statusUiData = statusUiData,
-              onDismissRequest = { openMenu = false },
-              offset = pressOffset
-            ) {
-              action(it)
-              openMenu = false
-            }
+            // StatusDropdownMenu(
+            //   expanded = openMenu,
+            //   enableCopyText = statusUiData.content.isNotEmpty(),
+            //   statusUiData = statusUiData,
+            //   onDismissRequest = { openMenu = false },
+            //   offset = pressOffset
+            // ) {
+            //   action(it)
+            //   openMenu = false
+            // }
           }
         }
         Crossfade(hideSensitiveContent) {
@@ -385,6 +393,11 @@ private fun StatusContent(
       }
     }
   }
+  StatusActionDrawer(
+    drawerState = drawerState,
+    statusUiData = statusUiData,
+    actionHandler = action
+  )
 }
 
 @Composable

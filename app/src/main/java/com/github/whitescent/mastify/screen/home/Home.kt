@@ -144,10 +144,9 @@ fun Home(
     }
   }
   var refreshing by remember { mutableStateOf(false) }
+
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
-  val uiState = viewModel.uiState
-  val context = LocalContext.current
   val pullRefreshState = rememberPullRefreshState(
     refreshing = refreshing,
     onRefresh = {
@@ -157,8 +156,12 @@ fun Home(
         viewModel.refreshTimeline()
         refreshing = false
       }
-    },
+    }
   )
+
+  val uiState = viewModel.uiState
+  val context = LocalContext.current
+
   Box(
     modifier = Modifier
       .fillMaxSize()
