@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.other
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,14 +30,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -78,6 +72,7 @@ import com.github.whitescent.mastify.ui.component.statusLoadingIndicator
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
+import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.collections.immutable.ImmutableList
@@ -100,7 +95,7 @@ fun StatusDetail(
   viewModel: StatusDetailViewModel = hiltViewModel()
 ) {
   val lazyState = rememberLazyListState()
-  val sheetState = rememberModalBottomSheetState()
+  val drawerState = rememberDrawerState()
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
   val keyboard = LocalSoftwareKeyboardController.current
@@ -111,8 +106,6 @@ fun StatusDetail(
 
   val currentStatus = viewModel.currentStatus
   val threadInReply = currentStatus.reblog?.isInReplyTo ?: currentStatus.isInReplyTo
-
-  var openSheet by remember { mutableStateOf(false) }
 
   Box((Modifier.fillMaxSize())) {
     Column {
@@ -206,7 +199,7 @@ fun StatusDetail(
         postState = state.postState,
         onValueChange = viewModel::updateTextFieldValue,
         replyToStatus = viewModel::replyToStatus,
-        openEmojiPicker = { openSheet = true }
+        openEmojiPicker = { scope.launch { drawerState.open() } }
       )
     }
     StatusSnackBar(
@@ -216,28 +209,24 @@ fun StatusDetail(
         .padding(start = 12.dp, end = 12.dp, bottom = 56.dp)
     )
   }
-  if (openSheet) {
-    EmojiSheet(
-      sheetState = sheetState,
-      emojis = state.instanceEmojis,
-      onDismissRequest = { openSheet = false },
-      onSelectEmoji = {
-        viewModel.updateTextFieldValue(
-          textFieldValue = viewModel.replyField.copy(
-            text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
-            selection = TextRange(viewModel.replyField.selection.start + it.length)
-          )
+
+  EmojiSheet(
+    drawerState = drawerState,
+    emojis = state.instanceEmojis,
+    onSelectEmoji = {
+      viewModel.updateTextFieldValue(
+        textFieldValue = viewModel.replyField.copy(
+          text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
+          selection = TextRange(viewModel.replyField.selection.start + it.length)
         )
-        scope.launch {
-          sheetState.hide()
-        }.invokeOnCompletion {
-          openSheet = false
-          keyboard?.show()
-        }
+      )
+      scope.launch {
+        drawerState.close()
+      }.invokeOnCompletion {
+        keyboard?.show()
       }
-    )
-  }
-  BackHandler(sheetState.isVisible) { openSheet = false }
+    }
+  )
 
   LaunchedEffect(Unit) {
     viewModel.snackBarFlow.collect {

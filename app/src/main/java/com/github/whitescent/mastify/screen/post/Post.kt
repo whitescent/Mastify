@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.post
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -87,6 +86,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.PostViewModel
+import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
@@ -101,10 +101,9 @@ fun Post(
 ) {
   val focusRequester = remember { FocusRequester() }
   var isFocused by remember { mutableStateOf(false) }
-  var openEmojiSheet by remember { mutableStateOf(false) }
   var openVisibilitySheet by remember { mutableStateOf(false) }
 
-  val emojiSheetState = rememberModalBottomSheetState()
+  val emojiDrawerState = rememberDrawerState()
   val visibilitySheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
 
@@ -208,52 +207,43 @@ fun Post(
       enabledPostButton = viewModel.postTextField.text.isNotEmpty() && !state.textExceedLimit,
       postState = state.postState,
       postStatus = viewModel::postStatus
-    ) {
-      openEmojiSheet = true
-    }
+    ) { scope.launch { emojiDrawerState.open() } }
   }
-  when {
-    openEmojiSheet -> {
-      EmojiSheet(
-        sheetState = emojiSheetState,
-        emojis = state.emojis,
-        onDismissRequest = { openEmojiSheet = false },
-        onSelectEmoji = {
-          viewModel.updateTextFieldValue(
-            textFieldValue = viewModel.postTextField.copy(
-              text = viewModel.postTextField.text.insertString(
-                insert = it,
-                index = viewModel.postTextField.selection.start
-              ),
-              selection = TextRange(viewModel.postTextField.selection.start + it.length)
-            )
-          )
-          scope.launch {
-            emojiSheetState.hide()
-          }.invokeOnCompletion {
-            openEmojiSheet = false
-            keyboard?.show()
-          }
+  EmojiSheet(
+    drawerState = emojiDrawerState,
+    emojis = state.emojis,
+    onSelectEmoji = {
+      viewModel.updateTextFieldValue(
+        textFieldValue = viewModel.postTextField.copy(
+          text = viewModel.postTextField.text.insertString(
+            insert = it,
+            index = viewModel.postTextField.selection.start
+          ),
+          selection = TextRange(viewModel.postTextField.selection.start + it.length)
+        )
+      )
+      scope.launch {
+        emojiDrawerState.close()
+      }.invokeOnCompletion {
+        keyboard?.show()
+      }
+    }
+  )
+  if (openVisibilitySheet) {
+    PostVisibilitySheet(
+      sheetState = visibilitySheetState,
+      currentVisibility = state.visibility,
+      onDismissRequest = { openVisibilitySheet = false },
+      onVisibilityUpdated = {
+        viewModel.updateVisibility(it)
+        scope.launch {
+          visibilitySheetState.hide()
+        }.invokeOnCompletion {
+          openVisibilitySheet = false
         }
-      )
-    }
-    openVisibilitySheet -> {
-      PostVisibilitySheet(
-        sheetState = visibilitySheetState,
-        currentVisibility = state.visibility,
-        onDismissRequest = { openVisibilitySheet = false },
-        onVisibilityUpdated = {
-          viewModel.updateVisibility(it)
-          scope.launch {
-            visibilitySheetState.hide()
-          }.invokeOnCompletion {
-            openVisibilitySheet = false
-          }
-        },
-      )
-    }
+      },
+    )
   }
-  BackHandler(emojiSheetState.isVisible) { openEmojiSheet = false }
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }
