@@ -32,6 +32,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
@@ -41,9 +42,6 @@ import com.github.whitescent.mastify.network.model.trends.News
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
-import com.github.whitescent.mastify.utils.StatusAction.Bookmark
-import com.github.whitescent.mastify.utils.StatusAction.Favorite
-import com.github.whitescent.mastify.utils.StatusAction.Reblog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -263,41 +261,14 @@ class ExplorerViewModel @Inject constructor(
 
   fun onStatusAction(action: StatusAction, context: Context, kind: ExplorerKind, status: Status) {
     viewModelScope.launch(Dispatchers.IO) {
-      val favorite = (action as? Favorite)?.favorite ?: status.favorited
-      val favouritesCount = (action as? Favorite)?.let { state ->
-        status.favouritesCount + if (state.favorite) 1 else -1
-      } ?: status.favouritesCount
-
-      val reblog = (action as? Reblog)?.reblog ?: status.reblogged
-      val reblogsCount = (action as? Reblog)?.let { state ->
-        status.reblogsCount + if (state.reblog) 1 else -1
-      } ?: status.reblogsCount
-
-      val bookmark = (action as? Bookmark)?.bookmark ?: status.bookmarked
-
-      val timeline = when (kind) {
-        ExplorerKind.Trending -> trendingFlow.value.timeline
-        ExplorerKind.PublicTimeline -> publicTimelineFlow.value.timeline
-        else -> emptyList()
-      }
-      if (timeline.isNotEmpty()) {
-        val index = timeline.indexOfFirst { it.id == status.id }
-        if (index != -1) {
-          val newTimeline = timeline.toMutableList()
-          newTimeline[index] = newTimeline[index].copy(
-            favorited = favorite,
-            favouritesCount = favouritesCount,
-            reblogged = reblog,
-            reblogsCount = reblogsCount,
-            bookmarked = bookmark,
-          )
-          when (kind) {
-            ExplorerKind.Trending -> trendingFlow.update { it.copy(timeline = newTimeline) }
-            ExplorerKind.PublicTimeline ->
-              publicTimelineFlow.update { it.copy(timeline = newTimeline) }
-            else -> Unit
-          }
+      when (kind) {
+        ExplorerKind.Trending -> trendingFlow.update {
+          it.copy(timeline = updateStatusListActions(it.timeline, action, status.id))
         }
+        ExplorerKind.PublicTimeline -> publicTimelineFlow.update {
+          it.copy(timeline = updateStatusListActions(it.timeline, action, status.id))
+        }
+        else -> Unit
       }
       statusActionHandler.onStatusAction(action, context)
     }

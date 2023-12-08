@@ -32,7 +32,7 @@ interface TimelineDao {
   suspend fun insertOrUpdate(vararg timelineEntity: TimelineEntity)
 
   @Insert(onConflict = REPLACE)
-  suspend fun insertAll(timelineEntity: List<TimelineEntity>)
+  suspend fun insertOrUpdate(timelineEntity: List<TimelineEntity>)
 
   @Query(
     """

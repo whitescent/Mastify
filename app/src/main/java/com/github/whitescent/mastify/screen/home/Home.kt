@@ -345,7 +345,7 @@ private fun NewStatusToast(
     Surface(
       shape = CircleShape,
       color = AppTheme.colors.accent,
-      shadowElevation = 4.dp
+      shadowElevation = 14.dp
     ) {
       CenterRow(
         modifier = Modifier

@@ -31,6 +31,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
@@ -46,6 +47,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -71,43 +76,19 @@ class StatusDetailViewModel @Inject constructor(
   var uiState by mutableStateOf(StatusDetailUiState())
     private set
 
-  var currentStatus by mutableStateOf(navArgs.status.toUiData())
-    private set
+  private var currentStatusFlow = MutableStateFlow(navArgs.status)
+
+  var currentStatus = currentStatusFlow
+    .map { it.toUiData() }
+    .stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.Eagerly,
+      initialValue = navArgs.status.toUiData()
+    )
 
   fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
-    when (action) {
-      is StatusAction.Favorite -> {
-        if (action.id == currentStatus.id) {
-          currentStatus = currentStatus.copy(
-            favorited = action.favorite,
-            favouritesCount = when (action.favorite) {
-              true -> currentStatus.favouritesCount + 1
-              else -> currentStatus.favouritesCount - 1
-            }
-          )
-          updateStatusInDatabase()
-        }
-      }
-      is StatusAction.Reblog -> {
-        if (action.id == currentStatus.id) {
-          currentStatus = currentStatus.copy(
-            reblogged = action.reblog,
-            reblogsCount = when (action.reblog) {
-              true -> currentStatus.reblogsCount + 1
-              else -> currentStatus.reblogsCount - 1
-            }
-          )
-        }
-        updateStatusInDatabase()
-      }
-      is StatusAction.Bookmark -> {
-        if (action.id == currentStatus.id) {
-          currentStatus = currentStatus.copy(bookmarked = action.bookmark)
-          updateStatusInDatabase()
-        }
-      }
-      else -> Unit
-    }
+    currentStatusFlow.value = updateSingleStatusActions(currentStatusFlow.value, action)
+    updateStatusInDatabase()
     statusActionHandler.onStatusAction(action, context)
   }
 
@@ -146,7 +127,7 @@ class StatusDetailViewModel @Inject constructor(
         }
       )
     }
-    currentStatus = currentStatus.copy(repliesCount = currentStatus.repliesCount + 1)
+    currentStatusFlow.value = currentStatusFlow.value.copy(repliesCount = currentStatusFlow.value.repliesCount + 1)
     updateStatusInDatabase()
   }
 
@@ -155,7 +136,7 @@ class StatusDetailViewModel @Inject constructor(
     viewModelScope.launch {
       api.status(navArgs.status.id).fold(
         {
-          currentStatus = it.toUiData() // fetch latest currentStatus
+          currentStatusFlow.value = it // fetch latest currentStatusFlow.value
           updateStatusInDatabase()
         },
         {
@@ -188,7 +169,7 @@ class StatusDetailViewModel @Inject constructor(
    * back to timeline screen
    */
   private fun updateStatusInDatabase() {
-    // if origin status id is null, it means the currentStatus if not from timeline screen
+    // if origin status id is null, it means the currentStatusFlow.value if not from timeline screen
     // so we don't need to update the status in database
     if (navArgs.originStatusId == null) return
     viewModelScope.launch {
@@ -198,25 +179,25 @@ class StatusDetailViewModel @Inject constructor(
         when (it.reblog == null) {
           true -> {
             savedStatus = navArgs.status.copy(
-              favorited = currentStatus.favorited,
-              favouritesCount = currentStatus.favouritesCount,
-              reblog = currentStatus.reblog,
-              reblogged = currentStatus.reblogged,
-              bookmarked = currentStatus.bookmarked,
-              reblogsCount = currentStatus.reblogsCount,
-              repliesCount = currentStatus.repliesCount,
+              favorited = currentStatusFlow.value.favorited,
+              favouritesCount = currentStatusFlow.value.favouritesCount,
+              reblog = currentStatusFlow.value.reblog,
+              reblogged = currentStatusFlow.value.reblogged,
+              bookmarked = currentStatusFlow.value.bookmarked,
+              reblogsCount = currentStatusFlow.value.reblogsCount,
+              repliesCount = currentStatusFlow.value.repliesCount,
             )
           }
           else -> {
             savedStatus = it.copy(
               reblog = navArgs.status.copy(
-                favorited = currentStatus.favorited,
-                favouritesCount = currentStatus.favouritesCount,
-                reblog = currentStatus.reblog,
-                reblogged = currentStatus.reblogged,
-                bookmarked = currentStatus.bookmarked,
-                reblogsCount = currentStatus.reblogsCount,
-                repliesCount = currentStatus.repliesCount,
+                favorited = currentStatusFlow.value.favorited,
+                favouritesCount = currentStatusFlow.value.favouritesCount,
+                reblog = currentStatusFlow.value.reblog,
+                reblogged = currentStatusFlow.value.reblogged,
+                bookmarked = currentStatusFlow.value.bookmarked,
+                reblogsCount = currentStatusFlow.value.reblogsCount,
+                repliesCount = currentStatusFlow.value.repliesCount,
               )
             )
           }
@@ -230,7 +211,7 @@ class StatusDetailViewModel @Inject constructor(
     if (descendants.isEmpty() || descendants.size == 1)
       return descendants.toUiData().toImmutableList()
 
-    // remove some replies that did not reply to the currentStatus
+    // remove some replies that did not reply to the currentStatusFlow.value
     val replyList = descendants.filter { it.inReplyToId == navArgs.status.actionableId }
     val finalList = mutableListOf<Status>()
 

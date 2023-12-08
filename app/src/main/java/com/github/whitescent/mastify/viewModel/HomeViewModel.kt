@@ -29,15 +29,13 @@ import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
-import com.github.whitescent.mastify.utils.StatusAction.Bookmark
-import com.github.whitescent.mastify.utils.StatusAction.Favorite
-import com.github.whitescent.mastify.utils.StatusAction.Reblog
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -69,7 +67,7 @@ class HomeViewModel @Inject constructor(
 
   private var timelineMemoryFlow = MutableStateFlow<List<Status>>(emptyList())
 
-  val paginator = Paginator(
+  private val paginator = Paginator(
     getAppendKey = {
       timelineMemoryFlow.value.lastOrNull()?.id
     },
@@ -95,7 +93,7 @@ class HomeViewModel @Inject constructor(
           uiState = uiState.copy(endReached = items.isEmpty())
           db.withTransaction {
             val activeAccount = accountDao.getActiveAccount()!!
-            timelineDao.insertAll(items.toEntity(activeAccount.id))
+            timelineDao.insertOrUpdate(items.toEntity(activeAccount.id))
           }
           // We need to wait for db to emit the latest List before we can end onSuccess,
           // otherwise loadState will be equal to NotLoading in advance,
@@ -149,41 +147,7 @@ class HomeViewModel @Inject constructor(
         it.actionableId == actionableStatus.id
       }
       savedStatus?.let {
-        val favorite = (action as? Favorite)?.favorite ?: actionableStatus.favorited
-        val favouritesCount = (action as? Favorite)?.let { state ->
-          actionableStatus.favouritesCount + if (state.favorite) 1 else -1
-        } ?: actionableStatus.favouritesCount
-
-        val reblog = (action as? Reblog)?.reblog ?: actionableStatus.reblogged
-        val reblogsCount = (action as? Reblog)?.let { state ->
-          actionableStatus.reblogsCount + if (state.reblog) 1 else -1
-        } ?: actionableStatus.reblogsCount
-
-        val bookmark = (action as? Bookmark)?.bookmark ?: actionableStatus.bookmarked
-
-        // if this status include reblog's status, we should update reblog's status
-        when (it.reblog == null) {
-          true -> {
-            savedStatus = it.copy(
-              favorited = favorite,
-              favouritesCount = favouritesCount,
-              reblogged = reblog,
-              reblogsCount = reblogsCount,
-              bookmarked = bookmark
-            )
-          }
-          else -> {
-            savedStatus = it.copy(
-              reblog = it.reblog.copy(
-                favorited = favorite,
-                favouritesCount = favouritesCount,
-                reblogged = reblog,
-                reblogsCount = reblogsCount,
-                bookmarked = bookmark
-              )
-            )
-          }
-        }
+        savedStatus = updateSingleStatusActions(it, action)
         timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccount.id))
       }
       statusActionHandler.onStatusAction(action, context)
@@ -247,7 +211,7 @@ class HomeViewModel @Inject constructor(
     db.withTransaction {
       val accountId = accountDao.getActiveAccount()!!.id
       timelineDao.clearAll(accountId)
-      timelineDao.insertAll(statuses.toEntity(accountId))
+      timelineDao.insertOrUpdate(statuses.toEntity(accountId))
     }
   }
 }
