@@ -59,6 +59,7 @@ import com.github.whitescent.mastify.paging.LoadState.NotLoading
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
+import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PageType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
@@ -218,7 +219,7 @@ fun StatusCommonList(
       else -> {
         LazyColumn(
           state = statusListState,
-          modifier = modifier.fillMaxSize(),
+          modifier = modifier.fillMaxSize().drawVerticalScrollbar(statusListState),
           contentPadding = PaddingValues(bottom = 100.dp)
         ) {
           itemsIndexed(
