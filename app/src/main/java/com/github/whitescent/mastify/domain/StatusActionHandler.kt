@@ -20,6 +20,7 @@ package com.github.whitescent.mastify.domain
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusSnackbarType
@@ -74,10 +75,10 @@ class StatusActionHandler(private val api: MastodonApi) {
      * if the user likes a status, we need to update the status and number of FAVs
      */
     fun updateStatusListActions(
-      list: List<Status>,
+      list: List<StatusUiData>,
       action: StatusAction,
       statusId: String
-    ): List<Status> {
+    ): List<StatusUiData> {
       val newList = list.toMutableList()
       val index = newList.indexOfFirst { it.id == statusId }
       if (index != -1) {
@@ -193,6 +194,49 @@ class StatusActionHandler(private val api: MastodonApi) {
     }
 
     private fun getStatusBookmark(status: Status, action: StatusAction): Boolean {
+      return when (status.reblog == null) {
+        true -> (action as? Bookmark)?.bookmark ?: status.bookmarked
+        else -> (action as? Bookmark)?.bookmark ?: status.reblog.bookmarked
+      }
+    }
+
+    private fun getStatusFavorite(status: StatusUiData, action: StatusAction): Boolean {
+      return when (status.reblog == null) {
+        true -> (action as? Favorite)?.favorite ?: status.favorited
+        else -> (action as? Favorite)?.favorite ?: status.reblog.favorited
+      }
+    }
+
+    private fun getStatusFavoriteCount(status: StatusUiData, action: StatusAction): Int {
+      return when (status.reblog == null) {
+        true -> (action as? Favorite)?.let { state ->
+          status.favouritesCount + if (state.favorite) 1 else -1
+        } ?: status.favouritesCount
+        else -> (action as? Favorite)?.let { state ->
+          status.reblog.favouritesCount + if (state.favorite) 1 else -1
+        } ?: status.reblog.favouritesCount
+      }
+    }
+
+    private fun getStatusReblog(status: StatusUiData, action: StatusAction): Boolean {
+      return when (status.reblog == null) {
+        true -> (action as? Reblog)?.reblog ?: status.reblogged
+        else -> (action as? Reblog)?.reblog ?: status.reblog.reblogged
+      }
+    }
+
+    private fun getStatusReblogCount(status: StatusUiData, action: StatusAction): Int {
+      return when (status.reblog == null) {
+        true -> (action as? Reblog)?.let { state ->
+          status.reblogsCount + if (state.reblog) 1 else -1
+        } ?: status.reblogsCount
+        else -> (action as? Reblog)?.let { state ->
+          status.reblog.reblogsCount + if (state.reblog) 1 else -1
+        } ?: status.reblog.reblogsCount
+      }
+    }
+
+    private fun getStatusBookmark(status: StatusUiData, action: StatusAction): Boolean {
       return when (status.reblog == null) {
         true -> (action as? Bookmark)?.bookmark ?: status.bookmarked
         else -> (action as? Bookmark)?.bookmark ?: status.reblog.bookmarked

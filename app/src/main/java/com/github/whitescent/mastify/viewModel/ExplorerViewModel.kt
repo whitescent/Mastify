@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -78,8 +77,8 @@ class ExplorerViewModel @Inject constructor(
     .distinctUntilChanged { old, new -> old?.id == new?.id }
     .filterNotNull()
 
-  private var trendingFlow = MutableStateFlow(StatusCommonListData<Status>())
-  private var publicTimelineFlow = MutableStateFlow(StatusCommonListData<Status>())
+  private var trendingFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
+  private var publicTimelineFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
 
   private var currentExploreKindFlow = MutableStateFlow(ExplorerKind.Trending)
   val currentExploreKind = currentExploreKindFlow
@@ -90,13 +89,6 @@ class ExplorerViewModel @Inject constructor(
     )
 
   val trending = trendingFlow
-    .map {
-      StatusCommonListData(
-        timeline = it.timeline.map { status -> status.toUiData() },
-        loadState = it.loadState,
-        endReached = it.endReached
-      )
-    }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
@@ -104,13 +96,6 @@ class ExplorerViewModel @Inject constructor(
     )
 
   val publicTimeline = publicTimelineFlow
-    .map {
-      StatusCommonListData(
-        timeline = it.timeline.map { status -> status.toUiData() },
-        loadState = it.loadState,
-        endReached = it.endReached
-      )
-    }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
@@ -139,14 +124,14 @@ class ExplorerViewModel @Inject constructor(
           val timeline = trendingFlow.value.timeline
           trendingFlow.emit(
             trendingFlow.value.copy(
-              timeline = timeline + item,
+              timeline = timeline + item.toUiData(),
               endReached = item.isEmpty()
             )
           )
         }
         LoadState.Refresh -> {
           trendingFlow.emit(
-            trendingFlow.value.copy(timeline = item, endReached = item.isEmpty())
+            trendingFlow.value.copy(timeline = item.toUiData(), endReached = item.isEmpty())
           )
         }
         else -> Unit
@@ -176,14 +161,14 @@ class ExplorerViewModel @Inject constructor(
           val timeline = publicTimelineFlow.value.timeline
           publicTimelineFlow.emit(
             publicTimelineFlow.value.copy(
-              timeline = timeline + item,
+              timeline = timeline + item.toUiData(),
               endReached = item.isEmpty()
             )
           )
         }
         LoadState.Refresh -> {
           publicTimelineFlow.emit(
-            publicTimelineFlow.value.copy(timeline = item, endReached = item.isEmpty())
+            publicTimelineFlow.value.copy(timeline = item.toUiData(), endReached = item.isEmpty())
           )
         }
         else -> Unit
@@ -293,6 +278,7 @@ class ExplorerViewModel @Inject constructor(
 
   companion object {
     const val EXPLOREPAGINGFETCHNUMBER = 20
+    const val PAGINGTHRESHOLD = 5
   }
 }
 

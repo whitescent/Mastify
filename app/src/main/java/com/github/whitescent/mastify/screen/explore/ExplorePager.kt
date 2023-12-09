@@ -26,40 +26,47 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.network.model.trends.News
+import com.github.whitescent.mastify.paging.LoadState.NotLoading
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusCommonList
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
-import com.github.whitescent.mastify.utils.StatusAction
-import com.github.whitescent.mastify.viewModel.ExplorerKind
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
 import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
-import com.github.whitescent.mastify.viewModel.StatusCommonListData
+import com.github.whitescent.mastify.viewModel.ExplorerViewModel
+import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
+import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.PAGINGTHRESHOLD
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExplorePager(
   state: PagerState,
   trendingStatusListState: LazyListState,
-  trendingStatusList: StatusCommonListData<StatusUiData>,
   publicTimelineListState: LazyListState,
-  publicTimelineList: StatusCommonListData<StatusUiData>,
   newsListState: LazyListState,
-  newsList: List<News>?,
+  viewModel: ExplorerViewModel,
   modifier: Modifier = Modifier,
-  action: (StatusAction, ExplorerKind, Status) -> Unit,
-  refreshKind: (ExplorerKind) -> Unit,
-  append: (ExplorerKind) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
 ) {
+  val trendingStatusList by viewModel.trending.collectAsStateWithLifecycle()
+  val publicTimelineList by viewModel.publicTimeline.collectAsStateWithLifecycle()
+  val newsList = viewModel.uiState.trendingNews
+  val context = LocalContext.current
+
   HorizontalPager(
     state = state,
     pageContent = {
@@ -67,10 +74,12 @@ fun ExplorePager(
         0 -> StatusCommonList(
           statusCommonListData = trendingStatusList,
           statusListState = trendingStatusListState,
-          action = { action, status -> action(action, Trending, status) },
+          action = { action, status ->
+            viewModel.onStatusAction(action, context, Trending, status)
+          },
           enablePullRefresh = true,
-          refreshList = { refreshKind(Trending) },
-          append = { append(Trending) },
+          refreshList = { viewModel.refreshExploreKind(Trending) },
+          append = { viewModel.appendExploreKind(Trending) },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
@@ -78,10 +87,12 @@ fun ExplorePager(
         1 -> StatusCommonList(
           statusCommonListData = publicTimelineList,
           statusListState = publicTimelineListState,
-          action = { action, status -> action(action, PublicTimeline, status) },
+          action = { action, status ->
+            viewModel.onStatusAction(action, context, Trending, status)
+          },
           enablePullRefresh = true,
-          refreshList = { refreshKind(PublicTimeline) },
-          append = { append(PublicTimeline) },
+          refreshList = { viewModel.refreshExploreKind(PublicTimeline) },
+          append = { viewModel.appendExploreKind(PublicTimeline) },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
@@ -112,4 +123,33 @@ fun ExplorePager(
     },
     modifier = modifier.fillMaxSize(),
   )
+  LaunchedEffect(viewModel) {
+    // TODO There is a need to encapsulate a layer of methods for the pagination's append request,
+    // but I haven't thought of a suitable way to do this yet,
+    // I tried wrapping it into a @Composable, but it causes LeftCompositionCancellationException
+    launch {
+      snapshotFlow { trendingStatusListState.firstVisibleItemIndex }
+        .filter { trendingStatusList.timeline.isNotEmpty() }
+        .map {
+          !viewModel.trendingPaginator.endReached && viewModel.trendingPaginator.loadState == NotLoading &&
+            it >= (trendingStatusList.timeline.size - ((trendingStatusList.timeline.size / EXPLOREPAGINGFETCHNUMBER) * PAGINGTHRESHOLD))
+        }
+        .filter { it }
+        .collect {
+          viewModel.trendingPaginator.append()
+        }
+    }
+    launch {
+      snapshotFlow { publicTimelineListState.firstVisibleItemIndex }
+        .filter { publicTimelineList.timeline.isNotEmpty() }
+        .map {
+          !viewModel.publicTimelinePaginator.endReached && viewModel.publicTimelinePaginator.loadState == NotLoading &&
+            it >= (publicTimelineList.timeline.size - ((publicTimelineList.timeline.size / EXPLOREPAGINGFETCHNUMBER) * PAGINGTHRESHOLD))
+        }
+        .filter { it }
+        .collect {
+          viewModel.publicTimelinePaginator.append()
+        }
+    }
+  }
 }
