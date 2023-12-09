@@ -83,6 +83,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.PAGINGTHRESHOLD
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.paging.LoadState.NotLoading
@@ -106,6 +107,8 @@ import com.github.whitescent.mastify.viewModel.ExplorerViewModel
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.NavResult
+import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -120,7 +123,8 @@ fun Explore(
   viewModel: ExplorerViewModel = hiltViewModel(),
   appState: AppState,
   drawerState: DrawerState,
-  navigator: DestinationsNavigator
+  navigator: DestinationsNavigator,
+  resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
 ) {
   val uiState = viewModel.uiState
   val context = LocalContext.current
@@ -321,6 +325,13 @@ fun Explore(
         .collect {
           viewModel.publicTimelinePaginator.append()
         }
+    }
+  }
+
+  resultRecipient.onNavResult { result ->
+    when (result) {
+      is NavResult.Canceled -> Unit
+      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
     }
   }
 }

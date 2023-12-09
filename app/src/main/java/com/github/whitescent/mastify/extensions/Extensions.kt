@@ -17,6 +17,9 @@
 
 package com.github.whitescent.mastify.extensions
 
+import com.github.whitescent.mastify.data.model.StatusBackResult
+import com.github.whitescent.mastify.network.model.status.Status
+
 // get all items size from 0 to index
 fun <A, B> Map<A, List<B>>.getSizeOfIndex(index: Int): Int {
   if (index == 0) return 0
@@ -32,4 +35,21 @@ fun String.insertString(insert: String, index: Int): String {
   val start = this.substring(0, index)
   val end = this.substring(index)
   return start + insert + end
+}
+
+fun List<Status>.updateStatusActionData(newStatus: StatusBackResult): List<Status> {
+  return if (this.any { it.id == newStatus.id }) {
+    this.toMutableList().map {
+      if (it.id == newStatus.id) {
+        it.copy(
+          favorited = newStatus.favorited,
+          favouritesCount = newStatus.favouritesCount,
+          reblogged = newStatus.reblogged,
+          reblogsCount = newStatus.reblogsCount,
+          repliesCount = newStatus.repliesCount,
+          bookmarked = newStatus.bookmarked
+        )
+      } else it
+    }
+  } else this
 }

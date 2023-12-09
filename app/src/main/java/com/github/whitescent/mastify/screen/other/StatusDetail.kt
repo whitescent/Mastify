@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.screen.other
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +48,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
@@ -76,6 +78,7 @@ import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.ResultBackNavigator
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -91,6 +94,7 @@ data class StatusDetailNavArgs(
 )
 @Composable
 fun StatusDetail(
+  resultNavigator: ResultBackNavigator<StatusBackResult>,
   navigator: DestinationsNavigator,
   viewModel: StatusDetailViewModel = hiltViewModel()
 ) {
@@ -113,7 +117,19 @@ fun StatusDetail(
       CenterRow(Modifier.padding(12.dp)) {
         ClickableIcon(
           painter = painterResource(id = R.drawable.arrow_left),
-          onClick = { navigator.popBackStack() },
+          onClick = {
+            resultNavigator.navigateBack(
+              result = StatusBackResult(
+                id = currentStatus.actionableId,
+                favorited = currentStatus.favorited,
+                favouritesCount = currentStatus.favouritesCount,
+                reblogged = currentStatus.reblogged,
+                reblogsCount = currentStatus.reblogsCount,
+                repliesCount = currentStatus.repliesCount,
+                bookmarked = currentStatus.bookmarked
+              )
+            )
+          },
           modifier = Modifier.size(28.dp),
           tint = AppTheme.colors.primaryContent
         )
@@ -227,6 +243,21 @@ fun StatusDetail(
       }
     }
   )
+
+  BackHandler {
+    // we need sync the latest status action data to previous screen
+    resultNavigator.navigateBack(
+      result = StatusBackResult(
+        id = currentStatus.actionableId,
+        favorited = currentStatus.favorited,
+        favouritesCount = currentStatus.favouritesCount,
+        reblogged = currentStatus.reblogged,
+        reblogsCount = currentStatus.reblogsCount,
+        repliesCount = currentStatus.repliesCount,
+        bookmarked = currentStatus.bookmarked
+      )
+    )
+  }
 
   LaunchedEffect(Unit) {
     viewModel.snackBarFlow.collect {

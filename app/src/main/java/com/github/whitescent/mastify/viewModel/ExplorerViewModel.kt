@@ -28,11 +28,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.getOrDefault
 import com.github.whitescent.R
+import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
+import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
@@ -272,6 +274,17 @@ class ExplorerViewModel @Inject constructor(
       }
       statusActionHandler.onStatusAction(action, context)
     }
+  }
+
+  fun updateStatusFromDetailScreen(newStatus: StatusBackResult) {
+    val trending = trendingFlow.value.timeline
+    val publicTimeline = publicTimelineFlow.value.timeline
+    trendingFlow.value = trendingFlow.value.copy(
+      timeline = trending.updateStatusActionData(newStatus)
+    )
+    publicTimelineFlow.value = publicTimelineFlow.value.copy(
+      timeline = publicTimeline.updateStatusActionData(newStatus)
+    )
   }
 
   fun syncExploreKind(page: Int) {
