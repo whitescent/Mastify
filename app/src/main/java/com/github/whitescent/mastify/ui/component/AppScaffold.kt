@@ -33,10 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
-import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.home.Home
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
@@ -48,7 +46,6 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
-import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
@@ -64,8 +61,7 @@ fun AppScaffold(
   viewModel: AppViewModel
 ) {
   val accounts by viewModel.accountList.collectAsStateWithLifecycle()
-  val userData by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
-  val activeAccount = userData?.activeAccount
+  val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
 
   val engine = rememberAnimatedNavHostEngine(
     rootDefaultAnimations = RootNavGraphDefaultAnimations(
@@ -97,7 +93,7 @@ fun AppScaffold(
       if (destination.shouldShowScaffoldElements() && activeAccount != null) {
         AppDrawer(
           drawerState = drawerState,
-          activeAccount = activeAccount,
+          activeAccount = activeAccount!!,
           accounts = accounts.toImmutableList(),
           changeAccount = {
             scope.launch { drawerState.close() }
@@ -145,20 +141,7 @@ fun AppScaffold(
           dependency(NavGraphs.app) { drawerState }
           dependency(NavGraphs.app) { appState }
         }
-      ) {
-        composable(HomeDestination) {
-          userData?.let { data ->
-            Home(
-              appState = appState,
-              drawerState = drawerState,
-              activeAccount = data.activeAccount,
-              timeline = data.timeline,
-              timelinePosition = data.position,
-              navigator = destinationsNavigator,
-            )
-          }
-        }
-      }
+      )
       LaunchedEffect(it) {
         appState.setPaddingValues(it)
       }

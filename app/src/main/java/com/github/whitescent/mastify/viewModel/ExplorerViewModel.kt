@@ -131,7 +131,10 @@ class ExplorerViewModel @Inject constructor(
         }
         LoadState.Refresh -> {
           trendingFlow.emit(
-            trendingFlow.value.copy(timeline = item.toUiData(), endReached = item.isEmpty())
+            trendingFlow.value.copy(
+              timeline = item.toUiData(),
+              endReached = item.isEmpty() || item.size < EXPLOREPAGINGFETCHNUMBER
+            )
           )
         }
         else -> Unit

@@ -31,18 +31,24 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.mapper.status.toEntity
+import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.splitReorderStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -67,7 +73,24 @@ class HomeViewModel @Inject constructor(
 
   private var timelineMemoryFlow = MutableStateFlow<List<Status>>(emptyList())
 
-  private val paginator = Paginator(
+  val homeCombinedFlow = activeAccountFlow
+    .flatMapLatest { account ->
+      val timelineFlow = timelineDao.getStatusListWithFlow(account.id)
+      timelineFlow.map {
+        HomeUserData(
+          activeAccount = account,
+          timeline = splitReorderStatus(it).toUiData().toImmutableList(),
+          position = TimelinePosition(account.firstVisibleItemIndex, account.offset)
+        )
+      }
+    }
+    .stateIn(
+      scope = viewModelScope,
+      started = SharingStarted.Eagerly,
+      initialValue = null
+    )
+
+  val paginator = Paginator(
     getAppendKey = {
       timelineMemoryFlow.value.lastOrNull()?.id
     },
