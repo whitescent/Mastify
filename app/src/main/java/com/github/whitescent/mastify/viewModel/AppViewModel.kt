@@ -26,32 +26,24 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.AccountEntity
-import com.github.whitescent.mastify.mapper.status.toUiData
-import com.github.whitescent.mastify.utils.splitReorderStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class)
 class AppViewModel @Inject constructor(
   db: AppDatabase,
   private val accountRepository: AccountRepository,
 ) : ViewModel() {
 
   private val accountDao = db.accountDao()
-  private val timelineDao = db.timelineDao()
 
   private val accountListFlow = accountDao.getAccountListFlow()
   private val activeAccountFlow = accountDao
@@ -69,17 +61,7 @@ class AppViewModel @Inject constructor(
       initialValue = emptyList()
     )
 
-  val homeCombinedFlow = activeAccountFlow
-    .flatMapLatest { account ->
-      val timelineFlow = timelineDao.getStatusListWithFlow(account.id)
-      timelineFlow.map {
-        HomeUserData(
-          activeAccount = account,
-          timeline = splitReorderStatus(it).toUiData().toImmutableList(),
-          position = TimelinePosition(account.firstVisibleItemIndex, account.offset)
-        )
-      }
-    }
+  val activeAccount = activeAccountFlow
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
@@ -96,11 +78,7 @@ class AppViewModel @Inject constructor(
     viewModelScope.launch {
       val activeAccount = accountDao.getActiveAccount()
       isLoggedIn = activeAccount != null
-      if (isLoggedIn == true) {
-        homeCombinedFlow.collect {
-          it?.let { prepared = true }
-        }
-      } else prepared = true
+      prepared = true
     }
   }
 

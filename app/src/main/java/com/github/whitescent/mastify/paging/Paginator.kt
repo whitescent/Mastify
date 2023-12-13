@@ -17,8 +17,12 @@
 
 package com.github.whitescent.mastify.paging
 
+import androidx.compose.runtime.snapshotFlow
+import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState.Error
 import com.github.whitescent.mastify.paging.LoadState.NotLoading
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
 
 class Paginator<Key, Item>(
   private val refreshKey: Key,
@@ -82,6 +86,23 @@ class Paginator<Key, Item>(
     }
   }
 }
+
+suspend fun <T : List<*>> autoAppend(
+  paginator: Paginator<*, Status>,
+  currentListIndex: () -> Int,
+  fetchNumber: Int,
+  threshold: Int,
+  list: () -> T,
+) = snapshotFlow { currentListIndex() }
+  .filter { list().isNotEmpty() }
+  .map {
+    !paginator.endReached && paginator.loadState == NotLoading &&
+      it >= (list().size - ((list().size / fetchNumber) * threshold))
+  }
+  .filter { it }
+  .collect {
+    paginator.append()
+  }
 
 enum class LoadState {
   Refresh, Append, Error, NotLoading

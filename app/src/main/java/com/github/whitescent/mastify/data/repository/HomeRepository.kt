@@ -110,7 +110,6 @@ class HomeRepository @Inject constructor(
       }
     }
   }
-
   companion object {
     const val FETCHNUMBER = 40
     const val PAGINGTHRESHOLD = 10
