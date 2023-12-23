@@ -9,7 +9,7 @@
 
 Mastify is an open-source [Mastodon](https://joinmastodon.org/) Android client currently under development, which is fully developed using Jetpack Compose.
 
-Follow Mastify on [Mastodon](https://mastodon.social/@mastify) for the latest development progress !
+Follow Mastify on [Mastodon](https://mastodon.social/@mastify) for the latest development progress!
 
 ## Contributing
 
