@@ -144,8 +144,8 @@ fun Explore(
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .statusBarsPadding()
       .background(AppTheme.colors.background)
+      .statusBarsPadding()
   ) {
     Column {
       Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
