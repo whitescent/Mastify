@@ -153,6 +153,7 @@ fun Home(
   Box(
     modifier = Modifier
       .fillMaxSize()
+      .background(AppTheme.colors.background)
       .statusBarsPadding()
       .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
       .pullRefresh(pullRefreshState)
