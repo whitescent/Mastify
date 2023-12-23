@@ -19,8 +19,8 @@ package com.github.whitescent.mastify.ui.component
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.End
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -29,6 +29,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
@@ -36,7 +38,6 @@ import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.startAppDestination
-import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
 import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
 import com.github.whitescent.mastify.utils.rememberAppState
@@ -72,10 +73,10 @@ fun AppScaffold(
         defaultSlideOutContainer()
       },
       popEnterTransition = {
-        defaultSlideIntoContainer(End)
+        defaultSlideIntoContainer(forward = false)
       },
       popExitTransition = {
-        defaultSlideOutContainer(End)
+        defaultSlideOutContainer(forward = false)
       }
     )
   )
@@ -116,7 +117,8 @@ fun AppScaffold(
         )
       }
     },
-    gesturesEnabled = destination.shouldShowScaffoldElements()
+    gesturesEnabled = destination.shouldShowScaffoldElements(),
+    modifier = Modifier.fillMaxSize()
   ) {
     Scaffold(
       bottomBar = {
@@ -130,7 +132,8 @@ fun AppScaffold(
           )
         }
       },
-      containerColor = AppTheme.colors.background
+      containerColor = Color.Black,
+      modifier = Modifier.fillMaxSize(),
     ) {
       DestinationsNavHost(
         engine = engine,
