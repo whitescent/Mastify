@@ -114,7 +114,7 @@ fun Post(
   val instanceUiData = state.instanceUiData
 
   Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = Modifier.fillMaxSize().background(AppTheme.colors.background),
   ) {
     PostTopBar(activeAccount) { navigator.popBackStack() }
     AppHorizontalDivider(Modifier.padding(6.dp))
