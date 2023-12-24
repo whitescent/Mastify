@@ -22,9 +22,7 @@ import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import javax.inject.Inject
 
-class StatusRepository @Inject constructor(
-  private val api: MastodonApi
-) {
+class StatusRepository @Inject constructor(private val api: MastodonApi) {
   suspend fun getAccountStatus(
     onlyMedia: Boolean? = null,
     excludeReplies: Boolean? = null,
