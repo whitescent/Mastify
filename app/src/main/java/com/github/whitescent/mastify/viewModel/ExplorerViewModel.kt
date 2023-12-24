@@ -19,7 +19,6 @@ package com.github.whitescent.mastify.viewModel
 
 import android.content.Context
 import androidx.annotation.StringRes
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,6 +28,7 @@ import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.getOrDefault
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.StatusBackResult
+import com.github.whitescent.mastify.data.model.ui.StatusCommonListData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.database.AppDatabase
@@ -99,7 +99,7 @@ class ExplorerViewModel @Inject constructor(
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
-      initialValue = StatusCommonListData<StatusUiData>()
+      initialValue = StatusCommonListData()
     )
 
   val trendingPaginator = Paginator(
@@ -284,13 +284,6 @@ class ExplorerViewModel @Inject constructor(
     const val PAGINGTHRESHOLD = 5
   }
 }
-
-@Immutable
-data class StatusCommonListData<T> (
-  val timeline: List<T> = emptyList(),
-  val loadState: LoadState = LoadState.NotLoading,
-  val endReached: Boolean = false
-)
 
 data class ExploreUiState(
   val avatar: String = "",
