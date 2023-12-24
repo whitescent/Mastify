@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.screen.other
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -111,7 +112,7 @@ fun StatusDetail(
   val currentStatus by viewModel.currentStatus.collectAsStateWithLifecycle()
   val threadInReply = currentStatus.reblog?.isInReplyTo ?: currentStatus.isInReplyTo
 
-  Box(Modifier.fillMaxSize()) {
+  Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
     Column {
       Spacer(Modifier.statusBarsPadding())
       CenterRow(Modifier.padding(12.dp)) {

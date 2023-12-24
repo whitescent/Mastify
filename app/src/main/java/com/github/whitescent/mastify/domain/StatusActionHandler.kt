@@ -80,7 +80,7 @@ class StatusActionHandler(private val api: MastodonApi) {
       statusId: String
     ): List<StatusUiData> {
       val newList = list.toMutableList()
-      val index = newList.indexOfFirst { it.id == statusId }
+      val index = newList.indexOfFirst { it.actionableId == statusId }
       if (index != -1) {
         var status = newList[index]
 
@@ -92,28 +92,21 @@ class StatusActionHandler(private val api: MastodonApi) {
 
         val bookmark = getStatusBookmark(status, action)
 
-        when (status.reblog == null) {
-          true -> {
-            status = status.copy(
-              favorited = favorite,
-              favouritesCount = favouritesCount,
-              reblogged = reblog,
-              reblogsCount = reblogsCount,
-              bookmarked = bookmark
-            )
-          }
-          else -> {
-            status = status.copy(
-              reblog = status.reblog!!.copy(
-                favorited = favorite,
-                favouritesCount = favouritesCount,
-                reblogged = reblog,
-                reblogsCount = reblogsCount,
-                bookmarked = bookmark
-              )
-            )
-          }
-        }
+        status = status.copy(
+          favorited = favorite,
+          favouritesCount = favouritesCount,
+          reblogged = reblog,
+          reblogsCount = reblogsCount,
+          bookmarked = bookmark,
+          actionable = status.actionable.copy(
+            favorited = favorite,
+            favouritesCount = favouritesCount,
+            reblogged = reblog,
+            reblogsCount = reblogsCount,
+            bookmarked = bookmark
+          )
+        )
+
         newList[index] = status
         return newList
       } else return list

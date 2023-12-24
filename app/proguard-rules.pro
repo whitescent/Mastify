@@ -25,3 +25,4 @@
 
 # @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
+-dontwarn com.microsoft.device.display.DisplayMask

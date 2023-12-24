@@ -127,7 +127,9 @@ class StatusDetailViewModel @Inject constructor(
         }
       )
     }
-    currentStatusFlow.value = currentStatusFlow.value.copy(repliesCount = currentStatusFlow.value.repliesCount + 1)
+    currentStatusFlow.value = currentStatusFlow.value.copy(
+      repliesCount = currentStatusFlow.value.repliesCount + 1
+    )
     updateStatusInDatabase()
   }
 

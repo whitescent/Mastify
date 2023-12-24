@@ -186,7 +186,7 @@ interface MastodonApi {
     @Query("exclude_replies") excludeReplies: Boolean? = null,
     @Query("only_media") onlyMedia: Boolean? = null,
     @Query("pinned") pinned: Boolean? = null
-  ): Response<List<Status>>
+  ): NetworkResult<List<Status>>
 
   @GET("/api/v1/custom_emojis")
   suspend fun getCustomEmojis(): NetworkResult<List<Emoji>>

@@ -22,37 +22,42 @@ import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.navigation.NavBackStackEntry
 import com.github.whitescent.mastify.screen.appDestination
 import com.github.whitescent.mastify.utils.isBottomBarScreen
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
+private const val slideAnimationTween = 300
+private const val scaleSize = 0.75f
+
 fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideIntoContainer(
-  towards: AnimatedContentTransitionScope.SlideDirection = Start
-): EnterTransition {
-  return slideIntoContainer(
-    towards = towards,
-    animationSpec = tween(slideAnimationTween, easing = FastOutSlowInEasing)
-  ) + fadeIn()
+  forward: Boolean = true
+): EnterTransition = when (forward) {
+  true -> slideIntoContainer(Start, tween(slideAnimationTween, easing = FastOutSlowInEasing))
+  false -> scaleIn(initialScale = scaleSize, animationSpec = tween(300, easing = EaseOutCubic)) +
+    fadeIn(animationSpec = tween(300, delayMillis = 80), initialAlpha = 0.15f)
 }
 
 fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
-  towards: AnimatedContentTransitionScope.SlideDirection = Start
-): ExitTransition {
-  return slideOutOfContainer(
-    towards = towards,
-    animationSpec = tween(slideAnimationTween, easing = FastOutSlowInEasing)
-  ) + fadeOut()
+  forward: Boolean = true
+): ExitTransition = when (forward) {
+  true -> scaleOut(targetScale = scaleSize, animationSpec = tween(400, easing = EaseInOutCubic)) +
+    fadeOut(targetAlpha = 0.15f)
+  false -> slideOutOfContainer(End, tween(slideAnimationTween))
 }
 
 object BottomBarScreenTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return if (initialState.destination == targetState.destination) {
-      defaultSlideIntoContainer(Start) // transition when change account
+      defaultSlideIntoContainer() // transition when change account
     } else {
       when (initialState.appDestination().isBottomBarScreen) {
         true -> EnterTransition.None
@@ -62,7 +67,7 @@ object BottomBarScreenTransitions : DestinationStyle.Animated {
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return if (initialState.destination == targetState.destination) {
-      defaultSlideOutContainer(Start)
+      defaultSlideOutContainer()
     } else {
       when (targetState.appDestination().isBottomBarScreen) {
         true -> ExitTransition.None
@@ -73,15 +78,13 @@ object BottomBarScreenTransitions : DestinationStyle.Animated {
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
     return when (initialState.appDestination().isBottomBarScreen) {
       true -> EnterTransition.None
-      else -> defaultSlideIntoContainer(End)
+      else -> defaultSlideIntoContainer(forward = false)
     }
   }
   override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
     return when (targetState.appDestination().isBottomBarScreen) {
       true -> ExitTransition.None
-      else -> defaultSlideOutContainer(End)
+      else -> defaultSlideOutContainer(forward = false)
     }
   }
 }
-
-private const val slideAnimationTween = 300

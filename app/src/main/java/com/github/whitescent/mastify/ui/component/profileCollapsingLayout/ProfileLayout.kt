@@ -24,13 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import kotlin.math.roundToInt
 
 @Composable
 fun ProfileLayout(
   state: ProfileLayoutState,
   modifier: Modifier = Modifier,
-  enabledScroll: Boolean = true,
   collapsingTop: @Composable () -> Unit,
   bodyContent: @Composable () -> Unit,
   topBar: @Composable () -> Unit,
@@ -41,8 +41,7 @@ fun ProfileLayout(
         state = rememberScrollableState {
           state.calculateOffset(it)
         },
-        orientation = Orientation.Vertical,
-        enabled = enabledScroll
+        orientation = Orientation.Vertical
       )
       .nestedScroll(state.nestedScrollConnection),
     content = {
@@ -51,10 +50,14 @@ fun ProfileLayout(
       topBar()
     },
   ) { measurables, constraints ->
-    val collapsingTopPlaceable = measurables[0].measure(constraints)
+    val collapsingTopPlaceable = measurables[0].measure(
+      // Sometimes the maximum height of the composable will exceed the maximum height of the constrains,
+      // so we need to have an infinite height measurement composable when measuring,
+      // otherwise the composable will be truncated
+      constraints = Constraints(maxWidth = constraints.maxWidth)
+    )
     val bodyContentPlaceable = measurables[1].measure(constraints)
     val topBarPlaceable = measurables[2].measure(constraints)
-    state.bodyContentMaxHeight = (constraints.maxHeight - collapsingTopPlaceable.height).toDp()
     layout(constraints.maxWidth, constraints.maxHeight) {
       state.updateBounds((collapsingTopPlaceable.height - topBarPlaceable.height).toFloat())
       collapsingTopPlaceable.place(0, state.offset.value.roundToInt())

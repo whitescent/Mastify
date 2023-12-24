@@ -45,7 +45,10 @@ data class Account(
 
   val noteWithEmoji = generateHtmlContentWithEmoji(note, emojis)
   val fieldsWithEmoji = fields.map {
-    it.copy(value = generateHtmlContentWithEmoji(it.value, emojis))
+    it.copy(
+      name = generateHtmlContentWithEmoji(it.name, emojis),
+      value = generateHtmlContentWithEmoji(it.value, emojis)
+    )
   }
   val isEmptyHeader = header.contains("missing.png")
 
