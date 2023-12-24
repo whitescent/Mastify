@@ -267,6 +267,7 @@ class ProfileViewModel @Inject constructor(
   }
 
   fun onStatusAction(action: StatusAction, context: Context, status: Status) {
+    println("wtf ${status.favouritesCount}")
     viewModelScope.launch(Dispatchers.IO) {
       profileStatusFlow.update {
         it.copy(

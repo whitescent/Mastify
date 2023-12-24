@@ -194,46 +194,27 @@ class StatusActionHandler(private val api: MastodonApi) {
     }
 
     private fun getStatusFavorite(status: StatusUiData, action: StatusAction): Boolean {
-      return when (status.reblog == null) {
-        true -> (action as? Favorite)?.favorite ?: status.favorited
-        else -> (action as? Favorite)?.favorite ?: status.reblog.favorited
-      }
+      return (action as? Favorite)?.favorite ?: status.favorited
     }
 
     private fun getStatusFavoriteCount(status: StatusUiData, action: StatusAction): Int {
-      return when (status.reblog == null) {
-        true -> (action as? Favorite)?.let { state ->
-          status.favouritesCount + if (state.favorite) 1 else -1
-        } ?: status.favouritesCount
-        else -> (action as? Favorite)?.let { state ->
-          status.reblog.favouritesCount + if (state.favorite) 1 else -1
-        } ?: status.reblog.favouritesCount
-      }
+      return (action as? Favorite)?.let { state ->
+        status.favouritesCount + if (state.favorite) 1 else -1
+      } ?: status.favouritesCount
     }
 
     private fun getStatusReblog(status: StatusUiData, action: StatusAction): Boolean {
-      return when (status.reblog == null) {
-        true -> (action as? Reblog)?.reblog ?: status.reblogged
-        else -> (action as? Reblog)?.reblog ?: status.reblog.reblogged
-      }
+      return (action as? Reblog)?.reblog ?: status.reblogged
     }
 
     private fun getStatusReblogCount(status: StatusUiData, action: StatusAction): Int {
-      return when (status.reblog == null) {
-        true -> (action as? Reblog)?.let { state ->
-          status.reblogsCount + if (state.reblog) 1 else -1
-        } ?: status.reblogsCount
-        else -> (action as? Reblog)?.let { state ->
-          status.reblog.reblogsCount + if (state.reblog) 1 else -1
-        } ?: status.reblog.reblogsCount
-      }
+      return (action as? Reblog)?.let { state ->
+        status.reblogsCount + if (state.reblog) 1 else -1
+      } ?: status.reblogsCount
     }
 
     private fun getStatusBookmark(status: StatusUiData, action: StatusAction): Boolean {
-      return when (status.reblog == null) {
-        true -> (action as? Bookmark)?.bookmark ?: status.bookmarked
-        else -> (action as? Bookmark)?.bookmark ?: status.reblog.bookmarked
-      }
+      return (action as? Bookmark)?.bookmark ?: status.bookmarked
     }
   }
 }

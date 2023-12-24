@@ -38,16 +38,24 @@ fun String.insertString(insert: String, index: Int): String {
 }
 
 fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List<StatusUiData> {
-  return if (this.any { it.id == newStatus.id }) {
+  return if (this.any { it.actionableId == newStatus.id }) {
     this.toMutableList().map {
-      if (it.id == newStatus.id) {
+      if (it.actionableId == newStatus.id) {
         it.copy(
           favorited = newStatus.favorited,
           favouritesCount = newStatus.favouritesCount,
           reblogged = newStatus.reblogged,
           reblogsCount = newStatus.reblogsCount,
           repliesCount = newStatus.repliesCount,
-          bookmarked = newStatus.bookmarked
+          bookmarked = newStatus.bookmarked,
+          actionable = it.actionable.copy(
+            favorited = newStatus.favorited,
+            favouritesCount = newStatus.favouritesCount,
+            reblogged = newStatus.reblogged,
+            reblogsCount = newStatus.reblogsCount,
+            repliesCount = newStatus.repliesCount,
+            bookmarked = newStatus.bookmarked,
+          )
         )
       } else it
     }
