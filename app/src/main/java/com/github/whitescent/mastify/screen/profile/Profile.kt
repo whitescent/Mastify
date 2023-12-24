@@ -28,11 +28,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -51,10 +52,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,15 +76,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.LoadState
-import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.mapper.emoji.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
-import com.github.whitescent.mastify.network.model.account.Fields
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
@@ -108,14 +106,15 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.viewModel.ProfileKind
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.NavResult
+import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.launch
 
-data class ProfileNavArgs(
-  val account: Account
-)
+data class ProfileNavArgs(val account: Account)
 
 @OptIn(ExperimentalFoundationApi::class)
 @AppNavGraph
@@ -126,12 +125,11 @@ data class ProfileNavArgs(
 fun Profile(
   appState: AppState,
   navigator: DestinationsNavigator,
-  viewModel: ProfileViewModel = hiltViewModel()
+  viewModel: ProfileViewModel = hiltViewModel(),
+  resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
 ) {
   val uiState = viewModel.uiState
-  val statusList = viewModel.statusPager.collectAsLazyPagingItems()
-  val statusWithReplyList = viewModel.statusWithReplyPager.collectAsLazyPagingItems()
-  val statusWithMediaList = viewModel.statusWithMediaPager.collectAsLazyPagingItems()
+  val currentTab by viewModel.currentProfileKind.collectAsStateWithLifecycle()
 
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
@@ -140,15 +138,13 @@ fun Profile(
   val statusWithReplyListState = rememberLazyListState()
   val statusWithMediaListState = rememberLazyListState()
 
-  val context = LocalContext.current
-
   val atPageTop by remember {
     derivedStateOf {
       profileLayoutState.progress == 0f
     }
   }
 
-  Box {
+  Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
     ProfileLayout(
       state = profileLayoutState,
       collapsingTop = {
@@ -193,9 +189,9 @@ fun Profile(
                     id = R.string.account_joined,
                     FormatFactory.getLocalizedDateTime(uiState.account.createdAt)
                   ),
-                  color = AppTheme.colors.primaryContent.copy(0.6f),
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Medium,
+                  color = AppTheme.colors.primaryContent.copy(0.4f),
+                  fontSize = 14.sp,
+                  fontWeight = FontWeight.Bold,
                 )
                 WidthSpacer(value = 6.dp)
                 Icon(
@@ -212,35 +208,11 @@ fun Profile(
           HeightSpacer(value = 6.dp)
         }
       },
-      enabledScroll = (statusList.loadState.refresh is LoadState.NotLoading && statusList.itemCount > 0),
       bodyContent = {
-        val tabs = listOf(ProfileTabItem.POST, ProfileTabItem.REPLY, ProfileTabItem.MEDIA)
-        var selectedTab by remember { mutableIntStateOf(0) }
-        val pagerState = rememberPagerState { tabs.size }
-        Column(
-          // Maybe there's a better workaround
-          Modifier.heightIn(
-            max = when (selectedTab) {
-              0 -> {
-                if (statusList.loadState.refresh is LoadState.NotLoading && statusList.itemCount > 0)
-                  Dp.Unspecified
-                else profileLayoutState.bodyContentMaxHeight
-              }
-              1 -> {
-                if (statusWithReplyList.loadState.refresh is LoadState.NotLoading && statusWithReplyList.itemCount > 0)
-                  Dp.Unspecified
-                else profileLayoutState.bodyContentMaxHeight
-              }
-              else -> {
-                if (statusWithMediaList.loadState.refresh is LoadState.NotLoading && statusWithMediaList.itemCount > 0)
-                  Dp.Unspecified
-                else profileLayoutState.bodyContentMaxHeight
-              }
-            }
-          )
-        ) {
-          ProfileTabs(tabs, selectedTab) {
-            if (selectedTab == it) {
+        val pagerState = rememberPagerState { ProfileKind.entries.size }
+        Column {
+          ProfileTabs(currentTab) {
+            if (currentTab.ordinal == it) {
               scope.launch {
                 when (it) {
                   0 -> statusListState.scrollToItem(0)
@@ -249,22 +221,17 @@ fun Profile(
                 }
               }.invokeOnCompletion { profileLayoutState.animatedToTop() }
             }
-            selectedTab = it
+            viewModel.syncProfileTab(it)
             scope.launch {
               pagerState.scrollToPage(it)
             }
           }
           ProfilePager(
             state = pagerState,
-            statusList = statusList,
-            statusWithReplyList = statusWithReplyList,
-            statusWithMediaList = statusWithMediaList,
+            viewModel = viewModel,
             statusListState = statusListState,
-            statusWithReplyListState = statusWithReplyListState,
-            statusWithMediaListState = statusWithMediaListState,
-            action = {
-              viewModel.onStatusAction(it, context)
-            },
+            statusListWithReplyState = statusWithReplyListState,
+            statusListWithMediaState = statusWithMediaListState,
             navigateToDetail = {
               navigator.navigate(
                 StatusDetailDestination(
@@ -287,7 +254,7 @@ fun Profile(
         }
         LaunchedEffect(pagerState) {
           snapshotFlow { pagerState.currentPage }.collect { page ->
-            selectedTab = page
+            viewModel.syncProfileTab(page)
           }
         }
       },
@@ -320,6 +287,13 @@ fun Profile(
   LaunchedEffect(Unit) {
     viewModel.snackBarFlow.collect {
       snackbarState.show(it)
+    }
+  }
+
+  resultRecipient.onNavResult { result ->
+    when (result) {
+      is NavResult.Canceled -> Unit
+      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
     }
   }
 }
@@ -428,91 +402,18 @@ fun ProfileInfo(account: Account, isSelf: Boolean?, isFollowing: Boolean?) {
         }
       )
     }
-    HeightSpacer(value = 8.dp)
-    AccountFields(
-      account.fieldsWithEmoji,
-      account.followingCount,
-      account.followersCount,
-      account.statusesCount,
-      isSelf,
-      isFollowing
-    )
-  }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProfileTabs(
-  tabs: List<ProfileTabItem>,
-  selectedTab: Int,
-  onTabClick: (Int) -> Unit
-) {
-  PrimaryTabRow(
-    selectedTabIndex = selectedTab,
-    indicator = {
-      TabRowDefaults.PrimaryIndicator(
-        modifier = Modifier.tabIndicatorOffset(it[selectedTab]),
-        width = 40.dp,
-        height = 5.dp,
-        color = AppTheme.colors.accent
-      )
-    },
-    containerColor = Color.Transparent,
-    divider = {
-      AppHorizontalDivider(thickness = 1.dp)
-    },
-  ) {
-    tabs.forEachIndexed { index, tab ->
-      val selected = selectedTab == index
-      Tab(
-        selected = selected,
-        onClick = {
-          onTabClick(index)
-        },
-        modifier = Modifier.clip(AppTheme.shape.normal)
-      ) {
-        Text(
-          text = stringResource(
-            id = when (tab) {
-              ProfileTabItem.POST -> R.string.post_title
-              ProfileTabItem.REPLY -> R.string.reply_title
-              else -> R.string.media_title
-            }
-          ),
-          fontSize = 17.sp,
-          fontWeight = FontWeight(700),
-          color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,
-          modifier = Modifier.padding(12.dp),
-        )
-      }
-    }
-  }
-}
-
-@Composable
-fun AccountFields(
-  fields: List<Fields>,
-  followingCount: Long,
-  followersCount: Long,
-  statusesCount: Long,
-  isSelf: Boolean?,
-  isFollowing: Boolean?
-) {
-  val context = LocalContext.current
-  val primaryColor = AppTheme.colors.primaryContent
-  val items = listOf(statusesCount, followingCount, followersCount)
-  Column(Modifier.fillMaxWidth()) {
-    if (fields.isNotEmpty()) {
-      fields.forEach {
-        CenterRow(Modifier.fillMaxWidth()) {
-          CenterRow {
-            Box(Modifier.width(120.dp), Alignment.CenterStart) {
+    UserMetricPanel(
+      fields = {
+        if (account.fieldsWithEmoji.isNotEmpty()) HeightSpacer(value = 8.dp)
+        account.fieldsWithEmoji.forEach {
+          Row {
+            Box(Modifier.width(140.dp), Alignment.CenterStart) {
               CenterRow {
-                Text(
+                HtmlText(
                   text = it.name,
                   color = Color(0xFF8B8B8B),
                   fontSize = 16.sp,
-                  fontWeight = FontWeight.Bold
+                  fontWeight = FontWeight.Medium,
                 )
                 it.verifiedAt?.let {
                   WidthSpacer(value = 4.dp)
@@ -525,25 +426,115 @@ fun AccountFields(
                 }
               }
             }
+            WidthSpacer(value = 8.dp)
+            HtmlText(
+              text = it.value,
+              fontSize = 16.sp,
+              fontWeight = FontWeight(450),
+              overflow = TextOverflow.Ellipsis,
+              onLinkClick = { url ->
+                launchCustomChromeTab(
+                  context = context,
+                  uri = Uri.parse(url),
+                  toolbarColor = primaryColor.toArgb(),
+                )
+              },
+              modifier = Modifier.weight(1f)
+            )
           }
-          WidthSpacer(value = 8.dp)
-          HtmlText(
-            text = it.value,
-            maxLines = 1,
-            fontSize = 16.sp,
-            fontWeight = FontWeight(450),
-            overflow = TextOverflow.Ellipsis,
-            onLinkClick = { url ->
-              launchCustomChromeTab(
-                context = context,
-                uri = Uri.parse(url),
-                toolbarColor = primaryColor.toArgb(),
-              )
-            },
-            modifier = Modifier.weight(1f)
-          )
         }
-        if (it != fields.last()) HeightSpacer(value = 4.dp)
+      },
+      profileMetrics = {
+        val metrics = listOf(account.statusesCount, account.followingCount, account.followersCount)
+        metrics.forEachIndexed { index, item ->
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+              text = "$item",
+              fontWeight = FontWeight.SemiBold,
+              fontSize = 20.sp,
+              color = AppTheme.colors.primaryContent
+            )
+            WidthSpacer(value = 4.dp)
+            Text(
+              text = stringResource(
+                id = when (index) {
+                  0 -> R.string.post_title
+                  1 -> R.string.following_title
+                  else -> R.string.follower_title
+                }
+              ),
+              color = AppTheme.colors.primaryContent.copy(0.5f),
+              fontSize = 14.sp
+            )
+          }
+        }
+      },
+      actionButton = {
+        isSelf?.let {
+          HeightSpacer(value = 10.dp)
+          when (it) {
+            true -> EditProfileButton(Modifier.fillMaxWidth())
+            else -> isFollowing?.let { FollowButton(isFollowing) }
+          }
+          HeightSpacer(value = 4.dp)
+        }
+      }
+    )
+  }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProfileTabs(
+  selectedTab: ProfileKind,
+  onTabClick: (Int) -> Unit
+) {
+  PrimaryTabRow(
+    selectedTabIndex = selectedTab.ordinal,
+    indicator = {
+      TabRowDefaults.PrimaryIndicator(
+        modifier = Modifier.tabIndicatorOffset(it[selectedTab.ordinal]),
+        width = 40.dp,
+        height = 5.dp,
+        color = AppTheme.colors.accent
+      )
+    },
+    containerColor = Color.Transparent,
+    divider = {
+      AppHorizontalDivider(thickness = 1.dp)
+    },
+  ) {
+    ProfileKind.entries.forEachIndexed { index, tab ->
+      val selected = selectedTab == tab
+      Tab(
+        selected = selected,
+        onClick = {
+          onTabClick(index)
+        },
+        modifier = Modifier.clip(AppTheme.shape.normal)
+      ) {
+        Text(
+          text = stringResource(tab.stringRes),
+          fontSize = 17.sp,
+          fontWeight = FontWeight(700),
+          color = if (selected) AppTheme.colors.primaryContent else AppTheme.colors.secondaryContent,
+          modifier = Modifier.padding(12.dp),
+        )
+      }
+    }
+  }
+}
+
+@Composable
+fun UserMetricPanel(
+  fields: @Composable (ColumnScope.() -> Unit)? = null,
+  profileMetrics: @Composable (RowScope.() -> Unit)? = null,
+  actionButton: @Composable () -> Unit
+) {
+  Column(Modifier.fillMaxWidth()) {
+    fields?.let {
+      Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        fields.invoke(this)
       }
       HeightSpacer(value = 10.dp)
     }
@@ -551,37 +542,9 @@ fun AccountFields(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(36.dp)
     ) {
-      items.forEachIndexed { index, item ->
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-          Text(
-            text = "$item",
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 20.sp,
-            color = AppTheme.colors.primaryContent
-          )
-          WidthSpacer(value = 4.dp)
-          Text(
-            text = stringResource(
-              id = when (index) {
-                0 -> R.string.post_title
-                1 -> R.string.following_title
-                else -> R.string.follower_title
-              }
-            ),
-            color = AppTheme.colors.primaryContent.copy(0.5f),
-            fontSize = 14.sp
-          )
-        }
-      }
+      profileMetrics?.invoke(this)
     }
-    isSelf?.let {
-      HeightSpacer(value = 10.dp)
-      when (it) {
-        true -> EditProfileButton(Modifier.fillMaxWidth())
-        else -> isFollowing?.let { FollowButton(isFollowing) }
-      }
-      HeightSpacer(value = 4.dp)
-    }
+    actionButton()
   }
 }
 
@@ -634,8 +597,4 @@ fun EditProfileButton(modifier: Modifier = Modifier) {
       )
     }
   }
-}
-
-enum class ProfileTabItem {
-  POST, REPLY, MEDIA
 }
