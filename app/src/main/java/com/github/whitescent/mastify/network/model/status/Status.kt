@@ -52,7 +52,7 @@ data class Status(
 ) {
 
   val actionableId inline get() = reblog?.id ?: id
-  val actionableStatus: Status inline get() = reblog ?: this
+  val actionableStatus inline get() = reblog ?: this
 
   val isInReplyTo inline get() = inReplyToId != null
 
