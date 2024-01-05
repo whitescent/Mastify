@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -85,7 +85,7 @@ fun ExplorePager(
           statusCommonListData = publicTimelineList,
           statusListState = publicTimelineListState,
           action = { action, status ->
-            viewModel.onStatusAction(action, context, Trending, status)
+            viewModel.onStatusAction(action, context, PublicTimeline, status)
           },
           enablePullRefresh = true,
           refreshList = { viewModel.refreshExploreKind(PublicTimeline) },
