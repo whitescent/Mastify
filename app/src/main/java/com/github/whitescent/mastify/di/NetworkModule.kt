@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -61,12 +61,9 @@ object NetworkModule {
       .readTimeout(30, TimeUnit.SECONDS)
       .writeTimeout(30, TimeUnit.SECONDS)
       .addInterceptor(
-        HttpLoggingInterceptor()
-          .apply {
-            if (BuildConfig.DEBUG) {
-              setLevel(HttpLoggingInterceptor.Level.BASIC)
-            }
-          }
+        HttpLoggingInterceptor().apply {
+          if (BuildConfig.DEBUG) setLevel(HttpLoggingInterceptor.Level.BASIC)
+        }
       )
       .addInterceptor { chain ->
         // Add a custom User-Agent

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -18,7 +18,11 @@
 package com.github.whitescent.mastify.utils
 
 import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import com.github.whitescent.R
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlin.math.abs
 
 private const val SECOND_IN_MILLIS: Long = 1000
@@ -26,6 +30,30 @@ private const val MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60
 private const val HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60
 private const val DAY_IN_MILLIS = HOUR_IN_MILLIS * 24
 private const val YEAR_IN_MILLIS = DAY_IN_MILLIS * 365
+
+/**
+ * Calculate how long the given timestamp is from now
+ */
+@Composable
+fun formatDurationUntilEnd(timestamp: String): String {
+  val apiInstant = Instant.parse(timestamp)
+  val nowInstant = Clock.System.now()
+  val duration = apiInstant - nowInstant
+
+  if (duration.isNegative()) return stringResource(id = R.string.vote_poll_expired)
+
+  val totalSeconds = duration.inWholeSeconds
+  val days = totalSeconds / 86400
+  val hours = (totalSeconds % 86400) / 3600
+  val minutes = (totalSeconds % 3600) / 60
+
+  return when {
+    days > 0 -> stringResource(R.string.vote_poll_day, days)
+    hours > 0 -> stringResource(R.string.vote_poll_hours, hours)
+    minutes > 0 -> stringResource(R.string.vote_poll_minutes, minutes)
+    else -> stringResource(R.string.vote_poll_soon_ending)
+  }
+}
 
 /**
  * This is a rough duplicate of [android.text.format.DateUtils.getRelativeTimeSpanString],

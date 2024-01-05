@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -48,7 +48,7 @@ import kotlinx.collections.immutable.ImmutableList
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.statusComment(
   descendants: ImmutableList<StatusUiData>,
-  action: (StatusAction) -> Unit,
+  action: (StatusAction, String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Status.Attachment>, Int) -> Unit,
@@ -63,7 +63,7 @@ fun LazyListScope.statusComment(
         val replyChainType = remember(item) { descendants.getReplyChainType(index) }
         StatusListItem(
           status = item,
-          action = action,
+          action = { action(it, item.id) },
           replyChainType = replyChainType,
           hasUnloadedParent = false,
           navigateToDetail = { navigateToDetail(item.actionable) },

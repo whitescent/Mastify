@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -26,6 +26,7 @@ import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.network.model.status.NewStatus
+import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
 import com.github.whitescent.mastify.network.model.trends.News
@@ -208,4 +209,11 @@ interface MastodonApi {
     @Query("since_id") sinceId: String? = null,
     @Query("limit") limit: Int? = null,
   ): Response<List<Status>>
+
+  @FormUrlEncoded
+  @POST("api/v1/polls/{id}/votes")
+  suspend fun voteInPoll(
+    @Path("id") id: String,
+    @Field("choices[]") choices: List<Int>
+  ): NetworkResult<Poll>
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -37,6 +37,7 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.utils.splitReorderStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
@@ -165,15 +166,26 @@ class HomeViewModel @Inject constructor(
   fun onStatusAction(action: StatusAction, context: Context, actionableStatus: Status) {
     viewModelScope.launch(Dispatchers.IO) {
       val activeAccount = accountDao.getActiveAccount()!!
-      // update the currentStatus in the db, if the action is about (fav, reblog, bookmark)
+      // update the current Status in the db, if the action is about (fav, reblog, bookmark) etc...
       var savedStatus = timelineMemoryFlow.value.firstOrNull {
         it.actionableId == actionableStatus.id
       }
-      savedStatus?.let {
-        savedStatus = updateSingleStatusActions(it, action)
-        timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccount.id))
+      // The reason for this separation is that we need to update the UI state as quickly as possible,
+      // regardless of whether the network request was successful or not.
+      if (savedStatus != null) {
+        if (action !is VotePoll) {
+          savedStatus = updateSingleStatusActions(savedStatus, action)
+          timelineDao.insertOrUpdate(savedStatus.toEntity(activeAccount.id))
+          statusActionHandler.onStatusAction(action, context)
+        } else {
+          statusActionHandler.onStatusAction(action, context)?.let {
+            if (it.isSuccess) {
+              savedStatus = it.getOrNull() ?: savedStatus
+              timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccount.id))
+            }
+          }
+        }
       }
-      statusActionHandler.onStatusAction(action, context)
     }
   }
 

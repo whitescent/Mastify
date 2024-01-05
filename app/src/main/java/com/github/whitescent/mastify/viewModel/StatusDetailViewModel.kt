@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -22,6 +22,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -31,7 +32,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
-import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
@@ -42,13 +43,15 @@ import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChangedBy
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -76,20 +79,36 @@ class StatusDetailViewModel @Inject constructor(
   var uiState by mutableStateOf(StatusDetailUiState())
     private set
 
-  private var currentStatusFlow = MutableStateFlow(navArgs.status)
-
-  var currentStatus = currentStatusFlow
-    .map { it.toUiData() }
+  /**
+   * Navigate from the previous screen to the status with the latest data
+   * in the Status Detail Screen
+   */
+  val currentStatus = snapshotFlow { uiState.statusList }
+    .filter { it.isNotEmpty() }
+    .distinctUntilChangedBy { list ->
+      list.first { it.id == navArgs.status.id }
+    }
+    .map { list ->
+      list.first { it.id == navArgs.status.id }
+    }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
       initialValue = navArgs.status.toUiData()
     )
 
-  fun onStatusAction(action: StatusAction, context: Context) = viewModelScope.launch {
-    currentStatusFlow.value = updateSingleStatusActions(currentStatusFlow.value, action)
+  fun onStatusAction(action: StatusAction, context: Context, id: String) = viewModelScope.launch {
+    uiState = uiState.copy(
+      statusList = updateStatusListActions(uiState.statusList, action, id).toImmutableList()
+    )
+    statusActionHandler.onStatusAction(action, context)?.let {
+      if (action is VotePoll) {
+        val newList = uiState.statusList.toMutableList()
+        newList[newList.indexOfFirst { item -> item.id == id }] = it.getOrNull()!!.toUiData()
+        uiState = uiState.copy(statusList = newList.toImmutableList())
+      }
+    }
     updateStatusInDatabase()
-    statusActionHandler.onStatusAction(action, context)
   }
 
   fun replyToStatus() {
@@ -113,9 +132,12 @@ class StatusDetailViewModel @Inject constructor(
         { status ->
           uiState = uiState.copy(
             postState = PostState.Success,
-            descendants = uiState.descendants.toMutableList().also {
-              it.add(0, status.toUiData())
-            }.toImmutableList()
+            statusList = uiState.statusList.toMutableList().also {
+              it.add(
+                index = it.indexOfFirst { item -> item.id == navArgs.status.id } + 1,
+                element = status.toUiData()
+              )
+            }.toImmutableList(),
           )
           replyField = replyField.copy(text = "")
           delay(50)
@@ -127,36 +149,34 @@ class StatusDetailViewModel @Inject constructor(
         }
       )
     }
-    currentStatusFlow.value = currentStatusFlow.value.copy(
-      repliesCount = currentStatusFlow.value.repliesCount + 1
-    )
-    updateStatusInDatabase()
   }
 
   init {
-    uiState = uiState.copy(loading = true)
+    var latestStatus = navArgs.status.toUiData()
+    uiState = uiState.copy(loading = true, statusList = persistentListOf(latestStatus))
     viewModelScope.launch {
       api.status(navArgs.status.id).fold(
         {
-          currentStatusFlow.value = it // fetch latest currentStatusFlow.value
-          updateStatusInDatabase()
+          latestStatus = it.toUiData() // fetch latest status data
         },
         {
           statusActionHandler.onStatusLoadError()
         }
       )
-      api.statusContext(navArgs.status.actionableId).fold(
+      api.statusContext(navArgs.status.id).fold(
         {
+          val combinedList = (it.ancestors.toUiData() +
+            latestStatus + reorderDescendants(it.descendants)).toImmutableList()
           uiState = uiState.copy(
             loading = false,
             instanceEmojis = instanceRepository.getEmojis().toImmutableList(),
-            ancestors = it.ancestors.toUiData().toImmutableList(),
-            descendants = reorderDescendants(it.descendants),
+            statusList = combinedList
           )
+          updateStatusInDatabase()
         },
         {
+          uiState = uiState.copy(loading = false)
           it.printStackTrace()
-          uiState = uiState.copy(loading = false, loadError = true)
         }
       )
     }
@@ -171,38 +191,24 @@ class StatusDetailViewModel @Inject constructor(
    * back to timeline screen
    */
   private fun updateStatusInDatabase() {
-    // if origin status id is null, it means the currentStatusFlow.value if not from timeline screen
+    // if origin status id is null, it means the currentStatus.value if not from timeline screen
     // so we don't need to update the status in database
     if (navArgs.originStatusId == null) return
     viewModelScope.launch {
       val activeAccountId = accountDao.getActiveAccount()!!.id
       var savedStatus = timelineDao.getSingleStatusWithId(activeAccountId, navArgs.originStatusId)
+      val newStatus = navArgs.status.copy(
+        favorited = currentStatus.value.favorited,
+        favouritesCount = currentStatus.value.favouritesCount,
+        reblogged = currentStatus.value.reblogged,
+        reblogsCount = currentStatus.value.reblogsCount,
+        bookmarked = currentStatus.value.bookmarked,
+        poll = currentStatus.value.poll
+      )
       savedStatus?.let {
-        when (it.reblog == null) {
-          true -> {
-            savedStatus = navArgs.status.copy(
-              favorited = currentStatusFlow.value.favorited,
-              favouritesCount = currentStatusFlow.value.favouritesCount,
-              reblog = currentStatusFlow.value.reblog,
-              reblogged = currentStatusFlow.value.reblogged,
-              bookmarked = currentStatusFlow.value.bookmarked,
-              reblogsCount = currentStatusFlow.value.reblogsCount,
-              repliesCount = currentStatusFlow.value.repliesCount,
-            )
-          }
-          else -> {
-            savedStatus = it.copy(
-              reblog = navArgs.status.copy(
-                favorited = currentStatusFlow.value.favorited,
-                favouritesCount = currentStatusFlow.value.favouritesCount,
-                reblog = currentStatusFlow.value.reblog,
-                reblogged = currentStatusFlow.value.reblogged,
-                bookmarked = currentStatusFlow.value.bookmarked,
-                reblogsCount = currentStatusFlow.value.reblogsCount,
-                repliesCount = currentStatusFlow.value.repliesCount,
-              )
-            )
-          }
+        savedStatus = when (it.reblog == null) {
+          true -> newStatus
+          else -> it.copy(reblog = newStatus)
         }
         timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccountId))
       }
@@ -213,7 +219,7 @@ class StatusDetailViewModel @Inject constructor(
     if (descendants.isEmpty() || descendants.size == 1)
       return descendants.toUiData().toImmutableList()
 
-    // remove some replies that did not reply to the currentStatusFlow.value
+    // remove some replies that did not reply to the currentStatus
     val replyList = descendants.filter { it.inReplyToId == navArgs.status.actionableId }
     val finalList = mutableListOf<Status>()
 
@@ -245,8 +251,6 @@ class StatusDetailViewModel @Inject constructor(
 data class StatusDetailUiState(
   val loading: Boolean = false,
   val instanceEmojis: ImmutableList<Emoji> = persistentListOf(),
-  val ancestors: ImmutableList<StatusUiData> = persistentListOf(),
-  val descendants: ImmutableList<StatusUiData> = persistentListOf(),
-  val loadError: Boolean = false,
+  val statusList: ImmutableList<StatusUiData> = persistentListOf(),
   val postState: PostState = PostState.Idle
 )

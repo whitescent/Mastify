@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -185,6 +185,9 @@ fun StatusDetailCard(
                     overflow = TextOverflow.Ellipsis
                   )
                 }
+              }
+              StatusPoll(status.poll, Modifier.padding(top = 8.dp)) { id, choices ->
+                action(StatusAction.VotePoll(id, choices, status.actionable))
               }
               if (displayAttachments.isNotEmpty()) {
                 HeightSpacer(value = 4.dp)
