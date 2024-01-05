@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -34,6 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +69,6 @@ import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.EmojiSheet
 import com.github.whitescent.mastify.ui.component.ReplyTextField
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
@@ -110,106 +112,73 @@ fun StatusDetail(
   val replyText = viewModel.replyField
 
   val currentStatus by viewModel.currentStatus.collectAsStateWithLifecycle()
-  val threadInReply = currentStatus.reblog?.isInReplyTo ?: currentStatus.isInReplyTo
 
   Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
     Column {
       Spacer(Modifier.statusBarsPadding())
-      CenterRow(Modifier.padding(12.dp)) {
-        ClickableIcon(
-          painter = painterResource(id = R.drawable.arrow_left),
-          onClick = {
-            resultNavigator.navigateBack(
-              result = StatusBackResult(
-                id = currentStatus.actionableId,
-                favorited = currentStatus.favorited,
-                favouritesCount = currentStatus.favouritesCount,
-                reblogged = currentStatus.reblogged,
-                reblogsCount = currentStatus.reblogsCount,
-                repliesCount = currentStatus.repliesCount,
-                bookmarked = currentStatus.bookmarked
+      StatusDetailTopBar(
+        navigationIcon = {
+          ClickableIcon(
+            painter = painterResource(id = R.drawable.arrow_left),
+            onClick = {
+              resultNavigator.navigateBack(
+                result = StatusBackResult(
+                  id = currentStatus.actionableId,
+                  favorited = currentStatus.favorited,
+                  favouritesCount = currentStatus.favouritesCount,
+                  reblogged = currentStatus.reblogged,
+                  reblogsCount = currentStatus.reblogsCount,
+                  repliesCount = currentStatus.repliesCount,
+                  bookmarked = currentStatus.bookmarked
+                )
+              )
+            },
+            modifier = Modifier.size(28.dp),
+            tint = AppTheme.colors.primaryContent
+          )
+        },
+        title = {
+          Text(
+            text = stringResource(id = R.string.home_title),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Medium,
+            color = AppTheme.colors.primaryContent,
+          )
+        },
+        modifier = Modifier.padding(12.dp)
+      )
+      AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
+      StatusDetailContent(
+        currentStatusId = viewModel.navArgs.status.id,
+        lazyState = lazyState,
+        statusList = state.statusList,
+        loading = state.loading,
+        action = { action, id ->
+          viewModel.onStatusAction(action, context, id)
+        },
+        navigateToDetail = {
+          if (it.id != viewModel.navArgs.status.id) {
+            navigator.navigate(
+              StatusDetailDestination(
+                status = it,
+                originStatusId = null
               )
             )
-          },
-          modifier = Modifier.size(28.dp),
-          tint = AppTheme.colors.primaryContent
-        )
-        WidthSpacer(value = 12.dp)
-        Text(
-          text = stringResource(id = R.string.home_title),
-          fontSize = 20.sp,
-          fontWeight = FontWeight.Medium,
-          color = AppTheme.colors.primaryContent,
-        )
-      }
-      AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
-      when (threadInReply) {
-        true -> {
-          StatusDetailInReply(
-            status = currentStatus,
-            lazyState = lazyState,
-            ancestors = state.ancestors.toImmutableList(),
-            descendants = state.descendants.toImmutableList(),
-            loading = state.loading,
-            action = {
-              viewModel.onStatusAction(it, context)
-            },
-            navigateToDetail = {
-              if (it.id != currentStatus.actionableId) {
-                navigator.navigate(
-                  StatusDetailDestination(
-                    status = it,
-                    originStatusId = null
-                  )
-                )
-              }
-            },
-            navigateToMedia = { attachments, index ->
-              navigator.navigate(
-                StatusMediaScreenDestination(
-                  attachments = attachments.toTypedArray(),
-                  targetMediaIndex = index
-                )
-              )
-            },
-            navigateToProfile = {
-              navigator.navigate(ProfileDestination(it))
-            },
-            modifier = Modifier.weight(1f)
+          }
+        },
+        navigateToMedia = { attachments, index ->
+          navigator.navigate(
+            StatusMediaScreenDestination(
+              attachments = attachments.toTypedArray(),
+              targetMediaIndex = index
+            )
           )
-        }
-        else -> {
-          StatusDetailContent(
-            status = currentStatus,
-            lazyState = lazyState,
-            descendants = state.descendants.toImmutableList(),
-            loading = state.loading,
-            action = {
-              viewModel.onStatusAction(it, context)
-            },
-            navigateToDetail = {
-              if (it.id != currentStatus.actionableId) {
-                navigator.navigate(
-                  StatusDetailDestination(
-                    status = it,
-                    originStatusId = null
-                  )
-                )
-              }
-            },
-            navigateToMedia = { attachments, index ->
-              navigator.navigate(
-                StatusMediaScreenDestination(
-                  attachments = attachments.toTypedArray(),
-                  targetMediaIndex = index
-                )
-              )
-            },
-            navigateToProfile = { navigator.navigate(ProfileDestination(it)) },
-            modifier = Modifier.weight(1f),
-          )
-        }
-      }
+        },
+        navigateToProfile = {
+          navigator.navigate(ProfileDestination(it))
+        },
+        modifier = Modifier.weight(1f)
+      )
       ReplyTextField(
         targetAccount = viewModel.navArgs.status.account,
         fieldValue = replyText,
@@ -249,7 +218,7 @@ fun StatusDetail(
     // we need sync the latest status action data to previous screen
     resultNavigator.navigateBack(
       result = StatusBackResult(
-        id = currentStatus.actionableId,
+        id = viewModel.navArgs.status.id,
         favorited = currentStatus.favorited,
         favouritesCount = currentStatus.favouritesCount,
         reblogged = currentStatus.reblogged,
@@ -268,85 +237,64 @@ fun StatusDetail(
 }
 
 @Composable
-fun StatusDetailContent(
-  status: StatusUiData,
-  lazyState: LazyListState,
-  descendants: ImmutableList<StatusUiData>,
-  loading: Boolean,
+fun StatusDetailTopBar(
+  navigationIcon: @Composable () -> Unit,
+  title: @Composable () -> Unit,
   modifier: Modifier = Modifier,
-  action: (StatusAction) -> Unit,
-  navigateToDetail: (Status) -> Unit,
-  navigateToProfile: (Account) -> Unit,
-  navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
-  LazyColumn(
-    modifier = modifier
-      .fillMaxSize()
-      .drawVerticalScrollbar(lazyState),
-    state = lazyState
-  ) {
-    item {
-      StatusDetailCard(
-        status = status,
-        action = action,
-        navigateToMedia = navigateToMedia,
-        navigateToProfile = navigateToProfile
-      )
-    }
-    item {
-      AppHorizontalDivider()
-    }
-    when (loading) {
-      true -> statusLoadingIndicator()
-      else -> {
-        statusComment(
-          descendants = descendants,
-          action = action,
-          navigateToDetail = navigateToDetail,
-          navigateToMedia = navigateToMedia,
-          navigateToProfile = navigateToProfile
-        )
-      }
-    }
+  CenterRow(modifier) {
+    navigationIcon()
+    WidthSpacer(value = 12.dp)
+    title()
   }
 }
 
 @Composable
-fun StatusDetailInReply(
-  status: StatusUiData,
+fun StatusDetailContent(
+  currentStatusId: String,
+  statusList: ImmutableList<StatusUiData>,
   lazyState: LazyListState,
-  ancestors: ImmutableList<StatusUiData>,
-  descendants: ImmutableList<StatusUiData>,
   loading: Boolean,
   modifier: Modifier = Modifier,
-  action: (StatusAction) -> Unit,
+  action: (StatusAction, String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
+  val currentStatusIndex by remember(statusList.size) {
+    mutableIntStateOf(statusList.indexOfFirst { it.id == currentStatusId })
+  }
+  val ancestors by remember(statusList) {
+    mutableStateOf(statusList.subList(0, currentStatusIndex + 1))
+  }
+  val descendants by remember(statusList) {
+    mutableStateOf((statusList - ancestors).toImmutableList())
+  }
   LazyColumn(modifier = modifier, state = lazyState) {
     itemsIndexed(
-      items = ancestors + status,
+      items = ancestors,
       key = { _, item -> item.id }
     ) { index, repliedStatus ->
-      if (repliedStatus == status) {
-        StatusDetailCard(
-          status = status,
-          action = action,
-          navigateToMedia = navigateToMedia,
-          navigateToProfile = navigateToProfile,
-          inReply = true
-        )
-      } else {
-        StatusListItem(
-          status = repliedStatus,
-          action = action,
-          replyChainType = if (index == 0) Start else Continue,
-          hasUnloadedParent = false,
-          navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
-          navigateToMedia = navigateToMedia,
-          navigateToProfile = navigateToProfile
-        )
+      if (index <= currentStatusIndex) {
+        if (repliedStatus.id == currentStatusId) {
+          StatusDetailCard(
+            status = repliedStatus,
+            action = { action(it, repliedStatus.id) },
+            navigateToMedia = navigateToMedia,
+            navigateToProfile = navigateToProfile,
+            inReply = currentStatusIndex != 0
+          )
+        } else {
+          StatusListItem(
+            status = repliedStatus,
+            action = { action(it, repliedStatus.id) },
+            replyChainType = if (index == 0) Start else Continue,
+            hasUnloadedParent = false,
+            navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
+            navigateToMedia = navigateToMedia,
+            navigateToProfile = navigateToProfile
+          )
+        }
       }
     }
     item {
