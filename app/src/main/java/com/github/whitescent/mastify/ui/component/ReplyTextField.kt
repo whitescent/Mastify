@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -88,7 +88,7 @@ fun ReplyTextField(
     modifier = Modifier.imePadding(),
     color = AppTheme.colors.background,
     shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
-    border = BorderStroke(1.dp, AppTheme.colors.divider)
+    border = BorderStroke(1.dp, AppTheme.colors.replyTextFieldBorder)
   ) {
     AnimatedContent(
       targetState = expand
