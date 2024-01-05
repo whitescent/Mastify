@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -179,13 +179,13 @@ private fun AnnotatedString.Builder.renderElement(
 
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 
-    "span", "p", "i" -> {
+    "span", "p", "i", "em" -> {
       if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
       element.childNodes().forEach {
         renderNode(
           node = it,
           urlSpanStyle = urlSpanStyle,
-          textStyle = if (normalName == "i") textStyle.copy(fontStyle = Italic) else textStyle
+          textStyle = if (normalName.isItalic()) textStyle.copy(fontStyle = Italic) else textStyle
         )
       }
     }
@@ -193,6 +193,8 @@ private fun AnnotatedString.Builder.renderElement(
     "emoji" -> renderEmoji(element)
   }
 }
+
+private fun String.isItalic() = this == "i" || this == "em"
 
 private fun AnnotatedString.Builder.renderEmoji(element: Element) {
   val emojiHref = element.attr("target")
