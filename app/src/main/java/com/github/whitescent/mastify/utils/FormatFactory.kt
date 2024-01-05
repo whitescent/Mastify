@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.utils
 
 import kotlinx.datetime.toInstant
 import java.text.DateFormat
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -36,5 +37,9 @@ object FormatFactory {
   fun getTime(timestamp: String): String {
     val date = timestamp.toInstant().toEpochMilliseconds()
     return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(date))
+  }
+  fun getPercentageString(value: Float): String {
+    val percentInstance = NumberFormat.getPercentInstance()
+    return percentInstance.format(value)
   }
 }

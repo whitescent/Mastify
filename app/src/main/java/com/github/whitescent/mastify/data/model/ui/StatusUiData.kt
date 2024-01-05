@@ -20,6 +20,7 @@ package com.github.whitescent.mastify.data.model.ui
 import androidx.compose.runtime.Immutable
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.collections.immutable.ImmutableList
 import org.jsoup.Jsoup
@@ -47,6 +48,7 @@ data class StatusUiData(
   val fullname: String,
   val createdAt: String,
   val sensitive: Boolean,
+  val poll: Poll?,
   val spoilerText: String,
   val repliesCount: Int,
   val reblogsCount: Int,

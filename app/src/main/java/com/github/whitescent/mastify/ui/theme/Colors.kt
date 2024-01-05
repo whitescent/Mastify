@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -41,7 +41,6 @@ interface MastifyColorScheme {
   val replyLine: Color
   val hintText: Color
   val reblogged: Color
-  val replyTextFieldBackground: Color
   val replyTextFieldBorder: Color
   val followButton: Color
   val unfollowButton: Color
@@ -54,6 +53,7 @@ interface MastifyColorScheme {
   val bottomSheetSelectedBorder: Color
   val exploreSearchBarBorder: Color
   val exploreSearchBarBackground: Color
+  val pollOptionBackground: Color
   val isLight: Boolean
 }
 
@@ -75,7 +75,6 @@ open class ColorSchemeImpl(
   override val replyLine: Color,
   override val hintText: Color,
   override val reblogged: Color,
-  override val replyTextFieldBackground: Color,
   override val replyTextFieldBorder: Color,
   override val followButton: Color,
   override val unfollowButton: Color,
@@ -88,6 +87,7 @@ open class ColorSchemeImpl(
   override val bottomSheetSelectedBorder: Color,
   override val exploreSearchBarBorder: Color,
   override val exploreSearchBarBackground: Color,
+  override val pollOptionBackground: Color,
   override val isLight: Boolean,
 ) : MastifyColorScheme
 
@@ -104,7 +104,6 @@ object LightColorScheme : ColorSchemeImpl(
   replyLine = Color(0xFFcfd9de),
   hintText = Color(0xFF1d9bf0),
   reblogged = Color(0xFF18BE64),
-  replyTextFieldBackground = Color(0xFFF4F4F4),
   replyTextFieldBorder = Color(0xFFE6E6E6),
   followButton = Color(0xFF007BEC),
   unfollowButton = Color(0xFF007BEC).copy(0.44f),
@@ -117,6 +116,7 @@ object LightColorScheme : ColorSchemeImpl(
   bottomSheetSelectedBorder = Color(0xFFAAC8F5),
   exploreSearchBarBorder = Color(0xFFF1F1F1),
   exploreSearchBarBackground = Color.White,
+  pollOptionBackground = Color(0xFFECEEF0),
   isLight = true
 )
 
@@ -133,7 +133,6 @@ object DarkColorScheme : ColorSchemeImpl(
   replyLine = Color(0xFF333638),
   hintText = Color(0xFF1d9bf0),
   reblogged = Color(0xFF046FFF),
-  replyTextFieldBackground = Color(0xFF282828),
   replyTextFieldBorder = Color(0xFF454545),
   followButton = Color(0xFF1C79E7),
   unfollowButton = Color.White.copy(0.44f),
@@ -146,6 +145,7 @@ object DarkColorScheme : ColorSchemeImpl(
   bottomSheetSelectedBorder = Color.White.copy(0.2f),
   exploreSearchBarBorder = Color(0xFF222222),
   exploreSearchBarBackground = Color(0xFF1D1D1D),
+  pollOptionBackground = Color(0xFF232323),
   isLight = false
 )
 

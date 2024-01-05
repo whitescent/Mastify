@@ -62,6 +62,7 @@ fun Status.toUiData(): StatusUiData = StatusUiData(
   favouritesCount = reblog?.favouritesCount ?: favouritesCount,
   favorited = reblog?.favorited ?: favorited,
   inReplyToId = reblog?.inReplyToId ?: inReplyToId,
+  poll = reblog?.poll ?: poll,
   // NOTE: make sure that you need to do a conversion from Status to StatusUiData
   // or update StatusUiData.actionable
   // whenever you update some StatusUiData values,
@@ -94,6 +95,7 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     visibility = visibility,
     uri = uri,
     url = url,
+    poll = poll,
     repliesCount = repliesCount,
     reblogsCount = reblogsCount,
     favouritesCount = favouritesCount,

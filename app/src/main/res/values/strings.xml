@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2023 WhiteScent
+  ~ Copyright 2024 WhiteScent
   ~
   ~ This file is a part of Mastify.
   ~
@@ -116,6 +116,19 @@
   <string name="abbreviated_hours_ago">%dh</string>
   <string name="abbreviated_minutes_ago">%dm</string>
   <string name="abbreviated_seconds_ago">%ds</string>
+
+  <string name="vote_poll_day">Vote ends in %d days</string>
+  <string name="vote_poll_hours">Vote ends in %d hours</string>
+  <string name="vote_poll_minutes">Vote ends in %d minutes</string>
+  <string name="vote_poll_soon_ending">Voting is about to end</string>
+  <string name="vote_poll_expired">Voting has ended</string>
+  <string name="vote_poll_participants_count">%d voted</string>
+  <string name="vote_title">Vote</string>
+  <string name="vote_failed_title">Vote Failed: %s</string>
+  <plurals name="votes">
+    <item quantity="one">%d vote</item>
+    <item quantity="other">%d votes</item>
+  </plurals>
 
   <!-- Explore screen -->
   <string name="explore_instance">Explore %s</string>

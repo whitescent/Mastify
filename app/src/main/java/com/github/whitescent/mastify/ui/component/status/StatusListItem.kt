@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -121,10 +121,7 @@ fun StatusListItem(
           ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
               repeat(3) {
-                Box(
-                  Modifier
-                    .size(3.dp)
-                    .background(replyLineColor, CircleShape))
+                Box(Modifier.size(3.dp).background(replyLineColor, CircleShape))
               }
             }
           }
@@ -152,7 +149,6 @@ fun StatusListItem(
                     if (!hasUnloadedParent) avatarHalfSize to itemHeight
                     else 0f to itemHeight
                   }
-
                   Continue -> 0f to itemHeight
                   End -> 0f to avatarHalfSize
                   else -> 0f to 0f
@@ -315,22 +311,9 @@ private fun StatusContent(
                 tint = AppTheme.colors.cardMenu,
                 modifier = Modifier
                   .size(18.dp),
-                // .onSizeChanged {
-                //   pressOffset = IntOffset(x = -it.width, y = it.height)
-                // },
                 onClick = { scope.launch { drawerState.open() } }
               )
             }
-            // StatusDropdownMenu(
-            //   expanded = openMenu,
-            //   enableCopyText = statusUiData.content.isNotEmpty(),
-            //   statusUiData = statusUiData,
-            //   onDismissRequest = { openMenu = false },
-            //   offset = pressOffset
-            // ) {
-            //   action(it)
-            //   openMenu = false
-            // }
           }
         }
         Crossfade(hideSensitiveContent) {
@@ -367,6 +350,9 @@ private fun StatusContent(
                     },
                     overflow = TextOverflow.Ellipsis
                   )
+                }
+                StatusPoll(statusUiData.poll, Modifier.padding(top = 8.dp)) { id, choices ->
+                  action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
                 }
                 if (displayAttachments.isNotEmpty()) {
                   HeightSpacer(value = 4.dp)

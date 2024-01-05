@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -20,6 +20,10 @@ package com.github.whitescent.mastify.domain
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.widget.Toast
+import at.connyduck.calladapter.networkresult.NetworkResult
+import at.connyduck.calladapter.networkresult.getOrThrow
+import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
@@ -29,8 +33,10 @@ import com.github.whitescent.mastify.utils.StatusAction.Bookmark
 import com.github.whitescent.mastify.utils.StatusAction.Favorite
 import com.github.whitescent.mastify.utils.StatusAction.Reblog
 import dagger.hilt.android.scopes.ViewModelScoped
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.withContext
 
 @ViewModelScoped
 class StatusActionHandler(private val api: MastodonApi) {
@@ -38,9 +44,9 @@ class StatusActionHandler(private val api: MastodonApi) {
   private val snackBarChanel = Channel<StatusSnackbarType>(Channel.BUFFERED)
   val snackBarFlow = snackBarChanel.receiveAsFlow()
 
-  suspend fun onStatusAction(action: StatusAction, context: Context) {
+  suspend fun onStatusAction(action: StatusAction, context: Context): NetworkResult<Status>? {
     val clipManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    when (action) {
+    return when (action) {
       is Favorite -> {
         if (action.favorite) api.favouriteStatus(action.id) else api.unfavouriteStatus(action.id)
       }
@@ -49,21 +55,38 @@ class StatusActionHandler(private val api: MastodonApi) {
       }
       is Bookmark -> {
         if (action.bookmark) {
-          api.bookmarkStatus(action.id)
           snackBarChanel.send(StatusSnackbarType.Bookmark)
+          api.bookmarkStatus(action.id)
         } else api.unbookmarkStatus(action.id)
+      }
+      is StatusAction.VotePoll -> {
+        try {
+          val poll = api.voteInPoll(action.id, action.choices).getOrThrow()
+          NetworkResult.success(action.originStatus.copy(poll = poll))
+        } catch (e: Exception) {
+          withContext(Dispatchers.Main) {
+            Toast.makeText(
+              context,
+              context.getString(R.string.vote_failed_title, e.localizedMessage),
+              Toast.LENGTH_SHORT
+            ).show()
+          }
+          NetworkResult.failure(e)
+        }
       }
       is StatusAction.CopyText -> {
         clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.text))
         snackBarChanel.send(StatusSnackbarType.Text)
+        null
       }
       is StatusAction.CopyLink -> {
         clipManager.setPrimaryClip(ClipData.newPlainText("PLAIN_TEXT_LABEL", action.link))
         snackBarChanel.send(StatusSnackbarType.Link)
+        null
       }
-      is StatusAction.Mute -> Unit // TODO
-      is StatusAction.Block -> Unit
-      is StatusAction.Report -> Unit
+      StatusAction.Mute -> null // TODO
+      StatusAction.Block -> null
+      StatusAction.Report -> null
     }
   }
 
@@ -73,6 +96,8 @@ class StatusActionHandler(private val api: MastodonApi) {
     /**
      * Update the status of the action in the status list, for example,
      * if the user likes a status, we need to update the status and number of FAVs
+     * This function doesn't make an API request, it just manually modifies the relevant data
+     * to make sure that onStatusAction is called after using this function
      */
     fun updateStatusListActions(
       list: List<StatusUiData>,

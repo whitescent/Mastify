@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -28,6 +28,7 @@ class MastifyShape {
   val mediumAvatar @Composable get() = SmoothCornerShape(20.dp)
   val largeAvatar @Composable get() = SmoothCornerShape(25.dp)
   val normal @Composable get() = SmoothCornerShape(15.dp)
+  val voteOption @Composable get() = SmoothCornerShape(16.dp)
 }
 
 val LocalMastifyShape = staticCompositionLocalOf {
