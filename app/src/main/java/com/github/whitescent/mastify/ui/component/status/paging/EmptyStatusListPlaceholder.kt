@@ -17,9 +17,9 @@
 
 package com.github.whitescent.mastify.ui.component.status.paging
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,10 +37,13 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.viewModel.ExplorerKind
+import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
+import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 
 @Composable
 fun EmptyStatusListPlaceholder(
-  pageType: PageType,
+  pagePlaceholderType: PagePlaceholderType,
   modifier: Modifier = Modifier,
   alignment: Alignment = Alignment.Center,
 ) {
@@ -50,19 +53,28 @@ fun EmptyStatusListPlaceholder(
     modifier = modifier,
     contentAlignment = alignment
   ) {
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
       LottieAnimation(
         composition = composition,
         progress = { progress },
-        contentScale = ContentScale.Fit,
-        modifier = Modifier
-          .size(360.dp)
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.size(300.dp),
+        alignment = Alignment.TopCenter
       )
       Text(
         text = stringResource(
-          id = when (pageType) {
-            PageType.Timeline -> R.string.empty_timeline
-            PageType.Profile -> R.string.empty_status
+          id = when (pagePlaceholderType) {
+            is PagePlaceholderType.Home -> R.string.empty_timeline
+            is PagePlaceholderType.Profile -> {
+              if (pagePlaceholderType.isSelf) R.string.empty_status_self
+              else R.string.empty_status
+            }
+            is PagePlaceholderType.Explore -> {
+              when (pagePlaceholderType.explorerKind) {
+                PublicTimeline, Trending -> R.string.timeline_is_empty
+                ExplorerKind.News -> R.string.news_is_empty
+              }
+            }
           }
         ),
         fontWeight = FontWeight.Medium,
@@ -73,6 +85,8 @@ fun EmptyStatusListPlaceholder(
   }
 }
 
-enum class PageType {
-  Timeline, Profile
+sealed class PagePlaceholderType {
+  data object Home : PagePlaceholderType()
+  data class Profile(val isSelf: Boolean) : PagePlaceholderType()
+  data class Explore(val explorerKind: ExplorerKind) : PagePlaceholderType()
 }

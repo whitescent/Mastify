@@ -103,7 +103,7 @@ import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
-import com.github.whitescent.mastify.ui.component.status.paging.PageType
+import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
@@ -197,7 +197,7 @@ fun Home(
                 StatusListLoadError { viewModel.refreshTimeline() }
               uiState.timelineLoadState == NotLoading && uiState.endReached ->
                 EmptyStatusListPlaceholder(
-                  pageType = PageType.Timeline,
+                  pagePlaceholderType = PagePlaceholderType.Home,
                   modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
                 )
               else -> StatusListLoading(Modifier.fillMaxSize())

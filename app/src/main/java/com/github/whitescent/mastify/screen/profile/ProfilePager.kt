@@ -33,6 +33,7 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.paging.autoAppend
 import com.github.whitescent.mastify.ui.component.status.StatusCommonList
+import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel
 import com.github.whitescent.mastify.viewModel.ProfileKind
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
@@ -65,6 +66,7 @@ fun ProfilePager(
         0 -> StatusCommonList(
           statusCommonListData = statusList,
           statusListState = statusListState,
+          pagePlaceholderType = PagePlaceholderType.Profile(isSelf = viewModel.uiState.isSelf!!),
           action = { action, status ->
             viewModel.onStatusAction(action, context, status)
           },
@@ -74,9 +76,11 @@ fun ProfilePager(
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
+
         1 -> StatusCommonList(
           statusCommonListData = statusListWithReply,
           statusListState = statusListWithReplyState,
+          pagePlaceholderType = PagePlaceholderType.Profile(isSelf = viewModel.uiState.isSelf!!),
           action = { action, status ->
             viewModel.onStatusAction(action, context, status)
           },
@@ -89,6 +93,7 @@ fun ProfilePager(
         2 -> StatusCommonList(
           statusCommonListData = statusListWithMedia,
           statusListState = statusListWithMediaState,
+          pagePlaceholderType = PagePlaceholderType.Profile(isSelf = viewModel.uiState.isSelf!!),
           action = { action, status ->
             viewModel.onStatusAction(action, context, status)
           },

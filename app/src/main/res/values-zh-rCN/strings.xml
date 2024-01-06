@@ -99,6 +99,7 @@
   <string name="media_title">媒体</string>
   <string name="edit_profile">编辑个人资料</string>
   <string name="empty_status">"这个家伙还没有发布过任何嘟文"</string>
+  <string name="empty_status_self">你还没有发布过嘟文哦</string>
   <string name="empty_timeline">"你还没有关注其他人哦"</string>
 
 
@@ -133,4 +134,6 @@
   <string name="public_timeline">公共时间轴</string>
   <string name="news_title">新闻</string>
   <string name="search_title">搜索</string>
+  <string name="timeline_is_empty">这里现在还没有帖子</string>
+  <string name="news_is_empty">这个实例现在还没有新闻</string>
 </resources>
