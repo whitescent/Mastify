@@ -58,7 +58,7 @@ import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
-import com.github.whitescent.mastify.ui.component.status.paging.PageType
+import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.utils.StatusAction
@@ -71,6 +71,7 @@ import kotlinx.coroutines.launch
 fun StatusCommonList(
   statusCommonListData: StatusCommonListData<StatusUiData>,
   statusListState: LazyListState,
+  pagePlaceholderType: PagePlaceholderType,
   modifier: Modifier = Modifier,
   enablePullRefresh: Boolean = false,
   action: (StatusAction, Status) -> Unit,
@@ -114,7 +115,7 @@ fun StatusCommonList(
           loadState == Error -> StatusListLoadError { refreshList() }
           loadState == NotLoading && statusCommonListData.endReached ->
             EmptyStatusListPlaceholder(
-              pageType = PageType.Timeline,
+              pagePlaceholderType = pagePlaceholderType,
               modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
             )
           else -> StatusListLoading(Modifier.fillMaxSize())

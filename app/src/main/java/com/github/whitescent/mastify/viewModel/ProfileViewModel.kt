@@ -226,10 +226,10 @@ class ProfileViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      statusPager.refresh()
       uiState = uiState.copy(
         isSelf = navArgs.account.id == accountDao.getActiveAccount()!!.accountId
       )
+      statusPager.refresh()
       getRelationship(navArgs.account.id)
       fetchAccount(navArgs.account.id)
       launch {

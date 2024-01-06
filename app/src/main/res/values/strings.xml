@@ -102,6 +102,7 @@
   <string name="media_title">Media</string>
   <string name="edit_profile">Edit Profile</string>
   <string name="empty_status">This guy hasn\'t yet made a post</string>
+  <string name="empty_status_self">You haven\'t posted yet</string>
   <string name="empty_timeline">"You haven't followed anyone else yet"</string>
 
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
@@ -136,5 +137,7 @@
   <string name="public_timeline">Public Timeline</string>
   <string name="news_title">News</string>
   <string name="search_title">Search</string>
+  <string name="timeline_is_empty">There are no posts here yet</string>
+  <string name="news_is_empty">There is no news about this instance yet</string>
 
 </resources>
