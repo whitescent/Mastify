@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 WhiteScent
+ * Copyright 2024 WhiteScent
  *
  * This file is a part of Mastify.
  *
@@ -43,6 +43,7 @@ import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -132,7 +133,10 @@ class ProfileViewModel @Inject constructor(
         }
         LoadState.Refresh -> {
           profileStatusFlow.emit(
-            profileStatusFlow.value.copy(timeline = item.toUiData(), endReached = item.isEmpty())
+            profileStatusFlow.value.copy(
+              timeline = item.toUiData(),
+              endReached = item.isEmpty() || item.size < EXPLOREPAGINGFETCHNUMBER
+            )
           )
         }
         else -> Unit
@@ -171,7 +175,7 @@ class ProfileViewModel @Inject constructor(
           profileStatusWithReplyFlow.emit(
             profileStatusWithReplyFlow.value.copy(
               timeline = item.toUiData().distinctBy { it.id },
-              endReached = item.isEmpty()
+              endReached = item.isEmpty() || item.size < EXPLOREPAGINGFETCHNUMBER
             )
           )
         }
