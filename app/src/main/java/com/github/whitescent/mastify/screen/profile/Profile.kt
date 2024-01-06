@@ -226,31 +226,33 @@ fun Profile(
               pagerState.scrollToPage(it)
             }
           }
-          ProfilePager(
-            state = pagerState,
-            viewModel = viewModel,
-            statusListState = statusListState,
-            statusListWithReplyState = statusWithReplyListState,
-            statusListWithMediaState = statusWithMediaListState,
-            navigateToDetail = {
-              navigator.navigate(
-                StatusDetailDestination(
-                  status = it,
-                  originStatusId = null
+          if (uiState.isSelf != null) {
+            ProfilePager(
+              state = pagerState,
+              viewModel = viewModel,
+              statusListState = statusListState,
+              statusListWithReplyState = statusWithReplyListState,
+              statusListWithMediaState = statusWithMediaListState,
+              navigateToDetail = {
+                navigator.navigate(
+                  StatusDetailDestination(
+                    status = it,
+                    originStatusId = null
+                  )
                 )
-              )
-            },
-            navigateToMedia = { attachments, targetIndex ->
-              navigator.navigate(
-                StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-              )
-            },
-            navigateToProfile = {
-              navigator.navigate(
-                ProfileDestination(it)
-              )
-            },
-          )
+              },
+              navigateToMedia = { attachments, targetIndex ->
+                navigator.navigate(
+                  StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                )
+              },
+              navigateToProfile = {
+                navigator.navigate(
+                  ProfileDestination(it)
+                )
+              },
+            )
+          }
         }
         LaunchedEffect(pagerState) {
           snapshotFlow { pagerState.currentPage }.collect { page ->

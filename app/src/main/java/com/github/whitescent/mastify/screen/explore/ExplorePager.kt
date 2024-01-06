@@ -37,7 +37,10 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.autoAppend
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusCommonList
+import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
+import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
+import com.github.whitescent.mastify.viewModel.ExplorerKind.News
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
 import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel
@@ -71,6 +74,7 @@ fun ExplorePager(
         0 -> StatusCommonList(
           statusCommonListData = trendingStatusList,
           statusListState = trendingStatusListState,
+          pagePlaceholderType = PagePlaceholderType.Explore(Trending),
           action = { action, status ->
             viewModel.onStatusAction(action, context, Trending, status)
           },
@@ -84,6 +88,7 @@ fun ExplorePager(
         1 -> StatusCommonList(
           statusCommonListData = publicTimelineList,
           statusListState = publicTimelineListState,
+          pagePlaceholderType = PagePlaceholderType.Explore(PublicTimeline),
           action = { action, status ->
             viewModel.onStatusAction(action, context, PublicTimeline, status)
           },
@@ -98,19 +103,26 @@ fun ExplorePager(
           when (newsList) {
             null -> StatusListLoading(Modifier.fillMaxSize())
             else -> {
-              LazyColumn(
-                state = newsListState,
-                modifier = modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                  start = 16.dp,
-                  end = 16.dp,
-                  top = 12.dp,
-                  bottom = 150.dp
+              if (newsList.isEmpty()) {
+                EmptyStatusListPlaceholder(
+                  pagePlaceholderType = PagePlaceholderType.Explore(News),
+                  modifier = Modifier.fillMaxSize(),
                 )
-              ) {
-                items(newsList) { news ->
-                  ExploreNewsItem(news)
-                  HeightSpacer(value = 8.dp)
+              } else {
+                LazyColumn(
+                  state = newsListState,
+                  modifier = modifier.fillMaxSize(),
+                  contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 12.dp,
+                    bottom = 150.dp
+                  )
+                ) {
+                  items(newsList) { news ->
+                    ExploreNewsItem(news)
+                    HeightSpacer(value = 8.dp)
+                  }
                 }
               }
             }
