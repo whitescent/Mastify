@@ -35,7 +35,8 @@ private const val YEAR_IN_MILLIS = DAY_IN_MILLIS * 365
  * Calculate how long the given timestamp is from now
  */
 @Composable
-fun formatDurationUntilEnd(timestamp: String): String {
+fun formatDurationUntilEnd(timestamp: String?): String {
+  if (timestamp == null) return stringResource(id = R.string.vote_no_deadline)
   val apiInstant = Instant.parse(timestamp)
   val nowInstant = Clock.System.now()
   val duration = apiInstant - nowInstant

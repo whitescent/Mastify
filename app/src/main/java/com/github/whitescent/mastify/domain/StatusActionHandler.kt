@@ -26,6 +26,7 @@ import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusSnackbarType
 import com.github.whitescent.mastify.utils.StatusAction
@@ -171,6 +172,13 @@ class StatusActionHandler(private val api: MastodonApi) {
         }
       }
       return newStatus
+    }
+
+    fun updatePollOfStatus(status: Status, poll: Poll): Status {
+      return when (status.reblog == null) {
+        true -> status.copy(poll = poll)
+        else -> status.copy(reblog = status.reblog.copy(poll = poll))
+      }
     }
 
     private fun getStatusFavorite(status: Status, action: StatusAction): Boolean {

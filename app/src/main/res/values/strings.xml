@@ -123,6 +123,7 @@
   <string name="vote_poll_minutes">Vote ends in %d minutes</string>
   <string name="vote_poll_soon_ending">Voting is about to end</string>
   <string name="vote_poll_expired">Voting has ended</string>
+  <string name="vote_no_deadline">No voting deadline</string>
   <string name="vote_poll_participants_count">%d voted</string>
   <string name="vote_title">Vote</string>
   <string name="vote_failed_title">Vote Failed: %s</string>

@@ -29,6 +29,7 @@ import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatus
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
@@ -180,7 +181,7 @@ class HomeViewModel @Inject constructor(
         } else {
           statusActionHandler.onStatusAction(action, context)?.let {
             if (it.isSuccess) {
-              savedStatus = it.getOrNull() ?: savedStatus
+              savedStatus = updatePollOfStatus(savedStatus!!, it.getOrNull()!!.poll!!)
               timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccount.id))
             }
           }

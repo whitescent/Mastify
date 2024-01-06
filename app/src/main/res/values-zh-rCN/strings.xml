@@ -121,6 +121,7 @@
   <string name="vote_poll_minutes">%d 分钟后投票结束</string>
   <string name="vote_poll_soon_ending">投票即将结束</string>
   <string name="vote_poll_expired">投票已结束</string>
+  <string name="vote_no_deadline">没有投票截止日期</string>
   <string name="vote_poll_participants_count">%d 位用户参与了投票</string>
   <string name="vote_title">投票</string>
   <string name="vote_failed_title">投票失败：%s</string>

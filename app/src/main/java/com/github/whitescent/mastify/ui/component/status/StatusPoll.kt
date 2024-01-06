@@ -116,7 +116,7 @@ fun StatusPoll(
       }
       HeightSpacer(6.dp)
       CenterRow {
-        if (poll.votersCount > 0) {
+        if (poll.votersCount != null && poll.votersCount > 0) {
           Text(
             text = stringResource(R.string.vote_poll_participants_count, poll.votersCount),
             fontSize = 12.sp,
@@ -173,7 +173,8 @@ private fun PollOption(
   onSelected: (Boolean) -> Unit
 ) {
   val pollOptionAnimatable by animateFloatAsState(
-    targetValue = if (!allowVote) pollOption.votesCount.toFloat() / votesCount else 0f,
+    targetValue = if (votesCount > 0 && !allowVote)
+      pollOption.votesCount.toFloat() / votesCount.toFloat() else 0f,
     animationSpec = tween(800, delayMillis = 500, easing = EaseOutQuart)
   )
   Box(
