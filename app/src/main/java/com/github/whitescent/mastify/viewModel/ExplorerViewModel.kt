@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -80,8 +79,8 @@ class ExplorerViewModel @Inject constructor(
 
   private var trendingFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
   private var publicTimelineFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
-
   private var currentExploreKindFlow = MutableStateFlow(ExplorerKind.Trending)
+
   val currentExploreKind = currentExploreKindFlow
     .stateIn(
       scope = viewModelScope,
@@ -89,22 +88,14 @@ class ExplorerViewModel @Inject constructor(
       initialValue = ExplorerKind.Trending
     )
 
-  val trending = activityAccountFlow
-    .flatMapLatest {
-      trendingPaginator.refresh()
-      trendingFlow
-    }
+  val trending = trendingFlow
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
       initialValue = StatusCommonListData()
     )
 
-  val publicTimeline = activityAccountFlow
-    .flatMapLatest {
-      publicTimelinePaginator.refresh()
-      publicTimelineFlow
-    }
+  val publicTimeline = publicTimelineFlow
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
@@ -214,19 +205,13 @@ class ExplorerViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      launch {
-        activityAccountFlow.collect {
-          uiState = uiState.copy(
-            avatar = it.profilePictureUrl,
-            userInstance = it.domain
-          )
-        }
+      activityAccountFlow.collect {
+        uiState = uiState.copy(
+          trendingNews = exploreRepository.getNews().getOrDefault(emptyList())
+        )
+        trendingPaginator.refresh()
+        publicTimelinePaginator.refresh()
       }
-      trendingPaginator.refresh()
-      publicTimelinePaginator.refresh()
-      uiState = uiState.copy(
-        trendingNews = exploreRepository.getNews().getOrDefault(emptyList())
-      )
     }
   }
 
@@ -295,9 +280,7 @@ class ExplorerViewModel @Inject constructor(
 }
 
 data class ExploreUiState(
-  val avatar: String = "",
   val text: String = "",
-  val userInstance: String = "",
   val trendingNews: List<News>? = null,
   val topics: List<Hashtag> = emptyList()
 )

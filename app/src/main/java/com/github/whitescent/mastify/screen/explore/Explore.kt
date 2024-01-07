@@ -84,6 +84,7 @@ import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
+import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -115,6 +116,7 @@ import kotlinx.coroutines.launch
 )
 @Composable
 fun Explore(
+  activeAccount: AccountEntity,
   viewModel: ExplorerViewModel = hiltViewModel(),
   appState: AppState,
   drawerState: DrawerState,
@@ -160,14 +162,14 @@ fun Explore(
             Column {
               CenterRow {
                 Text(
-                  text = stringResource(id = R.string.explore_instance, uiState.userInstance),
+                  text = stringResource(id = R.string.explore_instance, activeAccount.domain),
                   fontSize = 24.sp,
                   fontWeight = FontWeight.Bold,
                   color = AppTheme.colors.primaryContent,
                   modifier = Modifier.weight(1f),
                 )
                 CircleShapeAsyncImage(
-                  model = uiState.avatar,
+                  model = activeAccount.profilePictureUrl,
                   modifier = Modifier
                     .size(36.dp)
                     .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
