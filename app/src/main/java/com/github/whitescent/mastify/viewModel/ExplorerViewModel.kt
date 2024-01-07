@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -88,14 +89,22 @@ class ExplorerViewModel @Inject constructor(
       initialValue = ExplorerKind.Trending
     )
 
-  val trending = trendingFlow
+  val trending = activityAccountFlow
+    .flatMapLatest {
+      trendingPaginator.refresh()
+      trendingFlow
+    }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
       initialValue = StatusCommonListData()
     )
 
-  val publicTimeline = publicTimelineFlow
+  val publicTimeline = activityAccountFlow
+    .flatMapLatest {
+      publicTimelinePaginator.refresh()
+      publicTimelineFlow
+    }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
