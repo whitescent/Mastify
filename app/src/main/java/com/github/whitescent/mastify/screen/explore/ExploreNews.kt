@@ -85,11 +85,12 @@ fun ExploreNewsItem(
         .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
       Text(
-        text = news.title,
+        text = news.title.ifEmpty { news.description },
         color = Color.White,
-        fontSize = 18.sp,
+        fontSize = 17.sp,
         fontWeight = FontWeight.Bold,
-        overflow = Ellipsis
+        overflow = Ellipsis,
+        maxLines = 2
       )
       HeightSpacer(value = 4.dp)
       CenterRow {
