@@ -39,25 +39,26 @@ fun String.insertString(insert: String, index: Int): String {
 
 fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List<StatusUiData> {
   return if (this.any { it.actionableId == newStatus.id }) {
-    this.toMutableList().map {
-      if (it.actionableId == newStatus.id) {
-        it.copy(
+    val result = this.toMutableList()
+    val index = result.indexOfFirst { it.actionableId == newStatus.id }
+    if (index != -1) {
+      result[index] = result[index].copy(
+        favorited = newStatus.favorited,
+        favouritesCount = newStatus.favouritesCount,
+        reblogged = newStatus.reblogged,
+        reblogsCount = newStatus.reblogsCount,
+        repliesCount = newStatus.repliesCount,
+        bookmarked = newStatus.bookmarked,
+        actionable = result[index].actionable.copy(
           favorited = newStatus.favorited,
           favouritesCount = newStatus.favouritesCount,
           reblogged = newStatus.reblogged,
           reblogsCount = newStatus.reblogsCount,
           repliesCount = newStatus.repliesCount,
           bookmarked = newStatus.bookmarked,
-          actionable = it.actionable.copy(
-            favorited = newStatus.favorited,
-            favouritesCount = newStatus.favouritesCount,
-            reblogged = newStatus.reblogged,
-            reblogsCount = newStatus.reblogsCount,
-            repliesCount = newStatus.repliesCount,
-            bookmarked = newStatus.bookmarked,
-          )
         )
-      } else it
-    }
+      )
+      result
+    } else this
   } else this
 }
