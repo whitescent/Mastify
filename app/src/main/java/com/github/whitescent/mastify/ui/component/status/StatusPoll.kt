@@ -255,7 +255,9 @@ private fun PollOption(
             verticalArrangement = Arrangement.Center
           ) {
             Text(
-              text = getPercentageString(pollOption.votesCount.toFloat() / votesCount),
+              text = if (votesCount > 0)
+                getPercentageString(pollOption.votesCount.toFloat() / votesCount.toFloat())
+              else "0%",
               fontSize = 12.sp,
               color = AppTheme.colors.primaryContent.copy(0.6f)
             )
