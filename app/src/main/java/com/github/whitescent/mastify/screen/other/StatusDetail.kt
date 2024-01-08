@@ -129,7 +129,8 @@ fun StatusDetail(
                   reblogged = currentStatus.reblogged,
                   reblogsCount = currentStatus.reblogsCount,
                   repliesCount = currentStatus.repliesCount,
-                  bookmarked = currentStatus.bookmarked
+                  bookmarked = currentStatus.bookmarked,
+                  poll = currentStatus.poll
                 )
               )
             },
@@ -224,7 +225,8 @@ fun StatusDetail(
         reblogged = currentStatus.reblogged,
         reblogsCount = currentStatus.reblogsCount,
         repliesCount = currentStatus.repliesCount,
-        bookmarked = currentStatus.bookmarked
+        bookmarked = currentStatus.bookmarked,
+        poll = currentStatus.poll
       )
     )
   }

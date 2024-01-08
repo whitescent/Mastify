@@ -37,6 +37,9 @@ fun String.insertString(insert: String, index: Int): String {
   return start + insert + end
 }
 
+/**
+ * Updates the status in a status list with the latest data from the status detail screen.
+ */
 fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List<StatusUiData> {
   return if (this.any { it.actionableId == newStatus.id }) {
     val result = this.toMutableList()
@@ -49,6 +52,7 @@ fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List
         reblogsCount = newStatus.reblogsCount,
         repliesCount = newStatus.repliesCount,
         bookmarked = newStatus.bookmarked,
+        poll = newStatus.poll,
         actionable = result[index].actionable.copy(
           favorited = newStatus.favorited,
           favouritesCount = newStatus.favouritesCount,
@@ -56,6 +60,7 @@ fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List
           reblogsCount = newStatus.reblogsCount,
           repliesCount = newStatus.repliesCount,
           bookmarked = newStatus.bookmarked,
+          poll = newStatus.poll,
         )
       )
       result

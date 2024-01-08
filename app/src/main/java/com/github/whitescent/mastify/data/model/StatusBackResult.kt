@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.data.model
 
 import android.os.Parcelable
+import com.github.whitescent.mastify.network.model.status.Poll
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -32,5 +33,6 @@ data class StatusBackResult(
   val reblogged: Boolean,
   val reblogsCount: Int,
   val repliesCount: Int,
-  val bookmarked: Boolean
+  val bookmarked: Boolean,
+  val poll: Poll?
 ) : Parcelable

@@ -33,6 +33,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.status.toUiData
@@ -254,7 +255,21 @@ class ExplorerViewModel @Inject constructor(
         }
         else -> Unit
       }
-      statusActionHandler.onStatusAction(action, context)
+      statusActionHandler.onStatusAction(action, context)?.let { response ->
+        if (action is StatusAction.VotePoll) {
+          val targetStatus = response.getOrNull()!!
+          trendingFlow.update {
+            it.copy(
+              timeline = updatePollOfStatusList(it.timeline, targetStatus.id, targetStatus.poll!!)
+            )
+          }
+          publicTimelineFlow.update {
+            it.copy(
+              timeline = updatePollOfStatusList(it.timeline, targetStatus.id, targetStatus.poll!!)
+            )
+          }
+        }
+      }
     }
   }
 

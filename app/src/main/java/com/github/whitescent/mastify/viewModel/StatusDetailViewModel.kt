@@ -32,6 +32,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
@@ -103,9 +104,14 @@ class StatusDetailViewModel @Inject constructor(
     )
     statusActionHandler.onStatusAction(action, context)?.let {
       if (action is VotePoll) {
-        val newList = uiState.statusList.toMutableList()
-        newList[newList.indexOfFirst { item -> item.id == id }] = it.getOrNull()!!.toUiData()
-        uiState = uiState.copy(statusList = newList.toImmutableList())
+        val targetStatus = it.getOrNull()!!
+        uiState = uiState.copy(
+          statusList = updatePollOfStatusList(
+            statusList = uiState.statusList,
+            targetId = targetStatus.id,
+            poll = targetStatus.poll!!
+          ).toImmutableList()
+        )
       }
     }
     updateStatusInDatabase()

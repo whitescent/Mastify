@@ -17,10 +17,13 @@
 
 package com.github.whitescent.mastify.network.model.status
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Parcelize
 data class Poll(
   val id: String,
   @SerialName("expires_at") val expiresAt: String?,
@@ -31,11 +34,12 @@ data class Poll(
   val options: List<PollOption>,
   val voted: Boolean,
   @SerialName("own_votes") val ownVotes: List<Int>?
-) {
+) : Parcelable {
 
   @Serializable
+  @Parcelize
   data class PollOption(
     val title: String,
     @SerialName("votes_count") val votesCount: Int
-  )
+  ) : Parcelable
 }

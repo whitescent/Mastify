@@ -181,6 +181,23 @@ class StatusActionHandler(private val api: MastodonApi) {
       }
     }
 
+    fun updatePollOfStatusList(
+      statusList: List<StatusUiData>,
+      targetId: String,
+      poll: Poll
+    ): List<StatusUiData> {
+      val targetStatusIndex = statusList.indexOfFirst { it.actionableId == targetId }
+      if (targetStatusIndex == -1) return statusList
+      val newList = statusList.toMutableList()
+      newList[targetStatusIndex] = newList[targetStatusIndex].copy(
+        poll = poll,
+        actionable = newList[targetStatusIndex].actionable.copy(
+          poll = poll
+        )
+      )
+      return newList
+    }
+
     private fun getStatusFavorite(status: Status, action: StatusAction): Boolean {
       // Check whether the status contains reblog,
       // and if so, we need to determine the status of the reblog

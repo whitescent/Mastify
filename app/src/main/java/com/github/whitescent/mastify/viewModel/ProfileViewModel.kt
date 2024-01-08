@@ -33,6 +33,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
+import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
@@ -43,6 +44,7 @@ import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -287,7 +289,21 @@ class ProfileViewModel @Inject constructor(
           timeline = StatusActionHandler.updateStatusListActions(it.timeline, action, status.id)
         )
       }
-      statusActionHandler.onStatusAction(action, context)
+      statusActionHandler.onStatusAction(action, context)?.let { response ->
+        val targetStatus = response.getOrNull()!!
+        if (action is VotePoll) {
+          profileStatusFlow.update {
+            it.copy(
+              timeline = updatePollOfStatusList(it.timeline, targetStatus.id, targetStatus.poll!!)
+            )
+          }
+          profileStatusWithReplyFlow.update {
+            it.copy(
+              timeline = updatePollOfStatusList(it.timeline, targetStatus.id, targetStatus.poll!!)
+            )
+          }
+        }
+      }
     }
   }
 
