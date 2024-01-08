@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.component.status.paging
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
@@ -53,13 +52,12 @@ fun EmptyStatusListPlaceholder(
     modifier = modifier,
     contentAlignment = alignment
   ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
       LottieAnimation(
         composition = composition,
         progress = { progress },
-        contentScale = ContentScale.Crop,
         modifier = Modifier.size(300.dp),
-        alignment = Alignment.TopCenter
+        contentScale = ContentScale.Crop
       )
       Text(
         text = stringResource(
