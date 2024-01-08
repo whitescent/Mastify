@@ -28,12 +28,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.connyduck.calladapter.networkresult.fold
+import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
+import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
@@ -115,6 +117,12 @@ class StatusDetailViewModel @Inject constructor(
       }
     }
     updateStatusInDatabase()
+  }
+
+  fun updateStatusFromDetailScreen(newStatus: StatusBackResult) {
+    uiState = uiState.copy(
+      statusList = uiState.statusList.updateStatusActionData(newStatus).toImmutableList()
+    )
   }
 
   fun replyToStatus() {

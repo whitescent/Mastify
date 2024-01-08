@@ -81,7 +81,9 @@ import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultBackNavigator
+import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -99,6 +101,7 @@ data class StatusDetailNavArgs(
 fun StatusDetail(
   resultNavigator: ResultBackNavigator<StatusBackResult>,
   navigator: DestinationsNavigator,
+  resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>,
   viewModel: StatusDetailViewModel = hiltViewModel()
 ) {
   val lazyState = rememberLazyListState()
@@ -214,6 +217,13 @@ fun StatusDetail(
       }
     }
   )
+
+  resultRecipient.onNavResult { result ->
+    when (result) {
+      is NavResult.Canceled -> Unit
+      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+    }
+  }
 
   BackHandler {
     // we need sync the latest status action data to previous screen
