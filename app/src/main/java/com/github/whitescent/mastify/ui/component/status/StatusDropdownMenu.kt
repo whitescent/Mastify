@@ -83,7 +83,7 @@ fun StatusActionDrawer(
     add(
       MenuAction(
         text = if (bookmarkState) R.string.delete_bookmark else R.string.bookmark,
-        icon = if (bookmarkState) R.drawable.bookmark_fill else R.drawable.bookmark,
+        icon = if (bookmarkState) R.drawable.bookmark_fill else R.drawable.bookmark_regular,
         action = StatusAction.Bookmark(
           id = statusUiData.actionableId,
           bookmark = !bookmarkState
