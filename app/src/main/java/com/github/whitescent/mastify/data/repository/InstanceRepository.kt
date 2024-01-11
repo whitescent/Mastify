@@ -39,8 +39,6 @@ class InstanceRepository @Inject constructor(
   private val instanceDao = db.instanceDao()
   private val accountDao = db.accountDao()
 
-  // private val instanceName get() = accountRepository.activeAccount.value!!.domain
-
   /**
    * Returns the custom emojis of the instance.
    * Will always try to fetch them from the api, falls back to cached Emojis in case it is not available.
