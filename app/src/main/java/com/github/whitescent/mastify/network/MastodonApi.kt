@@ -25,18 +25,22 @@ import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
 import com.github.whitescent.mastify.network.model.search.SearchResult
+import com.github.whitescent.mastify.network.model.status.MediaUploadResult
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
 import com.github.whitescent.mastify.network.model.trends.News
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -216,4 +220,12 @@ interface MastodonApi {
     @Path("id") id: String,
     @Field("choices[]") choices: List<Int>
   ): NetworkResult<Poll>
+
+  @Multipart
+  @POST("api/v2/media")
+  suspend fun uploadMedia(
+    @Part file: MultipartBody.Part,
+    @Part description: MultipartBody.Part? = null,
+    @Part focus: MultipartBody.Part? = null
+  ): Response<MediaUploadResult>
 }

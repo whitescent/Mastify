@@ -19,80 +19,74 @@ package com.github.whitescent.mastify.screen.post
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowInsetsCompat
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.microsoft.fluentui.tokenized.drawer.BottomDrawer
+import com.microsoft.fluentui.tokenized.drawer.DrawerState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PostVisibilitySheet(
-  sheetState: SheetState,
+  drawerState: DrawerState,
   currentVisibility: Visibility,
   onVisibilityUpdated: (Visibility) -> Unit,
-  onDismissRequest: () -> Unit,
 ) {
-  ModalBottomSheet(
-    onDismissRequest = onDismissRequest,
-    sheetState = sheetState,
-    windowInsets = WindowInsets(0, WindowInsets.statusBars.getTop(LocalDensity.current), 0, 0),
-    containerColor = AppTheme.colors.bottomSheetBackground
-  ) {
-    Column(Modifier.padding(vertical = 10.dp)) {
-      Text(
-        text = stringResource(id = R.string.change_post_visibility),
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier.align(Alignment.CenterHorizontally),
-        color = AppTheme.colors.primaryContent,
-      )
-      HeightSpacer(value = 6.dp)
-      Text(
-        text = stringResource(id = R.string.visibility_description),
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier
-          .align(Alignment.CenterHorizontally)
-          .padding(horizontal = 48.dp),
-        color = Color.Gray,
-      )
-      HeightSpacer(value = 6.dp)
-      Column(Modifier.padding(horizontal = 12.dp)) {
-        Visibility.values().forEach {
-          PostVisibilityItem(
-            selected = it == currentVisibility,
-            visibility = it,
-            onClick = { onVisibilityUpdated(it) },
-          )
-          if (it != Visibility.values().last()) HeightSpacer(value = 6.dp)
+  BottomDrawer(
+    drawerContent = {
+      Column(Modifier.padding(vertical = 10.dp)) {
+        Text(
+          text = stringResource(id = R.string.change_post_visibility),
+          fontSize = 20.sp,
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier.align(Alignment.CenterHorizontally),
+          color = AppTheme.colors.primaryContent,
+        )
+        HeightSpacer(value = 6.dp)
+        Text(
+          text = stringResource(id = R.string.visibility_description),
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Bold,
+          modifier = Modifier
+            .align(Alignment.CenterHorizontally)
+            .padding(horizontal = 48.dp),
+          color = Color.Gray,
+        )
+        HeightSpacer(value = 6.dp)
+        Column(Modifier.padding(horizontal = 12.dp)) {
+          Visibility.entries.forEach {
+            PostVisibilityItem(
+              selected = it == currentVisibility,
+              visibility = it,
+              onClick = { onVisibilityUpdated(it) },
+            )
+            if (it != Visibility.entries.last()) HeightSpacer(value = 6.dp)
+          }
         }
       }
-    }
-  }
+    },
+    drawerState = drawerState,
+    windowInsetsType = WindowInsetsCompat.Type.displayCutout(),
+  )
 }
 
 @Composable

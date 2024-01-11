@@ -17,30 +17,40 @@
 
 package com.github.whitescent.mastify.screen.post
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -85,13 +95,13 @@ import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.viewModel.MediaModel
 import com.github.whitescent.mastify.viewModel.PostViewModel
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @AppNavGraph
 @Destination
 @Composable
@@ -101,17 +111,25 @@ fun Post(
 ) {
   val focusRequester = remember { FocusRequester() }
   var isFocused by remember { mutableStateOf(false) }
-  var openVisibilitySheet by remember { mutableStateOf(false) }
-
-  val emojiDrawerState = rememberDrawerState()
-  val visibilitySheetState = rememberModalBottomSheetState()
-  val scope = rememberCoroutineScope()
 
   val keyboard = LocalSoftwareKeyboardController.current
+
   val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
+  val allowPostStatus by viewModel.allowPostStatus.collectAsStateWithLifecycle()
   val postTextField = viewModel.postTextField
   val state = viewModel.uiState
   val instanceUiData = state.instanceUiData
+
+  val emojiDrawerState = rememberDrawerState()
+  val visibilitySheetState = rememberDrawerState()
+  val scope = rememberCoroutineScope()
+  val albumRowState = rememberLazyListState()
+  val imagePicker = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.PickMultipleVisualMedia(4),
+    onResult = {
+      viewModel.addMedia(it)
+    }
+  )
 
   Column(
     modifier = Modifier.fillMaxSize().background(AppTheme.colors.background),
@@ -124,7 +142,6 @@ fun Post(
         .weight(1f)
         .background(AppTheme.colors.background),
     ) {
-      HeightSpacer(value = 8.dp)
       BasicTextField(
         value = postTextField,
         onValueChange = viewModel::updateTextFieldValue,
@@ -133,30 +150,39 @@ fun Post(
           .focusRequester(focusRequester)
           .onFocusChanged { isFocused = it.isFocused },
         textStyle = TextStyle(fontSize = 20.sp, color = AppTheme.colors.primaryContent),
-        cursorBrush = SolidColor(AppTheme.colors.primaryContent),
+        cursorBrush = SolidColor(AppTheme.colors.primaryContent)
       ) {
-        Box {
-          if (postTextField.text.isEmpty()) {
-            Text(
-              text = stringResource(id = R.string.post_placeholder),
-              color = Color(0xFFB6B6B6),
-              style = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
+        Column(
+          modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        ) {
+          Box {
+            if (postTextField.text.isEmpty()) {
+              Text(
+                text = stringResource(id = R.string.post_placeholder),
+                color = Color(0xFFB6B6B6),
+                style = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
+              )
+            }
+            it()
+          }
+          if (viewModel.medias.isNotEmpty()) {
+            HeightSpacer(value = 10.dp)
+            PostAlbumPanel(
+              mediaList = viewModel.medias,
+              removeImage = viewModel::removeMedia,
+              state = albumRowState
             )
           }
-          it()
         }
       }
-      HeightSpacer(value = 24.dp)
     }
     CenterRow(Modifier.padding(12.dp)) {
       Box(Modifier.weight(1f)) {
         Surface(
           color = AppTheme.colors.background,
-          shape = RoundedCornerShape(6.dp),
+          shape = AppTheme.shape.smallAvatar,
           border = BorderStroke(1.dp, Color(0xFF777777)),
-          onClick = {
-            openVisibilitySheet = true
-          }
+          onClick = { scope.launch { visibilitySheetState.open() } }
         ) {
           CenterRow(Modifier.padding(vertical = 6.dp, horizontal = 12.dp)) {
             Icon(
@@ -204,11 +230,28 @@ fun Post(
     AppHorizontalDivider()
     PostToolBar(
       modifier = Modifier.padding(12.dp),
-      enabledPostButton = viewModel.postTextField.text.isNotEmpty() && !state.textExceedLimit,
+      enabledPostButton = allowPostStatus,
       postState = state.postState,
-      postStatus = viewModel::postStatus
+      postStatus = viewModel::postStatus,
+      openAlbum = {
+        imagePicker.launch(
+          PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+        )
+      }
     ) { scope.launch { emojiDrawerState.open() } }
   }
+  PostVisibilitySheet(
+    drawerState = visibilitySheetState,
+    currentVisibility = state.visibility,
+    onVisibilityUpdated = {
+      viewModel.updateVisibility(it)
+      scope.launch {
+        visibilitySheetState.close()
+      }.invokeOnCompletion {
+        keyboard?.show()
+      }
+    }
+  )
   EmojiSheet(
     drawerState = emojiDrawerState,
     emojis = state.emojis,
@@ -229,21 +272,6 @@ fun Post(
       }
     }
   )
-  if (openVisibilitySheet) {
-    PostVisibilitySheet(
-      sheetState = visibilitySheetState,
-      currentVisibility = state.visibility,
-      onDismissRequest = { openVisibilitySheet = false },
-      onVisibilityUpdated = {
-        viewModel.updateVisibility(it)
-        scope.launch {
-          visibilitySheetState.hide()
-        }.invokeOnCompletion {
-          openVisibilitySheet = false
-        }
-      },
-    )
-  }
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }
@@ -252,15 +280,52 @@ fun Post(
       navigator.popBackStack()
     }
   }
-  MaterialTheme
+}
+
+@Composable
+private fun PostAlbumPanel(
+  mediaList: List<MediaModel>,
+  removeImage: (Int, Uri?) -> Unit,
+  state: LazyListState
+) {
+  BoxWithConstraints {
+    LazyRow(
+      state = state,
+      horizontalArrangement = Arrangement.spacedBy(10.dp),
+      modifier = Modifier
+        .let {
+          if (mediaList.size > 1) it.heightIn(max = 220.dp) else it
+        }
+    ) {
+      itemsIndexed(
+        items = mediaList,
+        key = { _, item -> item.uri.toString() }
+      ) { index, media ->
+        PostImage(
+          mediaModel = media,
+          onCancelImage = { removeImage(index, media.uri) },
+          modifier = Modifier
+            .animateContentSize()
+            .let { modifier ->
+              if (index > 0) modifier.widthIn(max = 150.dp) else {
+                if (mediaList.size > 1) {
+                  modifier.widthIn(max = 300.dp)
+                } else modifier.widthIn(max = maxWidth)
+              }
+            }
+        )
+      }
+    }
+  }
 }
 
 @Composable
 private fun PostToolBar(
-  modifier: Modifier = Modifier,
   enabledPostButton: Boolean,
   postState: PostState,
+  modifier: Modifier = Modifier,
   postStatus: () -> Unit,
+  openAlbum: () -> Unit,
   openEmojiPicker: () -> Unit,
 ) {
   CenterRow(
@@ -277,7 +342,7 @@ private fun PostToolBar(
         painter = painterResource(id = R.drawable.image),
         tint = AppTheme.colors.primaryContent,
         modifier = Modifier.size(28.dp),
-        onClick = { /*TODO*/ },
+        onClick = openAlbum,
       )
       ClickableIcon(
         painter = painterResource(id = R.drawable.emoji),
@@ -340,10 +405,10 @@ private fun PostTopBar(
         ClickableIcon(
           painter = painterResource(id = R.drawable.close),
           onClick = back,
-          modifier = Modifier.size(28.dp),
+          modifier = Modifier.size(24.dp),
           tint = AppTheme.colors.primaryContent
         )
-        WidthSpacer(value = 8.dp)
+        WidthSpacer(value = 6.dp)
         CircleShapeAsyncImage(
           model = account.profilePictureUrl,
           modifier = Modifier.size(36.dp),
