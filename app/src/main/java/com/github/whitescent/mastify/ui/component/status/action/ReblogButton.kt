@@ -51,7 +51,7 @@ fun ReblogButton(
   )
 
   ClickableIcon(
-    painter = painterResource(if (reblogged) R.drawable.share_fill else R.drawable.share_fat),
+    painter = painterResource(R.drawable.repeat),
     modifier = modifier.scale(scaleAnimatable.value).rotate(rotateAnimatable.value),
     tint = if (enabled) animatedReblogIconColor else unreblogColor.copy(0.34f),
     enabled = enabled

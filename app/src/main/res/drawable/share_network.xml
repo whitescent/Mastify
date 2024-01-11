@@ -1,26 +1,9 @@
-<!--
-  ~ Copyright 2024 WhiteScent
-  ~
-  ~ This file is a part of Mastify.
-  ~
-  ~ This program is free software; you can redistribute it and/or modify it under the terms of the
-  ~ GNU General Public License as published by the Free Software Foundation; either version 3 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ Mastify is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-  ~ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-  ~ Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with Mastify; if not,
-  ~ see <http://www.gnu.org/licenses>.
-  -->
-
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="32dp"
     android:height="32dp"
     android:viewportWidth="256"
     android:viewportHeight="256">
   <path
-      android:pathData="M176,160a39.89,39.89 0,0 0,-28.62 12.09l-46.1,-29.63a39.8,39.8 0,0 0,0 -28.92l46.1,-29.63a40,40 0,1 0,-8.66 -13.45l-46.1,29.63a40,40 0,1 0,0 55.82l46.1,29.63A40,40 0,1 0,176 160ZM176,32a24,24 0,1 1,-24 24A24,24 0,0 1,176 32ZM64,152a24,24 0,1 1,24 -24A24,24 0,0 1,64 152ZM176,224a24,24 0,1 1,24 -24A24,24 0,0 1,176 224Z"
+      android:pathData="M176,156a43.78,43.78 0,0 0,-29.09 11L106.1,140.8a44.07,44.07 0,0 0,0 -25.6L146.91,89a43.83,43.83 0,1 0,-13 -20.17L93.09,95a44,44 0,1 0,0 65.94L133.9,187.2A44,44 0,1 0,176 156ZM176,36a20,20 0,1 1,-20 20A20,20 0,0 1,176 36ZM64,148a20,20 0,1 1,20 -20A20,20 0,0 1,64 148ZM176,220a20,20 0,1 1,20 -20A20,20 0,0 1,176 220Z"
       android:fillColor="#000000"/>
 </vector>

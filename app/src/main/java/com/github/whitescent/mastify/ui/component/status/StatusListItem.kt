@@ -405,7 +405,7 @@ private fun StatusActionsRow(
     ) {
       CenterRow {
         ClickableIcon(
-          painter = painterResource(id = R.drawable.chat),
+          painter = painterResource(id = R.drawable.comment),
           modifier = Modifier.size(statusActionsIconSize),
           tint = AppTheme.colors.cardAction,
         )

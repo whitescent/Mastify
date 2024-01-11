@@ -45,7 +45,7 @@ fun BookmarkButton(
     painter = painterResource(
       id = when (bookmarkState) {
         true -> R.drawable.bookmark_fill
-        else -> R.drawable.bookmark_simple
+        else -> R.drawable.bookmark
       }
     ),
     modifier = modifier,

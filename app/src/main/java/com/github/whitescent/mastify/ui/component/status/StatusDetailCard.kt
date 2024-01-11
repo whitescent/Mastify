@@ -233,11 +233,6 @@ private fun StatusDetailActionsRow(
     modifier = modifier.fillMaxWidth(),
     horizontalArrangement = Arrangement.spacedBy(20.dp)
   ) {
-    ClickableIcon(
-      painter = painterResource(id = R.drawable.chat_teardrop),
-      modifier = Modifier.size(statusDetailActionsIconSize),
-      tint = AppTheme.colors.primaryContent,
-    )
     FavoriteButton(
       favorited = statusUiData.favorited,
       modifier = Modifier.size(statusDetailActionsIconSize),

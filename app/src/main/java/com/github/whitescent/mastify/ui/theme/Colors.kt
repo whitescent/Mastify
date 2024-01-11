@@ -132,7 +132,7 @@ object DarkColorScheme : ColorSchemeImpl(
   secondaryContent = Color(0xFF7489A6),
   replyLine = Color(0xFF333638),
   hintText = Color(0xFF1d9bf0),
-  reblogged = Color(0xFF046FFF),
+  reblogged = Color(0xFF18BE64),
   replyTextFieldBorder = Color(0xFF454545),
   followButton = Color(0xFF1C79E7),
   unfollowButton = Color.White.copy(0.44f),
