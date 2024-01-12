@@ -50,7 +50,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -395,7 +394,7 @@ fun ExploreTabBar(
     selectedTabIndex = currentExploreKind.ordinal,
     indicator = {
       TabRowDefaults.PrimaryIndicator(
-        modifier = Modifier.tabIndicatorOffset(it[currentExploreKind.ordinal]),
+        modifier = Modifier.tabIndicatorOffset(currentExploreKind.ordinal),
         width = 40.dp,
         height = 5.dp,
         color = AppTheme.colors.accent

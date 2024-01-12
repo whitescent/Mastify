@@ -340,7 +340,7 @@ enum class AppDrawerMenu(
 ) {
   Profile(R.drawable.user, R.string.title_profile, "profile"),
   Bookmarks(R.drawable.bookmark_simple, R.string.title_bookmarks, "bookmarks"),
-  Favorites(R.drawable.heart2, R.string.title_favorites, "favorites"),
+  Favorites(R.drawable.heart, R.string.title_favorites, "favorites"),
   Lists(R.drawable.list_bullets, R.string.title_lists, "lists"),
   Drafts(R.drawable.scroll, R.string.title_draft, "draft"),
   Settings(R.drawable.gear, R.string.title_settings, "settings"),

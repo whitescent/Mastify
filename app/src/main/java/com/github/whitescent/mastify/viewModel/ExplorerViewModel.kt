@@ -108,8 +108,10 @@ class ExplorerViewModel @Inject constructor(
     getAppendKey = {
       trendingFlow.value.timeline.size
     },
-    onLoadUpdated = {
-      trendingFlow.value = trendingFlow.value.copy(loadState = it)
+    onLoadUpdated = { loadState ->
+      trendingFlow.update {
+        it.copy(loadState = loadState)
+      }
     },
     onError = { it?.printStackTrace() },
     onRequest = { nextPage ->
@@ -148,8 +150,10 @@ class ExplorerViewModel @Inject constructor(
     getAppendKey = {
       publicTimelineFlow.value.timeline.lastOrNull()?.id
     },
-    onLoadUpdated = {
-      publicTimelineFlow.value = publicTimelineFlow.value.copy(loadState = it)
+    onLoadUpdated = { loadState ->
+      publicTimelineFlow.update {
+        it.copy(loadState = loadState)
+      }
     },
     onError = { it?.printStackTrace() },
     onRequest = { nextPage ->

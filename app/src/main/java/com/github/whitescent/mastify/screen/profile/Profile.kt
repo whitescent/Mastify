@@ -46,7 +46,6 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -495,7 +494,7 @@ fun ProfileTabs(
     selectedTabIndex = selectedTab.ordinal,
     indicator = {
       TabRowDefaults.PrimaryIndicator(
-        modifier = Modifier.tabIndicatorOffset(it[selectedTab.ordinal]),
+        modifier = Modifier.tabIndicatorOffset(selectedTab.ordinal),
         width = 40.dp,
         height = 5.dp,
         color = AppTheme.colors.accent
