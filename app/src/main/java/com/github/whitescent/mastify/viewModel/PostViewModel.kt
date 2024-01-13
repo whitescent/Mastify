@@ -41,7 +41,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -148,10 +147,10 @@ class PostViewModel @Inject constructor(
       .map { MediaModel(it) }
     medias.addAll(newList)
     medias.forEachIndexed { index, mediaModel ->
-      if (medias.elementAt(index).uploadEvent == UploadEvent.ProgressEvent(0)) {
+      if (medias[index].uploadEvent == UploadEvent.ProgressEvent(0)) {
         fileRepository.addMediaToQueue(mediaModel.uri!!)
       }
-      viewModelScope.launch(Dispatchers.IO) {
+      viewModelScope.launch {
         fileRepository.uploads[mediaModel.uri]?.flow?.collect {
           medias[index] = medias[index].copy(
             uploadEvent = it,
