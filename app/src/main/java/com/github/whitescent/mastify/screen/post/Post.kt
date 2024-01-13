@@ -18,16 +18,17 @@
 package com.github.whitescent.mastify.screen.post
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,6 +65,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -79,6 +81,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Direct
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Private
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Public
@@ -97,6 +100,7 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.MediaModel
 import com.github.whitescent.mastify.viewModel.PostViewModel
+import com.microsoft.fluentui.tokenized.drawer.DrawerState
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -113,6 +117,7 @@ fun Post(
   var isFocused by remember { mutableStateOf(false) }
 
   val keyboard = LocalSoftwareKeyboardController.current
+  val context = LocalContext.current
 
   val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
   val allowPostStatus by viewModel.allowPostStatus.collectAsStateWithLifecycle()
@@ -127,12 +132,16 @@ fun Post(
   val imagePicker = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.PickMultipleVisualMedia(4),
     onResult = {
-      viewModel.addMedia(it)
+      if (it.size + viewModel.medias.size > 4) {
+        Toast.makeText(context, R.string.attachments_exceeded, Toast.LENGTH_LONG).show()
+      } else viewModel.addMedia(it)
     }
   )
 
   Column(
-    modifier = Modifier.fillMaxSize().background(AppTheme.colors.background),
+    modifier = Modifier
+      .fillMaxSize()
+      .background(AppTheme.colors.background),
   ) {
     PostTopBar(activeAccount) { navigator.popBackStack() }
     AppHorizontalDivider(Modifier.padding(6.dp))
@@ -153,7 +162,9 @@ fun Post(
         cursorBrush = SolidColor(AppTheme.colors.primaryContent)
       ) {
         Column(
-          modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+          modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         ) {
           Box {
             if (postTextField.text.isEmpty()) {
@@ -176,57 +187,54 @@ fun Post(
         }
       }
     }
-    CenterRow(Modifier.padding(12.dp)) {
-      Box(Modifier.weight(1f)) {
-        Surface(
-          color = AppTheme.colors.background,
-          shape = AppTheme.shape.smallAvatar,
-          border = BorderStroke(1.dp, Color(0xFF777777)),
-          onClick = { scope.launch { visibilitySheetState.open() } }
-        ) {
-          CenterRow(Modifier.padding(vertical = 6.dp, horizontal = 12.dp)) {
-            Icon(
-              painter = when (state.visibility) {
-                Public -> painterResource(R.drawable.globe)
-                Unlisted -> painterResource(R.drawable.lock_open)
-                Private -> painterResource(R.drawable.lock)
-                Direct -> painterResource(R.drawable.at)
-                else -> throw IllegalArgumentException("Invalid visibility")
-              },
-              contentDescription = null,
-              modifier = Modifier.size(20.dp),
-              tint = Color(0xFF777777)
+    PostHintBar(
+      visibility = state.visibility,
+      visibilitySheetState = visibilitySheetState,
+      textArea = {
+        Text(
+          text = buildAnnotatedString {
+            pushStyle(
+              SpanStyle(
+                color = if (postTextField.text.length <= instanceUiData.maximumTootCharacters!!)
+                  AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+                else Color(0xFFF53232)
+              )
             )
-            WidthSpacer(value = 4.dp)
-            Text(
-              text = stringResource(
-                id = when (state.visibility) {
-                  Public -> R.string.public_title
-                  Unlisted -> R.string.unlisted
-                  Private -> R.string.private_title
-                  Direct -> R.string.direct
-                  else -> throw IllegalArgumentException("Invalid visibility")
-                },
-              ),
-              color = Color(0xFF777777)
+            append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
+            pop()
+          },
+        )
+        WidthSpacer(value = 2.dp)
+        Icon(
+          painter = painterResource(id = R.drawable.text),
+          contentDescription = null,
+          modifier = Modifier.size(18.dp),
+          tint = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+        )
+      },
+      pictureArea = {
+        Text(
+          text = buildAnnotatedString {
+            pushStyle(
+              SpanStyle(
+                color = if (viewModel.medias.size <= 4)
+                  AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+                else Color(0xFFF53232)
+              )
             )
-          }
-        }
-      }
-      Text(
-        text = buildAnnotatedString {
-          pushStyle(
-            SpanStyle(
-              color = if (postTextField.text.length <= instanceUiData.maximumTootCharacters!!)
-                AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-              else Color(0xFFF53232)
-            )
-          )
-          append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
-          pop()
-        },
-      )
-    }
+            append("${viewModel.medias.size}/4")
+            pop()
+          },
+        )
+        WidthSpacer(value = 2.dp)
+        Icon(
+          painter = painterResource(id = R.drawable.images),
+          contentDescription = null,
+          modifier = Modifier.size(18.dp),
+          tint = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+        )
+      },
+    )
     AppHorizontalDivider()
     PostToolBar(
       modifier = Modifier.padding(12.dp),
@@ -283,6 +291,62 @@ fun Post(
 }
 
 @Composable
+private fun PostHintBar(
+  visibility: Visibility,
+  visibilitySheetState: DrawerState,
+  textArea: @Composable RowScope.() -> Unit,
+  pictureArea: @Composable RowScope.() -> Unit,
+) {
+  val scope = rememberCoroutineScope()
+  CenterRow(Modifier.padding(12.dp)) {
+    Box(Modifier.weight(1f)) {
+      Surface(
+        color = AppTheme.colors.background,
+        shape = AppTheme.shape.mediumAvatar,
+        border = BorderStroke(1.dp, Color(0xFF777777)),
+        onClick = { scope.launch { visibilitySheetState.open() } }
+      ) {
+        CenterRow(Modifier.padding(vertical = 6.dp, horizontal = 12.dp)) {
+          Icon(
+            painter = when (visibility) {
+              Public -> painterResource(R.drawable.globe)
+              Unlisted -> painterResource(R.drawable.lock_open)
+              Private -> painterResource(R.drawable.lock)
+              Direct -> painterResource(R.drawable.at)
+              else -> throw IllegalArgumentException("Invalid visibility")
+            },
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = Color(0xFF777777)
+          )
+          WidthSpacer(value = 4.dp)
+          Text(
+            text = stringResource(
+              id = when (visibility) {
+                Public -> R.string.public_title
+                Unlisted -> R.string.unlisted
+                Private -> R.string.private_title
+                Direct -> R.string.direct
+                else -> throw IllegalArgumentException("Invalid visibility")
+              },
+            ),
+            color = Color(0xFF777777)
+          )
+        }
+      }
+    }
+    CenterRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+      CenterRow {
+        textArea()
+      }
+      CenterRow {
+        pictureArea()
+      }
+    }
+  }
+}
+
+@Composable
 private fun PostAlbumPanel(
   mediaList: List<MediaModel>,
   removeImage: (Int, Uri?) -> Unit,
@@ -305,7 +369,6 @@ private fun PostAlbumPanel(
           mediaModel = media,
           onCancelImage = { removeImage(index, media.uri) },
           modifier = Modifier
-            .animateContentSize()
             .let { modifier ->
               if (index > 0) modifier.widthIn(max = 150.dp) else {
                 if (mediaList.size > 1) {
