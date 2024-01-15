@@ -123,7 +123,7 @@ class PostViewModel @Inject constructor(
         },
         {
           it.printStackTrace()
-          uiState = uiState.copy(postState = PostState.Failure)
+          uiState = uiState.copy(postState = PostState.Failure(it))
         }
       )
     }
@@ -136,7 +136,7 @@ class PostViewModel @Inject constructor(
   fun updateTextFieldValue(textFieldValue: TextFieldValue) {
     postTextField = textFieldValue
     uiState = uiState.copy(
-      textExceedLimit = postTextField.text.length > uiState.instanceUiData.maximumTootCharacters!!
+      textExceedLimit = postTextField.text.length > uiState.instanceUiData.maximumTootCharacters
     )
   }
 
@@ -145,25 +145,26 @@ class PostViewModel @Inject constructor(
     val newList = uris
       .filter { uri -> !medias.any { it.uri == uri } }
       .map { MediaModel(it) }
+      .reversed()
     medias.addAll(newList)
-    medias.forEachIndexed { index, mediaModel ->
-      if (medias[index].uploadEvent == UploadEvent.ProgressEvent(0)) {
-        fileRepository.addMediaToQueue(mediaModel.uri!!)
-      }
+    newList.forEach { mediaModel ->
       viewModelScope.launch {
-        fileRepository.uploads[mediaModel.uri]?.flow?.collect {
-          medias[index] = medias[index].copy(
-            uploadEvent = it,
-            ids = (it as? UploadEvent.FinishedEvent)?.mediaId
-          )
+        fileRepository.addMediaToQueue(mediaModel.uri!!).collect {
+          val index = medias.indexOfFirst { item -> item.uri == mediaModel.uri }
+          if (index != -1) {
+            medias[index] = medias[index].copy(
+              uploadEvent = it,
+              ids = (it as? UploadEvent.FinishedEvent)?.mediaId
+            )
+          }
         }
       }
     }
   }
 
-  fun removeMedia(index: Int, uri: Uri?) {
+  fun removeMedia(uri: Uri?) {
     fileRepository.cancelUpload(uri)
-    medias.removeAt(index)
+    medias.removeIf { media -> media.uri == uri }
   }
 }
 

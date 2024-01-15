@@ -159,7 +159,7 @@ class StatusDetailViewModel @Inject constructor(
         },
         {
           it.printStackTrace()
-          uiState = uiState.copy(postState = PostState.Failure)
+          uiState = uiState.copy(postState = PostState.Failure(it))
         }
       )
     }
