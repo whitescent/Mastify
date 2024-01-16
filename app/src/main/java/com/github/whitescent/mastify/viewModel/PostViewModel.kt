@@ -31,11 +31,10 @@ import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.repository.FileRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.data.repository.UploadEvent
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.emoji.Emoji
-import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.utils.PostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -46,15 +45,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class PostViewModel @Inject constructor(
   db: AppDatabase,
   private val instanceRepository: InstanceRepository,
-  private val fileRepository: FileRepository,
-  private val api: MastodonApi
+  private val statusRepository: StatusRepository,
+  private val fileRepository: FileRepository
 ) : ViewModel() {
 
   private val accountDao = db.accountDao()
@@ -103,20 +101,10 @@ class PostViewModel @Inject constructor(
   fun postStatus() {
     uiState = uiState.copy(postState = PostState.Posting)
     viewModelScope.launch {
-      api.createStatus(
-        idempotencyKey = UUID.randomUUID().toString(),
-        status = NewStatus(
-          status = postTextField.text,
-          warningText = "",
-          inReplyToId = null,
-          visibility = uiState.visibility.toString(),
-          sensitive = false, // TODO
-          mediaIds = medias.map { it.ids!! },
-          mediaAttributes = null,
-          scheduledAt = null,
-          poll = null,
-          language = null,
-        ),
+      statusRepository.createStatus(
+        content = postTextField.text,
+        mediaIds = medias.map { it.ids!! },
+        visibility = uiState.visibility,
       ).fold(
         { _ ->
           uiState = uiState.copy(postState = PostState.Success)

@@ -122,7 +122,7 @@ interface MastodonApi {
   suspend fun createStatus(
     @Header("Idempotency-Key") idempotencyKey: String,
     @Body status: NewStatus,
-  ): NetworkResult<Status>
+  ): Response<Status>
 
   @POST("api/v1/statuses/{id}/favourite")
   suspend fun favouriteStatus(

@@ -31,6 +31,7 @@ import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
@@ -38,9 +39,7 @@ import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.update
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.status.toEntity
 import com.github.whitescent.mastify.mapper.status.toUiData
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.emoji.Emoji
-import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
@@ -53,20 +52,20 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   db: AppDatabase,
-  private val api: MastodonApi,
   private val statusActionHandler: StatusActionHandler,
+  private val statusRepository: StatusRepository,
   private val instanceRepository: InstanceRepository
 ) : ViewModel() {
 
@@ -128,20 +127,9 @@ class StatusDetailViewModel @Inject constructor(
   fun replyToStatus() {
     uiState = uiState.copy(postState = PostState.Posting)
     viewModelScope.launch {
-      api.createStatus(
-        idempotencyKey = UUID.randomUUID().toString(),
-        status = NewStatus(
-          status = "${navArgs.status.account.fullname} ${replyField.text}",
-          warningText = "",
-          inReplyToId = navArgs.status.actionableId,
-          visibility = "public", // TODO
-          sensitive = false, // TODO
-          mediaIds = null,
-          mediaAttributes = null,
-          scheduledAt = null,
-          poll = null,
-          language = null,
-        ),
+      statusRepository.createStatus(
+        content = "${navArgs.status.account.fullname} ${replyField.text}",
+        inReplyToId = navArgs.status.actionableId,
       ).fold(
         { status ->
           uiState = uiState.copy(
@@ -169,30 +157,34 @@ class StatusDetailViewModel @Inject constructor(
     var latestStatus = navArgs.status.toUiData()
     uiState = uiState.copy(loading = true, statusList = persistentListOf(latestStatus))
     viewModelScope.launch {
-      api.status(navArgs.status.id).fold(
-        {
-          latestStatus = it.toUiData() // fetch latest status data
-        },
-        {
-          statusActionHandler.onStatusLoadError()
-        }
-      )
-      api.statusContext(navArgs.status.id).fold(
-        {
-          val combinedList = (it.ancestors.toUiData() +
-            latestStatus + reorderDescendants(it.descendants)).toImmutableList()
-          uiState = uiState.copy(
-            loading = false,
-            instanceEmojis = instanceRepository.getEmojis().toImmutableList(),
-            statusList = combinedList
-          )
-          updateStatusInDatabase()
-        },
-        {
-          uiState = uiState.copy(loading = false)
-          it.printStackTrace()
-        }
-      )
+      launch {
+        statusRepository.getSingleStatus(navArgs.status.id)
+          .catch {
+            it.printStackTrace()
+            statusActionHandler.onStatusLoadError()
+          }
+          .collect {
+            latestStatus = it.getOrNull()!!.toUiData()
+          }
+      }
+      launch {
+        statusRepository.getStatusContext(navArgs.status.id)
+          .catch {
+            uiState = uiState.copy(loading = false)
+            it.printStackTrace()
+          }
+          .collect {
+            val response = it.getOrNull()!!
+            val combinedList = (response.ancestors.toUiData() +
+              latestStatus + reorderDescendants(response.descendants)).toImmutableList()
+            uiState = uiState.copy(
+              loading = false,
+              instanceEmojis = instanceRepository.getEmojis().toImmutableList(),
+              statusList = combinedList
+            )
+            updateStatusInDatabase()
+          }
+      }
     }
   }
 
