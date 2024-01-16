@@ -86,7 +86,7 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
     scheduledAt: String? = null,
     poll: NewPoll? = null,
     language: String? = null
-  ): NetworkResult<Status> {
+  ): Flow<NetworkResult<Status>> = flow {
     try {
       val response = api.createStatus(
         idempotencyKey = UUID.randomUUID().toString(),
@@ -103,16 +103,20 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
           language = language,
         )
       )
-      return if (response.isSuccessful && response.body() != null)
-        NetworkResult.success(response.body()!!)
+      if (response.isSuccessful && response.body() != null)
+        emit(NetworkResult.success(response.body()!!))
       else {
         val error = HttpException(response)
         val errorMessage = error.getServerErrorMessage()
-        NetworkResult.failure(errorMessage?.let { Throwable(it) } ?: error)
+        if (errorMessage == null) {
+          throw error
+        } else {
+          throw Throwable(errorMessage)
+        }
       }
     } catch (e: Exception) {
       e.printStackTrace()
-      return NetworkResult.failure(e)
+      throw e
     }
   }
 

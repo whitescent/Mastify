@@ -27,7 +27,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
@@ -130,8 +129,13 @@ class StatusDetailViewModel @Inject constructor(
       statusRepository.createStatus(
         content = "${navArgs.status.account.fullname} ${replyField.text}",
         inReplyToId = navArgs.status.actionableId,
-      ).fold(
-        { status ->
+      )
+        .catch {
+          it.printStackTrace()
+          uiState = uiState.copy(postState = PostState.Failure(it))
+        }
+        .collect { response ->
+          val status = response.getOrNull()!!
           uiState = uiState.copy(
             postState = PostState.Success,
             statusList = uiState.statusList.toMutableList().also {
@@ -144,12 +148,7 @@ class StatusDetailViewModel @Inject constructor(
           replyField = replyField.copy(text = "")
           delay(50)
           uiState = uiState.copy(postState = PostState.Idle)
-        },
-        {
-          it.printStackTrace()
-          uiState = uiState.copy(postState = PostState.Failure(it))
         }
-      )
     }
   }
 

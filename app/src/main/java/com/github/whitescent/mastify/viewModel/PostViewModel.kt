@@ -26,7 +26,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.repository.FileRepository
@@ -42,6 +41,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -105,15 +105,14 @@ class PostViewModel @Inject constructor(
         content = postTextField.text,
         mediaIds = medias.map { it.ids!! },
         visibility = uiState.visibility,
-      ).fold(
-        { _ ->
-          uiState = uiState.copy(postState = PostState.Success)
-        },
-        {
+      )
+        .catch {
           it.printStackTrace()
           uiState = uiState.copy(postState = PostState.Failure(it))
         }
-      )
+        .collect {
+          uiState = uiState.copy(postState = PostState.Success)
+        }
     }
   }
 
