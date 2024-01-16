@@ -22,14 +22,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -43,14 +40,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,6 +49,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -81,12 +72,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Direct
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Private
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Public
-import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility.Unlisted
-import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.extensions.insertString
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -100,7 +85,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.MediaModel
 import com.github.whitescent.mastify.viewModel.PostViewModel
-import com.microsoft.fluentui.tokenized.drawer.DrawerState
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -143,110 +127,165 @@ fun Post(
       .fillMaxSize()
       .background(AppTheme.colors.background),
   ) {
-    PostTopBar(activeAccount) { navigator.popBackStack() }
-    AppHorizontalDivider(Modifier.padding(6.dp))
+    PostTopBar(
+      backButton = {
+        ClickableIcon(
+          painter = painterResource(id = R.drawable.close),
+          modifier = Modifier.size(24.dp),
+          tint = AppTheme.colors.primaryContent
+        ) {
+          navigator.popBackStack()
+        }
+      },
+      title = {
+        Text(
+          text = "New Moment",
+          fontSize = 18.sp,
+          fontWeight = FontWeight.Bold,
+          color = AppTheme.colors.primaryContent
+        )
+      },
+      action = {
+        PostButton(
+          enabled = allowPostStatus,
+          postState = state.postState,
+          post = viewModel::postStatus
+        )
+      },
+      modifier = Modifier
+        .statusBarsPadding()
+        .padding(horizontal = 12.dp, vertical = 6.dp)
+        .fillMaxWidth()
+    )
+    AppHorizontalDivider(Modifier.padding(vertical = 8.dp))
     Column(
       modifier = Modifier
         .padding(horizontal = 16.dp)
-        .weight(1f)
         .background(AppTheme.colors.background),
     ) {
-      BasicTextField(
-        value = postTextField,
-        onValueChange = viewModel::updateTextFieldValue,
-        modifier = Modifier
-          .fillMaxSize()
-          .focusRequester(focusRequester)
-          .onFocusChanged { isFocused = it.isFocused },
-        textStyle = TextStyle(fontSize = 20.sp, color = AppTheme.colors.primaryContent),
-        cursorBrush = SolidColor(AppTheme.colors.primaryContent)
-      ) {
-        Column(
+      Column(Modifier.weight(1f)) {
+        activeAccount?.let {
+          Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+            CenterRow {
+              CircleShapeAsyncImage(
+                model = it.profilePictureUrl,
+                modifier = Modifier.size(36.dp),
+                shape = AppTheme.shape.smallAvatar
+              )
+              WidthSpacer(value = 6.dp)
+              Column(modifier = Modifier.weight(1f)) {
+                HtmlText(
+                  text = it.realDisplayName,
+                  fontSize = 16.sp,
+                  overflow = TextOverflow.Ellipsis,
+                  maxLines = 1,
+                  fontWeight = FontWeight.Medium,
+                  color = AppTheme.colors.primaryContent
+                )
+                HeightSpacer(value = 2.dp)
+                Text(
+                  text = it.fullname,
+                  color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+                  overflow = TextOverflow.Ellipsis,
+                  maxLines = 1,
+                  fontSize = 14.sp
+                )
+              }
+            }
+          }
+        }
+        BasicTextField(
+          value = postTextField,
+          onValueChange = viewModel::updateTextFieldValue,
           modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .focusRequester(focusRequester)
+            .onFocusChanged { isFocused = it.isFocused },
+          textStyle = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
+          cursorBrush = SolidColor(AppTheme.colors.primaryContent),
         ) {
-          Box {
-            if (postTextField.text.isEmpty()) {
-              Text(
-                text = stringResource(id = R.string.post_placeholder),
-                color = Color(0xFFB6B6B6),
-                style = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
+          Column {
+            if (viewModel.medias.isNotEmpty()) {
+              PostAlbumPanel(
+                mediaList = viewModel.medias,
+                removeImage = viewModel::removeMedia,
+                state = albumRowState
               )
+              HeightSpacer(value = 10.dp)
             }
-            it()
-          }
-          if (viewModel.medias.isNotEmpty()) {
-            HeightSpacer(value = 10.dp)
-            PostAlbumPanel(
-              mediaList = viewModel.medias,
-              removeImage = viewModel::removeMedia,
-              state = albumRowState
-            )
+            Box {
+              if (postTextField.text.isEmpty()) {
+                Text(
+                  text = stringResource(id = R.string.post_placeholder),
+                  color = Color(0xFFB6B6B6),
+                  style = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
+                )
+              }
+              it()
+            }
           }
         }
       }
+      PostToolBar(
+        postActionGroup = {
+          CenterRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.image),
+              tint = AppTheme.colors.primaryContent,
+              modifier = Modifier.size(28.dp),
+              onClick = {
+                imagePicker.launch(
+                  PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
+                )
+              },
+            )
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.emoji),
+              tint = AppTheme.colors.primaryContent,
+              modifier = Modifier.size(28.dp),
+              onClick = { scope.launch { emojiDrawerState.open() } },
+            )
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.warning),
+              tint = AppTheme.colors.primaryContent,
+              modifier = Modifier.size(28.dp),
+            )
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.chart),
+              tint = AppTheme.colors.primaryContent,
+              modifier = Modifier.size(28.dp),
+            )
+          }
+        },
+        textLimitCircle = {
+          val progress = postTextField.text.length.toFloat() / instanceUiData.maximumTootCharacters.toFloat()
+          TextProgressBar(
+            textProgress = progress
+          ) {
+            Text(
+              text = buildAnnotatedString {
+                pushStyle(
+                  SpanStyle(
+                    color = if (postTextField.text.length <= instanceUiData.maximumTootCharacters)
+                      AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+                    else Color(0xFFF53232)
+                  )
+                )
+                append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
+                pop()
+              }
+            )
+          }
+        },
+        visibilityButton = {
+          PostVisibilityButton(state.visibility) { scope.launch { visibilitySheetState.open() } }
+        },
+        modifier = Modifier
+          .imePadding()
+          .fillMaxWidth()
+          .navigationBarsPadding(),
+      )
     }
-    PostHintBar(
-      visibility = state.visibility,
-      visibilitySheetState = visibilitySheetState,
-      textArea = {
-        Text(
-          text = buildAnnotatedString {
-            pushStyle(
-              SpanStyle(
-                color = if (postTextField.text.length <= instanceUiData.maximumTootCharacters!!)
-                  AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-                else Color(0xFFF53232)
-              )
-            )
-            append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
-            pop()
-          },
-        )
-        WidthSpacer(value = 2.dp)
-        Icon(
-          painter = painterResource(id = R.drawable.text),
-          contentDescription = null,
-          modifier = Modifier.size(18.dp),
-          tint = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-        )
-      },
-      pictureArea = {
-        Text(
-          text = buildAnnotatedString {
-            pushStyle(
-              SpanStyle(
-                color = if (viewModel.medias.size <= 4)
-                  AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-                else Color(0xFFF53232)
-              )
-            )
-            append("${viewModel.medias.size}/4")
-            pop()
-          },
-        )
-        WidthSpacer(value = 2.dp)
-        Icon(
-          painter = painterResource(id = R.drawable.images),
-          contentDescription = null,
-          modifier = Modifier.size(18.dp),
-          tint = AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-        )
-      },
-    )
-    AppHorizontalDivider()
-    PostToolBar(
-      modifier = Modifier.padding(12.dp),
-      enabledPostButton = allowPostStatus,
-      postState = state.postState,
-      postStatus = viewModel::postStatus,
-      openAlbum = {
-        imagePicker.launch(
-          PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
-        )
-      }
-    ) { scope.launch { emojiDrawerState.open() } }
   }
   PostVisibilitySheet(
     drawerState = visibilitySheetState,
@@ -291,57 +330,20 @@ fun Post(
 }
 
 @Composable
-private fun PostHintBar(
-  visibility: Visibility,
-  visibilitySheetState: DrawerState,
-  textArea: @Composable RowScope.() -> Unit,
-  pictureArea: @Composable RowScope.() -> Unit,
+private fun PostToolBar(
+  postActionGroup: @Composable () -> Unit,
+  textLimitCircle: @Composable () -> Unit,
+  visibilityButton: @Composable () -> Unit,
+  modifier: Modifier = Modifier
 ) {
-  val scope = rememberCoroutineScope()
-  CenterRow(Modifier.padding(12.dp)) {
+  CenterRow(modifier = modifier.padding(vertical = 8.dp)) {
     Box(Modifier.weight(1f)) {
-      Surface(
-        color = AppTheme.colors.background,
-        shape = AppTheme.shape.mediumAvatar,
-        border = BorderStroke(1.dp, Color(0xFF777777)),
-        onClick = { scope.launch { visibilitySheetState.open() } }
-      ) {
-        CenterRow(Modifier.padding(vertical = 6.dp, horizontal = 12.dp)) {
-          Icon(
-            painter = when (visibility) {
-              Public -> painterResource(R.drawable.globe)
-              Unlisted -> painterResource(R.drawable.lock_open)
-              Private -> painterResource(R.drawable.lock)
-              Direct -> painterResource(R.drawable.at)
-              else -> throw IllegalArgumentException("Invalid visibility")
-            },
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = Color(0xFF777777)
-          )
-          WidthSpacer(value = 4.dp)
-          Text(
-            text = stringResource(
-              id = when (visibility) {
-                Public -> R.string.public_title
-                Unlisted -> R.string.unlisted
-                Private -> R.string.private_title
-                Direct -> R.string.direct
-                else -> throw IllegalArgumentException("Invalid visibility")
-              },
-            ),
-            color = Color(0xFF777777)
-          )
-        }
-      }
+      postActionGroup()
     }
-    CenterRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-      CenterRow {
-        textArea()
-      }
-      CenterRow {
-        pictureArea()
-      }
+    CenterRow {
+      textLimitCircle()
+      WidthSpacer(value = 8.dp)
+      visibilityButton()
     }
   }
 }
@@ -349,17 +351,14 @@ private fun PostHintBar(
 @Composable
 private fun PostAlbumPanel(
   mediaList: List<MediaModel>,
-  removeImage: (Int, Uri?) -> Unit,
+  removeImage: (Uri?) -> Unit,
   state: LazyListState
 ) {
   BoxWithConstraints {
     LazyRow(
       state = state,
       horizontalArrangement = Arrangement.spacedBy(10.dp),
-      modifier = Modifier
-        .let {
-          if (mediaList.size > 1) it.heightIn(max = 220.dp) else it
-        }
+      modifier = Modifier.heightIn(max = 200.dp)
     ) {
       itemsIndexed(
         items = mediaList,
@@ -367,7 +366,7 @@ private fun PostAlbumPanel(
       ) { index, media ->
         PostImage(
           mediaModel = media,
-          onCancelImage = { removeImage(index, media.uri) },
+          onCancelImage = { removeImage(media.uri) },
           modifier = Modifier
             .let { modifier ->
               if (index > 0) modifier.widthIn(max = 150.dp) else {
@@ -383,120 +382,17 @@ private fun PostAlbumPanel(
 }
 
 @Composable
-private fun PostToolBar(
-  enabledPostButton: Boolean,
-  postState: PostState,
-  modifier: Modifier = Modifier,
-  postStatus: () -> Unit,
-  openAlbum: () -> Unit,
-  openEmojiPicker: () -> Unit,
-) {
-  CenterRow(
-    modifier = modifier
-      .imePadding()
-      .fillMaxWidth()
-      .navigationBarsPadding()
-  ) {
-    CenterRow(
-      modifier = Modifier.weight(1f),
-      horizontalArrangement = Arrangement.spacedBy(24.dp)
-    ) {
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.image),
-        tint = AppTheme.colors.primaryContent,
-        modifier = Modifier.size(28.dp),
-        onClick = openAlbum,
-      )
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.emoji),
-        tint = AppTheme.colors.primaryContent,
-        modifier = Modifier.size(28.dp),
-        onClick = openEmojiPicker,
-      )
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.warning),
-        tint = AppTheme.colors.primaryContent,
-        modifier = Modifier.size(28.dp),
-      )
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.chart),
-        tint = AppTheme.colors.primaryContent,
-        modifier = Modifier.size(28.dp),
-      )
-    }
-    IconButton(
-      onClick = postStatus,
-      colors = IconButtonDefaults.filledIconButtonColors(
-        containerColor = when (postState != PostState.Failure) {
-          true -> AppTheme.colors.accent
-          else -> Color(0xFFF53232)
-        },
-        contentColor = Color.White,
-        disabledContentColor = Color.Gray
-      ),
-      enabled = enabledPostButton
-    ) {
-      when (postState) {
-        is PostState.Idle, PostState.Success, PostState.Failure -> {
-          Icon(
-            painter = painterResource(id = R.drawable.send),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp)
-          )
-        }
-        is PostState.Posting -> CircularProgressIndicator(color = Color.White, strokeWidth = 4.dp)
-      }
-    }
-  }
-}
-
-@Composable
 private fun PostTopBar(
-  account: AccountEntity?,
-  back: () -> Unit,
+  backButton: @Composable () -> Unit,
+  title: @Composable () -> Unit,
+  action: @Composable () -> Unit,
+  modifier: Modifier = Modifier
 ) {
-  account?.let {
-    Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .background(AppTheme.colors.background)
-        .padding(horizontal = 16.dp)
-        .padding(vertical = 8.dp)
-    ) {
-      Spacer(Modifier.statusBarsPadding())
-      CenterRow {
-        ClickableIcon(
-          painter = painterResource(id = R.drawable.close),
-          onClick = back,
-          modifier = Modifier.size(24.dp),
-          tint = AppTheme.colors.primaryContent
-        )
-        WidthSpacer(value = 6.dp)
-        CircleShapeAsyncImage(
-          model = account.profilePictureUrl,
-          modifier = Modifier.size(36.dp),
-          shape = AppTheme.shape.smallAvatar
-        )
-        WidthSpacer(value = 6.dp)
-        Column(modifier = Modifier.weight(1f)) {
-          HtmlText(
-            text = account.realDisplayName,
-            fontSize = 16.sp,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            fontWeight = FontWeight.Medium,
-            color = AppTheme.colors.primaryContent
-          )
-          HeightSpacer(value = 2.dp)
-          Text(
-            text = account.fullname,
-            color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            fontSize = 14.sp
-          )
-        }
-      }
+  Box(modifier = modifier.fillMaxWidth()) {
+    CenterRow {
+      Box(Modifier.weight(1f)) { backButton() }
+      action()
     }
+    Box(Modifier.align(Alignment.Center)) { title() }
   }
 }

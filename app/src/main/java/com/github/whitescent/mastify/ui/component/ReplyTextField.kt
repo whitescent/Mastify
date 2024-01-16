@@ -252,7 +252,7 @@ private fun ReplyTextFieldWithToolBar(
         },
         enabled = fieldValue.text.isNotEmpty(),
         colors = IconButtonDefaults.filledIconButtonColors(
-          containerColor = when (postState != PostState.Failure) {
+          containerColor = when (postState !is PostState.Failure) {
             true -> AppTheme.colors.accent
             else -> Color(0xFFF53232)
           },
@@ -261,7 +261,7 @@ private fun ReplyTextFieldWithToolBar(
         ),
       ) {
         when (postState) {
-          is PostState.Idle, PostState.Success, PostState.Failure -> {
+          is PostState.Idle, PostState.Success, is PostState.Failure -> {
             Icon(
               painter = painterResource(id = R.drawable.send),
               contentDescription = null,
