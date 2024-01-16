@@ -137,4 +137,7 @@
   <string name="search_title">搜索</string>
   <string name="timeline_is_empty">这里现在还没有帖子</string>
   <string name="news_is_empty">这个实例现在还没有新闻</string>
+
+  <!--  Post screen-->
+  <string name="attachments_exceeded">选择的媒体文件不能超过 4 个</string>
 </resources>

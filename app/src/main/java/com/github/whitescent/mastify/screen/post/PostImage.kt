@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.repository.UploadEvent
+import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.viewModel.MediaModel
 import com.microsoft.fluentui.theme.token.Icon
@@ -90,13 +91,17 @@ fun PostImage(
           )
         }
         is UploadEvent.ErrorEvent -> {
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          Column(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+          ) {
             Icon(
               painter = painterResource(id = R.drawable.cloud_warning),
               contentDescription = null,
               modifier = Modifier.size(32.dp),
               tint = Color.Red
             )
+            HeightSpacer(value = 6.dp)
             Text(
               text = mediaModel.uploadEvent.error.localizedMessage ?: "Error uploading image",
               color = Color.White

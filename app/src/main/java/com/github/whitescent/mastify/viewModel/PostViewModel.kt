@@ -26,36 +26,33 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.repository.FileRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.data.repository.UploadEvent
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.emoji.Emoji
-import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.utils.PostState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class PostViewModel @Inject constructor(
   db: AppDatabase,
   private val instanceRepository: InstanceRepository,
-  private val fileRepository: FileRepository,
-  private val api: MastodonApi
+  private val statusRepository: StatusRepository,
+  private val fileRepository: FileRepository
 ) : ViewModel() {
 
   private val accountDao = db.accountDao()
@@ -104,29 +101,18 @@ class PostViewModel @Inject constructor(
   fun postStatus() {
     uiState = uiState.copy(postState = PostState.Posting)
     viewModelScope.launch {
-      api.createStatus(
-        idempotencyKey = UUID.randomUUID().toString(),
-        status = NewStatus(
-          status = postTextField.text,
-          warningText = "",
-          inReplyToId = null,
-          visibility = uiState.visibility.toString(),
-          sensitive = false, // TODO
-          mediaIds = medias.map { it.ids!! },
-          mediaAttributes = null,
-          scheduledAt = null,
-          poll = null,
-          language = null,
-        ),
-      ).fold(
-        { _ ->
-          uiState = uiState.copy(postState = PostState.Success)
-        },
-        {
-          it.printStackTrace()
-          uiState = uiState.copy(postState = PostState.Failure)
-        }
+      statusRepository.createStatus(
+        content = postTextField.text,
+        mediaIds = medias.map { it.ids!! },
+        visibility = uiState.visibility,
       )
+        .catch {
+          it.printStackTrace()
+          uiState = uiState.copy(postState = PostState.Failure(it))
+        }
+        .collect {
+          uiState = uiState.copy(postState = PostState.Success)
+        }
     }
   }
 
@@ -137,7 +123,7 @@ class PostViewModel @Inject constructor(
   fun updateTextFieldValue(textFieldValue: TextFieldValue) {
     postTextField = textFieldValue
     uiState = uiState.copy(
-      textExceedLimit = postTextField.text.length > uiState.instanceUiData.maximumTootCharacters!!
+      textExceedLimit = postTextField.text.length > uiState.instanceUiData.maximumTootCharacters
     )
   }
 
@@ -146,25 +132,26 @@ class PostViewModel @Inject constructor(
     val newList = uris
       .filter { uri -> !medias.any { it.uri == uri } }
       .map { MediaModel(it) }
+      .reversed()
     medias.addAll(newList)
-    medias.forEachIndexed { index, mediaModel ->
-      if (medias.elementAt(index).uploadEvent == UploadEvent.ProgressEvent(0)) {
-        fileRepository.addMediaToQueue(mediaModel.uri!!)
-      }
-      viewModelScope.launch(Dispatchers.IO) {
-        fileRepository.uploads[mediaModel.uri]?.flow?.collect {
-          medias[index] = medias[index].copy(
-            uploadEvent = it,
-            ids = (it as? UploadEvent.FinishedEvent)?.mediaId
-          )
+    newList.forEach { mediaModel ->
+      viewModelScope.launch {
+        fileRepository.addMediaToQueue(mediaModel.uri!!).collect {
+          val index = medias.indexOfFirst { item -> item.uri == mediaModel.uri }
+          if (index != -1) {
+            medias[index] = medias[index].copy(
+              uploadEvent = it,
+              ids = (it as? UploadEvent.FinishedEvent)?.mediaId
+            )
+          }
         }
       }
     }
   }
 
-  fun removeMedia(index: Int, uri: Uri?) {
+  fun removeMedia(uri: Uri?) {
     fileRepository.cancelUpload(uri)
-    medias.removeAt(index)
+    medias.removeIf { media -> media.uri == uri }
   }
 }
 

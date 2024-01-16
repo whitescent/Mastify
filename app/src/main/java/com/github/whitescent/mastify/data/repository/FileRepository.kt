@@ -60,23 +60,25 @@ class FileRepository @Inject constructor(
   private val api: MastodonApi
 ) {
 
-  val uploads = mutableMapOf<Uri, UploadData>()
+  private val uploads = mutableMapOf<Uri, UploadData>()
 
   @OptIn(ExperimentalCoroutinesApi::class)
-  fun addMediaToQueue(uri: Uri) {
+  fun addMediaToQueue(uri: Uri): Flow<UploadEvent> {
     val uploadScope = CoroutineScope(Dispatchers.IO)
-    uploads[uri] = UploadData(
-      flow = flow { emit(uri) }
-        .flatMapLatest { uploadMedia(it) }
-        .catch { exception ->
-          emit(UploadEvent.ErrorEvent(exception))
-        }
-        .shareIn(uploadScope, SharingStarted.Eagerly),
-      scope = uploadScope
-    )
+    val uploadFlow = flow { emit(uri) }
+      .flatMapLatest { uploadMedia(it) }
+      .catch { exception ->
+        emit(UploadEvent.ErrorEvent(exception))
+      }
+      .shareIn(uploadScope, SharingStarted.Eagerly)
+    uploads[uri] = UploadData(flow = uploadFlow, scope = uploadScope)
+    return uploadFlow
   }
 
-  fun cancelUpload(uri: Uri?) = uploads[uri]?.scope?.cancel()
+  fun cancelUpload(uri: Uri?) {
+    uploads[uri]?.scope?.cancel()
+    uploads.remove(uri)
+  }
 
   private suspend fun uploadMedia(uri: Uri): Flow<UploadEvent> {
     return callbackFlow {

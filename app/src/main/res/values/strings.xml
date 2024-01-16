@@ -141,4 +141,7 @@
   <string name="timeline_is_empty">There are no posts here yet</string>
   <string name="news_is_empty">There is no news about this instance yet</string>
 
+  <!--  Post screen-->
+  <string name="attachments_exceeded">You cannot upload more than 4 media files</string>
+
 </resources>

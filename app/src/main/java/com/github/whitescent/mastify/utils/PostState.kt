@@ -17,9 +17,12 @@
 
 package com.github.whitescent.mastify.utils
 
+/**
+ * Model the state of sending posts
+ */
 sealed class PostState {
   data object Idle : PostState()
   data object Posting : PostState()
   data object Success : PostState()
-  data object Failure : PostState()
+  data class Failure(val throwable: Throwable) : PostState()
 }

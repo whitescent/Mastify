@@ -26,7 +26,7 @@ data class InstanceUiData(
   val activeMonth: Int = 0,
   val instanceImageUrl: String = "",
   val instanceDescription: String = "",
-  val maximumTootCharacters: Int? = InstanceRepository.DEFAULT_CHARACTER_LIMIT,
+  val maximumTootCharacters: Int = InstanceRepository.DEFAULT_CHARACTER_LIMIT,
   val maxPollOptions: Int? = null,
   val maxPollCharactersPerOption: Int? = null,
   val minPollExpiration: Int? = null,
