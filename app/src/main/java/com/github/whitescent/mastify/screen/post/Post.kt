@@ -72,6 +72,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
+import com.github.whitescent.mastify.data.repository.InstanceRepository.Companion.DEFAULT_CHARACTER_LIMIT
 import com.github.whitescent.mastify.extensions.insertString
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -88,6 +89,8 @@ import com.github.whitescent.mastify.viewModel.PostViewModel
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 @AppNavGraph
@@ -107,7 +110,7 @@ fun Post(
   val allowPostStatus by viewModel.allowPostStatus.collectAsStateWithLifecycle()
   val postTextField = viewModel.postTextField
   val state = viewModel.uiState
-  val instanceUiData = state.instanceUiData
+  val instanceUiData = state.instance
 
   val emojiDrawerState = rememberDrawerState()
   val visibilitySheetState = rememberDrawerState()
@@ -258,23 +261,26 @@ fun Post(
           }
         },
         textLimitCircle = {
-          val progress = postTextField.text.length.toFloat() / instanceUiData.maximumTootCharacters.toFloat()
-          TextProgressBar(
-            textProgress = progress
-          ) {
-            Text(
-              text = buildAnnotatedString {
-                pushStyle(
-                  SpanStyle(
-                    color = if (postTextField.text.length <= instanceUiData.maximumTootCharacters)
-                      AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-                    else Color(0xFFF53232)
+          instanceUiData?.let {
+            val progress = postTextField.text.length.toFloat() /
+              (it.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT).toFloat()
+            TextProgressBar(
+              textProgress = progress
+            ) {
+              Text(
+                text = buildAnnotatedString {
+                  pushStyle(
+                    SpanStyle(
+                      color = if (postTextField.text.length <= (instanceUiData.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT))
+                        AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+                      else Color(0xFFF53232)
+                    )
                   )
-                )
-                append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
-                pop()
-              }
-            )
+                  append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
+                  pop()
+                }
+              )
+            }
           }
         },
         visibilityButton = {
@@ -301,7 +307,7 @@ fun Post(
   )
   EmojiSheet(
     drawerState = emojiDrawerState,
-    emojis = state.emojis,
+    emojis = state.instance?.emojiList?.toImmutableList() ?: persistentListOf(),
     onSelectEmoji = {
       viewModel.updateTextFieldValue(
         textFieldValue = viewModel.postTextField.copy(

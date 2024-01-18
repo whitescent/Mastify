@@ -84,8 +84,8 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.PAGINGTHRESHOLD
-import com.github.whitescent.mastify.mapper.status.getReplyChainType
-import com.github.whitescent.mastify.mapper.status.hasUnloadedParent
+import com.github.whitescent.mastify.mapper.getReplyChainType
+import com.github.whitescent.mastify.mapper.hasUnloadedParent
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.LoadState.Error
 import com.github.whitescent.mastify.paging.LoadState.NotLoading

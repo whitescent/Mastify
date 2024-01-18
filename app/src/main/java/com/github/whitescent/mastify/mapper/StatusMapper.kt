@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.mapper.status
+package com.github.whitescent.mastify.mapper
 
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType

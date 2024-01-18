@@ -36,7 +36,7 @@ interface InstanceDao {
 
   @RewriteQueriesToDropUnusedColumns
   @Query("SELECT * FROM InstanceEntity WHERE instance = :instance LIMIT 1")
-  suspend fun getInstanceInfo(instance: String): InstanceInfoEntity?
+  suspend fun getInstanceInfo(instance: String): InstanceEntity?
 
   @RewriteQueriesToDropUnusedColumns
   @Query("SELECT * FROM InstanceEntity WHERE instance = :instance LIMIT 1")

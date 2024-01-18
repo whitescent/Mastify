@@ -20,7 +20,7 @@ package com.github.whitescent.mastify.data.repository
 import androidx.room.withTransaction
 import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.mapper.account.toEntity
+import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import javax.inject.Inject

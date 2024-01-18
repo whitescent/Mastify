@@ -67,7 +67,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
-import com.github.whitescent.mastify.mapper.emoji.toShortCode
+import com.github.whitescent.mastify.mapper.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState

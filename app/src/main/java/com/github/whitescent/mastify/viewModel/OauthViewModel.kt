@@ -24,7 +24,7 @@ import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
-import com.github.whitescent.mastify.mapper.account.toEntity
+import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.AccessToken
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -97,8 +97,8 @@ class OauthViewModel @Inject constructor(
             offset = 0
           )
         )
-        instanceRepository.getAndUpdateInstanceInfo()
-        instanceRepository.getEmojis()
+        instanceRepository.upsertInstanceInfo()
+        instanceRepository.upsertEmojis()
       },
       {
         it.printStackTrace()

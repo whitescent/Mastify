@@ -81,7 +81,7 @@ import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
-import com.github.whitescent.mastify.mapper.emoji.toShortCode
+import com.github.whitescent.mastify.mapper.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination

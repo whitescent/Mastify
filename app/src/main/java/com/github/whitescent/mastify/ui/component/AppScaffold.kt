@@ -152,7 +152,7 @@ fun AppScaffold(
             activeAccount = activeAccount!!,
             appState = appState,
             drawerState = drawerState,
-            navigator = this.destinationsNavigator,
+            navigator = destinationsNavigator,
             resultRecipient = resultRecipient()
           )
         }

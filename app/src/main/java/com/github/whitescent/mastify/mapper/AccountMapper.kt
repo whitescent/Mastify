@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.mapper.account
+package com.github.whitescent.mastify.mapper
 
 import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.network.model.account.Account

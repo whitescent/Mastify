@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.mapper.emoji
+package com.github.whitescent.mastify.mapper
 
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 

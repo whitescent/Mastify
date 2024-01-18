@@ -36,8 +36,8 @@ import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
 import com.github.whitescent.mastify.extensions.updateStatusActionData
-import com.github.whitescent.mastify.mapper.status.toEntity
-import com.github.whitescent.mastify.mapper.status.toUiData
+import com.github.whitescent.mastify.mapper.toEntity
+import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
@@ -153,8 +153,12 @@ class StatusDetailViewModel @Inject constructor(
 
   init {
     var latestStatus = navArgs.status.toUiData()
-    uiState = uiState.copy(loading = true, statusList = persistentListOf(latestStatus))
     viewModelScope.launch {
+      uiState = uiState.copy(
+        loading = true,
+        statusList = persistentListOf(latestStatus),
+        instanceEmojis = instanceRepository.getInstanceEmojis().toImmutableList(),
+      )
       launch {
         statusRepository.getSingleStatus(navArgs.status.id)
           .catch {
@@ -174,11 +178,7 @@ class StatusDetailViewModel @Inject constructor(
           .collect {
             val combinedList = (it.ancestors.toUiData() +
               latestStatus + reorderDescendants(it.descendants)).toImmutableList()
-            uiState = uiState.copy(
-              loading = false,
-              instanceEmojis = instanceRepository.getEmojis().toImmutableList(),
-              statusList = combinedList
-            )
+            uiState = uiState.copy(loading = false, statusList = combinedList)
             updateStatusInDatabase()
           }
       }

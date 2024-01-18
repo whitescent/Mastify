@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.AccountEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,6 +42,7 @@ import javax.inject.Inject
 class AppViewModel @Inject constructor(
   db: AppDatabase,
   private val accountRepository: AccountRepository,
+  private val instanceRepository: InstanceRepository
 ) : ViewModel() {
 
   private val accountDao = db.accountDao()
@@ -48,8 +50,8 @@ class AppViewModel @Inject constructor(
   private val accountListFlow = accountDao.getAccountListFlow()
   private val activeAccountFlow = accountDao
     .getActiveAccountFlow()
-    .distinctUntilChanged { old, new -> old?.id == new?.id }
     .filterNotNull()
+    .distinctUntilChanged { old, new -> old.id == new.id }
 
   private val changeAccountChannel = Channel<Unit>()
   val changeAccountFlow = changeAccountChannel.receiveAsFlow()
@@ -79,6 +81,10 @@ class AppViewModel @Inject constructor(
       val activeAccount = accountDao.getActiveAccount()
       isLoggedIn = activeAccount != null
       prepared = true
+      launch {
+        instanceRepository.upsertInstanceInfo()
+        instanceRepository.upsertEmojis()
+      }
     }
   }
 

@@ -31,8 +31,8 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatus
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
-import com.github.whitescent.mastify.mapper.status.toEntity
-import com.github.whitescent.mastify.mapper.status.toUiData
+import com.github.whitescent.mastify.mapper.toEntity
+import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState

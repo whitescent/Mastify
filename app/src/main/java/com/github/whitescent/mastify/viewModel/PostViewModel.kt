@@ -26,19 +26,16 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.whitescent.mastify.data.model.ui.InstanceUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.repository.FileRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.data.repository.InstanceRepository.Companion.DEFAULT_CHARACTER_LIMIT
 import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.data.repository.UploadEvent
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.database.model.InstanceEntity
 import com.github.whitescent.mastify.utils.PostState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -91,10 +88,7 @@ class PostViewModel @Inject constructor(
 
   init {
     viewModelScope.launch {
-      uiState = uiState.copy(
-        instanceUiData = instanceRepository.getAndUpdateInstanceInfo(),
-        emojis = instanceRepository.getEmojis().toImmutableList()
-      )
+      uiState = uiState.copy(instance = instanceRepository.getInstanceInfo())
     }
   }
 
@@ -123,7 +117,8 @@ class PostViewModel @Inject constructor(
   fun updateTextFieldValue(textFieldValue: TextFieldValue) {
     postTextField = textFieldValue
     uiState = uiState.copy(
-      textExceedLimit = postTextField.text.length > uiState.instanceUiData.maximumTootCharacters
+      textExceedLimit = postTextField.text.length >
+        (uiState.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT)
     )
   }
 
@@ -162,8 +157,7 @@ data class MediaModel(
 )
 
 data class PostUiState(
-  val instanceUiData: InstanceUiData = InstanceUiData(),
-  val emojis: ImmutableList<Emoji> = persistentListOf(),
+  val instance: InstanceEntity? = null,
   val postState: PostState = PostState.Idle,
   val visibility: Visibility = Visibility.Public,
   val textExceedLimit: Boolean = false,

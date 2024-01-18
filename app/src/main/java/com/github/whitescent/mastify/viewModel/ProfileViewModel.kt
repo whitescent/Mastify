@@ -35,7 +35,7 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.extensions.updateStatusActionData
-import com.github.whitescent.mastify.mapper.status.toUiData
+import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
