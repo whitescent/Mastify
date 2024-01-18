@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.data.repository
 
-import at.connyduck.calladapter.networkresult.NetworkResult
 import at.connyduck.calladapter.networkresult.fold
 import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
@@ -86,7 +85,7 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
     scheduledAt: String? = null,
     poll: NewPoll? = null,
     language: String? = null
-  ): Flow<NetworkResult<Status>> = flow {
+  ): Flow<Status> = flow {
     try {
       val response = api.createStatus(
         idempotencyKey = UUID.randomUUID().toString(),
@@ -103,8 +102,7 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
           language = language,
         )
       )
-      if (response.isSuccessful && response.body() != null)
-        emit(NetworkResult.success(response.body()!!))
+      if (response.isSuccessful && response.body() != null) emit(response.body()!!)
       else {
         val error = HttpException(response)
         val errorMessage = error.getServerErrorMessage()
@@ -120,11 +118,11 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
     }
   }
 
-  suspend fun getSingleStatus(id: String): Flow<NetworkResult<Status>> = flow {
-    emit(NetworkResult.success(api.status(id).getOrThrow()))
+  suspend fun getSingleStatus(id: String): Flow<Status> = flow {
+    emit(api.status(id).getOrThrow())
   }
 
-  suspend fun getStatusContext(id: String): Flow<NetworkResult<StatusContext>> = flow {
-    emit(NetworkResult.success(api.statusContext(id).getOrThrow()))
+  suspend fun getStatusContext(id: String): Flow<StatusContext> = flow {
+    emit(api.statusContext(id).getOrThrow())
   }
 }

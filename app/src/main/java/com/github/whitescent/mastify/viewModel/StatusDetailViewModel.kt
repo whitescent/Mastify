@@ -135,13 +135,12 @@ class StatusDetailViewModel @Inject constructor(
           uiState = uiState.copy(postState = PostState.Failure(it))
         }
         .collect { response ->
-          val status = response.getOrNull()!!
           uiState = uiState.copy(
             postState = PostState.Success,
             statusList = uiState.statusList.toMutableList().also {
               it.add(
                 index = it.indexOfFirst { item -> item.id == navArgs.status.id } + 1,
-                element = status.toUiData()
+                element = response.toUiData()
               )
             }.toImmutableList(),
           )
@@ -163,7 +162,7 @@ class StatusDetailViewModel @Inject constructor(
             statusActionHandler.onStatusLoadError()
           }
           .collect {
-            latestStatus = it.getOrNull()!!.toUiData()
+            latestStatus = it.toUiData()
           }
       }
       launch {
@@ -173,9 +172,8 @@ class StatusDetailViewModel @Inject constructor(
             it.printStackTrace()
           }
           .collect {
-            val response = it.getOrNull()!!
-            val combinedList = (response.ancestors.toUiData() +
-              latestStatus + reorderDescendants(response.descendants)).toImmutableList()
+            val combinedList = (it.ancestors.toUiData() +
+              latestStatus + reorderDescendants(it.descendants)).toImmutableList()
             uiState = uiState.copy(
               loading = false,
               instanceEmojis = instanceRepository.getEmojis().toImmutableList(),
