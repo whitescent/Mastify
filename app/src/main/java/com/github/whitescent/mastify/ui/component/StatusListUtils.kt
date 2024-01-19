@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
-import com.github.whitescent.mastify.mapper.getReplyChainType
+import com.github.whitescent.mastify.extensions.getReplyChainType
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
