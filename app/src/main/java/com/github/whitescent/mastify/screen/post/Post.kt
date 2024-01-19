@@ -66,6 +66,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -198,7 +199,32 @@ fun Post(
           }
         }
         BasicTextField(
-          value = postTextField,
+          value = postTextField.copy(
+            annotatedString = buildAnnotatedString {
+              val text = postTextField.text
+              val maxInstanceText = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT
+              withStyle(
+                style = SpanStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent)
+              ) {
+                append(
+                  text = text.substring(
+                    startIndex = 0,
+                    endIndex = if (text.length <= maxInstanceText) text.length else maxInstanceText
+                  )
+                )
+              }
+              if (text.length > maxInstanceText) {
+                withStyle(
+                  style = SpanStyle(
+                    color = AppTheme.colors.primaryContent,
+                    background = AppTheme.colors.textLimitWarningBackground
+                  )
+                ) {
+                  append(text.substring(startIndex = maxInstanceText, endIndex = text.length))
+                }
+              }
+            }
+          ),
           onValueChange = viewModel::updateTextFieldValue,
           modifier = Modifier
             .fillMaxSize()

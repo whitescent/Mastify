@@ -22,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 
 object AppTheme {
-
   val colors: MastifyColorScheme
     @Composable
     @ReadOnlyComposable
