@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.extensions
 
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 
 // get all items size from 0 to index
 fun <A, B> Map<A, List<B>>.getSizeOfIndex(index: Int): Int {
@@ -66,4 +67,45 @@ fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List
       result
     } else this
   } else this
+}
+
+fun List<StatusUiData>.hasUnloadedParent(index: Int): Boolean {
+  val current = get(index)
+  val currentType = getReplyChainType(index)
+  if (currentType == Null || !current.isInReplyTo) return false
+  return when (val prev = getOrNull(index - 1)) {
+    null -> false
+    else -> current.inReplyToId != prev.id
+  }
+}
+
+fun List<StatusUiData>.getReplyChainType(index: Int): StatusUiData.ReplyChainType {
+  val prev = getOrNull(index - 1)
+  val current = get(index)
+  val next = getOrNull(index + 1)
+
+  return when {
+    prev != null && next != null -> {
+      when {
+        (current.isInReplyTo &&
+          current.inReplyToId == prev.id && next.inReplyToId == current.id) -> StatusUiData.ReplyChainType.Continue
+        next.inReplyToId == current.id -> StatusUiData.ReplyChainType.Start
+        current.inReplyToId == prev.id -> StatusUiData.ReplyChainType.End
+        else -> Null
+      }
+    }
+    prev == null && next != null -> {
+      when (next.inReplyToId) {
+        current.id -> StatusUiData.ReplyChainType.Start
+        else -> Null
+      }
+    }
+    prev != null && next == null -> {
+      when {
+        current.isInReplyTo && current.inReplyToId == prev.id -> StatusUiData.ReplyChainType.End
+        else -> Null
+      }
+    }
+    else -> Null
+  }
 }
