@@ -54,6 +54,7 @@ interface MastifyColorScheme {
   val exploreSearchBarBorder: Color
   val exploreSearchBarBackground: Color
   val pollOptionBackground: Color
+  val textLimitWarningBackground: Color
   val isLight: Boolean
 }
 
@@ -88,6 +89,7 @@ open class ColorSchemeImpl(
   override val exploreSearchBarBorder: Color,
   override val exploreSearchBarBackground: Color,
   override val pollOptionBackground: Color,
+  override val textLimitWarningBackground: Color,
   override val isLight: Boolean,
 ) : MastifyColorScheme
 
@@ -117,6 +119,7 @@ object LightColorScheme : ColorSchemeImpl(
   exploreSearchBarBorder = Color(0xFFF1F1F1),
   exploreSearchBarBackground = Color.White,
   pollOptionBackground = Color(0xFFECEEF0),
+  textLimitWarningBackground = Color(0xFFf8d3de),
   isLight = true
 )
 
@@ -146,6 +149,7 @@ object DarkColorScheme : ColorSchemeImpl(
   exploreSearchBarBorder = Color(0xFF222222),
   exploreSearchBarBackground = Color(0xFF1D1D1D),
   pollOptionBackground = Color(0xFF232323),
+  textLimitWarningBackground = Color(0xFFf3222d),
   isLight = false
 )
 
