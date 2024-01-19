@@ -40,6 +40,7 @@ object FormatFactory {
   }
   fun getPercentageString(value: Float): String {
     val percentInstance = NumberFormat.getPercentInstance()
+    percentInstance.maximumFractionDigits = if (value > 0.01f) 0 else 2
     return percentInstance.format(value)
   }
 }
