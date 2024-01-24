@@ -80,10 +80,10 @@ class InstanceRepository @Inject constructor(
     private const val TAG = "InstanceInfoRepo"
 
     const val DEFAULT_CHARACTER_LIMIT = 500
-    private const val DEFAULT_MAX_OPTION_COUNT = 4
-    private const val DEFAULT_MAX_OPTION_LENGTH = 50
-    private const val DEFAULT_MIN_POLL_DURATION = 300
+    const val DEFAULT_MAX_OPTION_COUNT = 4
+    const val DEFAULT_MAX_OPTION_LENGTH = 50
     private const val DEFAULT_MAX_POLL_DURATION = 604800
+    private const val DEFAULT_MIN_POLL_DURATION = 300
 
     private const val DEFAULT_VIDEO_SIZE_LIMIT = 41943040 // 40MiB
     private const val DEFAULT_IMAGE_SIZE_LIMIT = 10485760 // 10MiB

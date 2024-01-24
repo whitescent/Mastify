@@ -17,9 +17,16 @@
 
 package com.github.whitescent.mastify.extensions
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
+import com.github.whitescent.mastify.ui.theme.AppTheme
 
 // get all items size from 0 to index
 fun <A, B> Map<A, List<B>>.getSizeOfIndex(index: Int): Int {
@@ -79,6 +86,10 @@ fun List<StatusUiData>.hasUnloadedParent(index: Int): Boolean {
   }
 }
 
+inline fun <S, B> S.ifEmptyOr(block: (S) -> B): B? where S : Collection<*> {
+  return if (this.isEmpty()) null else block(this)
+}
+
 fun List<StatusUiData>.getReplyChainType(index: Int): StatusUiData.ReplyChainType {
   val prev = getOrNull(index - 1)
   val current = get(index)
@@ -107,5 +118,32 @@ fun List<StatusUiData>.getReplyChainType(index: Int): StatusUiData.ReplyChainTyp
       }
     }
     else -> Null
+  }
+}
+
+@Composable
+fun String.buildTextWithLimit(maxLength: Int): AnnotatedString {
+  val text = this
+  return buildAnnotatedString {
+    withStyle(
+      style = SpanStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent)
+    ) {
+      append(
+        text = text.substring(
+          startIndex = 0,
+          endIndex = if (text.length <= maxLength) text.length else maxLength
+        )
+      )
+    }
+    if (text.length > maxLength) {
+      withStyle(
+        style = SpanStyle(
+          color = AppTheme.colors.primaryContent,
+          background = AppTheme.colors.textLimitWarningBackground
+        )
+      ) {
+        append(text.substring(startIndex = maxLength, endIndex = text.length))
+      }
+    }
   }
 }

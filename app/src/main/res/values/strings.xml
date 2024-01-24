@@ -143,5 +143,20 @@
 
   <!--  Post screen-->
   <string name="attachments_exceeded">You cannot upload more than 4 media files</string>
+  <string name="single_choice">Single</string>
+  <string name="multiple_choice">Multiple</string>
+  <string name="poll_option">Option %d</string>
+  <string name="add_poll_option">Add New Option</string>
+  <string name="poll_type">Type</string>
+  <string name="poll_deadlines">Setting deadlines</string>
+  <string name="duplicate_poll_option">duplicate option content</string>
+  <string name="duration_5_min">5 minutes</string>
+  <string name="duration_30_min">30 minutes</string>
+  <string name="duration_1_hour">1 hour</string>
+  <string name="duration_6_hours">6 hours</string>
+  <string name="duration_1_day">1 day</string>
+  <string name="duration_3_days">3 days</string>
+  <string name="duration_7_days">1 week</string>
+  <string name="poll_close_time">Voting will close in %s</string>
 
 </resources>
