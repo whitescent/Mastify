@@ -33,7 +33,7 @@ data class Poll(
   @SerialName("votes_count") val votesCount: Int,
   @SerialName("voters_count") val votersCount: Int?, // nullable for compatibility with other fediverse
   val options: List<PollOption>,
-  val emojis: List<Emoji>,
+  val emojis: List<Emoji> = emptyList(),
   val voted: Boolean,
   @SerialName("own_votes") val ownVotes: List<Int>?
 ) : Parcelable {

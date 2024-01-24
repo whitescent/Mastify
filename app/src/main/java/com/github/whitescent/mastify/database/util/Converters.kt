@@ -17,27 +17,26 @@
 
 package com.github.whitescent.mastify.database.util
 
+import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Fields
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.network.model.status.Card
 import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.network.model.status.Status.Mention
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class Converters {
-
-  @OptIn(ExperimentalSerializationApi::class)
-  private val json = Json {
-    ignoreUnknownKeys = true
-    explicitNulls = false
-  }
+@ProvidedTypeConverter
+@Singleton
+class Converters @Inject constructor(private val json: Json) {
 
   @TypeConverter
   fun jsonToStatus(json: String): Status = this.json.decodeFromString(json)
@@ -92,4 +91,10 @@ class Converters {
 
   @TypeConverter
   fun pollToJson(poll: Poll?): String = json.encodeToString(poll)
+
+  @TypeConverter
+  fun jsonToCard(json: String): Card = this.json.decodeFromString(json)
+
+  @TypeConverter
+  fun cardToJson(card: Card): String = json.encodeToString(card)
 }
