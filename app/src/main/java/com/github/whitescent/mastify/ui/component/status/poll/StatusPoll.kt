@@ -58,15 +58,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.mapper.toShortCode
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Poll.PollOption
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.annotateInlineEmojis
+import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.theme.shape.SmoothCornerShape
 import com.github.whitescent.mastify.utils.FormatFactory.getPercentageString
@@ -91,6 +96,7 @@ fun StatusPoll(
           PollOption(
             votesCount = poll.votesCount,
             pollOption = pollOption,
+            emojis = poll.emojis,
             multiple = poll.multiple,
             allowVote = allowVote,
             selected = when (allowVote) {
@@ -167,6 +173,7 @@ fun StatusPoll(
 private fun PollOption(
   votesCount: Int,
   pollOption: PollOption,
+  emojis: List<Emoji>,
   multiple: Boolean,
   allowVote: Boolean,
   selected: Boolean,
@@ -210,9 +217,12 @@ private fun PollOption(
           WidthSpacer(value = 6.dp)
         }
         Text(
-          text = pollOption.title,
+          text = buildAnnotatedString {
+            annotateInlineEmojis(pollOption.title, emojis.toShortCode())
+          },
           color = AppTheme.colors.primaryContent,
-          fontSize = 16.sp
+          fontSize = 16.sp,
+          inlineContent = inlineTextContentWithEmoji(emojis, 16.sp),
         )
       }
       WidthSpacer(value = 6.dp)

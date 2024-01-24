@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.network.model.status
 
 import android.os.Parcelable
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -32,6 +33,7 @@ data class Poll(
   @SerialName("votes_count") val votesCount: Int,
   @SerialName("voters_count") val votersCount: Int?, // nullable for compatibility with other fediverse
   val options: List<PollOption>,
+  val emojis: List<Emoji>,
   val voted: Boolean,
   @SerialName("own_votes") val ownVotes: List<Int>?
 ) : Parcelable {

@@ -17,9 +17,13 @@
 
 package com.github.whitescent.mastify.network.model.emoji
 
+import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Parcelize
 @Serializable
 data class Emoji(
   val shortcode: String,
@@ -27,6 +31,7 @@ data class Emoji(
   @SerialName("static_url") val staticUrl: String,
   @SerialName("visible_in_picker") val visibleInPicker: Boolean?,
   val category: String?,
-) {
+) : Parcelable {
+  @IgnoredOnParcel
   val itemType = "emoji"
 }
