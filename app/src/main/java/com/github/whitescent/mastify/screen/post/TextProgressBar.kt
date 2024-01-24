@@ -23,11 +23,16 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
@@ -35,34 +40,53 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
 fun TextProgressBar(
-  textProgress: Float,
-  progress: @Composable () -> Unit
+  textLength: Int,
+  maxTextLength: Int,
+  modifier: Modifier = Modifier,
+  fontSize: TextUnit = TextUnit.Unspecified
 ) {
+  val progress = textLength / maxTextLength.toFloat()
   val colorAnimation by animateColorAsState(
-    targetValue = when (textProgress) {
-      in 0f..0.8f -> AppTheme.colors.accent
-      in 0.8f..1f -> Color(0xFFE56305)
+    targetValue = when (progress) {
+      in 0f..0.75f -> AppTheme.colors.accent
+      in 0.75f..1f -> Color(0xFFE56305)
       else -> Color(0xFFF53232)
     }
   )
   CenterRow(Modifier.animateContentSize()) {
     Box {
       Canvas(
-        modifier = Modifier.size(24.dp)
+        modifier = modifier.size(24.dp)
       ) {
+        val stroke = Stroke(width = 2.dp.toPx())
+        val radius = (size.minDimension - stroke.width) / 2
         drawCircle(
           color = Color(0xFFD9D9D9),
-          radius = 10.dp.toPx(),
-          style = Stroke(width = 2.dp.toPx())
+          radius = radius,
+          style = stroke
         )
       }
       CircularProgressIndicator(
-        progress = { textProgress },
-        modifier = Modifier.size(24.dp),
-        color = colorAnimation
+        progress = { progress },
+        modifier = modifier.size(24.dp),
+        color = colorAnimation,
+        strokeCap = StrokeCap.Round
       )
     }
     WidthSpacer(value = 4.dp)
-    progress()
+    Text(
+      text = buildAnnotatedString {
+        pushStyle(
+          SpanStyle(
+            color = if (textLength <= maxTextLength)
+              AppTheme.colors.primaryContent.copy(alpha = 0.48f)
+            else Color(0xFFF53232),
+            fontSize = fontSize
+          )
+        )
+        append("$textLength/$maxTextLength")
+        pop()
+      }
+    )
   }
 }

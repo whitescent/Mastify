@@ -18,6 +18,8 @@
 package com.github.whitescent.mastify.viewModel
 
 import android.net.Uri
+import android.support.annotation.DrawableRes
+import android.support.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +28,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.data.repository.FileRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
@@ -34,7 +37,10 @@ import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.data.repository.UploadEvent
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.InstanceEntity
+import com.github.whitescent.mastify.extensions.ifEmptyOr
+import com.github.whitescent.mastify.network.model.status.NewPoll
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.viewModel.VoteType.Single
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -74,12 +80,16 @@ class PostViewModel @Inject constructor(
     combine(
       snapshotFlow { medias.toList() },
       snapshotFlow { postTextField },
-      snapshotFlow { uiState.textExceedLimit }
-    ) { medias, postTextField, textExceedLimit ->
-      val isMediaPrepared = !medias.any { it.ids == null }
-      if (medias.isEmpty()) {
-        postTextField.text.isNotEmpty() && !textExceedLimit
-      } else isMediaPrepared && !textExceedLimit
+      snapshotFlow { uiState },
+    ) { medias, postTextField, uiState ->
+      val isMediaPrepared = medias.none { it.ids == null }
+      val isTextValid = postTextField.text.isNotEmpty() && !uiState.textExceedLimit
+      val pollListModel = uiState.pollListModel
+      when {
+        medias.isEmpty() ->
+          isTextValid && (!pollListModel.showPoll || pollListModel.isPollListValid)
+        else -> isMediaPrepared && isTextValid
+      }
     }.stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
@@ -95,10 +105,14 @@ class PostViewModel @Inject constructor(
   fun postStatus() {
     uiState = uiState.copy(postState = PostState.Posting)
     viewModelScope.launch {
+      val poll = uiState.pollListModel
       statusRepository.createStatus(
         content = postTextField.text,
         mediaIds = medias.map { it.ids!! },
         visibility = uiState.visibility,
+        poll = poll.list.ifEmptyOr { list ->
+          NewPoll(list.map { it.text }, poll.duration, poll.voteType.isMultiple)
+        }
       )
         .catch {
           it.printStackTrace()
@@ -112,6 +126,10 @@ class PostViewModel @Inject constructor(
 
   fun updateVisibility(visibility: Visibility) {
     uiState = uiState.copy(visibility = visibility)
+  }
+
+  fun updatePollListModel(pollListModel: PollListModel) {
+    uiState = uiState.copy(pollListModel = pollListModel)
   }
 
   fun updateTextFieldValue(textFieldValue: TextFieldValue) {
@@ -156,9 +174,28 @@ data class MediaModel(
   val uploadEvent: UploadEvent = UploadEvent.ProgressEvent(0)
 )
 
+enum class VoteType(
+  @StringRes val text: Int,
+  @DrawableRes val icon: Int
+) {
+  Single(R.string.single_choice, R.drawable.list_bullets),
+  Multiple(R.string.multiple_choice, R.drawable.list_checks);
+
+  val isMultiple get() = this == Multiple
+}
+
+data class PollListModel(
+  val list: List<TextFieldValue> = emptyList(),
+  val voteType: VoteType = Single,
+  val duration: Int = 3600,
+  val isPollListValid: Boolean = false,
+  val showPoll: Boolean = false
+)
+
 data class PostUiState(
   val instance: InstanceEntity? = null,
   val postState: PostState = PostState.Idle,
   val visibility: Visibility = Visibility.Public,
   val textExceedLimit: Boolean = false,
+  val pollListModel: PollListModel = PollListModel()
 )

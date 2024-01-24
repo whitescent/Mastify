@@ -17,10 +17,13 @@
 
 package com.github.whitescent.mastify.ui.component
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -31,3 +34,28 @@ fun AppHorizontalDivider(
   thickness: Dp = 0.5.dp,
   color: Color = AppTheme.colors.divider
 ) = HorizontalDivider(thickness = thickness, color = color, modifier = modifier)
+
+@Composable
+fun AppHorizontalDashedDivider(
+  modifier: Modifier = Modifier,
+  thickness: Dp = 2.dp,
+  color: Color = AppTheme.colors.divider,
+  phase: Float = 10f,
+  intervals: FloatArray = floatArrayOf(10f, 10f),
+) {
+  Canvas(
+    modifier = modifier
+  ) {
+    val dividerHeight = thickness.toPx()
+    drawRoundRect(
+      color = color,
+      style = Stroke(
+        width = dividerHeight,
+        pathEffect = PathEffect.dashPathEffect(
+          intervals = intervals,
+          phase = phase
+        )
+      )
+    )
+  }
+}

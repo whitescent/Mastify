@@ -65,6 +65,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.action.BookmarkButton
 import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
 import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
+import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.StatusAction

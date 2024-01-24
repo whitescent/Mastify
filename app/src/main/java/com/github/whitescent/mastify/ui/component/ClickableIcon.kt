@@ -52,6 +52,6 @@ fun ClickableIcon(
       ),
       enabled = enabled
     ),
-    tint = tint
+    tint = if (enabled) tint else tint.copy(alpha = 0.5f)
   )
 }

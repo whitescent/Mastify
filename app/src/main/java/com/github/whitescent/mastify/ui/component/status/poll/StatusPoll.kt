@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.ui.component.status
+package com.github.whitescent.mastify.ui.component.status.poll
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.Crossfade

@@ -140,4 +140,20 @@
 
   <!--  Post screen-->
   <string name="attachments_exceeded">选择的媒体文件不能超过 4 个</string>
+  <string name="single_choice">单选</string>
+  <string name="multiple_choice">多选</string>
+  <string name="poll_option">选项 %d</string>
+  <string name="add_poll_option">添加新选项</string>
+  <string name="poll_type">投票方式</string>
+  <string name="poll_deadlines">设置投票截止日期</string>
+  <string name="duplicate_poll_option">重复的选项内容</string>
+  <string name="duration_5_min">5 分钟</string>
+  <string name="duration_30_min">30 分钟</string>
+  <string name="duration_1_hour">1 小时</string>
+  <string name="duration_6_hours">6 小时</string>
+  <string name="duration_1_day">1 天</string>
+  <string name="duration_3_days">3 天</string>
+  <string name="duration_7_days">1 周</string>
+  <string name="poll_close_time">投票将会在 %s后结束</string>
+
 </resources>

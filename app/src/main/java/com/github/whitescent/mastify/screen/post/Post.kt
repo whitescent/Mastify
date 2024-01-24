@@ -40,11 +40,14 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -60,13 +63,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -74,6 +75,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.repository.InstanceRepository.Companion.DEFAULT_CHARACTER_LIMIT
+import com.github.whitescent.mastify.extensions.buildTextWithLimit
 import com.github.whitescent.mastify.extensions.insertString
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -83,10 +85,13 @@ import com.github.whitescent.mastify.ui.component.EmojiSheet
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.status.poll.NewPollSheet
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.MediaModel
 import com.github.whitescent.mastify.viewModel.PostViewModel
+import com.github.whitescent.mastify.viewModel.VoteType.Multiple
+import com.github.whitescent.mastify.viewModel.VoteType.Single
 import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -102,7 +107,10 @@ fun Post(
   navigator: DestinationsNavigator
 ) {
   val focusRequester = remember { FocusRequester() }
-  var isFocused by remember { mutableStateOf(false) }
+  var isEditorFocused by remember { mutableStateOf(false) }
+
+  val pollOptionList = remember { mutableStateListOf(TextFieldValue(), TextFieldValue()) }
+  var focusedPollOptionIndex by remember { mutableStateOf(0) }
 
   val keyboard = LocalSoftwareKeyboardController.current
   val context = LocalContext.current
@@ -200,45 +208,54 @@ fun Post(
         }
         BasicTextField(
           value = postTextField.copy(
-            annotatedString = buildAnnotatedString {
-              val text = postTextField.text
-              val maxInstanceText = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT
-              withStyle(
-                style = SpanStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent)
-              ) {
-                append(
-                  text = text.substring(
-                    startIndex = 0,
-                    endIndex = if (text.length <= maxInstanceText) text.length else maxInstanceText
-                  )
-                )
-              }
-              if (text.length > maxInstanceText) {
-                withStyle(
-                  style = SpanStyle(
-                    color = AppTheme.colors.primaryContent,
-                    background = AppTheme.colors.textLimitWarningBackground
-                  )
-                ) {
-                  append(text.substring(startIndex = maxInstanceText, endIndex = text.length))
-                }
-              }
-            }
+            annotatedString = postTextField.text.buildTextWithLimit(
+              maxLength = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT
+            ),
           ),
           onValueChange = viewModel::updateTextFieldValue,
           modifier = Modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
-            .onFocusChanged { isFocused = it.isFocused },
+            .onFocusChanged { isEditorFocused = it.isFocused },
           textStyle = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
           cursorBrush = SolidColor(AppTheme.colors.primaryContent),
         ) {
-          Column {
+          Column(Modifier.verticalScroll(rememberScrollState())) {
             if (viewModel.medias.isNotEmpty()) {
               PostAlbumPanel(
                 mediaList = viewModel.medias,
                 removeImage = viewModel::removeMedia,
                 state = albumRowState
+              )
+              HeightSpacer(value = 10.dp)
+            }
+            if (state.pollListModel.showPoll) {
+              NewPollSheet(
+                instanceData = instanceUiData,
+                optionList = pollOptionList,
+                close = {
+                  viewModel.updatePollListModel(state.pollListModel.copy(showPoll = false))
+                  focusRequester.requestFocus()
+                },
+                onPollListChange = {
+                  viewModel.updatePollListModel(state.pollListModel.copy(list = it))
+                },
+                onPollValidChange = {
+                  viewModel.updatePollListModel(state.pollListModel.copy(isPollListValid = it))
+                },
+                onPollTypeChange = {
+                  viewModel.updatePollListModel(
+                    state.pollListModel.copy(
+                      voteType = if (it == Single.ordinal) Single else Multiple
+                    )
+                  )
+                },
+                onDurationChange = {
+                  viewModel.updatePollListModel(state.pollListModel.copy(duration = it))
+                },
+                onTextFieldFocusChange = {
+                  focusedPollOptionIndex = it
+                }
               )
               HeightSpacer(value = 10.dp)
             }
@@ -267,12 +284,18 @@ fun Post(
                   PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)
                 )
               },
+              enabled = !state.pollListModel.showPoll
             )
             ClickableIcon(
               painter = painterResource(id = R.drawable.emoji),
               tint = AppTheme.colors.primaryContent,
               modifier = Modifier.size(28.dp),
-              onClick = { scope.launch { emojiDrawerState.open() } },
+              onClick = {
+                scope.launch {
+                  keyboard?.hide()
+                  emojiDrawerState.open()
+                }
+              },
             )
             ClickableIcon(
               painter = painterResource(id = R.drawable.warning),
@@ -283,34 +306,30 @@ fun Post(
               painter = painterResource(id = R.drawable.chart),
               tint = AppTheme.colors.primaryContent,
               modifier = Modifier.size(28.dp),
-            )
+              enabled = viewModel.medias.isEmpty()
+            ) {
+              viewModel.updatePollListModel(
+                pollListModel = state.pollListModel.copy(showPoll = !state.pollListModel.showPoll)
+              )
+              focusRequester.requestFocus()
+            }
           }
         },
         textLimitCircle = {
           instanceUiData?.let {
-            val progress = postTextField.text.length.toFloat() /
-              (it.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT).toFloat()
             TextProgressBar(
-              textProgress = progress
-            ) {
-              Text(
-                text = buildAnnotatedString {
-                  pushStyle(
-                    SpanStyle(
-                      color = if (postTextField.text.length <= (instanceUiData.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT))
-                        AppTheme.colors.primaryContent.copy(alpha = 0.48f)
-                      else Color(0xFFF53232)
-                    )
-                  )
-                  append("${postTextField.text.length}/${instanceUiData.maximumTootCharacters}")
-                  pop()
-                }
-              )
-            }
+              textLength = postTextField.text.length,
+              maxTextLength = instanceUiData.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT
+            )
           }
         },
         visibilityButton = {
-          PostVisibilityButton(state.visibility) { scope.launch { visibilitySheetState.open() } }
+          PostVisibilityButton(state.visibility) {
+            scope.launch {
+              keyboard?.hide()
+              visibilitySheetState.open()
+            }
+          }
         },
         modifier = Modifier
           .imePadding()
@@ -335,15 +354,29 @@ fun Post(
     drawerState = emojiDrawerState,
     emojis = state.instance?.emojiList?.toImmutableList() ?: persistentListOf(),
     onSelectEmoji = {
-      viewModel.updateTextFieldValue(
-        textFieldValue = viewModel.postTextField.copy(
-          text = viewModel.postTextField.text.insertString(
-            insert = it,
-            index = viewModel.postTextField.selection.start
-          ),
-          selection = TextRange(viewModel.postTextField.selection.start + it.length)
-        )
-      )
+      when (isEditorFocused) {
+        true -> {
+          viewModel.updateTextFieldValue(
+            textFieldValue = viewModel.postTextField.copy(
+              text = viewModel.postTextField.text.insertString(
+                insert = it,
+                index = viewModel.postTextField.selection.start
+              ),
+              selection = TextRange(viewModel.postTextField.selection.start + it.length)
+            )
+          )
+        }
+        false -> {
+          val textFieldValue = pollOptionList[focusedPollOptionIndex]
+          pollOptionList[focusedPollOptionIndex] = textFieldValue.copy(
+            text = textFieldValue.text.insertString(
+              insert = it,
+              index = textFieldValue.selection.start
+            ),
+            selection = TextRange(textFieldValue.selection.start + it.length)
+          )
+        }
+      }
       scope.launch {
         emojiDrawerState.close()
       }.invokeOnCompletion {
