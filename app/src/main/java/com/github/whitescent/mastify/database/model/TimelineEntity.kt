@@ -24,6 +24,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import com.github.whitescent.mastify.network.model.status.Card
 import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
@@ -63,6 +64,7 @@ data class TimelineEntity(
   @ColumnInfo val content: String,
   @ColumnInfo val account: Account,
   @ColumnInfo val poll: Poll?,
+  @ColumnInfo val card: Card?,
   @ColumnInfo val emojis: List<Emoji>,
   @ColumnInfo val tags: List<Hashtag>,
   @ColumnInfo val mentions: List<Mention>,

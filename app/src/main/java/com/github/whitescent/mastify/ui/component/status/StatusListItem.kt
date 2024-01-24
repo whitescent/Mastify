@@ -335,9 +335,11 @@ private fun StatusContent(
               }
             }
             else -> {
-              Column {
+              Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(top = 8.dp)
+              ) {
                 if (statusUiData.content.isNotEmpty()) {
-                  HeightSpacer(value = 4.dp)
                   HtmlText(
                     text = statusUiData.content,
                     fontSize = (15.5).sp,
@@ -352,11 +354,11 @@ private fun StatusContent(
                     overflow = TextOverflow.Ellipsis
                   )
                 }
-                StatusPoll(statusUiData.poll, Modifier.padding(top = 8.dp)) { id, choices ->
+                StatusLinkPreviewCard(card = statusUiData.card)
+                StatusPoll(statusUiData.poll) { id, choices ->
                   action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
                 }
                 if (displayAttachments.isNotEmpty()) {
-                  HeightSpacer(value = 4.dp)
                   StatusMedia(
                     attachments = displayAttachments.toImmutableList(),
                     onClick = onClickMedia,

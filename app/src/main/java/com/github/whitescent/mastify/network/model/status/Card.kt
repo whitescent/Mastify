@@ -17,31 +17,19 @@
 
 package com.github.whitescent.mastify.network.model.status
 
-import android.os.Parcelable
-import com.github.whitescent.mastify.network.model.emoji.Emoji
-import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-@Parcelize
-data class Poll(
-  val id: String,
-  @SerialName("expires_at") val expiresAt: String?,
-  val expired: Boolean,
-  val multiple: Boolean,
-  @SerialName("votes_count") val votesCount: Int,
-  @SerialName("voters_count") val votersCount: Int?, // nullable for compatibility with other fediverse
-  val options: List<PollOption>,
-  val emojis: List<Emoji> = emptyList(),
-  val voted: Boolean,
-  @SerialName("own_votes") val ownVotes: List<Int>?
-) : Parcelable {
-
-  @Serializable
-  @Parcelize
-  data class PollOption(
-    val title: String,
-    @SerialName("votes_count") val votesCount: Int
-  ) : Parcelable
-}
+data class Card(
+  val url: String,
+  val title: String,
+  val description: String,
+  @SerialName("author_name") val authorName: String,
+  val image: String?,
+  val type: String,
+  val width: Int,
+  val height: Int,
+  val blurhash: String?,
+  @SerialName("embed_url") val embedUrl: String?
+)

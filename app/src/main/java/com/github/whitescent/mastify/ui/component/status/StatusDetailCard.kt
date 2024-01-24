@@ -168,9 +168,11 @@ fun StatusDetailCard(
             }
           }
           else -> {
-            Column {
+            Column(
+              verticalArrangement = Arrangement.spacedBy(12.dp),
+              modifier = Modifier.padding(top = 8.dp)
+            ) {
               if (status.content.isNotEmpty()) {
-                HeightSpacer(value = 4.dp)
                 SelectionContainer {
                   HtmlText(
                     text = status.content,
@@ -187,11 +189,11 @@ fun StatusDetailCard(
                   )
                 }
               }
-              StatusPoll(status.poll, Modifier.padding(top = 8.dp)) { id, choices ->
+              StatusLinkPreviewCard(card = status.card)
+              StatusPoll(status.poll) { id, choices ->
                 action(StatusAction.VotePoll(id, choices, status.actionable))
               }
               if (displayAttachments.isNotEmpty()) {
-                HeightSpacer(value = 4.dp)
                 StatusMedia(
                   attachments = displayAttachments,
                   onClick = { targetIndex ->

@@ -60,6 +60,7 @@
     <item quantity="other">%d 条新嘟文</item>
   </plurals>
   <string name="load_more_title">加载更多</string>
+  <string name="link_preview_title">链接预览</string>
 
   <!-- currentStatus detail screen -->
   <string name="post_your_reply">发布你的回复</string>
@@ -72,20 +73,6 @@
   <plurals name="reblogs">
     <item quantity="other">%d 次转嘟</item>
   </plurals>
-
-  <!--  post screen-->
-  <string name="public_title">公开</string>
-  <string name="unlisted">不列出</string>
-  <string name="private_title">仅限关注者</string>
-  <string name="direct">私信</string>
-  <string name="reply_placeholder">有什么想和大家分享的吗？</string>
-  <string name="post_placeholder">与大家分享你此刻的想法吧！</string>
-  <string name="change_post_visibility">更改嘟文可见性</string>
-  <string name="visibility_description">更改嘟文的可见性，确保只有您想要的人群可以看到您的内容。</string>
-  <string name="visibility_public">对所有人公开</string>
-  <string name="visibility_unlisted">在公共时间轴中隐藏</string>
-  <string name="visibility_private">仅关注者可见</string>
-  <string name="visibility_direct">仅提及的人可见</string>
 
   <!--  profile screen-->
   <string name="account_joined">%s 加入</string>
@@ -139,6 +126,18 @@
   <string name="news_is_empty">这个实例现在还没有新闻</string>
 
   <!--  Post screen-->
+  <string name="public_title">公开</string>
+  <string name="unlisted">不列出</string>
+  <string name="private_title">仅限关注者</string>
+  <string name="direct">私信</string>
+  <string name="reply_placeholder">有什么想和大家分享的吗？</string>
+  <string name="post_placeholder">与大家分享你此刻的想法吧！</string>
+  <string name="change_post_visibility">更改嘟文可见性</string>
+  <string name="visibility_description">更改嘟文的可见性，确保只有您想要的人群可以看到您的内容。</string>
+  <string name="visibility_public">对所有人公开</string>
+  <string name="visibility_unlisted">在公共时间轴中隐藏</string>
+  <string name="visibility_private">仅关注者可见</string>
+  <string name="visibility_direct">仅提及的人可见</string>
   <string name="attachments_exceeded">选择的媒体文件不能超过 4 个</string>
   <string name="single_choice">单选</string>
   <string name="multiple_choice">多选</string>
