@@ -61,6 +61,7 @@
     <item quantity="other">%d new posts</item>
   </plurals>
   <string name="load_more_title">Load More</string>
+  <string name="link_preview_title">Link Preview</string>
 
   <!-- currentStatus detail screen -->
   <string name="post_your_reply">post your reply</string>
@@ -75,20 +76,6 @@
     <item quantity="one">%d Boost</item>
     <item quantity="other">%d Boosts</item>
   </plurals>
-
-  <!--  post screen-->
-  <string name="public_title">Public</string>
-  <string name="unlisted">Unlisted</string>
-  <string name="private_title">Private</string>
-  <string name="direct">Direct</string>
-  <string name="reply_placeholder">Anything you\'d like to share?</string>
-  <string name="post_placeholder">Share your thoughts at the moment!</string>
-  <string name="change_post_visibility">Change Post visibility</string>
-  <string name="visibility_description">Change the visibility of your Post to make sure only the people you want can see your content.</string>
-  <string name="visibility_public">Public to everyone</string>
-  <string name="visibility_unlisted">Hide in public timeline</string>
-  <string name="visibility_private">Visible only to followers</string>
-  <string name="visibility_direct">Visible only to those mentioned</string>
 
   <!--  profile screen-->
   <string name="account_joined">Joined %s</string>
@@ -142,6 +129,18 @@
   <string name="news_is_empty">There is no news about this instance yet</string>
 
   <!--  Post screen-->
+  <string name="public_title">Public</string>
+  <string name="unlisted">Unlisted</string>
+  <string name="private_title">Private</string>
+  <string name="direct">Direct</string>
+  <string name="reply_placeholder">Anything you\'d like to share?</string>
+  <string name="post_placeholder">Share your thoughts at the moment!</string>
+  <string name="change_post_visibility">Change Post visibility</string>
+  <string name="visibility_description">Change the visibility of your Post to make sure only the people you want can see your content.</string>
+  <string name="visibility_public">Public to everyone</string>
+  <string name="visibility_unlisted">Hide in public timeline</string>
+  <string name="visibility_private">Visible only to followers</string>
+  <string name="visibility_direct">Visible only to those mentioned</string>
   <string name="attachments_exceeded">You cannot upload more than 4 media files</string>
   <string name="single_choice">Single</string>
   <string name="multiple_choice">Multiple</string>

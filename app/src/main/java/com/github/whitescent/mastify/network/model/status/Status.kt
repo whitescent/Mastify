@@ -44,6 +44,7 @@ data class Status(
   val content: String,
   val account: Account,
   val poll: Poll?,
+  val card: Card?,
   val emojis: List<Emoji>,
   val tags: List<Hashtag>,
   val mentions: List<Mention>,

@@ -40,6 +40,12 @@ fun Status.toUiData(): StatusUiData = StatusUiData(
   createdAt = reblog?.createdAt ?: createdAt,
   accountEmojis = (reblog?.account?.emojis ?: account.emojis).toImmutableList(),
   emojis = (reblog?.emojis ?: emojis).toImmutableList(),
+  card = (reblog?.card ?: card)?.let {
+    it.copy(
+      title = it.title.trim(),
+      description = it.description.trim()
+    )
+  },
   displayName = generateHtmlContentWithEmoji(
     reblog?.account?.realDisplayName ?: account.realDisplayName,
     reblog?.account?.emojis ?: account.emojis
@@ -108,7 +114,8 @@ fun Status.toEntity(timelineUserId: Long): TimelineEntity {
     account = account,
     application = application,
     attachments = attachments,
-    hasUnloadedStatus = hasUnloadedStatus
+    hasUnloadedStatus = hasUnloadedStatus,
+    card = card
   )
 }
 
