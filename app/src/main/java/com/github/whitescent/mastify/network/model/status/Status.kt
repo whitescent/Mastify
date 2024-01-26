@@ -81,12 +81,4 @@ data class Status(
       val height: Int = 0,
     )
   }
-
-  @Serializable
-  data class Mention(
-    val id: String,
-    val username: String,
-    val url: String,
-    val acct: String
-  )
 }

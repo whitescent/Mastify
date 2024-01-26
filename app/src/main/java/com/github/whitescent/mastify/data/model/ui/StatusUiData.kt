@@ -21,6 +21,7 @@ import androidx.compose.runtime.Immutable
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Card
+import com.github.whitescent.mastify.network.model.status.Mention
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.collections.immutable.ImmutableList
@@ -43,6 +44,7 @@ data class StatusUiData(
   val content: String,
   val accountEmojis: ImmutableList<Emoji>,
   val emojis: ImmutableList<Emoji>,
+  val mentions: ImmutableList<Mention>,
   val attachments: ImmutableList<Status.Attachment>,
   val actionable: Status,
   val reblogDisplayName: String,

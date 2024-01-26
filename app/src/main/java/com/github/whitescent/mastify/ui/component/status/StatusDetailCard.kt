@@ -179,11 +179,16 @@ fun StatusDetailCard(
                     fontSize = 18.sp,
                     color = AppTheme.colors.primaryContent,
                     onLinkClick = { span ->
-                      launchCustomChromeTab(
-                        context = context,
-                        uri = Uri.parse(span),
-                        toolbarColor = primaryColor.toArgb(),
-                      )
+                      val mention = status.mentions.firstOrNull { it.url == span }
+                      if (mention != null) {
+                        navigateToProfile(mention.toAccount())
+                      } else {
+                        launchCustomChromeTab(
+                          context = context,
+                          uri = Uri.parse(span),
+                          toolbarColor = primaryColor.toArgb(),
+                        )
+                      }
                     },
                     overflow = TextOverflow.Ellipsis
                   )
