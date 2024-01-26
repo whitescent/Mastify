@@ -155,7 +155,7 @@ fun Login(
       ) {
         Button(
           onClick = {
-            viewModel.checkInstance(context)
+            viewModel.checkInstance()
           },
           modifier = Modifier.fillMaxWidth(),
           shape = RoundedCornerShape(14.dp),

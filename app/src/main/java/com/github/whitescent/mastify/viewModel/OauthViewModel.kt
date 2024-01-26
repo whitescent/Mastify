@@ -20,16 +20,16 @@ package com.github.whitescent.mastify.viewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
+import com.github.whitescent.mastify.data.repository.LoginRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
 import com.github.whitescent.mastify.mapper.toEntity
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.AccessToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class OauthViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   preferenceRepository: PreferenceRepository,
   private val instanceRepository: InstanceRepository,
-  private val api: MastodonApi,
+  private val loginRepository: LoginRepository,
   private val accountRepository: AccountRepository
 ) : ViewModel() {
 
@@ -55,22 +55,16 @@ class OauthViewModel @Inject constructor(
     val clientSecret = instance.clientSecret
 
     viewModelScope.launch(Dispatchers.IO) {
-      api.fetchOAuthToken(
+      loginRepository.fetchOAuthToken(
         domain = domain,
         clientId = clientId,
         clientSecret = clientSecret,
-        redirectUri = "mastify://oauth",
-        code = code!!,
-        grantType = "authorization_code"
-      ).fold(
-        { accessToken ->
-          fetchAccountDetails(accessToken, domain, clientId, clientSecret)
+        code = code!!
+      ).catch { it.printStackTrace() }
+        .collect {
+          fetchAccountDetails(it, domain, clientId, clientSecret)
           navigateChannel.send(Unit)
-        },
-        {
-          it.printStackTrace()
         }
-      )
     }
   }
 
@@ -80,18 +74,16 @@ class OauthViewModel @Inject constructor(
     clientId: String,
     clientSecret: String
   ) {
-    api.accountVerifyCredentials(
-      domain = domain,
-      auth = "Bearer ${accessToken.accessToken}"
-    ).fold(
-      { newAccount ->
+    accountRepository.fetchAccountVerifyCredentials(domain, accessToken.accessToken)
+      .catch { it.printStackTrace() }
+      .collect {
         accountRepository.addAccount(
-          newAccount.toEntity(
+          it.toEntity(
             accessToken = accessToken.accessToken,
             clientId = clientId,
             clientSecret = clientSecret,
             isActive = true,
-            accountId = newAccount.id,
+            accountId = it.id,
             id = 0,
             firstVisibleItemIndex = 0,
             offset = 0
@@ -99,10 +91,6 @@ class OauthViewModel @Inject constructor(
         )
         instanceRepository.upsertInstanceInfo()
         instanceRepository.upsertEmojis()
-      },
-      {
-        it.printStackTrace()
       }
-    )
   }
 }

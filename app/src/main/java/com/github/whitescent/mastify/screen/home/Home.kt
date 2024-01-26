@@ -110,6 +110,7 @@ import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarS
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
 import com.github.whitescent.mastify.utils.AppState
+import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -247,7 +248,9 @@ fun Home(
                   if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
                     AppHorizontalDivider()
                   if (status.hasUnloadedStatus)
-                    LoadMorePlaceHolder { viewModel.loadUnloadedStatus(status.id) }
+                    LoadMorePlaceHolder(viewModel.loadMoreState) {
+                      viewModel.loadUnloadedStatus(status.id)
+                    }
                 }
                 item {
                   when (uiState.timelineLoadState) {
@@ -263,9 +266,9 @@ fun Home(
                 }
               }
               NewStatusToast(
-                visible = uiState.showNewStatusButton,
-                count = uiState.newStatusCount,
-                limitExceeded = uiState.needSecondLoad,
+                visible = uiState.toastButton.showNewToastButton,
+                count = uiState.toastButton.newStatusCount,
+                limitExceeded = uiState.toastButton.showManyPost,
                 modifier = Modifier
                   .align(Alignment.TopCenter)
                   .padding(top = 12.dp)
@@ -326,11 +329,10 @@ fun Home(
             snackbarState.show(it)
           }
         }
-        viewModel.fetchLatestAccountData()
         viewModel.refreshTimeline()
       }
       LaunchedEffect(atTop) {
-        if (atTop && uiState.showNewStatusButton) viewModel.dismissButton()
+        if (atTop && uiState.toastButton.showNewToastButton) viewModel.dismissButton()
       }
     }
   }
@@ -383,8 +385,10 @@ private fun NewStatusToast(
 }
 
 @Composable
-private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
-  var loading by remember { mutableStateOf(false) }
+private fun LoadMorePlaceHolder(
+  loadState: PostState,
+  loadMore: () -> Unit
+) {
   Column {
     Surface(
       modifier = Modifier
@@ -397,14 +401,14 @@ private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
       Box(
         modifier = Modifier
           .fillMaxSize()
-          .clickable {
-            loading = true
-            loadMore()
-          }
+          .clickable(
+            onClick = loadMore,
+            enabled = loadState != PostState.Posting
+          )
           .padding(12.dp),
         contentAlignment = Alignment.Center
       ) {
-        Crossfade(loading) {
+        Crossfade(loadState is PostState.Posting) {
           when (it) {
             false -> {
               Text(
@@ -416,7 +420,7 @@ private fun LoadMorePlaceHolder(loadMore: () -> Unit) {
             true -> CircularProgressIndicator(
               modifier = Modifier.size(24.dp),
               color = AppTheme.colors.primaryContent,
-              strokeWidth = 1.5.dp
+              strokeWidth = 2.dp
             )
           }
         }

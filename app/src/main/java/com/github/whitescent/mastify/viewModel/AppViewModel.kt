@@ -22,13 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.database.model.AccountEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -81,7 +78,7 @@ class AppViewModel @Inject constructor(
       val activeAccount = accountDao.getActiveAccount()
       isLoggedIn = activeAccount != null
       prepared = true
-      launch {
+      if (isLoggedIn == true) {
         instanceRepository.upsertInstanceInfo()
         instanceRepository.upsertEmojis()
       }
@@ -95,12 +92,6 @@ class AppViewModel @Inject constructor(
     }
   }
 }
-
-data class HomeUserData(
-  val activeAccount: AccountEntity,
-  val timeline: ImmutableList<StatusUiData>,
-  val position: TimelinePosition
-)
 
 data class TimelinePosition(
   val index: Int = 0,
