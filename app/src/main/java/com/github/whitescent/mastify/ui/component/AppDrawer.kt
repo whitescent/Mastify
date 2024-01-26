@@ -26,7 +26,6 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -37,7 +36,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +79,7 @@ import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AppDrawer(
   drawerState: DrawerState,
@@ -182,22 +182,15 @@ fun AppDrawer(
           accounts.forEach { account ->
             CenterRow(
               modifier = Modifier
-                .clickable(
-                  interactionSource = MutableInteractionSource(),
-                  indication = rememberRipple(
-                    bounded = true,
-                    radius = 250.dp,
-                  ),
-                  onClick = {
-                    if (account != activeAccount) {
-                      changeAccount(account.id)
-                    } else {
-                      scope.launch {
-                        drawerState.close()
-                      }
+                .clickable {
+                  if (account != activeAccount) {
+                    changeAccount(account.id)
+                  } else {
+                    scope.launch {
+                      drawerState.close()
                     }
-                  },
-                )
+                  }
+                }
                 .padding(12.dp),
             ) {
               CircleShapeAsyncImage(
@@ -229,14 +222,9 @@ fun AppDrawer(
           CenterRow(
             modifier = Modifier
               .fillMaxWidth()
-              .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = rememberRipple(
-                  bounded = true,
-                  radius = 250.dp,
-                ),
-                onClick = navigateToLogin
-              )
+              .clickable {
+                navigateToLogin()
+              }
               .drawerListItemPadding()
           ) {
             Box(
@@ -261,7 +249,6 @@ fun AppDrawer(
           AppHorizontalDivider()
         }
       }
-      HeightSpacer(value = 8.dp)
       DrawerMenu()
     }
 
@@ -300,14 +287,7 @@ private fun DrawerMenuItem(icon: Int, name: Int, onClick: () -> Unit) {
   Box(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(
-        interactionSource = remember { MutableInteractionSource() },
-        indication = rememberRipple(
-          bounded = true,
-          radius = 250.dp,
-        ),
-        onClick = onClick,
-      )
+      .clickable(onClick = onClick)
   ) {
     CenterRow(
       modifier = Modifier.drawerListItemPadding()

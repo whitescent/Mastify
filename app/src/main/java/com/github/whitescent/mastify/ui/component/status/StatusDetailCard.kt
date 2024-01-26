@@ -154,8 +154,7 @@ fun StatusDetailCard(
         ClickableIcon(
           painter = painterResource(id = R.drawable.more),
           tint = AppTheme.colors.cardMenu,
-          modifier = Modifier
-            .size(18.dp),
+          interactiveSize = 18.dp,
           onClick = { scope.launch { drawerState.open() } },
         )
       }

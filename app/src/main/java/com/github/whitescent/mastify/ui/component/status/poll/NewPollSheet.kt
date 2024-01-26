@@ -135,7 +135,6 @@ fun NewPollSheet(
         }
         ClickableIcon(
           painter = painterResource(id = R.drawable.close),
-          modifier = Modifier.size(24.dp),
           tint = Color.Gray,
           onClick = close
         )
@@ -144,41 +143,26 @@ fun NewPollSheet(
       Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
         optionList.forEachIndexed { index, textFieldValue ->
           Column {
-            CenterRow(Modifier.fillMaxWidth()) {
-              PollOptionTextField(
-                index = index + 1,
-                textFieldValue = textFieldValue,
-                maxTextLength = maxPollLength,
-                onValueChanged = {
-                  optionList[index] = it
-                  onPollListChange(optionList)
-                },
-                onRemoveOption = { optionList.removeAt(index) },
-                showCloseButton = optionList.size > 2,
-                duplicated = optionList.count { it == textFieldValue } > 1 &&
-                  textFieldValue.text.isNotEmpty(),
-                modifier = Modifier
-                  .weight(1f)
-                  .onFocusChanged {
-                    if (it.isFocused) {
-                      onTextFieldFocusChange(index)
-                    }
-                  }
-              )
-              CenterRow {
-                Crossfade(optionList.size > 2) {
-                  if (it) {
-                    ClickableIcon(
-                      painter = painterResource(id = R.drawable.close_circle),
-                      modifier = Modifier
-                        .padding(start = 16.dp, end = 2.dp)
-                        .size(26.dp),
-                      tint = Color.Gray
-                    ) { optionList.removeAt(index) }
+            PollOptionTextField(
+              index = index + 1,
+              textFieldValue = textFieldValue,
+              maxTextLength = maxPollLength,
+              onValueChanged = {
+                optionList[index] = it
+                onPollListChange(optionList)
+              },
+              onRemoveOption = { optionList.removeAt(index) },
+              showCloseButton = optionList.size > 2,
+              duplicated = optionList.count { it == textFieldValue } > 1 &&
+                textFieldValue.text.isNotEmpty(),
+              modifier = Modifier
+                .weight(1f)
+                .onFocusChanged {
+                  if (it.isFocused) {
+                    onTextFieldFocusChange(index)
                   }
                 }
-              }
-            }
+            )
             if (index != optionList.lastIndex) { HeightSpacer(value = 6.dp) }
           }
         }
@@ -376,9 +360,8 @@ private fun PollOptionTextField(
         if (it) {
           ClickableIcon(
             painter = painterResource(id = R.drawable.close_circle),
-            modifier = Modifier
-              .padding(start = 16.dp, end = 2.dp)
-              .size(26.dp),
+            modifier = Modifier.padding(start = 16.dp, end = 2.dp),
+            interactiveSize = 26.dp,
             tint = Color.Gray,
             onClick = onRemoveOption
           )

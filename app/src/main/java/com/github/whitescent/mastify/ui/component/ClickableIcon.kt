@@ -17,9 +17,13 @@
 
 package com.github.whitescent.mastify.ui.component
 
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalRippleConfiguration
+import androidx.compose.material.ripple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
@@ -27,12 +31,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ClickableIcon(
   painter: Painter,
   modifier: Modifier = Modifier,
+  interactiveSize: Dp = 24.dp,
+  interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+  indication: Indication = ripple(
+    bounded = false,
+    radius = interactiveSize / 1.4f,
+    color = LocalRippleConfiguration.current.color
+  ),
   enabled: Boolean = true,
   tint: Color = LocalContentColor.current,
   onClick: (() -> Unit)? = null
@@ -40,18 +54,17 @@ fun ClickableIcon(
   Icon(
     painter = painter,
     contentDescription = null,
-    modifier = modifier.clickable(
-      onClick = {
-        onClick?.invoke()
-      },
-      interactionSource = remember { MutableInteractionSource() },
-      indication = rememberRipple(
-        bounded = false,
-        radius = 20.dp,
-        color = Color.Gray
+    modifier = modifier
+      .size(interactiveSize)
+      .clickable(
+        role = Role.Button,
+        onClick = {
+          onClick?.invoke()
+        },
+        interactionSource = interactionSource,
+        indication = indication,
+        enabled = enabled
       ),
-      enabled = enabled
-    ),
     tint = if (enabled) tint else tint.copy(alpha = 0.5f)
   )
 }

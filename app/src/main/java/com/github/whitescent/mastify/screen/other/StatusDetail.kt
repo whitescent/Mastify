@@ -137,7 +137,7 @@ fun StatusDetail(
                 )
               )
             },
-            modifier = Modifier.size(28.dp),
+            interactiveSize = 28.dp,
             tint = AppTheme.colors.primaryContent
           )
         },

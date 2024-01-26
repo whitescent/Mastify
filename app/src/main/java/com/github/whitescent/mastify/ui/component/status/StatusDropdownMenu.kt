@@ -20,12 +20,10 @@ package com.github.whitescent.mastify.ui.component.status
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -128,14 +126,7 @@ private fun StatusMenuListItem(
   CenterRow(
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(
-        onClick = onClick,
-        indication = rememberRipple(
-          bounded = true,
-          radius = 250.dp,
-        ),
-        interactionSource = remember { MutableInteractionSource() },
-      )
+      .clickable(onClick = onClick)
       .padding(horizontal = 20.dp, vertical = 16.dp)
   ) {
     Icon(

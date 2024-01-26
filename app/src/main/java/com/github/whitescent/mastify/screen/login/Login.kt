@@ -125,7 +125,7 @@ fun Login(
             ClickableIcon(
               painter = painterResource(id = R.drawable.close),
               tint = Color.White,
-              modifier = Modifier.size(24.dp),
+              interactiveSize = 24.dp,
               onClick = viewModel::clearInputText
             )
           }

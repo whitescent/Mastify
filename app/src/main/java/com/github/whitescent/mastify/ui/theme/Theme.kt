@@ -18,7 +18,9 @@
 package com.github.whitescent.mastify.ui.theme
 
 import android.app.Activity
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
@@ -40,7 +42,10 @@ fun MastifyTheme(
       WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = isDark
     }
   }
-  CompositionLocalProvider(LocalMastifyColors provides colorScheme) {
+  CompositionLocalProvider(
+    LocalMastifyColors provides colorScheme,
+    LocalIndication provides ripple()
+  ) {
     content.invoke()
   }
 }

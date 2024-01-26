@@ -241,7 +241,7 @@ private fun ReplyTextFieldWithToolBar(
       ClickableIcon(
         painter = painterResource(id = R.drawable.emoji),
         tint = AppTheme.colors.cardAction,
-        modifier = Modifier.size(24.dp),
+        interactiveSize = 24.dp,
         onClick = openEmojiPicker,
       )
       Spacer(Modifier.weight(1f))
