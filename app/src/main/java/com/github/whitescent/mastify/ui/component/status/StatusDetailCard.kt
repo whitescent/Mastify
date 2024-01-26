@@ -65,6 +65,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.action.BookmarkButton
 import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
 import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
+import com.github.whitescent.mastify.ui.component.status.action.ShareButton
 import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
@@ -257,10 +258,11 @@ private fun StatusDetailActionsRow(
         action(StatusAction.Bookmark(statusUiData.actionableId, it))
       }
     )
-    ClickableIcon(
-      painter = painterResource(id = R.drawable.share_network),
-      modifier = Modifier.size(statusDetailActionsIconSize),
+    ShareButton(
+      link = statusUiData.link,
+      id = R.drawable.share_network,
       tint = AppTheme.colors.primaryContent,
+      modifier = Modifier.size(statusDetailActionsIconSize)
     )
   }
 }
