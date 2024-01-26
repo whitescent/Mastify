@@ -77,6 +77,7 @@ import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
 import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
+import com.github.whitescent.mastify.ui.component.status.action.ShareButton
 import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
@@ -376,6 +377,7 @@ private fun StatusContent(
           favorited = statusUiData.favorited,
           reblogged = statusUiData.reblogged,
           rebloggingAllowed = statusUiData.visibility.rebloggingAllowed,
+          link = statusUiData.link,
           action = action
         )
       }
@@ -397,6 +399,7 @@ private fun StatusActionsRow(
   favorited: Boolean,
   reblogged: Boolean,
   rebloggingAllowed: Boolean,
+  link: String,
   action: (StatusAction) -> Unit,
   modifier: Modifier = Modifier
 ) {
@@ -455,10 +458,9 @@ private fun StatusActionsRow(
         color = AppTheme.colors.cardAction.copy(alpha = 0.12f),
       ) { }
       WidthSpacer(value = 16.dp)
-      ClickableIcon(
-        painter = painterResource(id = R.drawable.share),
-        modifier = Modifier.size(statusActionsIconSize),
-        tint = AppTheme.colors.cardAction,
+      ShareButton(
+        link = link,
+        modifier = Modifier.size(statusActionsIconSize)
       )
     }
   }
