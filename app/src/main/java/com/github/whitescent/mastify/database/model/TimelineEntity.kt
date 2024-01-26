@@ -26,11 +26,11 @@ import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Card
 import com.github.whitescent.mastify.network.model.status.Hashtag
+import com.github.whitescent.mastify.network.model.status.Mention
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
-import com.github.whitescent.mastify.network.model.status.Status.Mention
 
 @Entity(
   foreignKeys = [

@@ -179,7 +179,7 @@ fun StatusListItem(
           onClickMedia = {
             navigateToMedia(status.attachments, it)
           },
-          navigateToProfile = { navigateToProfile(status.actionable.account) }
+          navigateToProfile = navigateToProfile
         )
       }
     }
@@ -226,7 +226,7 @@ private fun StatusContent(
   modifier: Modifier = Modifier,
   action: (StatusAction) -> Unit,
   onClickMedia: (Int) -> Unit,
-  navigateToProfile: () -> Unit,
+  navigateToProfile: (Account) -> Unit,
 ) {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
@@ -247,7 +247,7 @@ private fun StatusContent(
         model = statusUiData.avatar,
         modifier = Modifier.size(statusAvatarSize),
         shape = AppTheme.shape.smallAvatar.copy(CornerSize(12.dp)),
-        onClick = { navigateToProfile() }
+        onClick = { navigateToProfile(statusUiData.account) }
       )
       WidthSpacer(value = 7.dp)
       Column(modifier = Modifier.align(Alignment.Top)) {
@@ -345,11 +345,16 @@ private fun StatusContent(
                     fontSize = (15.5).sp,
                     maxLines = 11,
                     onLinkClick = { span ->
-                      launchCustomChromeTab(
-                        context = context,
-                        uri = Uri.parse(span),
-                        toolbarColor = primaryColor.toArgb(),
-                      )
+                      val mention = statusUiData.mentions.firstOrNull { it.url == span }
+                      if (mention != null) {
+                        navigateToProfile(mention.toAccount())
+                      } else {
+                        launchCustomChromeTab(
+                          context = context,
+                          uri = Uri.parse(span),
+                          toolbarColor = primaryColor.toArgb(),
+                        )
+                      }
                     },
                     overflow = TextOverflow.Ellipsis
                   )
