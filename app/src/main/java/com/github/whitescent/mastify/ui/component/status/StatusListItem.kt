@@ -247,7 +247,7 @@ private fun StatusContent(
         model = statusUiData.avatar,
         modifier = Modifier.size(statusAvatarSize),
         shape = AppTheme.shape.smallAvatar.copy(CornerSize(12.dp)),
-        onClick = { navigateToProfile(statusUiData.account) }
+        onClick = { navigateToProfile(statusUiData.actionable.account) }
       )
       WidthSpacer(value = 7.dp)
       Column(modifier = Modifier.align(Alignment.Top)) {
