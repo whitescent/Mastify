@@ -18,7 +18,7 @@
 package com.github.whitescent.mastify.utils
 
 /**
- * Model the state of sending posts
+ * A common send-request model
  */
 sealed class PostState {
   data object Idle : PostState()

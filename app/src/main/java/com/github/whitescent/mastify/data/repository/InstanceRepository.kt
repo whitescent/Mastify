@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.data.repository
 
-import at.connyduck.calladapter.networkresult.getOrElse
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.EmojisEntity
 import com.github.whitescent.mastify.database.model.InstanceEntity
@@ -44,19 +43,14 @@ class InstanceRepository @Inject constructor(
     return instanceDao.getInstanceInfo(instanceName)
   }
 
-  suspend fun upsertEmojis(): Boolean {
-    api.getCustomEmojis().getOrElse {
-      return false
-    }.let {
+  suspend fun upsertEmojis() {
+    api.getCustomEmojis().getOrNull()?.let {
       instanceDao.upsert(EmojisEntity(accountDao.getActiveAccount()!!.domain, it))
-      return true
     }
   }
 
-  suspend fun upsertInstanceInfo(): Boolean {
-    api.fetchInstanceInfo().getOrElse {
-      return false
-    }.let { instance ->
+  suspend fun upsertInstanceInfo() {
+    api.fetchInstanceInfo().getOrNull()?.let { instance ->
       val instanceName = accountDao.getActiveAccount()!!.domain
       instanceDao.upsert(
         instance = InstanceInfoEntity(
@@ -72,7 +66,6 @@ class InstanceRepository @Inject constructor(
           maxMediaAttachments = instance.configuration?.statuses?.maxMediaAttachments,
         )
       )
-      return true
     }
   }
 

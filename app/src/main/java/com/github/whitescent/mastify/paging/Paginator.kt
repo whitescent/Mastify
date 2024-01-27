@@ -100,9 +100,7 @@ suspend fun <T : List<*>> autoAppend(
       it >= (list().size - ((list().size / fetchNumber) * threshold))
   }
   .filter { it }
-  .collect {
-    paginator.append()
-  }
+  .collect { paginator.append() }
 
 enum class LoadState {
   Refresh, Append, Error, NotLoading

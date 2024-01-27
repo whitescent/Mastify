@@ -17,13 +17,22 @@
 
 package com.github.whitescent.mastify.data.repository
 
-import at.connyduck.calladapter.networkresult.NetworkResult
+import android.content.Context
+import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.account.AccessToken
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
+import com.github.whitescent.mastify.network.model.instance.InstanceInfo
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okhttp3.HttpUrl
 import javax.inject.Inject
 
-class LoginRepository @Inject constructor(private val api: MastodonApi) {
+class LoginRepository @Inject constructor(
+  @ApplicationContext private val context: Context,
+  private val api: MastodonApi
+) {
 
   fun isInstanceCorrect(instance: String): Boolean {
     try {
@@ -34,13 +43,44 @@ class LoginRepository @Inject constructor(private val api: MastodonApi) {
     return true
   }
 
-  suspend fun authenticateApp(domain: String, clientName: String): NetworkResult<AppCredentials> {
-    return api.authenticateApp(
-      domain = domain,
-      clientName = clientName,
-      redirectUris = "mastify://oauth",
-      scopes = "read write push",
-      website = "https://github.com/whitescent/Mastify",
+  suspend fun fetchInstanceInfo(name: String): Flow<InstanceInfo> = flow {
+    emit(api.fetchInstanceInfo(name).getOrThrow())
+  }
+
+  suspend fun authenticateApp(domain: String, clientName: Int): Flow<AppCredentials> = flow {
+    emit(
+      api.authenticateApp(
+        domain = domain,
+        clientName = context.getString(clientName),
+        redirectUris = REDIRECT_URIS,
+        scopes = CLIENT_SCOPES,
+        website = APP_WEBSITE,
+      ).getOrThrow()
     )
+  }
+
+  suspend fun fetchOAuthToken(
+    domain: String,
+    clientId: String,
+    clientSecret: String,
+    code: String
+  ): Flow<AccessToken> = flow {
+    emit(
+      api.fetchOAuthToken(
+        domain = domain,
+        clientId = clientId,
+        clientSecret = clientSecret,
+        redirectUri = REDIRECT_URIS,
+        code = code,
+        grantType = GRANT_TYPE
+      ).getOrThrow()
+    )
+  }
+
+  companion object {
+    const val REDIRECT_URIS = "mastify://oauth"
+    const val CLIENT_SCOPES = "read write push"
+    const val APP_WEBSITE = "https://github.com/whitescent/Mastify"
+    const val GRANT_TYPE = "authorization_code"
   }
 }

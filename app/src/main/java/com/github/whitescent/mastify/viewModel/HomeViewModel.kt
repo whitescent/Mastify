@@ -23,24 +23,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.withTransaction
-import com.github.whitescent.mastify.data.repository.AccountRepository
+import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.domain.StatusActionHandler
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatus
 import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.mapper.toUiData
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
+import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.utils.splitReorderStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -57,10 +58,8 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-  private val db: AppDatabase,
-  private val api: MastodonApi,
+  db: AppDatabase,
   private val statusActionHandler: StatusActionHandler,
-  private val accountRepository: AccountRepository,
   private val homeRepository: HomeRepository,
 ) : ViewModel() {
 
@@ -73,6 +72,7 @@ class HomeViewModel @Inject constructor(
       timelineDao.getStatusListWithFlow(it.id)
     }
 
+  // The latest untransformed Timeline data from the database
   private var timelineMemoryFlow = MutableStateFlow<List<Status>>(emptyList())
 
   val homeCombinedFlow = activeAccountFlow
@@ -101,13 +101,7 @@ class HomeViewModel @Inject constructor(
     },
     refreshKey = null,
     onRequest = { page ->
-      val response = api.homeTimeline(maxId = page, limit = FETCHNUMBER)
-      if (response.isSuccessful && !response.body().isNullOrEmpty()) {
-        val body = response.body()!!
-        Result.success(body)
-      } else {
-        Result.success(emptyList())
-      }
+      homeRepository.fetchTimeline(maxId = page)
     },
     onError = {
       it?.printStackTrace()
@@ -116,10 +110,7 @@ class HomeViewModel @Inject constructor(
       when (loadState) {
         LoadState.Append -> {
           uiState = uiState.copy(endReached = items.isEmpty())
-          db.withTransaction {
-            val activeAccount = accountDao.getActiveAccount()!!
-            timelineDao.insertOrUpdate(items.toEntity(activeAccount.id))
-          }
+          homeRepository.appendTimelineFromApi(items)
           // We need to wait for db to emit the latest List before we can end onSuccess,
           // otherwise loadState will be equal to NotLoading in advance,
           // and the List has not been updated, which will cause LazyColumn to jitter
@@ -130,14 +121,14 @@ class HomeViewModel @Inject constructor(
             timelineMemoryFlow.value.any { saved -> saved.id == it.id }
           }.size
           uiState = uiState.copy(
-            showNewStatusButton = newStatusCount != 0 && timelineMemoryFlow.value.isNotEmpty(),
-            newStatusCount = newStatusCount,
-            needSecondLoad = !timelineMemoryFlow.value.any { it.id == items.last().id },
+            toastButton = HomeNewStatusToastModel(
+              showNewToastButton = newStatusCount != 0 && timelineMemoryFlow.value.isNotEmpty(),
+              newStatusCount = newStatusCount,
+              showManyPost = !timelineMemoryFlow.value.any { it.id == items.last().id },
+            ),
             endReached = items.size < FETCHNUMBER
           )
-          timelineMemoryFlow.value =
-            homeRepository.updateTimelineOnRefresh(timelineMemoryFlow.value, items)
-          reinsertAllStatus(timelineMemoryFlow.value)
+          homeRepository.refreshTimelineFromApi(timelineMemoryFlow.value, items)
         }
         else -> Unit
       }
@@ -158,11 +149,16 @@ class HomeViewModel @Inject constructor(
   var uiState by mutableStateOf(HomeUiState())
     private set
 
-  fun append() = viewModelScope.launch { paginator.append() }
+  var loadMoreState by mutableStateOf<PostState>(PostState.Idle)
+    private set
 
-  fun refreshTimeline() = viewModelScope.launch { paginator.refresh() }
+  fun append() = viewModelScope.launch {
+    paginator.append()
+  }
 
-  fun fetchLatestAccountData() = viewModelScope.launch { homeRepository.updateAccountInfo() }
+  fun refreshTimeline() = viewModelScope.launch {
+    paginator.refresh()
+  }
 
   fun onStatusAction(action: StatusAction, context: Context, actionableStatus: Status) {
     viewModelScope.launch(Dispatchers.IO) {
@@ -191,71 +187,51 @@ class HomeViewModel @Inject constructor(
   }
 
   fun dismissButton() {
-    uiState = uiState.copy(showNewStatusButton = false)
+    uiState = uiState.copy(
+      toastButton = uiState.toastButton.copy(
+        showNewToastButton = false
+      )
+    )
   }
 
-  /*
-  * Load those APIs that don't get the current database of the latest posts at once
-  * e.g: database: Status ID 1100 - 1000, Latest Timeline: 1500
-  * The API can only get 40 at a time, so the user needs to manually get the middle part of the post
-  */
+  /**
+   * Load those APIs that don't get the current database of the latest posts at once
+   * e.g: database: Status ID 1100 - 1000 (Sort descending, larger numbers indicate newer posts)
+   * Latest Timeline: 1500
+   * The API can only get 40 at a time, so the user needs to manually get the middle part of the post
+   */
   fun loadUnloadedStatus(statusId: String) {
-    val tempList = timelineMemoryFlow.value.toMutableList()
-    val insertIndex = tempList.indexOfFirst { it.id == statusId }
     viewModelScope.launch {
-      val response = api.homeTimeline(
-        maxId = tempList.find { it.id == statusId }!!.id,
-        limit = FETCHNUMBER
-      )
-      if (response.isSuccessful && !response.body().isNullOrEmpty()) {
-        // If the data in this request contains the first data from the database,
-        // we need connect the data in this request with the data in the database
-        val list = response.body()!!.toMutableList()
-        if (tempList.any { it.id == list.last().id }) {
-          tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
-          tempList.addAll(
-            index = insertIndex + 1,
-            elements = list.filterNot {
-              tempList.any { saved -> saved.id == it.id }
-            }
-          )
-        } else {
-          // If the data in this request doesn't contain the first data from the database,
-          // we need to add it and mark the last post as Unloaded
-          list[list.lastIndex] = list[list.lastIndex].copy(hasUnloadedStatus = true)
-          tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
-          tempList.addAll(insertIndex + 1, list)
-        }
-        timelineMemoryFlow.value = tempList
-        reinsertAllStatus(timelineMemoryFlow.value)
-      } else {
-        // TODO error handling
-      }
+      loadMoreState = PostState.Posting
+      homeRepository.fillMissingStatusesAround(statusId, timelineMemoryFlow.value)
+      loadMoreState = PostState.Idle
     }
   }
 
-  suspend fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) {
-    val activeAccount = accountDao.getActiveAccount()!!
-    db.withTransaction {
-      accountRepository.updateActiveAccount(
-        activeAccount.copy(firstVisibleItemIndex = firstVisibleItemIndex, offset = offset)
-      )
-    }
-  }
+  /**
+   * Stores the user's current browsing location
+   */
+  suspend fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) =
+    homeRepository.storeLastViewedTimelineOffset(firstVisibleItemIndex, offset)
 
-  private suspend fun reinsertAllStatus(statuses: List<Status>) {
-    db.withTransaction {
-      val accountId = accountDao.getActiveAccount()!!.id
-      timelineDao.clearAll(accountId)
-      timelineDao.insertOrUpdate(statuses.toEntity(accountId))
-    }
-  }
+  private suspend fun refreshTimelineWithLatestStatuses(statuses: List<Status>) =
+    homeRepository.saveLatestTimelineToDb(statuses)
 }
 
-data class HomeUiState(
+data class HomeUserData(
+  val activeAccount: AccountEntity,
+  val timeline: ImmutableList<StatusUiData>,
+  val position: TimelinePosition
+)
+
+data class HomeNewStatusToastModel(
+  val showNewToastButton: Boolean = false,
   val newStatusCount: Int = 0,
-  val needSecondLoad: Boolean = false,
-  val showNewStatusButton: Boolean = false,
+  val showManyPost: Boolean = false,
+)
+
+data class HomeUiState(
+  val toastButton: HomeNewStatusToastModel = HomeNewStatusToastModel(),
   val endReached: Boolean = false,
   val timelineLoadState: LoadState = LoadState.NotLoading
 )
