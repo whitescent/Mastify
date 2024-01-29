@@ -51,21 +51,4 @@ data class AccountEntity(
 
   val realDisplayName inline get() = this.displayName.ifEmpty { this.username }
   val isEmptyHeader get() = this.header.contains("missing.png")
-
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (javaClass != other?.javaClass) return false
-
-    other as AccountEntity
-
-    if (id == other.id) return true
-    return domain == other.domain && accountId == other.accountId
-  }
-
-  override fun hashCode(): Int {
-    var result = id.hashCode()
-    result = 31 * result + domain.hashCode()
-    result = 31 * result + accountId.hashCode()
-    return result
-  }
 }
