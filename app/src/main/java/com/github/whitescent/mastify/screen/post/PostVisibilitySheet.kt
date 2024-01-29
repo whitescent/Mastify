@@ -85,7 +85,7 @@ fun PostVisibilitySheet(
       }
     },
     drawerState = drawerState,
-    windowInsetsType = WindowInsetsCompat.Type.displayCutout(),
+    windowInsetsType = WindowInsetsCompat.Type.statusBars(),
   )
 }
 

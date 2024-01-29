@@ -295,7 +295,7 @@ fun NewPollSheet(
       }
     },
     drawerState = deadlineDrawerState,
-    windowInsetsType = WindowInsetsCompat.Type.displayCutout(),
+    windowInsetsType = WindowInsetsCompat.Type.statusBars(),
   )
 }
 
