@@ -43,7 +43,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,6 +101,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AppNavGraph
 @Destination
 @Composable
@@ -121,8 +124,12 @@ fun Post(
   val state = viewModel.uiState
   val instanceUiData = state.instance
 
+  var openVisibilitySheet by remember { mutableStateOf(false) }
+  val visibilitySheetState = rememberModalBottomSheetState(
+    // Always fully expand the visibility sheet even on small screens
+    skipPartiallyExpanded = true
+  )
   val emojiDrawerState = rememberDrawerState()
-  val visibilitySheetState = rememberDrawerState()
   val scope = rememberCoroutineScope()
   val albumRowState = rememberLazyListState()
   val imagePicker = rememberLauncherForActivityResult(
@@ -327,7 +334,8 @@ fun Post(
           PostVisibilityButton(state.visibility) {
             scope.launch {
               keyboard?.hide()
-              visibilitySheetState.open()
+              openVisibilitySheet = true
+              visibilitySheetState.expand()
             }
           }
         },
@@ -338,18 +346,24 @@ fun Post(
       )
     }
   }
-  PostVisibilitySheet(
-    drawerState = visibilitySheetState,
-    currentVisibility = state.visibility,
-    onVisibilityUpdated = {
-      viewModel.updateVisibility(it)
-      scope.launch {
-        visibilitySheetState.close()
-      }.invokeOnCompletion {
-        keyboard?.show()
+  if (openVisibilitySheet) {
+    PostVisibilitySheet(
+      sheetState = visibilitySheetState,
+      currentVisibility = state.visibility,
+      onVisibilityUpdated = {
+        viewModel.updateVisibility(it)
+        scope.launch {
+          visibilitySheetState.hide()
+        }.invokeOnCompletion {
+          keyboard?.show()
+          openVisibilitySheet = false
+        }
+      },
+      onDismissRequest = {
+        openVisibilitySheet = false
       }
-    }
-  )
+    )
+  }
   EmojiSheet(
     drawerState = emojiDrawerState,
     emojis = state.instance?.emojiList?.toImmutableList() ?: persistentListOf(),
