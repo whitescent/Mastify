@@ -38,6 +38,7 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
   suspend fun getAccountStatus(
     onlyMedia: Boolean? = null,
     excludeReplies: Boolean? = null,
+    limit: Int? = null,
     accountId: String,
     maxId: String?,
   ): Result<List<Status>> {
@@ -45,7 +46,8 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
       accountId = accountId,
       maxId = maxId,
       excludeReplies = excludeReplies,
-      onlyMedia = onlyMedia
+      onlyMedia = onlyMedia,
+      limit = limit
     ).fold(
       { statusList ->
         var temp: MutableList<Status> = mutableListOf()

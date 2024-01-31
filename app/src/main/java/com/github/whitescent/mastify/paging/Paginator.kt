@@ -29,11 +29,13 @@ import kotlinx.coroutines.withContext
 /**
  * Simplified implementation of androidx Paging3
  * @param pageSize The number of items to be fetched per page
+ * @param initRefresh Whether to initialize the refresh
  * @param pagingFactory The factory that provides the paging data, You need to write paging logic here,
  * including data sources for processing appendKey and paging list
  */
 class Paginator(
   val pageSize: Int,
+  private val initRefresh: Boolean = true,
   private val pagingFactory: PagingFactory
 ) : Pager {
 
@@ -88,8 +90,10 @@ class Paginator(
   }
 
   init {
-    defaultCoroutineScope.launch {
-      refresh()
+    if (initRefresh) {
+      defaultCoroutineScope.launch {
+        refresh()
+      }
     }
   }
 }
