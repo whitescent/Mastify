@@ -51,6 +51,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -108,7 +110,10 @@ fun Login(
         onValueChange = viewModel::onValueChange,
         cursorBrush = SolidColor(Color.White),
         textStyle = TextStyle(color = Color.White, fontSize = 30.sp),
-        singleLine = true
+        singleLine = true,
+        modifier = Modifier.semantics {
+          testTag = "domain input"
+        }
       ) {
         CenterRow {
           Box(Modifier.weight(1f)) {
