@@ -181,7 +181,7 @@ fun AppDrawer(
             CenterRow(
               modifier = Modifier
                 .clickable {
-                  if (account != activeAccount) {
+                  if (account.id != activeAccount.id) {
                     changeAccount(account.id)
                   } else {
                     scope.launch {
@@ -206,7 +206,7 @@ fun AppDrawer(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
               )
-              if (account == activeAccount) {
+              if (account.id == activeAccount.id) {
                 Image(
                   painter = painterResource(id = R.drawable.check_circle_fill),
                   contentDescription = null,

@@ -25,7 +25,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
+import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
 // get all items size from 0 to index
@@ -76,6 +80,26 @@ fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List
   } else this
 }
 
+@JvmName("updateStatusActionDataStatus")
+fun List<Status>.updateStatusActionData(newStatus: StatusBackResult): List<Status> {
+  return if (this.any { it.actionableId == newStatus.id }) {
+    val result = this.toMutableList()
+    val index = result.indexOfFirst { it.actionableId == newStatus.id }
+    if (index != -1) {
+      result[index] = result[index].copy(
+        favorited = newStatus.favorited,
+        favouritesCount = newStatus.favouritesCount,
+        reblogged = newStatus.reblogged,
+        reblogsCount = newStatus.reblogsCount,
+        repliesCount = newStatus.repliesCount,
+        bookmarked = newStatus.bookmarked,
+        poll = newStatus.poll
+      )
+      result
+    } else this
+  } else this
+}
+
 fun List<StatusUiData>.hasUnloadedParent(index: Int): Boolean {
   val current = get(index)
   val currentType = getReplyChainType(index)
@@ -99,21 +123,21 @@ fun List<StatusUiData>.getReplyChainType(index: Int): StatusUiData.ReplyChainTyp
     prev != null && next != null -> {
       when {
         (current.isInReplyTo &&
-          current.inReplyToId == prev.id && next.inReplyToId == current.id) -> StatusUiData.ReplyChainType.Continue
-        next.inReplyToId == current.id -> StatusUiData.ReplyChainType.Start
-        current.inReplyToId == prev.id -> StatusUiData.ReplyChainType.End
+          current.inReplyToId == prev.id && next.inReplyToId == current.id) -> Continue
+        next.inReplyToId == current.id -> Start
+        current.inReplyToId == prev.id -> End
         else -> Null
       }
     }
     prev == null && next != null -> {
       when (next.inReplyToId) {
-        current.id -> StatusUiData.ReplyChainType.Start
+        current.id -> Start
         else -> Null
       }
     }
     prev != null && next == null -> {
       when {
-        current.isInReplyTo && current.inReplyToId == prev.id -> StatusUiData.ReplyChainType.End
+        current.isInReplyTo && current.inReplyToId == prev.id -> End
         else -> Null
       }
     }

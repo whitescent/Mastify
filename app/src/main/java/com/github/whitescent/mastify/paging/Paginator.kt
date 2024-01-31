@@ -17,91 +17,79 @@
 
 package com.github.whitescent.mastify.paging
 
-import androidx.compose.runtime.snapshotFlow
-import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.paging.LoadState.Error
-import com.github.whitescent.mastify.paging.LoadState.NotLoading
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class Paginator<Key, Item>(
-  private val refreshKey: Key,
-  private inline val getAppendKey: suspend () -> Key,
-  private inline val onLoadUpdated: (LoadState) -> Unit,
-  private inline val onError: suspend (Throwable?) -> Unit,
-  private inline val onRequest: suspend (Key) -> Result<List<Item>>,
-  private inline val onSuccess: suspend (loadState: LoadState, items: List<Item>) -> Unit,
-) : PaginatorInterface<Key, Item> {
+/**
+ * Simplified implementation of androidx Paging3
+ * @param pageSize The number of items to be fetched per page
+ * @param pagingFactory The factory that provides the paging data, You need to write paging logic here,
+ * including data sources for processing appendKey and paging list
+ */
+class Paginator(
+  val pageSize: Int,
+  private val pagingFactory: PagingFactory
+) : Pager {
 
-  var loadState = NotLoading
-    private set
+  private val defaultCoroutineScope = CoroutineScope(Dispatchers.Main.immediate)
 
-  var endReached: Boolean = false
+  var pagingLoadState by mutableStateOf<PageLoadState>(PageLoadState.NotLoading(false))
     private set
 
   override suspend fun append() {
-    if (loadState == LoadState.Append) return
-    loadState = LoadState.Append
-    onLoadUpdated(loadState)
-    try {
-      val appendKey = getAppendKey()
-      val result = onRequest(appendKey).getOrElse {
-        onError(it)
-        loadState = Error
-        onLoadUpdated(loadState)
-        return
+    if (pagingLoadState == PageLoadState.Append) return
+    pagingLoadState = PageLoadState.Append
+
+    val job = withContext(Dispatchers.IO) {
+      runCatching {
+        pagingFactory.append(pageSize)
       }
-      if (result.isEmpty()) endReached = true
-      onSuccess(loadState, result)
-      loadState = NotLoading
-      onLoadUpdated(loadState)
-    } catch (e: Exception) {
-      onError(e)
-      loadState = Error
-      onLoadUpdated(loadState)
-      return
     }
+    delay(200)
+    job.fold(
+      {
+        pagingLoadState = when (it) {
+          is LoadResult.Page -> PageLoadState.NotLoading(it.endReached)
+          is LoadResult.Error -> PageLoadState.Error(it.throwable)
+        }
+      },
+      {
+        pagingLoadState = PageLoadState.Error(it)
+      }
+    )
   }
 
   override suspend fun refresh() {
-    if (loadState == LoadState.Refresh) return
-    loadState = LoadState.Refresh
-    onLoadUpdated(loadState)
-    try {
-      val result = onRequest(refreshKey).getOrElse {
-        onError(it)
-        loadState = Error
-        onLoadUpdated(loadState)
-        return
+    if (pagingLoadState == PageLoadState.Refresh) return
+    pagingLoadState = PageLoadState.Refresh
+
+    val job = withContext(Dispatchers.IO) {
+      runCatching {
+        pagingFactory.refresh(pageSize)
       }
-      if (result.isEmpty()) endReached = true
-      onSuccess(loadState, result)
-      loadState = NotLoading
-      onLoadUpdated(loadState)
-    } catch (e: Exception) {
-      onError(e)
-      loadState = Error
-      onLoadUpdated(loadState)
-      return
+    }
+    job.fold(
+      {
+        pagingLoadState = when (it) {
+          is LoadResult.Page -> PageLoadState.NotLoading(it.endReached)
+          is LoadResult.Error -> PageLoadState.Error(it.throwable)
+        }
+      },
+      {
+        pagingLoadState = PageLoadState.Error(it)
+      }
+    )
+  }
+
+  init {
+    defaultCoroutineScope.launch {
+      refresh()
     }
   }
-}
-
-suspend fun <T : List<*>> autoAppend(
-  paginator: Paginator<*, Status>,
-  currentListIndex: () -> Int,
-  fetchNumber: Int,
-  threshold: Int,
-  list: () -> T,
-) = snapshotFlow { currentListIndex() }
-  .filter { list().isNotEmpty() }
-  .map {
-    !paginator.endReached && paginator.loadState == NotLoading &&
-      it >= (list().size - ((list().size / fetchNumber) * threshold))
-  }
-  .filter { it }
-  .collect { paginator.append() }
-
-enum class LoadState {
-  Refresh, Append, Error, NotLoading
 }

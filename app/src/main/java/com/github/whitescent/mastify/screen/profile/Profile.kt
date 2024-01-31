@@ -127,238 +127,238 @@ fun Profile(
   viewModel: ProfileViewModel = hiltViewModel(),
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
 ) {
-  val uiState = viewModel.uiState
-  val currentTab by viewModel.currentProfileKind.collectAsStateWithLifecycle()
-
-  val scope = rememberCoroutineScope()
-  val snackbarState = rememberStatusSnackBarState()
-  val profileLayoutState = rememberProfileLayoutState()
-  val statusListState = rememberLazyListState()
-  val statusWithReplyListState = rememberLazyListState()
-  val statusWithMediaListState = rememberLazyListState()
-
-  val atPageTop by remember {
-    derivedStateOf {
-      profileLayoutState.progress == 0f
-    }
-  }
-
-  Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
-    ProfileLayout(
-      state = profileLayoutState,
-      collapsingTop = {
-        Column {
-          AvatarWithCover(
-            cover = {
-              if (uiState.account.isEmptyHeader) {
-                Box(
-                  modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(AppTheme.colors.defaultHeader),
-                )
-              } else {
-                AsyncImage(
-                  model = uiState.account.header,
-                  contentDescription = null,
-                  contentScale = ContentScale.Crop,
-                  modifier = Modifier.fillMaxWidth().height(200.dp),
-                )
-              }
-            },
-            avatar = {
-              CircleShapeAsyncImage(
-                model = uiState.account.avatar,
-                modifier = Modifier
-                  .graphicsLayer {
-                    scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
-                    scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
-                  }
-                  .shadow(12.dp, AppTheme.shape.largeAvatar)
-                  .size(80.dp),
-                shape = AppTheme.shape.largeAvatar
-              )
-            },
-            actions = {
-              CenterRow(
-                modifier = Modifier.padding(12.dp)
-              ) {
-                Text(
-                  text = stringResource(
-                    id = R.string.account_joined,
-                    FormatFactory.getLocalizedDateTime(uiState.account.createdAt)
-                  ),
-                  color = AppTheme.colors.primaryContent.copy(0.4f),
-                  fontSize = 14.sp,
-                  fontWeight = FontWeight.Bold,
-                )
-                WidthSpacer(value = 6.dp)
-                Icon(
-                  painter = painterResource(R.drawable.shooting_star),
-                  contentDescription = null,
-                  modifier = Modifier.size(24.dp),
-                  tint = AppTheme.colors.primaryContent
-                )
-              }
-            },
-          )
-          HeightSpacer(value = 10.dp)
-          ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
-          HeightSpacer(value = 6.dp)
-        }
-      },
-      bodyContent = {
-        val pagerState = rememberPagerState { ProfileKind.entries.size }
-        Column {
-          ProfileTabs(currentTab) {
-            if (currentTab.ordinal == it) {
-              scope.launch {
-                when (it) {
-                  0 -> statusListState.scrollToItem(0)
-                  1 -> statusWithReplyListState.scrollToItem(0)
-                  else -> statusWithMediaListState.scrollToItem(0)
-                }
-              }.invokeOnCompletion { profileLayoutState.animatedToTop() }
-            }
-            viewModel.syncProfileTab(it)
-            scope.launch {
-              pagerState.scrollToPage(it)
-            }
-          }
-          if (uiState.isSelf != null) {
-            ProfilePager(
-              state = pagerState,
-              viewModel = viewModel,
-              statusListState = statusListState,
-              statusListWithReplyState = statusWithReplyListState,
-              statusListWithMediaState = statusWithMediaListState,
-              navigateToDetail = {
-                navigator.navigate(
-                  StatusDetailDestination(
-                    status = it,
-                    originStatusId = null
-                  )
-                )
-              },
-              navigateToMedia = { attachments, targetIndex ->
-                navigator.navigate(
-                  StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                )
-              },
-              navigateToProfile = {
-                navigator.navigate(
-                  ProfileDestination(it)
-                )
-              },
-            )
-          }
-        }
-        LaunchedEffect(pagerState) {
-          snapshotFlow { pagerState.currentPage }.collect { page ->
-            viewModel.syncProfileTab(page)
-          }
-        }
-      },
-      topBar = {
-        ProfileTopBar(
-          alpha = { profileLayoutState.progress },
-          account = uiState.account,
-          topPadding = appState.appPaddingValues.calculateTopPadding(),
-        )
-      },
-    )
-    StatusSnackBar(
-      snackbarState = snackbarState,
-      modifier = Modifier
-        .align(Alignment.BottomCenter)
-        .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-    )
-  }
-
-  LaunchedEffect(atPageTop) {
-    if (atPageTop) {
-      scope.launch {
-        statusListState.scrollToItem(0)
-        statusWithReplyListState.scrollToItem(0)
-        statusWithMediaListState.scrollToItem(0)
-      }
-    }
-  }
-
-  LaunchedEffect(Unit) {
-    viewModel.snackBarFlow.collect {
-      snackbarState.show(it)
-    }
-  }
-
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
-    }
-  }
-}
-
-@Composable
-fun ProfileTopBar(
-  alpha: () -> Float,
-  account: Account,
-  topPadding: Dp,
-) {
-  val defaultBackgroundColor = AppTheme.colors.defaultHeader
-  Box(
-    modifier = Modifier
-      .fillMaxWidth()
-      .height(56.dp + topPadding)
-  ) {
-    AsyncImage(
-      model = ImageRequest.Builder(LocalContext.current)
-        .data(account.header)
-        .build(),
-      contentDescription = null,
-      modifier = Modifier
-        .fillMaxSize()
-        .alpha(alpha())
-        .drawWithContent {
-          drawRect(defaultBackgroundColor)
-          drawContent()
-          drawRect(Color.Black.copy(0.35f))
-        },
-      contentScale = ContentScale.Crop
-    )
-    AnimatedVisibility(
-      visible = alpha() >= 1,
-      enter = slideInVertically { it } + fadeIn(),
-      exit = slideOutVertically { it / 2 } + fadeOut(),
-      modifier = Modifier.fillMaxSize()
-    ) {
-      CenterRow(Modifier.statusBarsPadding().padding(start = 24.dp).width(280.dp)) {
-        CircleShapeAsyncImage(
-          model = account.avatar,
-          modifier = Modifier.size(36.dp),
-          shape = AppTheme.shape.smallAvatar
-        )
-        WidthSpacer(value = 8.dp)
-        Column {
-          Text(
-            text = buildAnnotatedString {
-              annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
-            },
-            fontSize = 18.sp,
-            color = Color.White,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            inlineContent = inlineTextContentWithEmoji(account.emojis, 18.sp),
-          )
-          Text(
-            text = stringResource(id = R.string.post_count, account.statusesCount),
-            fontSize = 14.sp,
-            color = Color.White,
-          )
-        }
-      }
-    }
-  }
+//   val uiState = viewModel.uiState
+//   val currentTab by viewModel.currentProfileKind.collectAsStateWithLifecycle()
+//
+//   val scope = rememberCoroutineScope()
+//   val snackbarState = rememberStatusSnackBarState()
+//   val profileLayoutState = rememberProfileLayoutState()
+//   val statusListState = rememberLazyListState()
+//   val statusWithReplyListState = rememberLazyListState()
+//   val statusWithMediaListState = rememberLazyListState()
+//
+//   val atPageTop by remember {
+//     derivedStateOf {
+//       profileLayoutState.progress == 0f
+//     }
+//   }
+//
+//   Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
+//     ProfileLayout(
+//       state = profileLayoutState,
+//       collapsingTop = {
+//         Column {
+//           AvatarWithCover(
+//             cover = {
+//               if (uiState.account.isEmptyHeader) {
+//                 Box(
+//                   modifier = Modifier
+//                     .fillMaxWidth()
+//                     .height(200.dp)
+//                     .background(AppTheme.colors.defaultHeader),
+//                 )
+//               } else {
+//                 AsyncImage(
+//                   model = uiState.account.header,
+//                   contentDescription = null,
+//                   contentScale = ContentScale.Crop,
+//                   modifier = Modifier.fillMaxWidth().height(200.dp),
+//                 )
+//               }
+//             },
+//             avatar = {
+//               CircleShapeAsyncImage(
+//                 model = uiState.account.avatar,
+//                 modifier = Modifier
+//                   .graphicsLayer {
+//                     scaleY = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
+//                     scaleX = (1 - profileLayoutState.progress).coerceAtLeast(0.7f)
+//                   }
+//                   .shadow(12.dp, AppTheme.shape.largeAvatar)
+//                   .size(80.dp),
+//                 shape = AppTheme.shape.largeAvatar
+//               )
+//             },
+//             actions = {
+//               CenterRow(
+//                 modifier = Modifier.padding(12.dp)
+//               ) {
+//                 Text(
+//                   text = stringResource(
+//                     id = R.string.account_joined,
+//                     FormatFactory.getLocalizedDateTime(uiState.account.createdAt)
+//                   ),
+//                   color = AppTheme.colors.primaryContent.copy(0.4f),
+//                   fontSize = 14.sp,
+//                   fontWeight = FontWeight.Bold,
+//                 )
+//                 WidthSpacer(value = 6.dp)
+//                 Icon(
+//                   painter = painterResource(R.drawable.shooting_star),
+//                   contentDescription = null,
+//                   modifier = Modifier.size(24.dp),
+//                   tint = AppTheme.colors.primaryContent
+//                 )
+//               }
+//             },
+//           )
+//           HeightSpacer(value = 10.dp)
+//           ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
+//           HeightSpacer(value = 6.dp)
+//         }
+//       },
+//       bodyContent = {
+//         val pagerState = rememberPagerState { ProfileKind.entries.size }
+//         Column {
+//           ProfileTabs(currentTab) {
+//             if (currentTab.ordinal == it) {
+//               scope.launch {
+//                 when (it) {
+//                   0 -> statusListState.scrollToItem(0)
+//                   1 -> statusWithReplyListState.scrollToItem(0)
+//                   else -> statusWithMediaListState.scrollToItem(0)
+//                 }
+//               }.invokeOnCompletion { profileLayoutState.animatedToTop() }
+//             }
+//             viewModel.syncProfileTab(it)
+//             scope.launch {
+//               pagerState.scrollToPage(it)
+//             }
+//           }
+//           if (uiState.isSelf != null) {
+//             ProfilePager(
+//               state = pagerState,
+//               viewModel = viewModel,
+//               statusListState = statusListState,
+//               statusListWithReplyState = statusWithReplyListState,
+//               statusListWithMediaState = statusWithMediaListState,
+//               navigateToDetail = {
+//                 navigator.navigate(
+//                   StatusDetailDestination(
+//                     status = it,
+//                     originStatusId = null
+//                   )
+//                 )
+//               },
+//               navigateToMedia = { attachments, targetIndex ->
+//                 navigator.navigate(
+//                   StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+//                 )
+//               },
+//               navigateToProfile = {
+//                 navigator.navigate(
+//                   ProfileDestination(it)
+//                 )
+//               },
+//             )
+//           }
+//         }
+//         LaunchedEffect(pagerState) {
+//           snapshotFlow { pagerState.currentPage }.collect { page ->
+//             viewModel.syncProfileTab(page)
+//           }
+//         }
+//       },
+//       topBar = {
+//         ProfileTopBar(
+//           alpha = { profileLayoutState.progress },
+//           account = uiState.account,
+//           topPadding = appState.appPaddingValues.calculateTopPadding(),
+//         )
+//       },
+//     )
+//     StatusSnackBar(
+//       snackbarState = snackbarState,
+//       modifier = Modifier
+//         .align(Alignment.BottomCenter)
+//         .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+//     )
+//   }
+//
+//   LaunchedEffect(atPageTop) {
+//     if (atPageTop) {
+//       scope.launch {
+//         statusListState.scrollToItem(0)
+//         statusWithReplyListState.scrollToItem(0)
+//         statusWithMediaListState.scrollToItem(0)
+//       }
+//     }
+//   }
+//
+//   LaunchedEffect(Unit) {
+//     viewModel.snackBarFlow.collect {
+//       snackbarState.show(it)
+//     }
+//   }
+//
+//   resultRecipient.onNavResult { result ->
+//     when (result) {
+//       is NavResult.Canceled -> Unit
+//       is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+//     }
+//   }
+// }
+//
+// @Composable
+// fun ProfileTopBar(
+//   alpha: () -> Float,
+//   account: Account,
+//   topPadding: Dp,
+// ) {
+//   val defaultBackgroundColor = AppTheme.colors.defaultHeader
+//   Box(
+//     modifier = Modifier
+//       .fillMaxWidth()
+//       .height(56.dp + topPadding)
+//   ) {
+//     AsyncImage(
+//       model = ImageRequest.Builder(LocalContext.current)
+//         .data(account.header)
+//         .build(),
+//       contentDescription = null,
+//       modifier = Modifier
+//         .fillMaxSize()
+//         .alpha(alpha())
+//         .drawWithContent {
+//           drawRect(defaultBackgroundColor)
+//           drawContent()
+//           drawRect(Color.Black.copy(0.35f))
+//         },
+//       contentScale = ContentScale.Crop
+//     )
+//     AnimatedVisibility(
+//       visible = alpha() >= 1,
+//       enter = slideInVertically { it } + fadeIn(),
+//       exit = slideOutVertically { it / 2 } + fadeOut(),
+//       modifier = Modifier.fillMaxSize()
+//     ) {
+//       CenterRow(Modifier.statusBarsPadding().padding(start = 24.dp).width(280.dp)) {
+//         CircleShapeAsyncImage(
+//           model = account.avatar,
+//           modifier = Modifier.size(36.dp),
+//           shape = AppTheme.shape.smallAvatar
+//         )
+//         WidthSpacer(value = 8.dp)
+//         Column {
+//           Text(
+//             text = buildAnnotatedString {
+//               annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
+//             },
+//             fontSize = 18.sp,
+//             color = Color.White,
+//             maxLines = 1,
+//             overflow = TextOverflow.Ellipsis,
+//             inlineContent = inlineTextContentWithEmoji(account.emojis, 18.sp),
+//           )
+//           Text(
+//             text = stringResource(id = R.string.post_count, account.statusesCount),
+//             fontSize = 14.sp,
+//             color = Color.White,
+//           )
+//         }
+//       }
+//     }
+//   }
 }
 
 @Composable

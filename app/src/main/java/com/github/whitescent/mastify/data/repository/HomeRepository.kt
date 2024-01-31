@@ -24,16 +24,14 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.utils.getOrThrow
 import com.github.whitescent.mastify.utils.getServerErrorMessage
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class HomeRepository @Inject constructor(
   @ApplicationContext private val context: Context,
   private val api: MastodonApi,
@@ -96,6 +94,7 @@ class HomeRepository @Inject constructor(
   }
 
   suspend fun appendTimelineFromApi(newItems: List<Status>) {
+    if (newItems.isEmpty()) return
     db.withTransaction {
       val activeAccount = accountDao.getActiveAccount()!!
       timelineDao.insertOrUpdate(newItems.toEntity(activeAccount.id))
@@ -136,7 +135,7 @@ class HomeRepository @Inject constructor(
       }
   }
 
-  suspend fun fetchTimeline(maxId: String?, limit: Int = FETCHNUMBER): Result<List<Status>> {
+  suspend fun fetchTimeline(maxId: String? = null, limit: Int = FETCHNUMBER): Result<List<Status>> {
     val response = api.homeTimeline(maxId = maxId, limit = limit)
     return if (response.isSuccessful && !response.body().isNullOrEmpty()) {
       val body = response.body()!!
@@ -161,35 +160,19 @@ class HomeRepository @Inject constructor(
     }
   }
 
-  suspend fun saveLatestTimelineToDb(statuses: List<Status>) {
-    val accountId = accountDao.getActiveAccount()!!.id
+  private suspend fun saveLatestTimelineToDb(statuses: List<Status>) {
     db.withTransaction {
+      val accountId = accountDao.getActiveAccount()!!.id
       timelineDao.clearAll(accountId)
       timelineDao.insertOrUpdate(statuses.map { it.toEntity(accountId) })
     }
   }
 
-  private suspend fun fetchTimelineFlow(
-    maxId: String?,
-    limit: Int = FETCHNUMBER
-  ): Flow<List<Status>> = flow {
-    val response = api.homeTimeline(maxId, limit = limit)
-    val responseBody = response.body()
-    if (response.isSuccessful && responseBody != null) {
-      emit(responseBody)
-    } else {
-      val error = HttpException(response)
-      val errorMessage = error.getServerErrorMessage()
-      if (errorMessage == null) {
-        throw error
-      } else {
-        throw Throwable(errorMessage)
-      }
-    }
+  private suspend fun fetchTimelineFlow(maxId: String?, limit: Int = FETCHNUMBER) = flow {
+    emit(api.homeTimeline(maxId, limit = limit).getOrThrow())
   }
 
   companion object {
     const val FETCHNUMBER = 40
-    const val PAGINGTHRESHOLD = 10
   }
 }

@@ -17,7 +17,17 @@
 
 package com.github.whitescent.mastify.paging
 
-interface PaginatorInterface<Key, Item> {
-  suspend fun append()
-  suspend fun refresh()
+sealed class PageLoadState {
+
+  data object Refresh : PageLoadState() {
+    override fun toString(): String = "Refreshing"
+  }
+
+  data object Append : PageLoadState() {
+    override fun toString(): String = "Appending"
+  }
+
+  data class NotLoading(val endReached: Boolean) : PageLoadState()
+
+  data class Error(val throwable: Throwable) : PageLoadState()
 }

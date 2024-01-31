@@ -15,7 +15,7 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.domain
+package com.github.whitescent.mastify.usecase
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -33,19 +33,22 @@ import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.Bookmark
 import com.github.whitescent.mastify.utils.StatusAction.Favorite
 import com.github.whitescent.mastify.utils.StatusAction.Reblog
-import dagger.hilt.android.scopes.ViewModelScoped
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-@ViewModelScoped
-class StatusActionHandler(private val api: MastodonApi) {
+class TimelineUseCase @Inject constructor(
+  private val api: MastodonApi,
+  @ApplicationContext private val context: Context
+) {
 
   private val snackBarChanel = Channel<StatusSnackbarType>(Channel.BUFFERED)
   val snackBarFlow = snackBarChanel.receiveAsFlow()
 
-  suspend fun onStatusAction(action: StatusAction, context: Context): NetworkResult<Status>? {
+  suspend fun onStatusAction(action: StatusAction): NetworkResult<Status>? {
     val clipManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     return when (action) {
       is Favorite -> {
@@ -138,6 +141,38 @@ class StatusActionHandler(private val api: MastodonApi) {
       } else return list
     }
 
+    @JvmName("updateStatusListActionsStatus")
+    fun updateStatusListActions(
+      list: List<Status>,
+      action: StatusAction,
+      statusId: String
+    ): List<Status> {
+      val newList = list.toMutableList()
+      val index = newList.indexOfFirst { it.actionableId == statusId }
+      if (index != -1) {
+        var status = newList[index]
+
+        val favorite = getStatusFavorite(status, action)
+        val favouritesCount = getStatusFavoriteCount(status, action)
+
+        val reblog = getStatusReblog(status, action)
+        val reblogsCount = getStatusReblogCount(status, action)
+
+        val bookmark = getStatusBookmark(status, action)
+
+        status = status.copy(
+          favorited = favorite,
+          favouritesCount = favouritesCount,
+          reblogged = reblog,
+          reblogsCount = reblogsCount,
+          bookmarked = bookmark
+        )
+
+        newList[index] = status
+        return newList
+      } else return list
+    }
+
     fun updateSingleStatusActions(currentStatus: Status, action: StatusAction): Status {
       var newStatus = currentStatus
 
@@ -195,6 +230,19 @@ class StatusActionHandler(private val api: MastodonApi) {
           poll = poll
         )
       )
+      return newList
+    }
+
+    @JvmName("updatePollOfStatusListStatus")
+    fun updatePollOfStatusList(
+      statusList: List<Status>,
+      targetId: String,
+      poll: Poll
+    ): List<Status> {
+      val targetStatusIndex = statusList.indexOfFirst { it.actionableId == targetId }
+      if (targetStatusIndex == -1) return statusList
+      val newList = statusList.toMutableList()
+      newList[targetStatusIndex] = newList[targetStatusIndex].copy(poll = poll)
       return newList
     }
 

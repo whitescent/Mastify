@@ -19,9 +19,9 @@ package com.github.whitescent.mastify.data.repository
 
 import at.connyduck.calladapter.networkresult.NetworkResult
 import at.connyduck.calladapter.networkresult.fold
+import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
-import com.github.whitescent.mastify.network.model.trends.News
 import javax.inject.Inject
 
 class ExploreRepository @Inject constructor(
@@ -40,5 +40,12 @@ class ExploreRepository @Inject constructor(
     )
   }
 
-  suspend fun getNews(): NetworkResult<List<News>> = api.trendingNews(10)
+  suspend fun getTrending(limit: Int, offset: Int = 0) =
+    api.trendingStatus(limit, offset).getOrThrow()
+
+  suspend fun getPublicTimeline(maxId: String? = null, local: Boolean, limit: Int) =
+    api.publicTimeline(local = local, maxId = maxId, limit = limit).getOrThrow()
+
+  suspend fun getNews(limit: Int? = null, offset: Int = 0) =
+    api.trendingNews(limit, offset).getOrThrow()
 }

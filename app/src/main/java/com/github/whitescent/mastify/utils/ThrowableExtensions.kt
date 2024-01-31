@@ -20,6 +20,7 @@ package com.github.whitescent.mastify.utils
 import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.HttpException
+import retrofit2.Response
 
 /**
  * checks if this throwable indicates an error causes by a 4xx/5xx server response and
@@ -40,4 +41,18 @@ fun Throwable.getServerErrorMessage(): String? {
     }
   }
   return null
+}
+
+fun <T> Response<T>.getOrThrow(): T {
+  val responseBody = body()
+  if (isSuccessful && responseBody != null) return body()!!
+  else {
+    val error = HttpException(this)
+    val errorMessage = error.getServerErrorMessage()
+    if (errorMessage == null) {
+      throw error
+    } else {
+      throw Throwable(errorMessage)
+    }
+  }
 }

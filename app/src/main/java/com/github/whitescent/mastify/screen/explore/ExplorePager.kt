@@ -20,34 +20,28 @@ package com.github.whitescent.mastify.screen.explore
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.paging.autoAppend
+import com.github.whitescent.mastify.paging.LazyPagingList
+import com.github.whitescent.mastify.paging.rememberPaginatorUiState
 import com.github.whitescent.mastify.ui.component.HeightSpacer
-import com.github.whitescent.mastify.ui.component.status.StatusCommonList
-import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
+import com.github.whitescent.mastify.ui.component.status.LazyTimelinePagingList
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
-import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
-import com.github.whitescent.mastify.viewModel.ExplorerKind.News
+import com.github.whitescent.mastify.viewModel.ExploreViewModel
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
 import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
-import com.github.whitescent.mastify.viewModel.ExplorerViewModel
-import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
-import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.PAGINGTHRESHOLD
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.launch
+import kotlinx.collections.immutable.toImmutableList
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -56,7 +50,7 @@ fun ExplorePager(
   trendingStatusListState: LazyListState,
   publicTimelineListState: LazyListState,
   newsListState: LazyListState,
-  viewModel: ExplorerViewModel,
+  viewModel: ExploreViewModel,
   modifier: Modifier = Modifier,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
@@ -64,67 +58,56 @@ fun ExplorePager(
 ) {
   val trendingStatusList by viewModel.trending.collectAsStateWithLifecycle()
   val publicTimelineList by viewModel.publicTimeline.collectAsStateWithLifecycle()
-  val newsList = viewModel.uiState.trendingNews
-  val context = LocalContext.current
+  val newsList by viewModel.news.collectAsStateWithLifecycle()
 
   HorizontalPager(
     state = state,
     pageContent = {
       when (it) {
-        0 -> StatusCommonList(
-          statusCommonListData = trendingStatusList,
+        0 -> LazyTimelinePagingList(
           statusListState = trendingStatusListState,
+          paginator = viewModel.trendingPaginator,
+          pagingList = trendingStatusList.toUiData().toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Explore(Trending),
           action = { action, status ->
-            viewModel.onStatusAction(action, context, Trending, status)
+            viewModel.onStatusAction(action, Trending, status)
           },
           enablePullRefresh = true,
-          refreshList = { viewModel.refreshExploreKind(Trending) },
-          append = { viewModel.appendExploreKind(Trending) },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
-        1 -> StatusCommonList(
-          statusCommonListData = publicTimelineList,
+        1 -> LazyTimelinePagingList(
           statusListState = publicTimelineListState,
+          paginator = viewModel.publicTimelinePaginator,
+          pagingList = publicTimelineList.toUiData().toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Explore(PublicTimeline),
           action = { action, status ->
-            viewModel.onStatusAction(action, context, PublicTimeline, status)
+            viewModel.onStatusAction(action, PublicTimeline, status)
           },
           enablePullRefresh = true,
-          refreshList = { viewModel.refreshExploreKind(PublicTimeline) },
-          append = { viewModel.appendExploreKind(PublicTimeline) },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
           navigateToMedia = navigateToMedia,
         )
         2 -> {
-          when (newsList) {
-            null -> StatusListLoading(Modifier.fillMaxSize())
-            else -> {
-              if (newsList.isEmpty()) {
-                EmptyStatusListPlaceholder(
-                  pagePlaceholderType = PagePlaceholderType.Explore(News),
-                  modifier = Modifier.fillMaxSize(),
-                )
-              } else {
-                LazyColumn(
-                  state = newsListState,
-                  modifier = modifier.fillMaxSize(),
-                  contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 12.dp,
-                    bottom = 150.dp
-                  )
-                ) {
-                  items(newsList) { news ->
-                    ExploreNewsItem(news)
-                    HeightSpacer(value = 8.dp)
-                  }
-                }
-              }
+          LazyPagingList(
+            paginator = viewModel.newsPaginator,
+            paginatorUiState = rememberPaginatorUiState(viewModel.newsPaginator),
+            listSize = newsList.size,
+            lazyListState = newsListState,
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+              start = 16.dp,
+              end = 16.dp,
+              top = 12.dp,
+              bottom = 150.dp
+            ),
+            enablePullRefresh = true
+          ) {
+            items(newsList) { news ->
+              ExploreNewsItem(news)
+              HeightSpacer(value = 8.dp)
             }
           }
         }
@@ -132,23 +115,4 @@ fun ExplorePager(
     },
     modifier = modifier.fillMaxSize(),
   )
-  LaunchedEffect(viewModel) {
-    launch {
-      autoAppend(
-        paginator = viewModel.trendingPaginator,
-        currentListIndex = { trendingStatusListState.firstVisibleItemIndex },
-        fetchNumber = EXPLOREPAGINGFETCHNUMBER,
-        threshold = PAGINGTHRESHOLD,
-      ) { trendingStatusList.timeline }
-    }
-
-    launch {
-      autoAppend(
-        paginator = viewModel.publicTimelinePaginator,
-        currentListIndex = { publicTimelineListState.firstVisibleItemIndex },
-        fetchNumber = EXPLOREPAGINGFETCHNUMBER,
-        threshold = PAGINGTHRESHOLD,
-      ) { publicTimelineList.timeline }
-    }
-  }
 }

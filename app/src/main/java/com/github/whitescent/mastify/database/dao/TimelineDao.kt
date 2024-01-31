@@ -57,9 +57,6 @@ interface TimelineDao {
   )
   fun getStatusListWithFlow(accountId: Long): Flow<List<Status>>
 
-  @Query("SELECT * FROM timelineentity WHERE timelineUserId = :accountId")
-  suspend fun getAll(accountId: Long): List<Status>
-
   @Query(
     """
       SELECT id FROM timelineentity WHERE timelineUserId = :accountId

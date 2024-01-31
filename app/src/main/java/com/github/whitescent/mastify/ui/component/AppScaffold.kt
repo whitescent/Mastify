@@ -34,10 +34,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
-import com.github.whitescent.mastify.screen.destinations.ExploreDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.explore.Explore
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
 import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
@@ -48,11 +46,9 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
-import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
-import com.ramcosta.composedestinations.scope.resultRecipient
 import com.ramcosta.composedestinations.spec.Route
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -146,17 +142,8 @@ fun AppScaffold(
           dependency(NavGraphs.app) { drawerState }
           dependency(NavGraphs.app) { appState }
         }
-      ) {
-        composable(ExploreDestination) {
-          Explore(
-            activeAccount = activeAccount!!,
-            appState = appState,
-            drawerState = drawerState,
-            navigator = destinationsNavigator,
-            resultRecipient = resultRecipient()
-          )
-        }
-      }
+      )
+      // remove this when https://issuetracker.google.com/issues/311726095 resolved
       LaunchedEffect(it) {
         appState.setPaddingValues(it)
       }

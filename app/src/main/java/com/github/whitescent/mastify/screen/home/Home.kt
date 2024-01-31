@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.home
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
@@ -37,13 +36,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -68,7 +64,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -82,30 +77,20 @@ import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
-import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
-import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.PAGINGTHRESHOLD
 import com.github.whitescent.mastify.extensions.getReplyChainType
 import com.github.whitescent.mastify.extensions.hasUnloadedParent
-import com.github.whitescent.mastify.paging.LoadState
-import com.github.whitescent.mastify.paging.LoadState.Error
-import com.github.whitescent.mastify.paging.LoadState.NotLoading
-import com.github.whitescent.mastify.paging.autoAppend
+import com.github.whitescent.mastify.paging.LazyPagingList
+import com.github.whitescent.mastify.paging.rememberPaginatorUiState
 import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
-import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
-import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
-import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
-import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
-import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
-import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
@@ -132,7 +117,6 @@ fun Home(
 ) {
   val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
   val uiState = viewModel.uiState
-  val context = LocalContext.current
 
   var refreshing by remember { mutableStateOf(false) }
 
@@ -180,6 +164,8 @@ fun Home(
         }
       }
 
+      val paginatorUiState = rememberPaginatorUiState(viewModel.paginator)
+
       Column {
         HomeTopBar(
           avatar = activeAccount.profilePictureUrl,
@@ -191,111 +177,86 @@ fun Home(
           modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
         )
         HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
-        when (timeline.size) {
-          0 -> {
-            when {
-              uiState.timelineLoadState == Error ->
-                StatusListLoadError { viewModel.refreshTimeline() }
-              uiState.timelineLoadState == NotLoading && uiState.endReached ->
-                EmptyStatusListPlaceholder(
-                  pagePlaceholderType = PagePlaceholderType.Home,
-                  modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-                )
-              else -> StatusListLoading(Modifier.fillMaxSize())
+        Box {
+          LazyPagingList(
+            paginator = viewModel.paginator,
+            paginatorUiState = paginatorUiState,
+            lazyListState = lazyState,
+            listSize = timeline.size,
+            modifier = Modifier.fillMaxSize().drawVerticalScrollbar(lazyState)
+          ) {
+            itemsIndexed(
+              items = timeline,
+              contentType = { _, _ -> StatusUiData },
+              key = { _, item -> item.id }
+            ) { index, status ->
+              val replyChainType by remember(status, timeline.size, index) {
+                mutableStateOf(timeline.getReplyChainType(index))
+              }
+              val hasUnloadedParent by remember(status, timeline.size, index) {
+                mutableStateOf(timeline.hasUnloadedParent(index))
+              }
+              StatusListItem(
+                status = status,
+                replyChainType = replyChainType,
+                hasUnloadedParent = hasUnloadedParent,
+                action = {
+                  viewModel.onStatusAction(it, status.actionable)
+                },
+                navigateToDetail = {
+                  navigator.navigate(
+                    StatusDetailDestination(
+                      status = status.actionable,
+                      originStatusId = status.id
+                    )
+                  )
+                },
+                navigateToMedia = { attachments, targetIndex ->
+                  navigator.navigate(
+                    StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                  )
+                },
+                navigateToProfile = {
+                  navigator.navigate(ProfileDestination(it))
+                }
+              )
+              if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                AppHorizontalDivider()
+              if (status.hasUnloadedStatus)
+                LoadMorePlaceHolder(viewModel.loadMoreState) {
+                  viewModel.loadUnloadedStatus(status.id)
+                }
             }
           }
-          else -> {
-            Box {
-              LazyColumn(
-                state = lazyState,
-                modifier = Modifier.fillMaxSize().drawVerticalScrollbar(lazyState)
-              ) {
-                itemsIndexed(
-                  items = timeline,
-                  contentType = { _, _ -> StatusUiData },
-                  key = { _, item -> item.id }
-                ) { index, status ->
-                  val replyChainType by remember(status, timeline.size, index) {
-                    mutableStateOf(timeline.getReplyChainType(index))
-                  }
-                  val hasUnloadedParent by remember(status, timeline.size, index) {
-                    mutableStateOf(timeline.hasUnloadedParent(index))
-                  }
-                  StatusListItem(
-                    status = status,
-                    replyChainType = replyChainType,
-                    hasUnloadedParent = hasUnloadedParent,
-                    action = {
-                      viewModel.onStatusAction(it, context, status.actionable)
-                    },
-                    navigateToDetail = {
-                      navigator.navigate(
-                        StatusDetailDestination(
-                          status = status.actionable,
-                          originStatusId = status.id
-                        )
-                      )
-                    },
-                    navigateToMedia = { attachments, targetIndex ->
-                      navigator.navigate(
-                        StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                      )
-                    },
-                    navigateToProfile = {
-                      navigator.navigate(ProfileDestination(it))
-                    }
-                  )
-                  if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
-                    AppHorizontalDivider()
-                  if (status.hasUnloadedStatus)
-                    LoadMorePlaceHolder(viewModel.loadMoreState) {
-                      viewModel.loadUnloadedStatus(status.id)
-                    }
-                }
-                item {
-                  when (uiState.timelineLoadState) {
-                    LoadState.Append -> StatusAppendingIndicator()
-                    Error -> {
-                      // TODO Localization
-                      Toast.makeText(context, "获取嘟文失败，请稍后重试", Toast.LENGTH_SHORT).show()
-                      viewModel.append() // retry
-                    }
-                    else -> Unit
-                  }
-                  if (uiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
-                }
-              }
-              NewStatusToast(
-                visible = uiState.toastButton.showNewToastButton,
-                count = uiState.toastButton.newStatusCount,
-                limitExceeded = uiState.toastButton.showManyPost,
-                modifier = Modifier
-                  .align(Alignment.TopCenter)
-                  .padding(top = 12.dp)
-              ) {
-                scope.launch {
-                  lazyState.scrollToItem(0)
-                  viewModel.dismissButton()
-                }
-              }
-              Column(Modifier.align(Alignment.BottomEnd)) {
-                Image(
-                  painter = painterResource(id = R.drawable.edit),
-                  contentDescription = null,
-                  modifier = Modifier
-                    .padding(24.dp)
-                    .align(Alignment.End)
-                    .shadow(6.dp, CircleShape)
-                    .background(AppTheme.colors.primaryGradient, CircleShape)
-                    .clickable { navigator.navigate(PostDestination) }
-                    .padding(16.dp)
-                )
-                StatusSnackBar(
-                  snackbarState = snackbarState,
-                  modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-                )
-              }
+          NewStatusToast(
+            visible = uiState.toastButton.showNewToastButton,
+            count = uiState.toastButton.newStatusCount,
+            limitExceeded = uiState.toastButton.showManyPost,
+            modifier = Modifier
+              .align(Alignment.TopCenter)
+              .padding(top = 12.dp)
+          ) {
+            scope.launch {
+              lazyState.scrollToItem(0)
+              viewModel.dismissButton()
             }
+          }
+          Column(Modifier.align(Alignment.BottomEnd)) {
+            Image(
+              painter = painterResource(id = R.drawable.edit),
+              contentDescription = null,
+              modifier = Modifier
+                .padding(24.dp)
+                .align(Alignment.End)
+                .shadow(6.dp, CircleShape)
+                .background(AppTheme.colors.primaryGradient, CircleShape)
+                .clickable { navigator.navigate(PostDestination) }
+                .padding(16.dp)
+            )
+            StatusSnackBar(
+              snackbarState = snackbarState,
+              modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+            )
           }
         }
       }
@@ -315,21 +276,10 @@ fun Home(
             }
         }
         launch {
-          autoAppend(
-            paginator = viewModel.paginator,
-            currentListIndex = { lazyState.firstVisibleItemIndex },
-            fetchNumber = FETCHNUMBER,
-            threshold = PAGINGTHRESHOLD,
-          ) { data?.timeline ?: emptyList() }
-        }
-      }
-      LaunchedEffect(Unit) {
-        launch {
           viewModel.snackBarFlow.collect {
             snackbarState.show(it)
           }
         }
-        viewModel.refreshTimeline()
       }
       LaunchedEffect(atTop) {
         if (atTop && uiState.toastButton.showNewToastButton) viewModel.dismissButton()
