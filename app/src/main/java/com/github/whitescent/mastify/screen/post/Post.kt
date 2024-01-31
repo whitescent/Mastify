@@ -335,7 +335,6 @@ fun Post(
             scope.launch {
               keyboard?.hide()
               openVisibilitySheet = true
-              visibilitySheetState.expand()
             }
           }
         },
