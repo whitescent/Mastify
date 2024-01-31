@@ -29,6 +29,7 @@ import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.extensions.updateStatusActionData
+import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Status
@@ -42,6 +43,7 @@ import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
 import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -52,6 +54,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -81,14 +84,12 @@ class ExploreViewModel @Inject constructor(
 
   private var currentExploreKindFlow = MutableStateFlow(Trending)
 
-  private val trendingPagingFactory =
-    ExplorePagingFactory<Status>(Trending, exploreRepository)
+  private val trendingPagingFactory = ExplorePagingFactory<Status>(Trending, exploreRepository)
 
   private val publicTimelinePagingFactory =
     ExplorePagingFactory<Status>(PublicTimeline, exploreRepository)
 
-  private val newsPagingFactory =
-    ExplorePagingFactory<News>(ExplorerKind.News, exploreRepository)
+  private val newsPagingFactory = ExplorePagingFactory<News>(ExplorerKind.News, exploreRepository)
 
   val currentExploreKind = currentExploreKindFlow
     .stateIn(
@@ -105,10 +106,11 @@ class ExploreViewModel @Inject constructor(
     )
 
   val publicTimeline = publicTimelinePagingFactory.list
+    .map { it.toUiData() }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
-      initialValue = emptyList()
+      initialValue = persistentListOf()
     )
 
   val news = newsPagingFactory.list

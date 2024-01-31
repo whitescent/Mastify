@@ -46,23 +46,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastMap
 import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun LazyPagingList(
+fun <T : Any> LazyPagingList(
   paginator: Paginator,
   modifier: Modifier = Modifier,
   paginatorUiState: PaginatorUiState,
-  listSize: Int,
+  list: ImmutableList<T>,
   lazyListState: LazyListState = rememberLazyListState(),
   contentPadding: PaddingValues = PaddingValues(0.dp),
   reverseLayout: Boolean = false,
@@ -97,7 +99,7 @@ fun LazyPagingList(
         if (enablePullRefresh) it.pullRefresh(pullRefreshState) else it
       }
   ) {
-    when (listSize) {
+    when (list.size) {
       0 -> {
         if (placeholder == null) {
           when {
@@ -119,9 +121,9 @@ fun LazyPagingList(
         } else placeholder()
       }
       else -> {
-        val firstVisibleItemIndex by remember(lazyListState) {
+        val visibleItemsIndex by remember(lazyListState) {
           derivedStateOf {
-            lazyListState.firstVisibleItemIndex
+            lazyListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
           }
         }
         LazyColumn(
@@ -155,8 +157,8 @@ fun LazyPagingList(
           }
         }
         PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
-        if (paginatorUiState.canPaging && listSize > 0 &&
-          firstVisibleItemIndex >= (listSize - (listSize / paginator.pageSize) * 10)
+        if (
+          paginatorUiState.canPaging && list.size > 0 && visibleItemsIndex.contains(list.size - 6)
         ) {
           scope.launch(SupervisorJob()) {
             paginator.append()

@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastMap
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.End
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
@@ -127,9 +128,9 @@ fun LazyTimelinePagingList(
         }
       }
       else -> {
-        val firstVisibleItemIndex by remember(statusListState) {
+        val visibleItemsIndex by remember(statusListState) {
           derivedStateOf {
-            statusListState.firstVisibleItemIndex
+            statusListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
           }
         }
         LazyColumn(
@@ -182,7 +183,7 @@ fun LazyTimelinePagingList(
         }
         PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
         if (paginatorUiState.canPaging && pagingList.size > 0 &&
-          firstVisibleItemIndex >= (pagingList.size - (pagingList.size / paginator.pageSize) * 10)
+          visibleItemsIndex.contains(pagingList.size - 6)
         ) {
           scope.launch(SupervisorJob()) {
             paginator.append()

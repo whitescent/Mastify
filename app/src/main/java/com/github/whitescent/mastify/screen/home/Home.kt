@@ -182,7 +182,7 @@ fun Home(
             paginator = viewModel.paginator,
             paginatorUiState = paginatorUiState,
             lazyListState = lazyState,
-            listSize = timeline.size,
+            list = timeline,
             modifier = Modifier.fillMaxSize().drawVerticalScrollbar(lazyState)
           ) {
             itemsIndexed(

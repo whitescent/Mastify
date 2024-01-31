@@ -62,12 +62,12 @@ fun ExplorePager(
 
   HorizontalPager(
     state = state,
-    pageContent = {
-      when (it) {
+    pageContent = { page ->
+      when (page) {
         0 -> LazyTimelinePagingList(
           statusListState = trendingStatusListState,
           paginator = viewModel.trendingPaginator,
-          pagingList = trendingStatusList.toUiData().toImmutableList(),
+          pagingList = trendingStatusList.distinctBy { it.id }.toUiData().toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Explore(Trending),
           action = { action, status ->
             viewModel.onStatusAction(action, Trending, status)
@@ -80,7 +80,7 @@ fun ExplorePager(
         1 -> LazyTimelinePagingList(
           statusListState = publicTimelineListState,
           paginator = viewModel.publicTimelinePaginator,
-          pagingList = publicTimelineList.toUiData().toImmutableList(),
+          pagingList = publicTimelineList.toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Explore(PublicTimeline),
           action = { action, status ->
             viewModel.onStatusAction(action, PublicTimeline, status)
@@ -94,7 +94,7 @@ fun ExplorePager(
           LazyPagingList(
             paginator = viewModel.newsPaginator,
             paginatorUiState = rememberPaginatorUiState(viewModel.newsPaginator),
-            listSize = newsList.size,
+            list = newsList.toImmutableList(),
             lazyListState = newsListState,
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(
