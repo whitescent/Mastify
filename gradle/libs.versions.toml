@@ -42,7 +42,7 @@ mockitoKotlin = "5.1.0"
 lottie = "6.0.0"
 leakcanary = "2.12"
 composeDestinations = "1.9.57"
-hilt = "2.46"
+hilt = "2.50"
 paging3 = "3.2.1"
 splashScreen = "1.0.1"
 junit = "4.13.2"
@@ -50,7 +50,7 @@ robolectric = "4.11.1"
 jsoup = "1.16.1"
 zoomimage = "1.0.0-beta10"
 uiautomator = "2.2.0"
-benchmark-macro-junit4 = "1.2.2"
+benchmark-macro-junit4 = "1.2.3"
 profileinstaller = "1.3.1"
 monitor = "1.6.1"
 junitKtx = "1.1.5"
@@ -114,6 +114,7 @@ room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 
 com-google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidxHilt" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 com-google-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
 
 androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "androidxStartup" }

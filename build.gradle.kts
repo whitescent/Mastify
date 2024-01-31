@@ -29,6 +29,11 @@ buildscript {
   }
 }
 
+plugins {
+  // https://github.com/google/dagger/issues/3965#issuecomment-1662360344
+  alias(libs.plugins.ksp) apply false
+}
+
 allprojects {
   tasks.withType<KotlinCompilationTask<*>>().configureEach {
     compilerOptions {
@@ -36,12 +41,12 @@ allprojects {
         freeCompilerArgs.addAll(
           "-P",
           "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" +
-            project.buildDir.absolutePath + "/compose_metrics",
+            layout.buildDirectory.asFile.get() + "/compose_metrics",
         )
         freeCompilerArgs.addAll(
           "-P",
           "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" +
-            project.buildDir.absolutePath + "/compose_metrics",
+            layout.buildDirectory.asFile.get() + "/compose_metrics",
         )
       }
     }
