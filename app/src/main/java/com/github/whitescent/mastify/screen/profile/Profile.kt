@@ -68,7 +68,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -81,7 +80,6 @@ import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
-import com.github.whitescent.mastify.mapper.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -93,10 +91,9 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
+import com.github.whitescent.mastify.ui.component.TextWithEmoji
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.annotateInlineEmojis
 import com.github.whitescent.mastify.ui.component.avatarStartPadding
-import com.github.whitescent.mastify.ui.component.inlineTextContentWithEmoji
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayout
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememberProfileLayoutState
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
@@ -340,15 +337,13 @@ fun ProfileTopBar(
         )
         WidthSpacer(value = 8.dp)
         Column {
-          Text(
-            text = buildAnnotatedString {
-              annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
-            },
+          TextWithEmoji(
+            text = account.realDisplayName,
+            emojis = account.emojis,
             fontSize = 18.sp,
             color = Color.White,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            inlineContent = inlineTextContentWithEmoji(account.emojis, 18.sp),
+            overflow = TextOverflow.Ellipsis
           )
           Text(
             text = stringResource(id = R.string.post_count, account.statusesCount),
@@ -368,14 +363,12 @@ fun ProfileInfo(account: Account, isSelf: Boolean?, isFollowing: Boolean?) {
   Column(Modifier.padding(horizontal = avatarStartPadding)) {
     Row(Modifier.fillMaxWidth()) {
       Column(Modifier.weight(1f)) {
-        Text(
-          text = buildAnnotatedString {
-            annotateInlineEmojis(account.realDisplayName, account.emojis.toShortCode())
-          },
+        TextWithEmoji(
+          text = account.realDisplayName,
+          emojis = account.emojis,
           fontSize = 22.sp,
           fontWeight = FontWeight(650),
-          color = AppTheme.colors.primaryContent,
-          inlineContent = inlineTextContentWithEmoji(account.emojis, 24.sp),
+          color = AppTheme.colors.primaryContent
         )
         HeightSpacer(value = 2.dp)
         Text(
