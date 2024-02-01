@@ -163,7 +163,6 @@ dependencies {
   implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
   implementation(libs.mmkv)
-  implementation(libs.fluentui)
   implementation(libs.logcat)
   implementation(libs.jsoup)
   implementation(libs.zoomable)

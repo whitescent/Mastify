@@ -94,7 +94,6 @@ import com.github.whitescent.mastify.viewModel.MediaModel
 import com.github.whitescent.mastify.viewModel.PostViewModel
 import com.github.whitescent.mastify.viewModel.VoteType.Multiple
 import com.github.whitescent.mastify.viewModel.VoteType.Single
-import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.collections.immutable.persistentListOf
@@ -129,7 +128,8 @@ fun Post(
     // Always fully expand the visibility sheet even on small screens
     skipPartiallyExpanded = true
   )
-  val emojiDrawerState = rememberDrawerState()
+  var openEmojiSheet by remember { mutableStateOf(false) }
+  val emojiSheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
   val albumRowState = rememberLazyListState()
   val imagePicker = rememberLauncherForActivityResult(
@@ -302,7 +302,7 @@ fun Post(
               onClick = {
                 scope.launch {
                   keyboard?.hide()
-                  emojiDrawerState.open()
+                  openEmojiSheet = true
                 }
               },
             )
@@ -365,40 +365,44 @@ fun Post(
       }
     )
   }
-  EmojiSheet(
-    drawerState = emojiDrawerState,
-    emojis = state.instance?.emojiList?.toImmutableList() ?: persistentListOf(),
-    onSelectEmoji = {
-      when (isEditorFocused) {
-        true -> {
-          viewModel.updateTextFieldValue(
-            textFieldValue = viewModel.postTextField.copy(
-              text = viewModel.postTextField.text.insertString(
-                insert = it,
-                index = viewModel.postTextField.selection.start
-              ),
-              selection = TextRange(viewModel.postTextField.selection.start + it.length)
+  if (openEmojiSheet) {
+    EmojiSheet(
+      sheetState = emojiSheetState,
+      emojis = state.instance?.emojiList?.toImmutableList() ?: persistentListOf(),
+      onSelectEmoji = {
+        when (isEditorFocused) {
+          true -> {
+            viewModel.updateTextFieldValue(
+              textFieldValue = viewModel.postTextField.copy(
+                text = viewModel.postTextField.text.insertString(
+                  insert = it,
+                  index = viewModel.postTextField.selection.start
+                ),
+                selection = TextRange(viewModel.postTextField.selection.start + it.length)
+              )
             )
-          )
+          }
+          false -> {
+            val textFieldValue = pollOptionList[focusedPollOptionIndex]
+            pollOptionList[focusedPollOptionIndex] = textFieldValue.copy(
+              text = textFieldValue.text.insertString(
+                insert = it,
+                index = textFieldValue.selection.start
+              ),
+              selection = TextRange(textFieldValue.selection.start + it.length)
+            )
+          }
         }
-        false -> {
-          val textFieldValue = pollOptionList[focusedPollOptionIndex]
-          pollOptionList[focusedPollOptionIndex] = textFieldValue.copy(
-            text = textFieldValue.text.insertString(
-              insert = it,
-              index = textFieldValue.selection.start
-            ),
-            selection = TextRange(textFieldValue.selection.start + it.length)
-          )
+        scope.launch {
+          emojiSheetState.hide()
+        }.invokeOnCompletion {
+          keyboard?.show()
+          openEmojiSheet = false
         }
-      }
-      scope.launch {
-        emojiDrawerState.close()
-      }.invokeOnCompletion {
-        keyboard?.show()
-      }
-    }
-  )
+      },
+      onDismissRequest = { openEmojiSheet = false }
+    )
+  }
   LaunchedEffect(Unit) {
     focusRequester.requestFocus()
   }

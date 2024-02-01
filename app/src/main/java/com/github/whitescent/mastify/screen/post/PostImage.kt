@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -43,7 +44,6 @@ import com.github.whitescent.mastify.data.repository.UploadEvent
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.viewModel.MediaModel
-import com.microsoft.fluentui.theme.token.Icon
 
 @Composable
 fun PostImage(

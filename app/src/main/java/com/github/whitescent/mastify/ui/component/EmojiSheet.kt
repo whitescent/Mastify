@@ -21,15 +21,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,85 +47,116 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.extensions.getSizeOfIndex
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.microsoft.fluentui.tokenized.drawer.BottomDrawer
-import com.microsoft.fluentui.tokenized.drawer.DrawerState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmojiSheet(
-  drawerState: DrawerState,
+  sheetState: SheetState,
   emojis: ImmutableList<Emoji>,
-  onSelectEmoji: (String) -> Unit
+  onSelectEmoji: (String) -> Unit,
+  onDismissRequest: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
   val lazyGridState = rememberLazyGridState()
-  BottomDrawer(
-    drawerContent = {
-      val categorizedEmojis by remember(emojis) {
-        mutableStateOf(emojis.filter { it.category != null })
-      }
-      val uncategorizedEmojis by remember(emojis) {
-        mutableStateOf(emojis.filter { it.category == null })
-      }
-      val emojiGroup by remember(categorizedEmojis) {
-        mutableStateOf(categorizedEmojis.groupBy { it.category })
-      }
-      Column {
-        if (categorizedEmojis.isNotEmpty()) {
-          LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(24.dp),
-            contentPadding = PaddingValues(24.dp),
-          ) {
-            emojiGroup.onEachIndexed { index, (categoryName, emoji) ->
-              categoryName?.let {
-                item {
-                  AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                      .data(emoji[0].url)
-                      .crossfade(true)
-                      .build(),
-                    contentDescription = null,
-                    modifier = Modifier
-                      .clickable {
-                        scope.launch {
-                          lazyGridState.scrollToItem(emojiGroup.getSizeOfIndex(index))
-                        }
+  ModalBottomSheet(
+    sheetState = sheetState,
+    windowInsets = WindowInsets.statusBars,
+    onDismissRequest = onDismissRequest,
+    containerColor = AppTheme.colors.bottomSheetBackground
+  ) {
+    val categorizedEmojis by remember(emojis) {
+      mutableStateOf(emojis.filter { it.category != null })
+    }
+    val uncategorizedEmojis by remember(emojis) {
+      mutableStateOf(emojis.filter { it.category == null })
+    }
+    val emojiGroup by remember(categorizedEmojis) {
+      mutableStateOf(categorizedEmojis.groupBy { it.category })
+    }
+    Column {
+      if (categorizedEmojis.isNotEmpty()) {
+        LazyRow(
+          horizontalArrangement = Arrangement.spacedBy(24.dp),
+          contentPadding = PaddingValues(24.dp),
+        ) {
+          emojiGroup.onEachIndexed { index, (categoryName, emoji) ->
+            categoryName?.let {
+              item {
+                AsyncImage(
+                  model = ImageRequest.Builder(LocalContext.current)
+                    .data(emoji[0].url)
+                    .crossfade(true)
+                    .build(),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .clickable {
+                      scope.launch {
+                        lazyGridState.scrollToItem(emojiGroup.getSizeOfIndex(index))
                       }
-                      .size(24.dp)
-                  )
-                }
+                    }
+                    .size(24.dp)
+                )
               }
             }
           }
-          HorizontalDivider()
         }
-        LazyVerticalGrid(
-          columns = GridCells.Fixed(7),
-          horizontalArrangement = Arrangement.spacedBy(28.dp),
-          verticalArrangement = Arrangement.spacedBy(28.dp),
-          contentPadding = PaddingValues(24.dp),
-          state = lazyGridState
-        ) {
-          if (uncategorizedEmojis.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
+        HorizontalDivider()
+      }
+      LazyVerticalGrid(
+        columns = GridCells.Fixed(7),
+        horizontalArrangement = Arrangement.spacedBy(28.dp),
+        verticalArrangement = Arrangement.spacedBy(28.dp),
+        contentPadding = PaddingValues(24.dp),
+        state = lazyGridState
+      ) {
+        if (uncategorizedEmojis.isNotEmpty()) {
+          item(span = { GridItemSpan(maxLineSpan) }) {
+            Text(
+              text = stringResource(id = R.string.uncategorized_title),
+              fontWeight = FontWeight.Bold,
+              fontSize = 16.sp,
+              modifier = Modifier.fillMaxWidth(),
+              color = AppTheme.colors.primaryContent,
+            )
+          }
+          items(
+            items = uncategorizedEmojis,
+            contentType = { it.itemType },
+            key = { it.url }
+          ) {
+            AsyncImage(
+              model = ImageRequest.Builder(LocalContext.current)
+                .data(it.url)
+                .crossfade(true)
+                .build(),
+              contentDescription = null,
+              modifier = Modifier.size(32.dp).clickable { onSelectEmoji(" :${it.shortcode}: ") },
+            )
+          }
+        }
+        emojiGroup.forEach { (category, emoji) ->
+          category?.let {
+            item(
+              span = { GridItemSpan(maxLineSpan) }
+            ) {
               Text(
-                text = stringResource(id = R.string.uncategorized_title),
+                text = category,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier.fillMaxWidth(),
-                color = AppTheme.colors.primaryContent,
+                color = AppTheme.colors.primaryContent
               )
             }
             items(
-              items = uncategorizedEmojis,
+              items = emoji,
               contentType = { it.itemType },
               key = { it.url }
             ) {
@@ -130,43 +166,12 @@ fun EmojiSheet(
                   .crossfade(true)
                   .build(),
                 contentDescription = null,
-                modifier = Modifier.size(32.dp).clickable { onSelectEmoji(" :${it.shortcode}: ") },
+                modifier = Modifier.size(32.dp).clickable { onSelectEmoji(" :${it.shortcode}: ") }
               )
-            }
-          }
-          emojiGroup.forEach { (category, emoji) ->
-            category?.let {
-              item(
-                span = { GridItemSpan(maxLineSpan) }
-              ) {
-                Text(
-                  text = category,
-                  fontWeight = FontWeight.Bold,
-                  fontSize = 16.sp,
-                  modifier = Modifier.fillMaxWidth(),
-                  color = AppTheme.colors.primaryContent
-                )
-              }
-              items(
-                items = emoji,
-                contentType = { it.itemType },
-                key = { it.url }
-              ) {
-                AsyncImage(
-                  model = ImageRequest.Builder(LocalContext.current)
-                    .data(it.url)
-                    .crossfade(true)
-                    .build(),
-                  contentDescription = null,
-                  modifier = Modifier.size(32.dp).clickable { onSelectEmoji(" :${it.shortcode}: ") }
-                )
-              }
             }
           }
         }
       }
-    },
-    drawerState = drawerState,
-    windowInsetsType = WindowInsetsCompat.Type.statusBars()
-  )
+    }
+  }
 }

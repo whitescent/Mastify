@@ -24,16 +24,21 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -56,7 +61,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsCompat
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.repository.InstanceRepository.Companion.DEFAULT_MAX_OPTION_COUNT
 import com.github.whitescent.mastify.data.repository.InstanceRepository.Companion.DEFAULT_MAX_OPTION_LENGTH
@@ -74,10 +78,9 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.pollDurationList
 import com.github.whitescent.mastify.viewModel.VoteType
-import com.microsoft.fluentui.tokenized.drawer.BottomDrawer
-import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewPollSheet(
   instanceData: InstanceEntity?,
@@ -93,7 +96,8 @@ fun NewPollSheet(
   val maxPollLength = instanceData?.maxPollCharactersPerOption ?: DEFAULT_MAX_OPTION_LENGTH
 
   val keyboard = LocalSoftwareKeyboardController.current
-  val deadlineDrawerState = rememberDrawerState()
+  var openDeadlineSheet by remember { mutableStateOf(false) }
+  val deadlineSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
   val scope = rememberCoroutineScope()
 
   var selectedIndex by remember { mutableStateOf(4) }
@@ -196,7 +200,7 @@ fun NewPollSheet(
           onClick = {
             scope.launch {
               keyboard?.hide()
-              deadlineDrawerState.open()
+              openDeadlineSheet = true
             }
           },
           modifier = Modifier.fillMaxWidth(),
@@ -240,8 +244,13 @@ fun NewPollSheet(
     onPollValidChange(isPollListValid)
   }
 
-  BottomDrawer(
-    drawerContent = {
+  if (openDeadlineSheet) {
+    ModalBottomSheet(
+      sheetState = deadlineSheetState,
+      containerColor = AppTheme.colors.bottomSheetBackground,
+      onDismissRequest = { openDeadlineSheet = false },
+      windowInsets = WindowInsets.statusBars
+    ) {
       Column(Modifier.padding(vertical = 14.dp)) {
         CenterRow(Modifier.padding(horizontal = 14.dp)) {
           Icon(
@@ -265,7 +274,9 @@ fun NewPollSheet(
                 selectedIndex = index
                 onDurationChange(pollDuration.duration)
                 scope.launch {
-                  deadlineDrawerState.close()
+                  deadlineSheetState.hide()
+                }.invokeOnCompletion {
+                  openDeadlineSheet = false
                 }
               }
               .padding(horizontal = 14.dp)
@@ -283,7 +294,9 @@ fun NewPollSheet(
                 selectedIndex = index
                 onDurationChange(pollDuration.duration)
                 scope.launch {
-                  deadlineDrawerState.close()
+                  deadlineSheetState.hide()
+                }.invokeOnCompletion {
+                  openDeadlineSheet = false
                 }
               },
               colors = RadioButtonDefaults.colors(
@@ -293,10 +306,8 @@ fun NewPollSheet(
           }
         }
       }
-    },
-    drawerState = deadlineDrawerState,
-    windowInsetsType = WindowInsetsCompat.Type.statusBars(),
-  )
+    }
+  }
 }
 
 @Composable

@@ -29,7 +29,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,6 +39,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -76,7 +79,6 @@ import com.github.whitescent.mastify.ui.component.statusLoadingIndicator
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
-import com.microsoft.fluentui.tokenized.drawer.rememberDrawerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
@@ -91,6 +93,7 @@ data class StatusDetailNavArgs(
   val originStatusId: String?
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @AppNavGraph
 @Destination(
   navArgsDelegate = StatusDetailNavArgs::class
@@ -103,7 +106,8 @@ fun StatusDetail(
   viewModel: StatusDetailViewModel = hiltViewModel()
 ) {
   val lazyState = rememberLazyListState()
-  val drawerState = rememberDrawerState()
+  var openEmojiSheet by remember { mutableStateOf(false) }
+  val sheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
   val keyboard = LocalSoftwareKeyboardController.current
@@ -186,7 +190,7 @@ fun StatusDetail(
         postState = state.postState,
         onValueChange = viewModel::updateTextFieldValue,
         replyToStatus = viewModel::replyToStatus,
-        openEmojiPicker = { scope.launch { drawerState.open() } }
+        openEmojiPicker = { openEmojiSheet = true }
       )
     }
     StatusSnackBar(
@@ -197,23 +201,29 @@ fun StatusDetail(
     )
   }
 
-  EmojiSheet(
-    drawerState = drawerState,
-    emojis = state.instanceEmojis,
-    onSelectEmoji = {
-      viewModel.updateTextFieldValue(
-        textFieldValue = viewModel.replyField.copy(
-          text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
-          selection = TextRange(viewModel.replyField.selection.start + it.length)
+  if (openEmojiSheet) {
+    EmojiSheet(
+      sheetState = sheetState,
+      emojis = state.instanceEmojis,
+      onSelectEmoji = {
+        viewModel.updateTextFieldValue(
+          textFieldValue = viewModel.replyField.copy(
+            text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
+            selection = TextRange(viewModel.replyField.selection.start + it.length)
+          )
         )
-      )
-      scope.launch {
-        drawerState.close()
-      }.invokeOnCompletion {
-        keyboard?.show()
+        scope.launch {
+          sheetState.hide()
+        }.invokeOnCompletion {
+          keyboard?.show()
+          openEmojiSheet = false
+        }
+      },
+      onDismissRequest = {
+        openEmojiSheet = false
       }
-    }
-  )
+    )
+  }
 
   resultRecipient.onNavResult { result ->
     when (result) {
