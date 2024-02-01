@@ -395,6 +395,7 @@ fun Post(
           emojiSheetState.hide()
         }.invokeOnCompletion {
           keyboard?.show()
+          openEmojiSheet = false
         }
       },
       onDismissRequest = { openEmojiSheet = false }

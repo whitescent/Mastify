@@ -192,7 +192,7 @@ fun StatusDetail(
         postState = state.postState,
         onValueChange = viewModel::updateTextFieldValue,
         replyToStatus = viewModel::replyToStatus,
-        openEmojiPicker = { openEmojiSheet = true },
+        openEmojiPicker = { openEmojiSheet = true }
       )
     }
     StatusSnackBar(
@@ -218,6 +218,7 @@ fun StatusDetail(
           sheetState.hide()
         }.invokeOnCompletion {
           keyboard?.show()
+          openEmojiSheet = false
         }
       },
       onDismissRequest = {

@@ -399,7 +399,6 @@ private fun StatusContent(
       onDismissRequest = { openMenuSheet = false }
     )
   }
-
 }
 
 @Composable
