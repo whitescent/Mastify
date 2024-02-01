@@ -124,6 +124,8 @@
   <string name="search_title">搜索</string>
   <string name="timeline_is_empty">这里现在还没有帖子</string>
   <string name="news_is_empty">这个实例现在还没有新闻</string>
+  <string name="oops_something_went_wrong">似乎出现了一点问题</string>
+  <string name="retry">重试</string>
 
   <!--  Post screen-->
   <string name="public_title">公开</string>

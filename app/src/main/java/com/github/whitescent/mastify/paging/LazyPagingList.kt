@@ -104,7 +104,7 @@ fun <T : Any> LazyPagingList(
         if (placeholder == null) {
           when {
             paginatorUiState.loadState is PageLoadState.Error ->
-              StatusListLoadError {
+              StatusListLoadError(paginatorUiState.loadState.throwable.localizedMessage) {
                 scope.launch(SupervisorJob()) {
                   paginator.refresh()
                 }

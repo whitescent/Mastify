@@ -113,8 +113,8 @@ fun LazyTimelinePagingList(
       0 -> {
         when {
           paginatorUiState.loadState is Error ->
-            StatusListLoadError {
-              scope.launch {
+            StatusListLoadError(paginatorUiState.loadState.throwable.localizedMessage) {
+              scope.launch(SupervisorJob()) {
                 paginator.refresh()
               }
             }
