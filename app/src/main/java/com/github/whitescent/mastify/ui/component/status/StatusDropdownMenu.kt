@@ -21,10 +21,15 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsCompat
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
@@ -47,16 +51,16 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
-import com.microsoft.fluentui.tokenized.drawer.BottomDrawer
-import com.microsoft.fluentui.tokenized.drawer.DrawerState
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusActionDrawer(
-  drawerState: DrawerState,
+  sheetState: SheetState,
   statusUiData: StatusUiData,
   modifier: Modifier = Modifier,
-  actionHandler: (StatusAction) -> Unit
+  actionHandler: (StatusAction) -> Unit,
+  onDismissRequest: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
   var bookmarkState by remember(statusUiData.bookmarked) {
@@ -92,8 +96,13 @@ fun StatusActionDrawer(
     add(MenuAction(R.string.block_account, R.drawable.block, StatusAction.Block))
     add(MenuAction(R.string.report, R.drawable.report, StatusAction.Report))
   }
-  BottomDrawer(
-    drawerContent = {
+  ModalBottomSheet(
+    sheetState = sheetState,
+    windowInsets = WindowInsets.statusBars,
+    containerColor = AppTheme.colors.bottomSheetBackground,
+    modifier = modifier,
+    onDismissRequest = onDismissRequest
+    ) {
       Column(Modifier.padding(bottom = 12.dp)) {
         actions.forEach {
           StatusMenuListItem(
@@ -104,17 +113,17 @@ fun StatusActionDrawer(
             }
           ) {
             if (it.action is StatusAction.Bookmark) bookmarkState = !bookmarkState
-            scope.launch { drawerState.close() }
+            scope.launch {
+              sheetState.hide()
+            }.invokeOnCompletion {
+              onDismissRequest()
+            }
             actionHandler(it.action)
           }
           if (it != actions.last()) AppHorizontalDivider()
         }
       }
-    },
-    drawerState = drawerState,
-    windowInsetsType = WindowInsetsCompat.Type.statusBars(),
-    modifier = modifier
-  )
+    }
 }
 
 @Composable

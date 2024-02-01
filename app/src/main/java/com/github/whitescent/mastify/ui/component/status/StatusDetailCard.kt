@@ -25,9 +25,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,11 +73,10 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
-import com.microsoft.fluentui.tokenized.drawer.rememberBottomDrawerState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusDetailCard(
   status: StatusUiData,
@@ -85,7 +86,8 @@ fun StatusDetailCard(
   navigateToProfile: (Account) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit
 ) {
-  val drawerState = rememberBottomDrawerState()
+  var openMenuSheet by remember { mutableStateOf(false) }
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
   val scope = rememberCoroutineScope()
 
   var hideSensitiveContent by rememberSaveable(status.sensitive, status.spoilerText) {
@@ -156,7 +158,7 @@ fun StatusDetailCard(
           painter = painterResource(id = R.drawable.more),
           tint = AppTheme.colors.cardMenu,
           interactiveSize = 18.dp,
-          onClick = { scope.launch { drawerState.open() } },
+          onClick = { openMenuSheet = true },
         )
       }
       Crossfade(hideSensitiveContent) {
@@ -224,11 +226,14 @@ fun StatusDetailCard(
       )
     }
   }
-  StatusActionDrawer(
-    drawerState = drawerState,
-    statusUiData = status,
-    actionHandler = action
-  )
+  if (openMenuSheet) {
+    StatusActionDrawer(
+      sheetState = sheetState,
+      statusUiData = status,
+      actionHandler = action,
+      onDismissRequest = { openMenuSheet = false }
+    )
+  }
 }
 
 @Composable
