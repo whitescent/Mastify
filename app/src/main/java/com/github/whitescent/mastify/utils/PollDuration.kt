@@ -17,7 +17,7 @@
 
 package com.github.whitescent.mastify.utils
 
-import android.support.annotation.StringRes
+import androidx.annotation.StringRes
 import com.github.whitescent.R
 
 data class PollDuration(

@@ -33,9 +33,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,10 +85,8 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
-import com.microsoft.fluentui.tokenized.drawer.rememberBottomDrawerState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
@@ -220,6 +220,7 @@ private fun StatusSource(
   }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StatusContent(
   statusUiData: StatusUiData,
@@ -237,7 +238,9 @@ private fun StatusContent(
   val displayAttachments by remember(statusUiData.attachments) {
     mutableStateOf(statusUiData.attachments.filter { it.type != "unknown" })
   }
-  val drawerState = rememberBottomDrawerState()
+
+  var openMenuSheet by remember { mutableStateOf(false) }
+  val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
   Box(modifier = modifier) {
     Row(
@@ -312,7 +315,7 @@ private fun StatusContent(
                 painter = painterResource(id = R.drawable.more),
                 tint = AppTheme.colors.cardMenu,
                 interactiveSize = 18.dp,
-                onClick = { scope.launch { drawerState.open() } }
+                onClick = { openMenuSheet = true }
               )
             }
           }
@@ -388,11 +391,15 @@ private fun StatusContent(
       }
     }
   }
-  StatusActionDrawer(
-    drawerState = drawerState,
-    statusUiData = statusUiData,
-    actionHandler = action
-  )
+  if (openMenuSheet) {
+    StatusActionDrawer(
+      sheetState = sheetState,
+      statusUiData = statusUiData,
+      actionHandler = action,
+      onDismissRequest = { openMenuSheet = false }
+    )
+  }
+
 }
 
 @Composable
