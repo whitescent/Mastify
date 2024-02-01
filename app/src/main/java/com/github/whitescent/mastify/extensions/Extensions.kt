@@ -83,19 +83,31 @@ fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List
 fun List<Status>.updateStatusActionData(newStatus: StatusBackResult): List<Status> {
   return if (this.any { it.actionableId == newStatus.id }) {
     val result = this.toMutableList()
-    val index = result.indexOfFirst { it.actionableId == newStatus.id }
-    if (index != -1) {
-      result[index] = result[index].copy(
-        favorited = newStatus.favorited,
-        favouritesCount = newStatus.favouritesCount,
-        reblogged = newStatus.reblogged,
-        reblogsCount = newStatus.reblogsCount,
-        repliesCount = newStatus.repliesCount,
-        bookmarked = newStatus.bookmarked,
-        poll = newStatus.poll
-      )
-      result
-    } else this
+    forEachIndexed { index, status ->
+      if (status.actionableId == newStatus.id) {
+        result[index] = result[index].copy(
+          favorited = newStatus.favorited,
+          favouritesCount = newStatus.favouritesCount,
+          reblogged = newStatus.reblogged,
+          reblogsCount = newStatus.reblogsCount,
+          repliesCount = newStatus.repliesCount,
+          bookmarked = newStatus.bookmarked,
+          poll = newStatus.poll,
+          reblog = if (status.reblog != null) {
+            status.reblog.copy(
+              favorited = newStatus.favorited,
+              favouritesCount = newStatus.favouritesCount,
+              reblogged = newStatus.reblogged,
+              reblogsCount = newStatus.reblogsCount,
+              repliesCount = newStatus.repliesCount,
+              bookmarked = newStatus.bookmarked,
+              poll = newStatus.poll
+            )
+          } else null
+        )
+      }
+    }
+    result
   } else this
 }
 
