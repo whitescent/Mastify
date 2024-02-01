@@ -18,18 +18,17 @@
 package com.github.whitescent.mastify.screen.explore
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Down
-import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Up
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,10 +38,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Badge
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,23 +59,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.test.core.app.ActivityScenario.launch
-import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
@@ -124,12 +112,13 @@ fun Explore(
 ) {
   val uiState = viewModel.uiState
   val context = LocalContext.current
+  val density = LocalDensity.current
 
   val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
   val activeAccount by viewModel.activityAccountFlow.collectAsStateWithLifecycle()
 
   // when user focus on searchBar, we need hide content
-  var hideContent by remember { mutableStateOf(false) }
+  var hideTitle by remember { mutableStateOf(false) }
 
   val pagerState = rememberPagerState { ExplorerKind.entries.size }
   val focusRequester = remember { FocusRequester() }
@@ -153,38 +142,36 @@ fun Explore(
       if (show) {
         Column {
           Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
-            AnimatedContent(
-              targetState = hideContent,
-              transitionSpec = {
-                slideIntoContainer(Down) togetherWith slideOutOfContainer(Up)
-              },
-              modifier = Modifier.fillMaxWidth()
+            AnimatedVisibility(
+              visible = !hideTitle,
+              enter = slideInVertically {
+                with(density) { -40.dp.roundToPx() }
+              } + expandVertically(expandFrom = Alignment.Top) + fadeIn(initialAlpha = 0.3f),
+              exit = slideOutVertically() + shrinkVertically() + fadeOut()
             ) {
-              if (!it) {
-                Column {
-                  CenterRow {
-                    Text(
-                      text = stringResource(id = R.string.explore_instance, activeAccount!!.domain),
-                      fontSize = 24.sp,
-                      fontWeight = FontWeight.Bold,
-                      color = AppTheme.colors.primaryContent,
-                      modifier = Modifier.weight(1f),
-                    )
-                    CircleShapeAsyncImage(
-                      model = activeAccount!!.profilePictureUrl,
-                      modifier = Modifier
-                        .size(36.dp)
-                        .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
-                      shape = AppTheme.shape.betweenSmallAndMediumAvatar,
-                      onClick = {
-                        scope.launch {
-                          drawerState.open()
-                        }
+              Column {
+                CenterRow {
+                  Text(
+                    text = stringResource(id = R.string.explore_instance, activeAccount!!.domain),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppTheme.colors.primaryContent,
+                    modifier = Modifier.weight(1f),
+                  )
+                  CircleShapeAsyncImage(
+                    model = activeAccount!!.profilePictureUrl,
+                    modifier = Modifier
+                      .size(36.dp)
+                      .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
+                    shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+                    onClick = {
+                      scope.launch {
+                        drawerState.open()
                       }
-                    )
-                  }
-                  HeightSpacer(value = 6.dp)
+                    }
+                  )
                 }
+                HeightSpacer(value = 6.dp)
               }
             }
             ExploreSearchBar(
@@ -192,12 +179,12 @@ fun Explore(
               focusRequester = focusRequester,
               onValueChange = viewModel::onValueChange,
               clearText = viewModel::clearInputText,
-              onFocusChange = { hideContent = it }
+              onFocusChange = { hideTitle = it }
             )
             HeightSpacer(value = 4.dp)
           }
           Crossfade(
-            targetState = hideContent,
+            targetState = hideTitle,
             animationSpec = tween()
           ) {
             when (it) {
@@ -294,96 +281,6 @@ fun Explore(
     when (result) {
       is NavResult.Canceled -> Unit
       is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
-    }
-  }
-}
-
-@Composable
-fun ExploreSearchBar(
-  text: String,
-  focusRequester: FocusRequester,
-  onValueChange: (String) -> Unit,
-  clearText: () -> Unit,
-  onFocusChange: (Boolean) -> Unit
-) {
-  BasicTextField(
-    value = text,
-    onValueChange = onValueChange,
-    textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-    singleLine = true,
-    cursorBrush = SolidColor(AppTheme.colors.primaryContent),
-    modifier = Modifier
-      .focusable()
-      .focusRequester(focusRequester)
-      .onFocusChanged {
-        onFocusChange(it.isFocused)
-      },
-    keyboardActions = KeyboardActions(
-      onSearch = { }
-    ),
-    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
-  ) {
-    Box(
-      modifier = Modifier
-        .fillMaxWidth()
-        .rsBlurShadow(
-          radius = 12.dp,
-          color = Color(0xFF000000).copy(alpha = 0.01f),
-          offset = DpOffset(0.dp, 10.dp)
-        )
-        .clip(AppTheme.shape.betweenSmallAndMediumAvatar)
-        .border(
-          width = 1.dp,
-          color = AppTheme.colors.exploreSearchBarBorder,
-          shape = AppTheme.shape.betweenSmallAndMediumAvatar
-        )
-    ) {
-      CenterRow(
-        modifier = Modifier
-          .fillMaxWidth()
-          .background(AppTheme.colors.exploreSearchBarBackground)
-          .clip(AppTheme.shape.betweenSmallAndMediumAvatar)
-          .padding(horizontal = 12.dp, vertical = 10.dp)
-      ) {
-        Icon(
-          painter = painterResource(id = R.drawable.search),
-          contentDescription = null,
-          tint = AppTheme.colors.primaryContent,
-          modifier = Modifier.size(24.dp)
-        )
-        WidthSpacer(value = 6.dp)
-        Box(contentAlignment = Alignment.CenterStart) {
-          if (text.isEmpty()) {
-            Text(
-              text = stringResource(id = R.string.search_title),
-              color = AppTheme.colors.primaryContent.copy(0.5f),
-              fontWeight = FontWeight.Bold,
-              fontSize = 16.sp
-            )
-          }
-          CenterRow(Modifier.fillMaxWidth()) {
-            Box(Modifier.weight(1f)) { it() }
-            if (text.isNotEmpty()) {
-              Box(
-                modifier = Modifier
-                  .background(AppTheme.colors.cardAction, CircleShape)
-                  .clickable(
-                    onClick = clearText,
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                  )
-              ) {
-                Icon(
-                  painter = painterResource(id = R.drawable.close),
-                  contentDescription = null,
-                  modifier = Modifier.size(20.dp).padding(2.dp),
-                  tint = Color.White
-                )
-              }
-            }
-          }
-        }
-      }
     }
   }
 }
