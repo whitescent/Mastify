@@ -216,8 +216,10 @@ fun Post(
         BasicTextField(
           value = postTextField.copy(
             annotatedString = postTextField.text.buildTextWithLimit(
-              maxLength = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT
-            ),
+              maxLength = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT,
+              textColor = AppTheme.colors.primaryContent,
+              warningBackgroundColor = AppTheme.colors.textLimitWarningBackground
+            )
           ),
           onValueChange = viewModel::updateTextFieldValue,
           modifier = Modifier

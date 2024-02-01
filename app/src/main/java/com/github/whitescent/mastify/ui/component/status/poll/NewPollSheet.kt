@@ -314,7 +314,11 @@ private fun PollOptionTextField(
     CenterRow {
       BasicTextField(
         value = textFieldValue.copy(
-          annotatedString = textFieldValue.text.buildTextWithLimit(maxTextLength)
+          annotatedString = textFieldValue.text.buildTextWithLimit(
+            maxLength = maxTextLength,
+            textColor = AppTheme.colors.primaryContent,
+            warningBackgroundColor = AppTheme.colors.textLimitWarningBackground
+          )
         ),
         onValueChange = onValueChanged,
         singleLine = true,
