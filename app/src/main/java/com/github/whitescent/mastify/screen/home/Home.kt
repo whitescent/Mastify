@@ -61,12 +61,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,7 +109,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class, FlowPreview::class)
+@OptIn(ExperimentalMaterialApi::class, FlowPreview::class, ExperimentalComposeUiApi::class)
 @AppNavGraph(start = true)
 @Destination(style = BottomBarScreenTransitions::class)
 @Composable
@@ -142,6 +146,9 @@ fun Home(
       .statusBarsPadding()
       .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
       .pullRefresh(pullRefreshState)
+      .semantics {
+        testTagsAsResourceId = true
+      }
   ) {
     data?.let { homeData ->
       val timeline = homeData.timeline
@@ -183,7 +190,12 @@ fun Home(
             paginatorUiState = paginatorUiState,
             lazyListState = lazyState,
             list = timeline,
-            modifier = Modifier.fillMaxSize().drawVerticalScrollbar(lazyState)
+            modifier = Modifier
+              .fillMaxSize()
+              .drawVerticalScrollbar(lazyState)
+              .semantics {
+                testTag = "home timeline"
+              }
           ) {
             itemsIndexed(
               items = timeline,

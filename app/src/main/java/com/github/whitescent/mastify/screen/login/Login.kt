@@ -44,6 +44,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -53,6 +54,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -69,6 +71,7 @@ import com.github.whitescent.mastify.viewModel.LoginStatus
 import com.github.whitescent.mastify.viewModel.LoginViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
+@OptIn(ExperimentalComposeUiApi::class)
 @LoginNavGraph(start = true)
 @Destination(route = "login_route")
 @Composable
@@ -84,7 +87,8 @@ fun Login(
       .fillMaxSize()
       .background(Color(0xFF3F4366))
       .statusBarsPadding()
-      .padding(35.dp),
+      .padding(35.dp)
+      .semantics { testTagsAsResourceId = true }
   ) {
     Column(
       modifier = Modifier.fillMaxWidth()
@@ -112,6 +116,7 @@ fun Login(
         textStyle = TextStyle(color = Color.White, fontSize = 30.sp),
         singleLine = true,
         modifier = Modifier.semantics {
+          testTagsAsResourceId = true
           testTag = "domain input"
         }
       ) {
@@ -162,7 +167,7 @@ fun Login(
           onClick = {
             viewModel.checkInstance()
           },
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().semantics { testTag = "login button" },
           shape = RoundedCornerShape(14.dp),
           colors = ButtonDefaults.elevatedButtonColors(
             contentColor = Color.White,
