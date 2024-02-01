@@ -21,9 +21,10 @@ import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,7 +62,7 @@ fun StatusLinkPreviewCard(
   val toolbarColor = AppTheme.colors.primaryContent
   if (card != null) {
     Card(
-      modifier = modifier.fillMaxWidth(),
+      modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
       onClick = {
         launchCustomChromeTab(
           context = context,
@@ -76,7 +77,7 @@ fun StatusLinkPreviewCard(
       ),
       border = BorderStroke(1.dp, AppTheme.colors.divider)
     ) {
-      CenterRow(Modifier.fillMaxWidth().heightIn(max = 100.dp)) {
+      CenterRow(Modifier.fillMaxWidth()) {
         if (!card.image.isNullOrEmpty()) {
           AsyncImage(
             model = card.image,
@@ -126,6 +127,7 @@ fun StatusLinkPreviewCard(
             )
           }
           if (card.image.isNullOrEmpty()) {
+            HeightSpacer(value = 4.dp)
             CenterRow(Modifier.align(Alignment.End)) {
               Icon(
                 painter = painterResource(id = R.drawable.link_simple),

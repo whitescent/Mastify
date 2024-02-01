@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.viewModel
 
-import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,14 +27,14 @@ import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.AccountEntity
-import com.github.whitescent.mastify.domain.StatusActionHandler
-import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatus
-import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
+import com.github.whitescent.mastify.paging.factory.HomePagingFactory
+import com.github.whitescent.mastify.usecase.TimelineUseCase
+import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatus
+import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
@@ -45,8 +44,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -59,21 +56,18 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
   db: AppDatabase,
-  private val statusActionHandler: StatusActionHandler,
+  private val timelineUseCase: TimelineUseCase,
   private val homeRepository: HomeRepository,
 ) : ViewModel() {
 
   private val timelineDao = db.timelineDao()
   private val accountDao = db.accountDao()
 
-  private val activeAccountFlow = accountDao.getActiveAccountFlow().filterNotNull()
-  private val timelineWithAccountFlow = activeAccountFlow
-    .flatMapLatest {
-      timelineDao.getStatusListWithFlow(it.id)
-    }
+  private val activeAccountFlow = accountDao
+    .getActiveAccountFlow()
+    .filterNotNull()
 
-  // The latest untransformed Timeline data from the database
-  private var timelineMemoryFlow = MutableStateFlow<List<Status>>(emptyList())
+  private val pagingFactory = HomePagingFactory(db, homeRepository)
 
   val homeCombinedFlow = activeAccountFlow
     .flatMapLatest { account ->
@@ -93,58 +87,19 @@ class HomeViewModel @Inject constructor(
     )
 
   val paginator = Paginator(
-    getAppendKey = {
-      timelineMemoryFlow.value.lastOrNull()?.id
-    },
-    onLoadUpdated = {
-      uiState = uiState.copy(timelineLoadState = it)
-    },
-    refreshKey = null,
-    onRequest = { page ->
-      homeRepository.fetchTimeline(maxId = page)
-    },
-    onError = {
-      it?.printStackTrace()
-    },
-    onSuccess = { loadState, items ->
-      when (loadState) {
-        LoadState.Append -> {
-          uiState = uiState.copy(endReached = items.isEmpty())
-          homeRepository.appendTimelineFromApi(items)
-          // We need to wait for db to emit the latest List before we can end onSuccess,
-          // otherwise loadState will be equal to NotLoading in advance,
-          // and the List has not been updated, which will cause LazyColumn to jitter
-          delay(200)
-        }
-        LoadState.Refresh -> {
-          val newStatusCount = items.filterNot {
-            timelineMemoryFlow.value.any { saved -> saved.id == it.id }
-          }.size
-          uiState = uiState.copy(
-            toastButton = HomeNewStatusToastModel(
-              showNewToastButton = newStatusCount != 0 && timelineMemoryFlow.value.isNotEmpty(),
-              newStatusCount = newStatusCount,
-              showManyPost = !timelineMemoryFlow.value.any { it.id == items.last().id },
-            ),
-            endReached = items.size < FETCHNUMBER
-          )
-          homeRepository.refreshTimelineFromApi(timelineMemoryFlow.value, items)
-        }
-        else -> Unit
-      }
-    }
+    pageSize = FETCHNUMBER,
+    pagingFactory = pagingFactory
   )
 
   init {
     viewModelScope.launch {
-      // sync memory list
-      timelineWithAccountFlow.collect {
-        timelineMemoryFlow.emit(it)
+      pagingFactory.refreshEventFlow.collect { toastButton ->
+        uiState = uiState.copy(toastButton = toastButton)
       }
     }
   }
 
-  val snackBarFlow = statusActionHandler.snackBarFlow
+  val snackBarFlow = timelineUseCase.snackBarFlow
 
   var uiState by mutableStateOf(HomeUiState())
     private set
@@ -160,11 +115,12 @@ class HomeViewModel @Inject constructor(
     paginator.refresh()
   }
 
-  fun onStatusAction(action: StatusAction, context: Context, actionableStatus: Status) {
+  fun onStatusAction(action: StatusAction, actionableStatus: Status) {
     viewModelScope.launch(Dispatchers.IO) {
       val activeAccount = accountDao.getActiveAccount()!!
+      val timeline = timelineDao.getStatusList(activeAccount.id)
       // update the current Status in the db, if the action is about (fav, reblog, bookmark) etc...
-      var savedStatus = timelineMemoryFlow.value.firstOrNull {
+      var savedStatus = timeline.firstOrNull {
         it.actionableId == actionableStatus.id
       }
       // The reason for this separation is that we need to update the UI state as quickly as possible,
@@ -173,9 +129,9 @@ class HomeViewModel @Inject constructor(
         if (action !is VotePoll) {
           savedStatus = updateSingleStatusActions(savedStatus, action)
           timelineDao.insertOrUpdate(savedStatus.toEntity(activeAccount.id))
-          statusActionHandler.onStatusAction(action, context)
+          timelineUseCase.onStatusAction(action)
         } else {
-          statusActionHandler.onStatusAction(action, context)?.let {
+          timelineUseCase.onStatusAction(action)?.let {
             if (it.isSuccess) {
               savedStatus = updatePollOfStatus(savedStatus!!, it.getOrNull()!!.poll!!)
               timelineDao.insertOrUpdate(savedStatus!!.toEntity(activeAccount.id))
@@ -203,7 +159,9 @@ class HomeViewModel @Inject constructor(
   fun loadUnloadedStatus(statusId: String) {
     viewModelScope.launch {
       loadMoreState = PostState.Posting
-      homeRepository.fillMissingStatusesAround(statusId, timelineMemoryFlow.value)
+      val activeAccount = accountDao.getActiveAccount()!!
+      val timeline = timelineDao.getStatusList(activeAccount.id)
+      homeRepository.fillMissingStatusesAround(statusId, timeline)
       loadMoreState = PostState.Idle
     }
   }
@@ -213,9 +171,6 @@ class HomeViewModel @Inject constructor(
    */
   suspend fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) =
     homeRepository.storeLastViewedTimelineOffset(firstVisibleItemIndex, offset)
-
-  private suspend fun refreshTimelineWithLatestStatuses(statuses: List<Status>) =
-    homeRepository.saveLatestTimelineToDb(statuses)
 }
 
 data class HomeUserData(
@@ -231,7 +186,5 @@ data class HomeNewStatusToastModel(
 )
 
 data class HomeUiState(
-  val toastButton: HomeNewStatusToastModel = HomeNewStatusToastModel(),
-  val endReached: Boolean = false,
-  val timelineLoadState: LoadState = LoadState.NotLoading
+  val toastButton: HomeNewStatusToastModel = HomeNewStatusToastModel()
 )

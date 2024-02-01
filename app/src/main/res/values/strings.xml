@@ -127,6 +127,8 @@
   <string name="search_title">Search</string>
   <string name="timeline_is_empty">There are no posts here yet</string>
   <string name="news_is_empty">There is no news about this instance yet</string>
+  <string name="oops_something_went_wrong">Oops! Something went wrong</string>
+  <string name="retry">retry</string>
 
   <!--  Post screen-->
   <string name="public_title">Public</string>

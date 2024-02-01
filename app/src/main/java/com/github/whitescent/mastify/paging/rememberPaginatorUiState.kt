@@ -15,14 +15,28 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.data.model.ui
+package com.github.whitescent.mastify.paging
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import com.github.whitescent.mastify.paging.LoadState
+import androidx.compose.runtime.remember
+import com.github.whitescent.mastify.paging.PageLoadState.Error
+import com.github.whitescent.mastify.paging.PageLoadState.NotLoading
 
 @Immutable
-data class StatusCommonListData<T> (
-  val timeline: List<T> = emptyList(),
-  val loadState: LoadState = LoadState.NotLoading,
-  val endReached: Boolean = false
-)
+data class PaginatorUiState(
+  val loadState: PageLoadState,
+  val endReached: Boolean,
+) {
+  val canPaging get() = (loadState is Error || loadState is NotLoading) && !endReached
+}
+
+@Composable
+fun rememberPaginatorUiState(
+  paginator: Paginator
+) = remember(paginator.pagingLoadState) {
+  PaginatorUiState(
+    loadState = paginator.pagingLoadState,
+    endReached = (paginator.pagingLoadState as? NotLoading)?.endReached == true
+  )
+}

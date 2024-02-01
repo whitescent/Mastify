@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.viewModel
 
-import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,31 +24,34 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.connyduck.calladapter.networkresult.fold
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.StatusBackResult
-import com.github.whitescent.mastify.data.model.ui.StatusCommonListData
-import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.domain.StatusActionHandler
-import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.toUiData
-import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.paging.LoadState
 import com.github.whitescent.mastify.paging.Paginator
+import com.github.whitescent.mastify.paging.factory.ProfilePagingFactory
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
+import com.github.whitescent.mastify.usecase.TimelineUseCase
+import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
+import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
-import com.github.whitescent.mastify.viewModel.ExplorerViewModel.Companion.EXPLOREPAGINGFETCHNUMBER
+import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithMedia
+import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithReply
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -59,19 +61,15 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   db: AppDatabase,
-  private val statusActionHandler: StatusActionHandler,
-  private val api: MastodonApi,
-  private val repository: StatusRepository,
+  statusRepository: StatusRepository,
+  private val timelineUseCase: TimelineUseCase,
+  private val accountRepository: AccountRepository,
 ) : ViewModel() {
 
   private val navArgs: ProfileNavArgs = savedStateHandle.navArgs()
   private val accountDao = db.accountDao()
 
-  val snackBarFlow = statusActionHandler.snackBarFlow
-
-  private var profileStatusFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
-  private var profileStatusWithReplyFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
-  private var profileStatusWithMediaFlow = MutableStateFlow(StatusCommonListData<StatusUiData>())
+  val snackBarFlow = timelineUseCase.snackBarFlow
 
   private var currentProfileKindFlow = MutableStateFlow(ProfileKind.Status)
   val currentProfileKind = currentProfileKindFlow
@@ -81,189 +79,87 @@ class ProfileViewModel @Inject constructor(
       initialValue = ProfileKind.Status
     )
 
+  private val statusPagingFactory =
+    ProfilePagingFactory(ProfileKind.Status, navArgs.account.id, statusRepository)
+
+  private val statusWithReplyPagingFactory =
+    ProfilePagingFactory(StatusWithReply, navArgs.account.id, statusRepository)
+
+  private val statusWithMediaPagingFactory =
+    ProfilePagingFactory(StatusWithMedia, navArgs.account.id, statusRepository)
+
+  val statusPaginator = Paginator(
+    pageSize = FETCH_NUMBER,
+    pagingFactory = statusPagingFactory
+  )
+
+  val statusWithReplyPaginator = Paginator(
+    pageSize = FETCH_NUMBER,
+    initRefresh = false,
+    pagingFactory = statusWithReplyPagingFactory
+  )
+
+  val statusWithMediaPaginator = Paginator(
+    pageSize = FETCH_NUMBER,
+    initRefresh = false,
+    pagingFactory = statusWithMediaPagingFactory
+  )
+
   var uiState by mutableStateOf(ProfileUiState(account = navArgs.account))
     private set
 
-  val profileStatus = profileStatusFlow
+  val profileStatus = statusPagingFactory.list
+    .map { it.toUiData() }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
-      initialValue = StatusCommonListData()
+      initialValue = persistentListOf()
     )
 
-  val profileStatusWithReply = profileStatusWithReplyFlow
+  val profileStatusWithReply = statusWithReplyPagingFactory.list
+    .map { it.toUiData() }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
-      initialValue = StatusCommonListData()
+      initialValue = persistentListOf()
     )
 
-  val profileStatusWithMedia = profileStatusWithMediaFlow
+  val profileStatusWithMedia = statusWithMediaPagingFactory.list
+    .map { it.toUiData() }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
-      initialValue = StatusCommonListData()
+      initialValue = persistentListOf()
     )
-
-  val statusPager = Paginator(
-    refreshKey = null,
-    getAppendKey = {
-      profileStatusFlow.value.timeline.lastOrNull()?.id
-    },
-    onLoadUpdated = {
-      profileStatusFlow.value = profileStatusFlow.value.copy(loadState = it)
-    },
-    onError = { it?.printStackTrace() },
-    onRequest = { nextPage ->
-      repository.getAccountStatus(
-        onlyMedia = false,
-        excludeReplies = true,
-        maxId = nextPage,
-        accountId = uiState.account.id
-      )
-    },
-    onSuccess = { state, item ->
-      when (state) {
-        LoadState.Append -> {
-          val timeline = profileStatusFlow.value.timeline
-          profileStatusFlow.emit(
-            profileStatusFlow.value.copy(
-              timeline = timeline + item.toUiData(),
-              endReached = item.isEmpty()
-            )
-          )
-        }
-        LoadState.Refresh -> {
-          profileStatusFlow.emit(
-            profileStatusFlow.value.copy(
-              timeline = item.toUiData(),
-              endReached = item.isEmpty() || item.size < EXPLOREPAGINGFETCHNUMBER
-            )
-          )
-        }
-        else -> Unit
-      }
-    }
-  )
-
-  val statusWithReplyPager = Paginator(
-    refreshKey = null,
-    getAppendKey = {
-      profileStatusWithReplyFlow.value.timeline.lastOrNull()?.id
-    },
-    onLoadUpdated = {
-      profileStatusWithReplyFlow.value = profileStatusWithReplyFlow.value.copy(loadState = it)
-    },
-    onError = { it?.printStackTrace() },
-    onRequest = { nextPage ->
-      repository.getAccountStatus(
-        excludeReplies = false,
-        maxId = nextPage,
-        accountId = uiState.account.id
-      )
-    },
-    onSuccess = { state, item ->
-      when (state) {
-        LoadState.Append -> {
-          val timeline = profileStatusWithReplyFlow.value.timeline
-          profileStatusWithReplyFlow.emit(
-            profileStatusWithReplyFlow.value.copy(
-              timeline = (timeline + item.toUiData()).distinctBy { it.id },
-              endReached = item.isEmpty()
-            )
-          )
-        }
-        LoadState.Refresh -> {
-          profileStatusWithReplyFlow.emit(
-            profileStatusWithReplyFlow.value.copy(
-              timeline = item.toUiData().distinctBy { it.id },
-              endReached = item.isEmpty() || item.size < EXPLOREPAGINGFETCHNUMBER
-            )
-          )
-        }
-        else -> Unit
-      }
-    }
-  )
-
-  val statusWithMediaPager = Paginator(
-    refreshKey = null,
-    getAppendKey = {
-      profileStatusWithMediaFlow.value.timeline.lastOrNull()?.id
-    },
-    onLoadUpdated = {
-      profileStatusWithMediaFlow.value = profileStatusWithMediaFlow.value.copy(loadState = it)
-    },
-    onError = { it?.printStackTrace() },
-    onRequest = { nextPage ->
-      repository.getAccountStatus(
-        onlyMedia = true,
-        maxId = nextPage,
-        accountId = uiState.account.id
-      )
-    },
-    onSuccess = { state, item ->
-      when (state) {
-        LoadState.Append -> {
-          val timeline = profileStatusWithMediaFlow.value.timeline
-          profileStatusWithMediaFlow.emit(
-            profileStatusWithMediaFlow.value.copy(
-              timeline = timeline + item.toUiData(),
-              endReached = item.isEmpty()
-            )
-          )
-        }
-        LoadState.Refresh -> {
-          profileStatusWithMediaFlow.emit(
-            profileStatusWithMediaFlow.value.copy(
-              timeline = item.toUiData(),
-              endReached = item.isEmpty()
-            )
-          )
-        }
-        else -> Unit
-      }
-    }
-  )
 
   init {
     viewModelScope.launch {
       uiState = uiState.copy(
         isSelf = navArgs.account.id == accountDao.getActiveAccount()!!.accountId
       )
-      statusPager.refresh()
-      getRelationship(navArgs.account.id)
-      fetchAccount(navArgs.account.id)
+      combine(
+        accountRepository.fetchAccount(navArgs.account.id),
+        accountRepository.fetchAccountRelationship(listOf(navArgs.account.id))
+      ) { account, relationship -> Pair(account, relationship) }
+        .catch { }
+        .collect {
+          val account = it.first
+          val relationship = it.second
+          uiState = uiState.copy(
+            isFollowing = relationship.first().following,
+            account = account
+          )
+        }
       launch {
         currentProfileKindFlow.collect {
           when (it) {
-            ProfileKind.StatusWithReply ->
-              if (profileStatusWithReplyFlow.value.timeline.isEmpty()) statusWithReplyPager.refresh()
-            ProfileKind.StatusWithMedia ->
-              if (profileStatusWithMediaFlow.value.timeline.isEmpty()) statusWithMediaPager.refresh()
+            StatusWithReply ->
+              if (profileStatusWithReply.value.isEmpty()) statusWithReplyPaginator.refresh()
+            StatusWithMedia ->
+              if (profileStatusWithMedia.value.isEmpty()) statusWithMediaPaginator.refresh()
             else -> Unit
           }
         }
-      }
-    }
-  }
-
-  fun appendProfileKind(kind: ProfileKind) {
-    viewModelScope.launch {
-      when (kind) {
-        ProfileKind.Status -> statusPager.append()
-        ProfileKind.StatusWithReply -> statusWithReplyPager.append()
-        ProfileKind.StatusWithMedia -> statusWithMediaPager.append()
-      }
-    }
-  }
-
-  fun refreshProfileKind(kind: ProfileKind) {
-    viewModelScope.launch {
-      when (kind) {
-        ProfileKind.Status -> statusPager.refresh()
-        ProfileKind.StatusWithReply -> statusWithReplyPager.refresh()
-        ProfileKind.StatusWithMedia -> statusWithMediaPager.refresh()
       }
     }
   }
@@ -272,35 +168,25 @@ class ProfileViewModel @Inject constructor(
     currentProfileKindFlow.value = ProfileKind.entries.toTypedArray()[page]
   }
 
-  fun onStatusAction(action: StatusAction, context: Context, status: Status) {
+  fun onStatusAction(action: StatusAction, status: Status) {
     viewModelScope.launch(Dispatchers.IO) {
-      profileStatusFlow.update {
-        it.copy(
-          timeline = StatusActionHandler.updateStatusListActions(it.timeline, action, status.id)
-        )
+      statusPagingFactory.list.update {
+        updateStatusListActions(it, action, status.id)
       }
-      profileStatusWithReplyFlow.update {
-        it.copy(
-          timeline = StatusActionHandler.updateStatusListActions(it.timeline, action, status.id)
-        )
+      statusWithReplyPagingFactory.list.update {
+        updateStatusListActions(it, action, status.id)
       }
-      profileStatusWithMediaFlow.update {
-        it.copy(
-          timeline = StatusActionHandler.updateStatusListActions(it.timeline, action, status.id)
-        )
+      statusWithMediaPagingFactory.list.update {
+        updateStatusListActions(it, action, status.id)
       }
-      statusActionHandler.onStatusAction(action, context)?.let { response ->
+      timelineUseCase.onStatusAction(action)?.let { response ->
         val targetStatus = response.getOrNull()!!
         if (action is VotePoll) {
-          profileStatusFlow.update {
-            it.copy(
-              timeline = updatePollOfStatusList(it.timeline, targetStatus.id, targetStatus.poll!!)
-            )
+          statusPagingFactory.list.update {
+            updatePollOfStatusList(it, targetStatus.id, targetStatus.poll!!)
           }
-          profileStatusWithReplyFlow.update {
-            it.copy(
-              timeline = updatePollOfStatusList(it.timeline, targetStatus.id, targetStatus.poll!!)
-            )
+          statusWithReplyPagingFactory.list.update {
+            updatePollOfStatusList(it, targetStatus.id, targetStatus.poll!!)
           }
         }
       }
@@ -308,40 +194,16 @@ class ProfileViewModel @Inject constructor(
   }
 
   fun updateStatusFromDetailScreen(newStatus: StatusBackResult) {
-    val status = profileStatusFlow.value.timeline
-    val statusWithReply = profileStatusWithReplyFlow.value.timeline
-    val statusWithMedia = profileStatusWithMediaFlow.value.timeline
-    profileStatusFlow.value = profileStatusFlow.value.copy(
-      timeline = status.updateStatusActionData(newStatus)
-    )
-    profileStatusWithReplyFlow.value = profileStatusWithReplyFlow.value.copy(
-      timeline = statusWithReply.updateStatusActionData(newStatus)
-    )
-    profileStatusWithMediaFlow.value = profileStatusWithMediaFlow.value.copy(
-      timeline = statusWithMedia.updateStatusActionData(newStatus)
-    )
+    val status = statusPagingFactory.list.value
+    val statusWithReply = statusWithReplyPagingFactory.list.value
+    val statusWithMedia = statusWithMediaPagingFactory.list.value
+    statusPagingFactory.list.value = status.updateStatusActionData(newStatus)
+    statusWithReplyPagingFactory.list.value = statusWithReply.updateStatusActionData(newStatus)
+    statusWithMediaPagingFactory.list.value = statusWithMedia.updateStatusActionData(newStatus)
   }
 
-  private suspend fun fetchAccount(accountId: String) {
-    api.account(accountId).fold(
-      {
-        uiState = uiState.copy(account = it)
-      },
-      {
-        it.printStackTrace()
-      }
-    )
-  }
-
-  private suspend fun getRelationship(accountId: String) {
-    api.relationships(listOf(accountId)).fold(
-      {
-        uiState = uiState.copy(isFollowing = it.first().following)
-      },
-      {
-        it.printStackTrace()
-      }
-    )
+  companion object {
+    const val FETCH_NUMBER = 20
   }
 }
 

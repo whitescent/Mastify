@@ -50,6 +50,14 @@ class AccountRepository @Inject constructor(
     accountDao.addAccount(newAccount)
   }
 
+  suspend fun fetchAccount(accountId: String) = flow {
+    emit(api.account(accountId).getOrThrow())
+  }
+
+  suspend fun fetchAccountRelationship(accountsId: List<String>) = flow {
+    emit(api.relationships(accountsId).getOrThrow())
+  }
+
   suspend fun fetchAccountVerifyCredentials(domain: String, token: String): Flow<Account> = flow {
     emit(api.accountVerifyCredentials(domain, "Bearer $token").getOrThrow())
   }

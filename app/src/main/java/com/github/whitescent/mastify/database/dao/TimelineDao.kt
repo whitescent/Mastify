@@ -21,6 +21,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.coroutines.flow.Flow
@@ -40,6 +41,7 @@ interface TimelineDao {
       ORDER BY LENGTH(id) DESC, id DESC
     """
   )
+  @RewriteQueriesToDropUnusedColumns
   suspend fun getStatusList(accountId: Long): List<Status>
 
   @Query(
@@ -47,6 +49,7 @@ interface TimelineDao {
       SELECT * FROM timelineentity WHERE timelineUserId = :accountId AND id = :statusId LIMIT 1
     """
   )
+  @RewriteQueriesToDropUnusedColumns
   suspend fun getSingleStatusWithId(accountId: Long, statusId: String): Status?
 
   @Query(
@@ -55,10 +58,8 @@ interface TimelineDao {
       ORDER BY LENGTH(id) DESC, id DESC
     """
   )
+  @RewriteQueriesToDropUnusedColumns
   fun getStatusListWithFlow(accountId: Long): Flow<List<Status>>
-
-  @Query("SELECT * FROM timelineentity WHERE timelineUserId = :accountId")
-  suspend fun getAll(accountId: Long): List<Status>
 
   @Query(
     """

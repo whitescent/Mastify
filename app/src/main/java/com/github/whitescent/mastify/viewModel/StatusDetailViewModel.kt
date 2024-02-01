@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.viewModel
 
-import android.content.Context
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,9 +31,6 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.domain.StatusActionHandler
-import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updatePollOfStatusList
-import com.github.whitescent.mastify.domain.StatusActionHandler.Companion.updateStatusListActions
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.mapper.toUiData
@@ -42,6 +38,9 @@ import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
+import com.github.whitescent.mastify.usecase.TimelineUseCase
+import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
+import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
@@ -63,7 +62,7 @@ import javax.inject.Inject
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   db: AppDatabase,
-  private val statusActionHandler: StatusActionHandler,
+  private val timelineUseCase: TimelineUseCase,
   private val statusRepository: StatusRepository,
   private val instanceRepository: InstanceRepository
 ) : ViewModel() {
@@ -71,7 +70,7 @@ class StatusDetailViewModel @Inject constructor(
   private val timelineDao = db.timelineDao()
   private val accountDao = db.accountDao()
 
-  val snackBarFlow = statusActionHandler.snackBarFlow
+  val snackBarFlow = timelineUseCase.snackBarFlow
   val navArgs: StatusDetailNavArgs = savedStateHandle.navArgs()
 
   var replyField by mutableStateOf(TextFieldValue(""))
@@ -98,11 +97,11 @@ class StatusDetailViewModel @Inject constructor(
       initialValue = navArgs.status.toUiData()
     )
 
-  fun onStatusAction(action: StatusAction, context: Context, id: String) = viewModelScope.launch {
+  fun onStatusAction(action: StatusAction, id: String) = viewModelScope.launch {
     uiState = uiState.copy(
       statusList = updateStatusListActions(uiState.statusList, action, id).toImmutableList()
     )
-    statusActionHandler.onStatusAction(action, context)?.let {
+    timelineUseCase.onStatusAction(action)?.let {
       if (action is VotePoll) {
         val targetStatus = it.getOrNull()!!
         uiState = uiState.copy(
@@ -163,7 +162,7 @@ class StatusDetailViewModel @Inject constructor(
         statusRepository.getSingleStatus(navArgs.status.id)
           .catch {
             it.printStackTrace()
-            statusActionHandler.onStatusLoadError()
+            timelineUseCase.onStatusLoadError()
           }
           .collect {
             latestStatus = it.toUiData()

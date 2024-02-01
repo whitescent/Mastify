@@ -215,7 +215,7 @@ private fun StatusSource(
     Image(
       painter = painterResource(id = R.drawable.reblog),
       contentDescription = null,
-      modifier = Modifier.size(16.dp),
+      modifier = Modifier.size(18.dp),
     )
   }
 }

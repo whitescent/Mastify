@@ -21,15 +21,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -37,9 +43,13 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.github.whitescent.R
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
-fun StatusListLoadError(retry: () -> Unit) {
+fun StatusListLoadError(
+  errorMessage: String? = null,
+  retry: () -> Unit
+) {
   val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.error))
   val progress by animateLottieCompositionAsState(
     composition = composition,
@@ -50,25 +60,44 @@ fun StatusListLoadError(retry: () -> Unit) {
     contentAlignment = Alignment.Center
   ) {
     Column(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalAlignment = Alignment.CenterHorizontally
+      modifier = Modifier.width(320.dp).padding(bottom = 150.dp),
+      horizontalAlignment = Alignment.Start
     ) {
       LottieAnimation(
         composition = composition,
         progress = { progress },
-        modifier = Modifier.size(160.dp)
+        modifier = Modifier.height(220.dp).fillMaxWidth(),
+        contentScale = ContentScale.Crop
       )
-      HeightSpacer(value = 4.dp)
+      HeightSpacer(value = 18.dp)
       Text(
-        text = "获取嘟文失败... :(",
-        fontWeight = FontWeight.Bold
+        text = stringResource(id = R.string.oops_something_went_wrong),
+        fontWeight = FontWeight.ExtraBold,
+        fontSize = 23.sp,
+        color = AppTheme.colors.primaryContent
       )
-      HeightSpacer(value = 4.dp)
+      if (errorMessage != null) {
+        HeightSpacer(value = 6.dp)
+        Text(
+          text = errorMessage,
+          fontWeight = FontWeight.Medium,
+          fontSize = 16.sp,
+          color = AppTheme.colors.primaryContent.copy(0.7f)
+        )
+      }
+      HeightSpacer(value = 16.dp)
       Button(
         onClick = retry,
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = AppTheme.colors.accent
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
       ) {
         Text(
-          text = "重新获取",
+          text = stringResource(id = R.string.retry),
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Medium
         )
       }
     }

@@ -100,7 +100,7 @@ interface MastodonApi {
   suspend fun trendingStatus(
     @Query("limit") limit: Int? = null,
     @Query("offset") offset: Int = 0
-  ): Response<List<Status>>
+  ): NetworkResult<List<Status>>
 
   @GET("api/v1/trends/links")
   suspend fun trendingNews(
@@ -212,7 +212,7 @@ interface MastodonApi {
     @Query("max_id") maxId: String? = null,
     @Query("since_id") sinceId: String? = null,
     @Query("limit") limit: Int? = null,
-  ): Response<List<Status>>
+  ): NetworkResult<List<Status>>
 
   @FormUrlEncoded
   @POST("api/v1/polls/{id}/votes")

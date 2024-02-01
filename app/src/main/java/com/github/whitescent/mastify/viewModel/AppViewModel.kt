@@ -45,10 +45,8 @@ class AppViewModel @Inject constructor(
   private val accountDao = db.accountDao()
 
   private val accountListFlow = accountDao.getAccountListFlow()
-  private val activeAccountFlow = accountDao
-    .getActiveAccountFlow()
-    .filterNotNull()
-    .distinctUntilChanged { old, new -> old.id == new.id }
+
+  private val activeAccountFlow = accountDao.getActiveAccountFlow().filterNotNull()
 
   private val changeAccountChannel = Channel<Unit>()
   val changeAccountFlow = changeAccountChannel.receiveAsFlow()
@@ -81,6 +79,13 @@ class AppViewModel @Inject constructor(
       if (isLoggedIn == true) {
         instanceRepository.upsertInstanceInfo()
         instanceRepository.upsertEmojis()
+        launch {
+          activeAccountFlow
+            .distinctUntilChanged { old, new -> old.id == new.id }
+            .collect {
+              accountRepository.fetchActiveAccountAndSaveToDatabase()
+            }
+        }
       }
     }
   }

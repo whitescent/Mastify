@@ -15,20 +15,15 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.di
+package com.github.whitescent.mastify.paging
 
-import com.github.whitescent.mastify.domain.StatusActionHandler
-import com.github.whitescent.mastify.network.MastodonApi
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
+sealed class LoadResult {
 
-@Module
-@InstallIn(ViewModelComponent::class)
-object StatusActionHandlerModule {
-  @Provides
-  fun provideStatusActionHandler(
-    api: MastodonApi
-  ): StatusActionHandler = StatusActionHandler(api)
+  data class Page(val endReached: Boolean) : LoadResult()
+
+  data class Error(
+    val throwable: Throwable
+  ) : LoadResult() {
+    override fun toString(): String = "LoadResult.Error throwable $throwable"
+  }
 }

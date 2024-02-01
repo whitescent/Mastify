@@ -18,7 +18,6 @@
 plugins {
   id("com.android.application")
   id("org.jetbrains.kotlin.android")
-  id("kotlin-kapt")
   id("kotlin-parcelize")
   id("dagger.hilt.android.plugin")
   alias(libs.plugins.kotlin.serialization)
@@ -85,7 +84,7 @@ android {
   }
   applicationVariants.all {
     addJavaSourceFoldersToModel(
-      File(buildDir, "generated/ksp/$name/kotlin")
+      File(layout.buildDirectory.asFile.get(), "generated/ksp/$name/kotlin")
     )
   }
 }
@@ -123,7 +122,9 @@ dependencies {
 
   implementation(libs.com.google.dagger.hilt.android)
   implementation(libs.androidx.hilt.navigation.compose)
-  kapt(libs.com.google.dagger.hilt.compiler)
+  androidTestImplementation(libs.hilt.android.testing)
+  ksp(libs.com.google.dagger.hilt.compiler)
+  kspAndroidTest(libs.com.google.dagger.hilt.compiler)
 
   implementation(libs.retrofit2)
   implementation(libs.okhttp3)
@@ -142,6 +143,7 @@ dependencies {
   testImplementation(libs.mockk.agent)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.mockito.kotlin)
+  androidTestImplementation(libs.mockito.kotlin)
   testImplementation(libs.room.testing)
 
   implementation(libs.room.runtime)
