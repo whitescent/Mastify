@@ -95,6 +95,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
+import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.transitions.BottomBarScreenTransitions
@@ -189,6 +190,7 @@ fun Home(
             paginator = viewModel.paginator,
             paginatorUiState = paginatorUiState,
             lazyListState = lazyState,
+            pagePlaceholderType = PagePlaceholderType.Home,
             list = timeline,
             modifier = Modifier
               .fillMaxSize()

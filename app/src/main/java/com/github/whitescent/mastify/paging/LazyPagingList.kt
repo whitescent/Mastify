@@ -47,6 +47,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMap
+import com.github.whitescent.mastify.paging.PageLoadState.Error
+import com.github.whitescent.mastify.paging.PageLoadState.NotLoading
+import com.github.whitescent.mastify.paging.PageLoadState.Refresh
 import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
@@ -67,6 +70,7 @@ fun <T : Any> LazyPagingList(
   list: ImmutableList<T>,
   lazyListState: LazyListState = rememberLazyListState(),
   contentPadding: PaddingValues = PaddingValues(0.dp),
+  pagePlaceholderType: PagePlaceholderType,
   reverseLayout: Boolean = false,
   enablePullRefresh: Boolean = false,
   verticalArrangement: Arrangement.Vertical =
@@ -97,26 +101,27 @@ fun <T : Any> LazyPagingList(
       .fillMaxSize()
       .let {
         if (enablePullRefresh) it.pullRefresh(pullRefreshState) else it
-      }
+      },
   ) {
     when (list.size) {
       0 -> {
         if (placeholder == null) {
           when {
-            paginatorUiState.loadState is PageLoadState.Error ->
+            paginatorUiState.loadState is Error ->
               StatusListLoadError(paginatorUiState.loadState.throwable.localizedMessage) {
                 scope.launch(SupervisorJob()) {
                   paginator.refresh()
                 }
               }
-            paginatorUiState.loadState is PageLoadState.NotLoading && paginatorUiState.endReached -> {
+            paginatorUiState.loadState is NotLoading && paginatorUiState.endReached -> {
               EmptyStatusListPlaceholder(
-                pagePlaceholderType = PagePlaceholderType.Home,
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+                pagePlaceholderType = pagePlaceholderType,
+                modifier = Modifier.fillMaxSize()
+                  .verticalScroll(rememberScrollState())
+                  .pullRefresh(pullRefreshState),
               )
             }
-            paginatorUiState.loadState is PageLoadState.Refresh ->
-              StatusListLoading(Modifier.fillMaxSize())
+            paginatorUiState.loadState is Refresh -> StatusListLoading(Modifier.fillMaxSize())
           }
         } else placeholder()
       }
@@ -142,7 +147,7 @@ fun <T : Any> LazyPagingList(
             item {
               when (paginatorUiState.loadState) {
                 is PageLoadState.Append -> StatusAppendingIndicator()
-                is PageLoadState.Error -> {
+                is Error -> {
                   // TODO Localization
                   Toast.makeText(
                     context,
@@ -156,7 +161,6 @@ fun <T : Any> LazyPagingList(
             }
           }
         }
-        PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
         if (
           paginatorUiState.canPaging && list.size > 0 && visibleItemsIndex.contains(list.size - 6)
         ) {
@@ -166,5 +170,6 @@ fun <T : Any> LazyPagingList(
         }
       }
     }
+    PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
   }
 }

@@ -38,6 +38,7 @@ import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.status.LazyTimelinePagingList
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.viewModel.ExploreViewModel
+import com.github.whitescent.mastify.viewModel.ExplorerKind.News
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
 import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import kotlinx.collections.immutable.ImmutableList
@@ -95,6 +96,7 @@ fun ExplorePager(
             paginator = viewModel.newsPaginator,
             paginatorUiState = rememberPaginatorUiState(viewModel.newsPaginator),
             list = newsList.toImmutableList(),
+            pagePlaceholderType = PagePlaceholderType.Explore(News),
             lazyListState = newsListState,
             modifier = modifier.fillMaxSize(),
             contentPadding = PaddingValues(
