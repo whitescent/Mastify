@@ -42,6 +42,7 @@ fun TextWithEmoji(
   modifier: Modifier = Modifier,
   color: Color = Color.Unspecified,
   fontSize: TextUnit = TextUnit.Unspecified,
+  emojiSize: TextUnit = fontSize,
   fontStyle: FontStyle? = null,
   fontWeight: FontWeight? = null,
   fontFamily: FontFamily? = null,
@@ -71,7 +72,7 @@ fun TextWithEmoji(
   overflow = overflow,
   softWrap = softWrap,
   maxLines = maxLines,
-  inlineContent = inlineTextContentWithEmoji(emojis),
+  inlineContent = inlineTextContentWithEmoji(emojis, emojiSize),
   onTextLayout = onTextLayout,
   style = style
 )
