@@ -328,12 +328,13 @@ private fun PollOptionTextField(
           annotatedString = textFieldValue.text.buildTextWithLimit(
             maxLength = maxTextLength,
             textColor = AppTheme.colors.primaryContent,
-            warningBackgroundColor = AppTheme.colors.textLimitWarningBackground
+            warningBackgroundColor = AppTheme.colors.textLimitWarningBackground,
+            fontSize = 16.sp
           )
         ),
         onValueChange = onValueChanged,
         singleLine = true,
-        textStyle = TextStyle(color = AppTheme.colors.primaryContent),
+        textStyle = TextStyle(color = AppTheme.colors.primaryContent, fontSize = 16.sp),
         cursorBrush = SolidColor(AppTheme.colors.primaryContent),
         modifier = modifier
       ) {
