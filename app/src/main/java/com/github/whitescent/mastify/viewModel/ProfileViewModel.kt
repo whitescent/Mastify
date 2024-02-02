@@ -200,12 +200,12 @@ class ProfileViewModel @Inject constructor(
     viewModelScope.launch {
       when (action) {
         is ProfileAction.Follow -> {
-          val request = if (action.follow) {
+          val response = if (action.follow) {
             accountRepository.followAccount(accountId = action.id)
           } else {
             accountRepository.unfollowAccount(accountId = action.id)
           }
-          request
+          response
             .catch {
               it.printStackTrace()
               uiState = uiState.copy(followPostState = PostState.Failure(it))

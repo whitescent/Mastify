@@ -572,7 +572,7 @@ fun UserMetricPanel(
 
 @Composable
 fun FollowButton(isFollowing: Boolean, postState: PostState, action: () -> Unit) {
-  // TODO: implement loading animation
+  // TODO: remove hardcoded string and implement loading animation
   val text = if (postState == PostState.Posting) "Loading" else stringResource(
     id = if (isFollowing) R.string.unfollow_title else R.string.follow_title,
   )
