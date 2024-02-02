@@ -25,6 +25,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -104,6 +105,8 @@ import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarS
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.FormatFactory
+import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.ProfileAction
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.viewModel.ProfileKind
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
@@ -203,7 +206,13 @@ fun Profile(
             },
           )
           HeightSpacer(value = 10.dp)
-          ProfileInfo(uiState.account, uiState.isSelf, uiState.isFollowing)
+          ProfileInfo(
+            uiState.account,
+            uiState.isSelf,
+            uiState.isFollowing,
+            uiState.followPostState,
+            viewModel::onProfileAction,
+          )
           HeightSpacer(value = 6.dp)
         }
       },
@@ -362,7 +371,13 @@ fun ProfileTopBar(
 }
 
 @Composable
-fun ProfileInfo(account: Account, isSelf: Boolean?, isFollowing: Boolean?) {
+fun ProfileInfo(
+  account: Account,
+  isSelf: Boolean?,
+  isFollowing: Boolean?,
+  followPostState: PostState,
+  action: (ProfileAction) -> Unit
+) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   Column(Modifier.padding(horizontal = avatarStartPadding)) {
@@ -475,7 +490,13 @@ fun ProfileInfo(account: Account, isSelf: Boolean?, isFollowing: Boolean?) {
           HeightSpacer(value = 10.dp)
           when (it) {
             true -> EditProfileButton(Modifier.fillMaxWidth())
-            else -> isFollowing?.let { FollowButton(isFollowing) }
+            else -> isFollowing?.let {
+              FollowButton(
+                isFollowing,
+                followPostState,
+                action = { action(ProfileAction.Follow(account.id, !isFollowing)) },
+              )
+            }
           }
           HeightSpacer(value = 4.dp)
         }
@@ -550,21 +571,25 @@ fun UserMetricPanel(
 }
 
 @Composable
-fun FollowButton(isFollowing: Boolean) {
+fun FollowButton(isFollowing: Boolean, postState: PostState, action: () -> Unit) {
+  // TODO: implement loading animation
+  val text = if (postState == PostState.Posting) "Loading" else stringResource(
+    id = if (isFollowing) R.string.unfollow_title else R.string.follow_title,
+  )
   Box(
-    modifier = Modifier.fillMaxWidth()
+    modifier = Modifier
+      .fillMaxWidth()
       .border(
         width = 2.dp,
         color = if (isFollowing) AppTheme.colors.unfollowButton else AppTheme.colors.followButton,
         shape = AppTheme.shape.mediumAvatar
       )
-      .clip(AppTheme.shape.mediumAvatar),
-    contentAlignment = Alignment.Center
+      .clip(AppTheme.shape.mediumAvatar)
+      .clickable(postState != PostState.Posting) { action() },
+    contentAlignment = Alignment.Center,
   ) {
     Text(
-      text = stringResource(
-        id = if (isFollowing) R.string.unfollow_title else R.string.follow_title
-      ),
+      text = text,
       color = AppTheme.colors.primaryContent,
       modifier = Modifier.padding(10.dp),
       fontSize = 18.sp,

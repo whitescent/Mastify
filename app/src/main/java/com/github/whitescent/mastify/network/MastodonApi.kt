@@ -177,6 +177,16 @@ interface MastodonApi {
     @Path("id") accountId: String,
   ): NetworkResult<Relationship>
 
+  @POST("api/v1/accounts/{id}/follow")
+  suspend fun followAccount(
+    @Path("id") accountId: String,
+  ): NetworkResult<Relationship>
+
+  @POST("api/v1/accounts/{id}/unfollow")
+  suspend fun unfollowAccount(
+    @Path("id") accountId: String,
+  ): NetworkResult<Relationship>
+
   @GET("api/v1/accounts/relationships")
   suspend fun relationships(
     @Query("id[]") accountIds: List<String>

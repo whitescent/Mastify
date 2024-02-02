@@ -40,6 +40,8 @@ import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
+import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.ProfileAction
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithMedia
@@ -193,6 +195,35 @@ class ProfileViewModel @Inject constructor(
     }
   }
 
+  fun onProfileAction(action: ProfileAction) {
+    uiState = uiState.copy(followPostState = PostState.Posting)
+    viewModelScope.launch {
+      when (action) {
+        is ProfileAction.Follow -> {
+          val request = if (action.follow) {
+            accountRepository.followAccount(accountId = action.id)
+          } else {
+            accountRepository.unfollowAccount(accountId = action.id)
+          }
+          request
+            .catch {
+              it.printStackTrace()
+              uiState = uiState.copy(followPostState = PostState.Failure(it))
+            }
+            .collect {
+              uiState = uiState.copy(
+                followPostState = PostState.Success,
+                isFollowing = uiState.isFollowing?.not(),
+                account = uiState.account.copy(
+                  followersCount = uiState.account.followersCount + if (action.follow) 1 else -1,
+                )
+              )
+            }
+        }
+      }
+    }
+  }
+
   fun updateStatusFromDetailScreen(newStatus: StatusBackResult) {
     val status = statusPagingFactory.list.value
     val statusWithReply = statusWithReplyPagingFactory.list.value
@@ -211,6 +242,7 @@ data class ProfileUiState(
   val account: Account,
   val isSelf: Boolean? = null,
   val isFollowing: Boolean? = null,
+  val followPostState: PostState = PostState.Idle
 )
 
 enum class ProfileKind(

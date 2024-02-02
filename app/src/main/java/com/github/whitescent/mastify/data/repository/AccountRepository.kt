@@ -83,4 +83,12 @@ class AccountRepository @Inject constructor(
         )
       }
   }
+
+  suspend fun followAccount(accountId: String) = flow {
+    emit(api.followAccount(accountId = accountId).getOrThrow())
+  }
+
+  suspend fun unfollowAccount(accountId: String) = flow {
+    emit(api.unfollowAccount(accountId = accountId).getOrThrow())
+  }
 }
