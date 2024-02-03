@@ -25,21 +25,22 @@ import com.github.whitescent.mastify.paging.LoadResult
 import com.github.whitescent.mastify.paging.PagingFactory
 import com.github.whitescent.mastify.viewModel.HomeNewStatusToastModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import logcat.logcat
 import javax.inject.Inject
 
 class HomePagingFactory @Inject constructor(
   db: AppDatabase,
   private val repository: HomeRepository,
+  private val coroutineScope: CoroutineScope
 ) : PagingFactory() {
 
   private val accountDao = db.accountDao()
   private val timelineDao = db.timelineDao()
 
-  private val coroutineScope = CoroutineScope(Dispatchers.IO)
+  // private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
   private lateinit var activeAccount: AccountEntity
   private lateinit var timeline: List<Status>
@@ -49,6 +50,7 @@ class HomePagingFactory @Inject constructor(
 
   init {
     coroutineScope.launch {
+      logcat("TEST") { "paging factory init $this account ${accountDao.getActiveAccount()!!.fullname}" }
       activeAccount = accountDao.getActiveAccount()!!
       timeline = timelineDao.getStatusList(activeAccount.id)
       timelineDao.getStatusListWithFlow(activeAccount.id)
@@ -71,6 +73,10 @@ class HomePagingFactory @Inject constructor(
       timeline.any { saved -> saved.id == it.id }
     }.size
     repository.refreshTimelineFromApi(timeline, response)
+    val manyPost = !timeline.any { it.id == response.last().id }
+    if (manyPost) {
+      logcat("TEST") { "many post!!! ${activeAccount.fullname} timeline size ${timeline.size}" }
+    }
     refreshEvent.send(
       HomeNewStatusToastModel(
         showNewToastButton = newStatusCount != 0 && timeline.isNotEmpty(),

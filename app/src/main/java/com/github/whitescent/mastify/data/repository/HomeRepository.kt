@@ -29,6 +29,7 @@ import com.github.whitescent.mastify.utils.getServerErrorMessage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import logcat.logcat
 import retrofit2.HttpException
 import javax.inject.Inject
 
@@ -39,10 +40,15 @@ class HomeRepository @Inject constructor(
   private val accountRepository: AccountRepository
 ) {
 
+  init {
+    logcat("TEST") { "home repo init $this" }
+  }
+
   private val accountDao = db.accountDao()
   private val timelineDao = db.timelineDao()
 
   suspend fun refreshTimelineFromApi(oldItems: List<Status>, newItems: List<Status>) {
+    logcat("TEST") { "refresh, old ${oldItems.size} new ${newItems.size} ${accountDao.getActiveAccount()!!.fullname}" }
     if (newItems.isEmpty()) return
     if (oldItems.size < FETCHNUMBER) saveLatestTimelineToDb(newItems)
     else {
@@ -163,8 +169,11 @@ class HomeRepository @Inject constructor(
   private suspend fun saveLatestTimelineToDb(statuses: List<Status>) {
     db.withTransaction {
       val accountId = accountDao.getActiveAccount()!!.id
-      timelineDao.clearAll(accountId)
-      timelineDao.insertOrUpdate(statuses.map { it.toEntity(accountId) })
+      logcat("TEST") { "do db action ! ${accountDao.getActiveAccount()!!.fullname}" }
+      val test = timelineDao.clearAll(accountId)
+      logcat("TEST") { "clean $test" }
+      val test2 = timelineDao.insertOrUpdate(statuses.map { it.toEntity(accountId) })
+      logcat("TEST") { "insert $test2" }
     }
   }
 

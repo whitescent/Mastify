@@ -37,7 +37,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.BottomBarItem
@@ -68,10 +67,10 @@ fun BottomBar(
                 if (destination.route == screen.direction.route) scrollToTop()
                 else {
                   navController.navigate(screen.direction) {
-                    popUpTo(NavGraphs.app) {
+                    popUpTo(destination.route) {
                       saveState = true
+                      inclusive = true
                     }
-                    launchSingleTop = true
                     restoreState = true
                   }
                 }

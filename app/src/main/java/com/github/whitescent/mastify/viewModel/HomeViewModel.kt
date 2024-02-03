@@ -44,12 +44,15 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
+import logcat.logcat
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,7 +70,7 @@ class HomeViewModel @Inject constructor(
     .getActiveAccountFlow()
     .filterNotNull()
 
-  private val pagingFactory = HomePagingFactory(db, homeRepository)
+  private val pagingFactory = HomePagingFactory(db, homeRepository, viewModelScope)
 
   val homeCombinedFlow = activeAccountFlow
     .flatMapLatest { account ->
@@ -88,10 +91,18 @@ class HomeViewModel @Inject constructor(
 
   val paginator = Paginator(
     pageSize = FETCHNUMBER,
-    pagingFactory = pagingFactory
+    pagingFactory = pagingFactory,
+    coroutineScope = viewModelScope
   )
 
+  override fun onCleared() {
+    super.onCleared()
+    viewModelScope.cancel()
+    logcat("TEST") { "$this cleared" }
+  }
+
   init {
+    logcat("TEST") { "HOME VM init $this" }
     viewModelScope.launch {
       pagingFactory.refreshEventFlow.collect { toastButton ->
         uiState = uiState.copy(toastButton = toastButton)

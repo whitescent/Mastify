@@ -161,8 +161,8 @@ fun StatusDetailCard(
           onClick = { openMenuSheet = true },
         )
       }
-      Crossfade(hideSensitiveContent) {
-        when (it) {
+      Crossfade(hideSensitiveContent) { hide ->
+        when (hide) {
           true -> {
             Column {
               HeightSpacer(value = 4.dp)

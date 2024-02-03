@@ -42,7 +42,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,9 +55,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -229,7 +231,6 @@ private fun StatusContent(
   onClickMedia: (Int) -> Unit,
   navigateToProfile: (Account) -> Unit,
 ) {
-  val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
@@ -272,52 +273,50 @@ private fun StatusContent(
             )
           }
           WidthSpacer(value = 4.dp)
-          Column {
-            CenterRow {
-              Text(
-                text = remember(statusUiData.createdAt) {
-                  getRelativeTimeSpanString(
-                    context,
-                    statusUiData.createdAt.toInstant().toEpochMilliseconds(),
-                    Clock.System.now().toEpochMilliseconds()
-                  )
-                },
-                style = AppTheme.typography.statusUsername.copy(
-                  color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-                ),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-              )
-              when (statusUiData.visibility) {
-                StatusUiData.Visibility.Private -> {
-                  Icon(
-                    painter = painterResource(id = R.drawable.lock),
-                    contentDescription = null,
-                    modifier = Modifier
-                      .padding(horizontal = 8.dp)
-                      .size(20.dp),
-                    tint = AppTheme.colors.cardMenu,
-                  )
-                }
-                StatusUiData.Visibility.Unlisted -> {
-                  Icon(
-                    painter = painterResource(id = R.drawable.lock_open),
-                    contentDescription = null,
-                    modifier = Modifier
-                      .padding(horizontal = 8.dp)
-                      .size(20.dp),
-                    tint = AppTheme.colors.cardMenu,
-                  )
-                }
-                else -> WidthSpacer(value = 4.dp)
+          CenterRow {
+            Text(
+              text = remember(statusUiData.createdAt) {
+                getRelativeTimeSpanString(
+                  context,
+                  statusUiData.createdAt.toInstant().toEpochMilliseconds(),
+                  Clock.System.now().toEpochMilliseconds()
+                )
+              },
+              style = AppTheme.typography.statusUsername.copy(
+                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+              ),
+              overflow = TextOverflow.Ellipsis,
+              maxLines = 1,
+            )
+            when (statusUiData.visibility) {
+              StatusUiData.Visibility.Private -> {
+                Icon(
+                  painter = painterResource(id = R.drawable.lock),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(20.dp),
+                  tint = AppTheme.colors.cardMenu,
+                )
               }
-              ClickableIcon(
-                painter = painterResource(id = R.drawable.more),
-                tint = AppTheme.colors.cardMenu,
-                interactiveSize = 18.dp,
-                onClick = { openMenuSheet = true }
-              )
+              StatusUiData.Visibility.Unlisted -> {
+                Icon(
+                  painter = painterResource(id = R.drawable.lock_open),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(20.dp),
+                  tint = AppTheme.colors.cardMenu,
+                )
+              }
+              else -> WidthSpacer(value = 4.dp)
             }
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.more),
+              tint = AppTheme.colors.cardMenu,
+              interactiveSize = 18.dp,
+              onClick = { openMenuSheet = true }
+            )
           }
         }
         Crossfade(hideSensitiveContent) {
@@ -338,45 +337,63 @@ private fun StatusContent(
               }
             }
             else -> {
-              Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(top = 8.dp)
-              ) {
-                if (statusUiData.content.isNotEmpty()) {
-                  HtmlText(
-                    text = statusUiData.content,
-                    fontSize = (15.5).sp,
-                    maxLines = 11,
-                    onLinkClick = { span ->
-                      val mention = statusUiData.mentions.firstOrNull { it.url == span }
-                      if (mention != null) {
-                        navigateToProfile(mention.toAccount())
-                      } else {
-                        launchCustomChromeTab(
-                          context = context,
-                          uri = Uri.parse(span),
-                          toolbarColor = primaryColor.toArgb(),
-                        )
+              Column {
+                if (statusUiData.isInReplyToSomeone) {
+                  Text(
+                    text = buildAnnotatedString {
+                      withStyle(SpanStyle()) {
+                        append("回复给 ")
+                      }
+                      withStyle(SpanStyle(color = AppTheme.colors.accent.copy(alpha = 0.8f))) {
+                        append("@${statusUiData.mentions.first().username}")
                       }
                     },
-                    overflow = TextOverflow.Ellipsis
+                    fontSize = 14.sp,
+                    color = AppTheme.colors.primaryContent.copy(0.6f),
+                    modifier = Modifier.padding(top = 3.dp),
                   )
                 }
-                StatusLinkPreviewCard(card = statusUiData.card)
-                StatusPoll(statusUiData.poll) { id, choices ->
-                  action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
-                }
-                if (displayAttachments.isNotEmpty()) {
-                  StatusMedia(
-                    attachments = displayAttachments.toImmutableList(),
-                    onClick = onClickMedia,
-                  )
+                Column(
+                  verticalArrangement = Arrangement.spacedBy(12.dp),
+                  modifier = Modifier.padding(top = 4.dp)
+                ) {
+                  if (statusUiData.content.isNotEmpty()) {
+                    HtmlText(
+                      text = statusUiData.content,
+                      fontSize = (15.5).sp,
+                      maxLines = 11,
+                      onLinkClick = { span ->
+                        val mention = statusUiData.mentions.firstOrNull { it.url == span }
+                        if (mention != null) {
+                          navigateToProfile(mention.toAccount())
+                        } else {
+                          launchCustomChromeTab(
+                            context = context,
+                            uri = Uri.parse(span),
+                            toolbarColor = primaryColor.toArgb(),
+                          )
+                        }
+                      },
+                      overflow = TextOverflow.Ellipsis,
+                      filterMentionText = statusUiData.isInReplyToSomeone
+                    )
+                  }
+                  StatusLinkPreviewCard(card = statusUiData.card)
+                  StatusPoll(statusUiData.poll) { id, choices ->
+                    action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
+                  }
+                  if (displayAttachments.isNotEmpty()) {
+                    StatusMedia(
+                      attachments = displayAttachments.toImmutableList(),
+                      onClick = onClickMedia,
+                    )
+                  }
                 }
               }
             }
           }
         }
-        HeightSpacer(value = 6.dp)
+        HeightSpacer(value = 4.dp)
         StatusActionsRow(
           statusId = statusUiData.actionableId,
           repliesCount = statusUiData.repliesCount,

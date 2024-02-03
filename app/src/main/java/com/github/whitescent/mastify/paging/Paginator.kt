@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import logcat.logcat
 
 /**
  * Simplified implementation of androidx Paging3
@@ -35,11 +36,12 @@ import kotlinx.coroutines.withContext
  */
 class Paginator(
   val pageSize: Int,
+  coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main.immediate),
   private val initRefresh: Boolean = true,
-  private val pagingFactory: PagingFactory
+  private val pagingFactory: PagingFactory,
 ) : Pager {
 
-  private val defaultCoroutineScope = CoroutineScope(Dispatchers.Main.immediate)
+  // private val defaultCoroutineScope = CoroutineScope(Dispatchers.Main.immediate)
 
   var pagingLoadState by mutableStateOf<PageLoadState>(PageLoadState.NotLoading(false))
     private set
@@ -91,7 +93,8 @@ class Paginator(
 
   init {
     if (initRefresh) {
-      defaultCoroutineScope.launch {
+      coroutineScope.launch {
+        logcat("TEST") { "paginator refresh scope $this" }
         refresh()
       }
     }

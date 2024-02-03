@@ -20,6 +20,7 @@ package com.github.whitescent.mastify.ui.component
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -50,6 +51,7 @@ import com.ramcosta.composedestinations.navigation.dependency
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.spec.Route
+import com.ramcosta.composedestinations.utils.route
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
@@ -132,6 +134,11 @@ fun AppScaffold(
       },
       containerColor = Color.Black,
       modifier = Modifier.fillMaxSize(),
+      topBar = {
+        Button(onClick = {viewModel.changeActiveAccount(accounts.first { it.id != activeAccount!!.id }.id) }) {
+
+        }
+      },
     ) {
       DestinationsNavHost(
         engine = engine,
