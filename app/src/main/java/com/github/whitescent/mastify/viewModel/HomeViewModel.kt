@@ -24,9 +24,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.HomeRepository
-import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCHNUMBER
+import com.github.whitescent.mastify.data.repository.HomeRepository.Companion.FETCH_NUMBER
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.AccountEntity
+import com.github.whitescent.mastify.di.ApplicationScope
 import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.status.Status
@@ -36,29 +37,29 @@ import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatus
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateSingleStatusActions
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.PostState.Idle
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.utils.splitReorderStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
-import logcat.logcat
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
   db: AppDatabase,
+  @ApplicationScope private val applicationScope: CoroutineScope,
   private val timelineUseCase: TimelineUseCase,
   private val homeRepository: HomeRepository,
 ) : ViewModel() {
@@ -70,7 +71,7 @@ class HomeViewModel @Inject constructor(
     .getActiveAccountFlow()
     .filterNotNull()
 
-  private val pagingFactory = HomePagingFactory(db, homeRepository, viewModelScope)
+  private val pagingFactory = HomePagingFactory(db, applicationScope, homeRepository)
 
   val homeCombinedFlow = activeAccountFlow
     .flatMapLatest { account ->
@@ -90,19 +91,12 @@ class HomeViewModel @Inject constructor(
     )
 
   val paginator = Paginator(
-    pageSize = FETCHNUMBER,
+    pageSize = FETCH_NUMBER,
     pagingFactory = pagingFactory,
-    coroutineScope = viewModelScope
+    coroutineScope = applicationScope
   )
 
-  override fun onCleared() {
-    super.onCleared()
-    viewModelScope.cancel()
-    logcat("TEST") { "$this cleared" }
-  }
-
   init {
-    logcat("TEST") { "HOME VM init $this" }
     viewModelScope.launch {
       pagingFactory.refreshEventFlow.collect { toastButton ->
         uiState = uiState.copy(toastButton = toastButton)
@@ -115,7 +109,7 @@ class HomeViewModel @Inject constructor(
   var uiState by mutableStateOf(HomeUiState())
     private set
 
-  var loadMoreState by mutableStateOf<PostState>(PostState.Idle)
+  var loadMoreState by mutableStateOf<PostState>(Idle)
     private set
 
   fun append() = viewModelScope.launch {
@@ -173,7 +167,7 @@ class HomeViewModel @Inject constructor(
       val activeAccount = accountDao.getActiveAccount()!!
       val timeline = timelineDao.getStatusList(activeAccount.id)
       homeRepository.fillMissingStatusesAround(statusId, timeline)
-      loadMoreState = PostState.Idle
+      loadMoreState = Idle
     }
   }
 
@@ -181,7 +175,7 @@ class HomeViewModel @Inject constructor(
    * Stores the user's current browsing location
    */
   suspend fun updateTimelinePosition(firstVisibleItemIndex: Int, offset: Int) =
-    homeRepository.storeLastViewedTimelineOffset(firstVisibleItemIndex, offset)
+    homeRepository.saveLastViewedTimelineOffset(firstVisibleItemIndex, offset)
 }
 
 data class HomeUserData(
