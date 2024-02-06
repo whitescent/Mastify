@@ -23,10 +23,9 @@ import com.github.whitescent.mastify.paging.LoadResult
 import com.github.whitescent.mastify.paging.PagingFactory
 import com.github.whitescent.mastify.viewModel.ExplorerKind
 import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
 
 @Suppress("UNCHECKED_CAST")
-class ExplorePagingFactory<T> @Inject constructor(
+class ExplorePagingFactory<T>(
   private val kind: ExplorerKind,
   private val repository: ExploreRepository,
 ) : PagingFactory() {

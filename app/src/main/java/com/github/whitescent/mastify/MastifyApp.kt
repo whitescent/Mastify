@@ -31,7 +31,6 @@ import logcat.LogPriority
 
 @HiltAndroidApp
 class MastifyApp : Application(), ImageLoaderFactory {
-
   override fun newImageLoader(): ImageLoader {
     val context = this.applicationContext
     return ImageLoader.Builder(context)
