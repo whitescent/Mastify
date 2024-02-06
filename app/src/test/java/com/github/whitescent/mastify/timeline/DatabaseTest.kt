@@ -28,12 +28,14 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import androidx.room.Upsert
 import androidx.room.withTransaction
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,56 +63,53 @@ class DatabaseTest {
     db.close()
   }
 
-  // @Test
-  // @Throws(Exception::class)
-  // fun `test account relogin`() = runTest {
-  //   val account1 = AccountItem(0, "m.cmx.im", "lucky")
-  //   accountDao.insert(account1)
-  //   val account2 = AccountItem(0, "m.cmx.im", "luckyqwe")
-  //   addAccount(account2)
-  //   Assert.assertEquals(1, accountDao.getAll().size)
-  //   Assert.assertEquals("luckyqwe", accountDao.getAll().first().username)
-  // }
-  //
-  // private fun addAccount(newAccount: AccountItem) = runTest {
-  //   // check if this is a relogin with an existing account,
-  //   // if yes update it, otherwise create a new one
-  //   val accounts = accountDao.getAll().toMutableList()
-  //   val existingAccountIndex = accounts.indexOfFirst { account ->
-  //     newAccount.domain == account.domain && newAccount.accountId == account.accountId
-  //   }
-  //   if (existingAccountIndex != -1) accountDao.insertOrUpdate(newAccount.copy(id = accounts[existingAccountIndex].id))
-  //   else accountDao.insert(newAccount)
-  // }
-
   @Test
-  fun `test transaction cancel`() = runTest {
-    val account1 = AccountItem(1, "m.cmx.im", "lucky")
-    val account2 = AccountItem(2, "google.wtf", "a")
-    accountDao.insert(account1)
-    accountDao.insert(account2)
-    Assert.assertEquals(2, accountDao.getAll().size)
-
-    val items = (1..100)
-      .map { it.toString() }
-      .map { TimelineItem(0, 1, it) }
-
-    timelineDao.insertOrUpdate(items)
-
-    db.withTransaction {
-      timelineDao.clearAll(1)
-      timelineDao.insertOrUpdate(items)
+  fun `test changing the active account within the coroutine scope`() = runTest {
+    suspend fun cleanAndReinsert() {
+      db.withTransaction {
+        val activeAccountId = accountDao.getActiveAccount()!!.id
+        val timeline = timelineDao.getList(activeAccountId).toMutableList()
+        timelineDao.clearAll(activeAccountId)
+        timeline.add(TimelineItem(0, activeAccountId, "test"))
+        timelineDao.insertOrUpdate(timeline)
+      }
     }
 
-    Assert.assertEquals(100, timelineDao.getList(1).size)
+    val account1 = AccountItem(1, "m.cmx.im", "lucky", true)
+    val account2 = AccountItem(2, "google.wtf", "a", false)
+
+    accountDao.insert(account1)
+    accountDao.insert(account2)
+
+    timelineDao.insertOrUpdate((1..30).toList().map { TimelineItem(0, 1, "a") })
+    timelineDao.insertOrUpdate((1..10).toList().map { TimelineItem(0, 2, "B") })
+
+    assertEquals(30, timelineDao.getList(1).size)
+    assertEquals(10, timelineDao.getList(2).size)
+
+    assertEquals(1, accountDao.getActiveAccount()!!.id)
+    accountDao.setActiveAccount(2)
+    assertEquals(2, accountDao.getActiveAccount()!!.id)
+
+    var activeCode = 2L
+    for (index in 1..2) {
+      activeCode = if (activeCode == 2L) 1L else 2L
+      accountDao.setActiveAccount(activeCode)
+      launch {
+        cleanAndReinsert()
+      }
+    }
+    assertEquals(31, timelineDao.getList(1).size)
+    assertEquals(11, timelineDao.getList(2).size)
   }
 }
 
 @Entity
 private data class AccountItem(
-  @PrimaryKey(autoGenerate = true) val id: Int,
+  @PrimaryKey(autoGenerate = true) val id: Long,
   val domain: String,
-  val username: String
+  val username: String,
+  val isActive: Boolean
 )
 
 @Entity(
@@ -124,7 +123,7 @@ private data class AccountItem(
 )
 private data class TimelineItem(
   @PrimaryKey(autoGenerate = true) val id: Int,
-  val timelineAccountId: Int,
+  val timelineAccountId: Long,
   val content: String
 )
 
@@ -140,14 +139,32 @@ private abstract class TestAppDatabase() : RoomDatabase() {
 @Dao
 private interface TestAccountDao {
 
-  @Query("SELECT * FROM AccountItem")
-  suspend fun getAll(): List<AccountItem>
+  @Query("SELECT * FROM AccountItem WHERE id = :id LIMIT 1")
+  suspend fun getAccountById(id: Long): AccountItem
 
   @Upsert
   suspend fun insert(vararg accountItem: AccountItem)
 
   @Insert(onConflict = REPLACE)
   suspend fun insertOrUpdate(account: AccountItem)
+
+  @Query("SELECT * FROM AccountItem WHERE isActive = 1 LIMIT 1")
+  suspend fun getActiveAccount(): AccountItem?
+
+  @Query("UPDATE AccountItem SET isActive = :isActive WHERE id = :accountId")
+  suspend fun setAccountActiveState(accountId: Long, isActive: Boolean)
+
+  @Transaction
+  suspend fun setActiveAccount(accountId: Long) {
+    deactivateCurrentlyActiveAccount()
+    setAccountActiveState(accountId, true)
+  }
+
+  private suspend fun deactivateCurrentlyActiveAccount() {
+    getActiveAccount()?.id?.let { currentAccountId ->
+      setAccountActiveState(currentAccountId, false)
+    }
+  }
 }
 
 @Dao
@@ -160,5 +177,5 @@ private interface TestTimelineDao {
   suspend fun insertOrUpdate(timelineEntity: List<TimelineItem>)
 
   @Query("SELECT * FROM timelineitem WHERE timelineAccountId = :accountId")
-  suspend fun getList(accountId: Int): List<TimelineItem>
+  suspend fun getList(accountId: Long): List<TimelineItem>
 }
