@@ -22,6 +22,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
@@ -83,19 +84,31 @@ fun List<StatusUiData>.updateStatusActionData(newStatus: StatusBackResult): List
 fun List<Status>.updateStatusActionData(newStatus: StatusBackResult): List<Status> {
   return if (this.any { it.actionableId == newStatus.id }) {
     val result = this.toMutableList()
-    val index = result.indexOfFirst { it.actionableId == newStatus.id }
-    if (index != -1) {
-      result[index] = result[index].copy(
-        favorited = newStatus.favorited,
-        favouritesCount = newStatus.favouritesCount,
-        reblogged = newStatus.reblogged,
-        reblogsCount = newStatus.reblogsCount,
-        repliesCount = newStatus.repliesCount,
-        bookmarked = newStatus.bookmarked,
-        poll = newStatus.poll
-      )
-      result
-    } else this
+    forEachIndexed { index, status ->
+      if (status.actionableId == newStatus.id) {
+        result[index] = result[index].copy(
+          favorited = newStatus.favorited,
+          favouritesCount = newStatus.favouritesCount,
+          reblogged = newStatus.reblogged,
+          reblogsCount = newStatus.reblogsCount,
+          repliesCount = newStatus.repliesCount,
+          bookmarked = newStatus.bookmarked,
+          poll = newStatus.poll,
+          reblog = if (status.reblog != null) {
+            status.reblog.copy(
+              favorited = newStatus.favorited,
+              favouritesCount = newStatus.favouritesCount,
+              reblogged = newStatus.reblogged,
+              reblogsCount = newStatus.reblogsCount,
+              repliesCount = newStatus.repliesCount,
+              bookmarked = newStatus.bookmarked,
+              poll = newStatus.poll
+            )
+          } else null
+        )
+      }
+    }
+    result
   } else this
 }
 
@@ -147,12 +160,13 @@ fun List<StatusUiData>.getReplyChainType(index: Int): StatusUiData.ReplyChainTyp
 fun String.buildTextWithLimit(
   maxLength: Int,
   textColor: Color,
-  warningBackgroundColor: Color
+  warningBackgroundColor: Color,
+  fontSize: TextUnit = 18.sp
 ): AnnotatedString {
   val text = this
   return buildAnnotatedString {
     withStyle(
-      style = SpanStyle(fontSize = 18.sp, color = textColor)
+      style = SpanStyle(fontSize = fontSize, color = textColor)
     ) {
       append(
         text = text.substring(
@@ -165,7 +179,8 @@ fun String.buildTextWithLimit(
       withStyle(
         style = SpanStyle(
           color = textColor,
-          background = warningBackgroundColor
+          background = warningBackgroundColor,
+          fontSize = fontSize
         )
       ) {
         append(text.substring(startIndex = maxLength, endIndex = text.length))

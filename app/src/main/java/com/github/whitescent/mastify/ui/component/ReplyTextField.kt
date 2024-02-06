@@ -61,13 +61,11 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
-import com.github.whitescent.mastify.mapper.toShortCode
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
@@ -80,12 +78,13 @@ fun ReplyTextField(
   onValueChange: (TextFieldValue) -> Unit,
   replyToStatus: () -> Unit,
   openEmojiPicker: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   var expand by remember { mutableStateOf(false) }
   val focusRequester = remember { FocusRequester() }
 
   Surface(
-    modifier = Modifier.imePadding(),
+    modifier = modifier.imePadding(),
     color = AppTheme.colors.background,
     shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
     border = BorderStroke(1.dp, AppTheme.colors.replyTextFieldBorder)
@@ -107,7 +106,7 @@ fun ReplyTextField(
           )
         }
         else -> {
-          Column(Modifier.navigationBarsPadding().padding(20.dp)) {
+          Column(Modifier.navigationBarsPadding().padding(20.dp).heightIn(max = 300.dp)) {
             if (fieldValue.text.isNotEmpty()) {
               CenterRow {
                 Icon(
@@ -121,8 +120,9 @@ fun ReplyTextField(
                   modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
                   shape = AppTheme.shape.smallAvatar
                 )
-                Text(
+                TextWithEmoji(
                   text = targetAccount.realDisplayName,
+                  emojis = targetAccount.emojis,
                   fontSize = 18.sp,
                   fontWeight = FontWeight.Medium,
                   color = AppTheme.colors.primaryContent
@@ -191,17 +191,12 @@ private fun ReplyTextFieldWithToolBar(
         modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
         shape = AppTheme.shape.smallAvatar
       )
-      Text(
-        text = buildAnnotatedString {
-          annotateInlineEmojis(
-            targetAccount.realDisplayName,
-            targetAccount.emojis.toShortCode()
-          )
-        },
+      TextWithEmoji(
+        text = targetAccount.realDisplayName,
+        emojis = targetAccount.emojis,
         fontSize = 18.sp,
         fontWeight = FontWeight.Medium,
-        color = AppTheme.colors.primaryContent,
-        inlineContent = inlineTextContentWithEmoji(targetAccount.emojis),
+        color = AppTheme.colors.primaryContent
       )
     }
     BasicTextField(
@@ -211,7 +206,7 @@ private fun ReplyTextFieldWithToolBar(
         .fillMaxWidth()
         .animateContentSize()
         .padding(vertical = 16.dp)
-        .heightIn(max = 100.dp)
+        .heightIn(max = 140.dp)
         .focusRequester(focusRequester)
         .onFocusChanged {
           onFocusChanged(it.isFocused)

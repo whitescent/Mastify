@@ -32,6 +32,7 @@ import org.junit.runner.RunWith
 
 // issue:java.lang.IllegalArgumentException: Unable to read any metrics during benchmark
 // (metric list: [androidx.benchmark.macro.StartupTimingMetric@849c8a0]
+// https://github.com/android/performance-samples/issues/268
 
 @RunWith(AndroidJUnit4::class)
 class StartupBenchmark {
@@ -40,7 +41,7 @@ class StartupBenchmark {
   val benchmarkRule = MacrobenchmarkRule()
 
   @Test
-  fun generalTest() {
+  fun startBenchmark() {
     benchmarkRule.measureRepeated(
       packageName = "com.github.whitescent.mastify",
       metrics = listOf(StartupTimingMetric()),

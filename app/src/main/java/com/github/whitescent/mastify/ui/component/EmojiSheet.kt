@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -97,11 +98,15 @@ fun EmojiSheet(
                     .build(),
                   contentDescription = null,
                   modifier = Modifier
-                    .clickable {
-                      scope.launch {
-                        lazyGridState.scrollToItem(emojiGroup.getSizeOfIndex(index))
-                      }
-                    }
+                    .clickable(
+                      onClick = {
+                        scope.launch {
+                          lazyGridState.scrollToItem(emojiGroup.getSizeOfIndex(index))
+                        }
+                      },
+                      indication = null,
+                      interactionSource = remember { MutableInteractionSource() }
+                    )
                     .size(24.dp)
                 )
               }

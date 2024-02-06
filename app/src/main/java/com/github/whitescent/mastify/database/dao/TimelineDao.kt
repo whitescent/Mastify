@@ -22,6 +22,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy.Companion.REPLACE
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Transaction
 import com.github.whitescent.mastify.database.model.TimelineEntity
 import com.github.whitescent.mastify.network.model.status.Status
 import kotlinx.coroutines.flow.Flow
@@ -71,4 +72,10 @@ interface TimelineDao {
 
   @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId")
   suspend fun clearAll(accountId: Long)
+
+  @Transaction
+  suspend fun cleanAndReinsert(timelineEntity: List<TimelineEntity>, id: Long) {
+    clearAll(id)
+    insertOrUpdate(timelineEntity)
+  }
 }

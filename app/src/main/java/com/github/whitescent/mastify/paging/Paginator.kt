@@ -20,11 +20,13 @@ package com.github.whitescent.mastify.paging
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.github.whitescent.mastify.paging.PageLoadState.NotLoading
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.Exception
 
 /**
  * Simplified implementation of androidx Paging3
@@ -35,63 +37,54 @@ import kotlinx.coroutines.withContext
  */
 class Paginator(
   val pageSize: Int,
+  coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Main.immediate),
   private val initRefresh: Boolean = true,
-  private val pagingFactory: PagingFactory
+  private val pagingFactory: PagingFactory,
 ) : Pager {
 
-  private val defaultCoroutineScope = CoroutineScope(Dispatchers.Main.immediate)
-
-  var pagingLoadState by mutableStateOf<PageLoadState>(PageLoadState.NotLoading(false))
+  var pagingLoadState by mutableStateOf<PageLoadState>(NotLoading(false))
     private set
 
   override suspend fun append() {
     if (pagingLoadState == PageLoadState.Append) return
     pagingLoadState = PageLoadState.Append
 
-    val job = withContext(Dispatchers.IO) {
-      runCatching {
+    pagingLoadState = try {
+      val job = withContext(Dispatchers.IO) {
         pagingFactory.append(pageSize)
       }
-    }
-    delay(200)
-    job.fold(
-      {
-        pagingLoadState = when (it) {
-          is LoadResult.Page -> PageLoadState.NotLoading(it.endReached)
-          is LoadResult.Error -> PageLoadState.Error(it.throwable)
-        }
-      },
-      {
-        pagingLoadState = PageLoadState.Error(it)
+      delay(200)
+      when (job) {
+        is LoadResult.Page -> NotLoading(job.endReached)
+        is LoadResult.Error -> PageLoadState.Error(job.throwable)
       }
-    )
+    } catch (e: Exception) {
+      e.printStackTrace()
+      PageLoadState.Error(e)
+    }
   }
 
   override suspend fun refresh() {
     if (pagingLoadState == PageLoadState.Refresh) return
     pagingLoadState = PageLoadState.Refresh
 
-    val job = withContext(Dispatchers.IO) {
-      runCatching {
+    pagingLoadState = try {
+      val job = withContext(Dispatchers.IO) {
         pagingFactory.refresh(pageSize)
       }
-    }
-    job.fold(
-      {
-        pagingLoadState = when (it) {
-          is LoadResult.Page -> PageLoadState.NotLoading(it.endReached)
-          is LoadResult.Error -> PageLoadState.Error(it.throwable)
-        }
-      },
-      {
-        pagingLoadState = PageLoadState.Error(it)
+      when (job) {
+        is LoadResult.Page -> NotLoading(job.endReached)
+        is LoadResult.Error -> PageLoadState.Error(job.throwable)
       }
-    )
+    } catch (e: Exception) {
+      e.printStackTrace()
+      PageLoadState.Error(e)
+    }
   }
 
   init {
     if (initRefresh) {
-      defaultCoroutineScope.launch {
+      coroutineScope.launch(Dispatchers.Main.immediate) {
         refresh()
       }
     }

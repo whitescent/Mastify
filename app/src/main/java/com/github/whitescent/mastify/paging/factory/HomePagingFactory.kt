@@ -19,65 +19,57 @@ package com.github.whitescent.mastify.paging.factory
 
 import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.database.AppDatabase
-import com.github.whitescent.mastify.database.model.AccountEntity
-import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadResult
 import com.github.whitescent.mastify.paging.PagingFactory
 import com.github.whitescent.mastify.viewModel.HomeNewStatusToastModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
-import javax.inject.Inject
+import kotlinx.coroutines.withContext
 
-class HomePagingFactory @Inject constructor(
+class HomePagingFactory(
   db: AppDatabase,
+  private val coroutineScope: CoroutineScope,
   private val repository: HomeRepository,
 ) : PagingFactory() {
 
   private val accountDao = db.accountDao()
   private val timelineDao = db.timelineDao()
 
-  private val coroutineScope = CoroutineScope(Dispatchers.IO)
-
-  private lateinit var activeAccount: AccountEntity
-  private lateinit var timeline: List<Status>
-
   private val refreshEvent = Channel<HomeNewStatusToastModel>()
   val refreshEventFlow = refreshEvent.receiveAsFlow()
 
-  init {
-    coroutineScope.launch {
-      activeAccount = accountDao.getActiveAccount()!!
-      timeline = timelineDao.getStatusList(activeAccount.id)
-      timelineDao.getStatusListWithFlow(activeAccount.id)
-        .collect {
-          timeline = it
-        }
-    }
+  override suspend fun append(pageSize: Int): LoadResult = withContext(Dispatchers.IO) {
+    return@withContext coroutineScope.async {
+      val account = accountDao.getActiveAccount()!!
+      val timeline = timelineDao.getStatusList(account.id)
+      val response = repository.fetchTimeline(limit = pageSize, maxId = timeline.lastOrNull()?.id)
+        .getOrThrow()
+      repository.appendTimelineFromApi(response)
+      LoadResult.Page(endReached = response.isEmpty())
+    }.await()
   }
 
-  override suspend fun append(pageSize: Int): LoadResult {
-    val response = repository.fetchTimeline(limit = pageSize, maxId = timeline.lastOrNull()?.id)
-      .getOrThrow()
-    repository.appendTimelineFromApi(response)
-    return LoadResult.Page(endReached = response.isEmpty())
-  }
+  override suspend fun refresh(pageSize: Int): LoadResult = withContext(Dispatchers.IO) {
+    return@withContext coroutineScope.async {
+      val account = accountDao.getActiveAccount()!!
+      val timeline = timelineDao.getStatusList(account.id)
 
-  override suspend fun refresh(pageSize: Int): LoadResult {
-    val response = repository.fetchTimeline(limit = pageSize).getOrThrow()
-    val newStatusCount = response.filterNot {
-      timeline.any { saved -> saved.id == it.id }
-    }.size
-    repository.refreshTimelineFromApi(timeline, response)
-    refreshEvent.send(
-      HomeNewStatusToastModel(
-        showNewToastButton = newStatusCount != 0 && timeline.isNotEmpty(),
-        newStatusCount = newStatusCount,
-        showManyPost = !timeline.any { it.id == response.last().id }
+      val response = repository.fetchTimeline(limit = pageSize).getOrThrow()
+      val newStatusCount = response.filterNot {
+        timeline.any { saved -> saved.id == it.id }
+      }.size
+      repository.refreshTimelineFromApi(account.id, timeline, response)
+      refreshEvent.send(
+        HomeNewStatusToastModel(
+          showNewToastButton = newStatusCount != 0 && timeline.isNotEmpty(),
+          newStatusCount = newStatusCount,
+          showManyPost = !timeline.any { it.id == response.last().id }
+        )
       )
-    )
-    return LoadResult.Page(endReached = response.size < pageSize)
+      LoadResult.Page(endReached = response.size < pageSize)
+    }.await()
   }
 }

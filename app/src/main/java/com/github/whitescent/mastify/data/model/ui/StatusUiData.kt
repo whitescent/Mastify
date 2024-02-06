@@ -67,6 +67,8 @@ data class StatusUiData(
   val parsedContent: String = Jsoup.parse(content).body().text()
   val isInReplyTo inline get() = inReplyToId != null
 
+  val isInReplyToSomeone inline get() = mentions.size == 1 && isInReplyTo
+
   enum class ReplyChainType {
     Start, Continue, End, Null
   }

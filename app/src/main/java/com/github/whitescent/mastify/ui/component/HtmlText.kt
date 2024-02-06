@@ -67,6 +67,7 @@ private val emojiRegex = "(?<=:)(.*?)(?=:)".toRegex() // Everything between ':' 
 fun HtmlText(
   text: String,
   modifier: Modifier = Modifier,
+  filterMentionText: Boolean = false,
   color: Color = AppTheme.colors.primaryContent,
   softWrap: Boolean = true,
   overflow: TextOverflow = TextOverflow.Clip,
@@ -89,7 +90,9 @@ fun HtmlText(
 ) {
   val document = remember(text) { Jsoup.parse(text) }
   val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
-  val value = remember(document) { buildContentAnnotatedString(document, urlSpanStyle, style) }
+  val value = remember(document) {
+    buildContentAnnotatedString(document, urlSpanStyle, style, filterMentionText)
+  }
   Text(
     text = value,
     modifier = modifier.pointerInput(Unit) {
@@ -140,10 +143,14 @@ private fun buildContentAnnotatedString(
   document: Document,
   urlSpanStyle: SpanStyle,
   textStyle: TextStyle,
+  filterMentionText: Boolean
 ): AnnotatedString {
+  if (filterMentionText && document.select("p").size == 1) {
+    document.select("br").remove()
+  }
   return buildAnnotatedString {
     document.body().childNodes().forEach {
-      renderNode(it, urlSpanStyle, textStyle)
+      renderNode(it, urlSpanStyle, textStyle, filterMentionText)
     }
   }
 }
@@ -152,21 +159,27 @@ private fun AnnotatedString.Builder.renderNode(
   node: Node,
   urlSpanStyle: SpanStyle,
   textStyle: TextStyle,
+  filterMentionText: Boolean
 ) {
   when (node) {
-    is Element -> renderElement(node, urlSpanStyle, textStyle)
-    is TextNode -> renderText(node.wholeText, textStyle)
+    is Element -> renderElement(node, urlSpanStyle, textStyle, filterMentionText)
+    is TextNode -> renderText(
+      text = if (filterMentionText) node.wholeText.trim() else node.wholeText,
+      textStyle = textStyle
+    )
   }
 }
 
 private fun AnnotatedString.Builder.renderElement(
   element: Element,
   urlSpanStyle: SpanStyle,
-  textStyle: TextStyle
+  textStyle: TextStyle,
+  filterMentionText: Boolean
 ) {
   if (skipElement(element = element)) return
   when (val normalName = element.normalName()) {
     "a" -> {
+      if (element.hasClass("u-url mention") && filterMentionText) return
       val href = element.attr("href")
       pushStringAnnotation(tag = URL_TAG, annotation = href)
       withStyle(urlSpanStyle) {
@@ -180,12 +193,16 @@ private fun AnnotatedString.Builder.renderElement(
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 
     "span", "p", "i", "em" -> {
-      if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
+      if (!filterMentionText) {
+        if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
+      }
+
       element.childNodes().forEach {
         renderNode(
           node = it,
           urlSpanStyle = urlSpanStyle,
-          textStyle = if (normalName.isItalic()) textStyle.copy(fontStyle = Italic) else textStyle
+          textStyle = if (normalName.isItalic()) textStyle.copy(fontStyle = Italic) else textStyle,
+          filterMentionText = filterMentionText
         )
       }
     }
@@ -202,9 +219,7 @@ private fun AnnotatedString.Builder.renderEmoji(element: Element) {
 }
 
 private fun AnnotatedString.Builder.renderText(text: String, textStyle: TextStyle) {
-  pushStyle(
-    textStyle.toSpanStyle()
-  )
+  pushStyle(textStyle.toSpanStyle())
   append(text)
   pop()
 }

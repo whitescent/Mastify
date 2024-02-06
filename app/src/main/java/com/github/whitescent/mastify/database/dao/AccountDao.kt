@@ -45,6 +45,7 @@ interface AccountDao {
   fun getActiveAccountFlow(): Flow<AccountEntity?>
 
   @Query("SELECT * FROM ACCOUNTENTITY WHERE isActive = 1 LIMIT 1")
+  @Transaction
   suspend fun getActiveAccount(): AccountEntity?
 
   @Query("SELECT * FROM ACCOUNTENTITY WHERE accountId = :accountId")

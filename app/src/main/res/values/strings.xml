@@ -62,6 +62,7 @@
   </plurals>
   <string name="load_more_title">Load More</string>
   <string name="link_preview_title">Link Preview</string>
+  <string name="replying_to_title">Replying to %s</string>
 
   <!-- currentStatus detail screen -->
   <string name="post_your_reply">post your reply</string>

@@ -90,10 +90,10 @@ fun List<StatusNode>.getMaxRecursively(): StatusNode? {
 }
 
 fun splitReorderStatus(statuses: List<Status>): List<Status> {
-  if (statuses.size <= HomeRepository.FETCHNUMBER) return reorderStatuses(statuses)
+  if (statuses.size <= HomeRepository.FETCH_NUMBER) return reorderStatuses(statuses)
   val result = mutableListOf<Status>()
-  val prefix = reorderStatuses(statuses.subList(0, HomeRepository.FETCHNUMBER))
-  val suffix = reorderStatuses(statuses.subList(HomeRepository.FETCHNUMBER, statuses.size))
+  val prefix = reorderStatuses(statuses.subList(0, HomeRepository.FETCH_NUMBER))
+  val suffix = reorderStatuses(statuses.subList(HomeRepository.FETCH_NUMBER, statuses.size))
   result.addAll(prefix + suffix)
   return result
 }

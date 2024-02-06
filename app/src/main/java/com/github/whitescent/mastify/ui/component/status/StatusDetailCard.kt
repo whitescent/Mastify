@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.component.status
 
-import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -42,7 +40,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -72,7 +69,7 @@ import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.StatusAction
-import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
@@ -88,7 +85,6 @@ fun StatusDetailCard(
 ) {
   var openMenuSheet by remember { mutableStateOf(false) }
   val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-  val scope = rememberCoroutineScope()
 
   var hideSensitiveContent by rememberSaveable(status.sensitive, status.spoilerText) {
     mutableStateOf(status.sensitive && status.spoilerText.isNotEmpty())
@@ -161,8 +157,8 @@ fun StatusDetailCard(
           onClick = { openMenuSheet = true },
         )
       }
-      Crossfade(hideSensitiveContent) {
-        when (it) {
+      Crossfade(hideSensitiveContent) { hide ->
+        when (hide) {
           true -> {
             Column {
               HeightSpacer(value = 4.dp)
@@ -181,16 +177,13 @@ fun StatusDetailCard(
                     fontSize = 18.sp,
                     color = AppTheme.colors.primaryContent,
                     onLinkClick = { span ->
-                      val mention = status.mentions.firstOrNull { it.url == span }
-                      if (mention != null) {
-                        navigateToProfile(mention.toAccount())
-                      } else {
-                        launchCustomChromeTab(
-                          context = context,
-                          uri = Uri.parse(span),
-                          toolbarColor = primaryColor.toArgb(),
-                        )
-                      }
+                      statusLinkHandler(
+                        mentions = status.mentions,
+                        context = context,
+                        primaryColor = primaryColor,
+                        navigateToProfile = navigateToProfile,
+                        link = span
+                      )
                     },
                     overflow = TextOverflow.Ellipsis
                   )

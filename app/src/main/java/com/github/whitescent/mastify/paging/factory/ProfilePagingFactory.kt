@@ -23,9 +23,8 @@ import com.github.whitescent.mastify.paging.LoadResult
 import com.github.whitescent.mastify.paging.PagingFactory
 import com.github.whitescent.mastify.viewModel.ProfileKind
 import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
 
-class ProfilePagingFactory @Inject constructor(
+class ProfilePagingFactory(
   private val kind: ProfileKind,
   private val accountId: String,
   private val repository: StatusRepository

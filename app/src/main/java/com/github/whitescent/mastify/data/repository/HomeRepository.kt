@@ -42,9 +42,13 @@ class HomeRepository @Inject constructor(
   private val accountDao = db.accountDao()
   private val timelineDao = db.timelineDao()
 
-  suspend fun refreshTimelineFromApi(oldItems: List<Status>, newItems: List<Status>) {
+  suspend fun refreshTimelineFromApi(
+    accountId: Long,
+    oldItems: List<Status>,
+    newItems: List<Status>
+  ) {
     if (newItems.isEmpty()) return
-    if (oldItems.size < FETCHNUMBER) saveLatestTimelineToDb(newItems)
+    if (oldItems.size < FETCH_NUMBER) saveLatestTimelineToDb(newItems, accountId)
     else {
       val lastStatusOfNewItems = newItems.last()
       // If the db contains the last status returned by the API,
@@ -67,7 +71,7 @@ class HomeRepository @Inject constructor(
 
         // Update the timeline to the database by splicing the latest data
         // from the API with the latest data from the database.
-        saveLatestTimelineToDb(statusListBeforeFetchNumber + statusListAfterFetchNumber)
+        saveLatestTimelineToDb(statusListBeforeFetchNumber + statusListAfterFetchNumber, accountId)
       } else {
         // If the last currentStatus returned by the API cannot be found in the db,
         // This means that the number of statuses in the user's timeline exceeds
@@ -84,11 +88,11 @@ class HomeRepository @Inject constructor(
             val removeIndex = oldItems.indexOfFirst { it.hasUnloadedStatus }.let {
               if (it == -1) 0 else it + 1
             }
-            saveLatestTimelineToDb(newStatusList + oldItems.subList(removeIndex, oldItems.size))
+            saveLatestTimelineToDb(newStatusList + oldItems.subList(removeIndex, oldItems.size), accountId)
             return
           }
         }
-        saveLatestTimelineToDb(newStatusList + oldItems)
+        saveLatestTimelineToDb(newStatusList + oldItems, accountId)
       }
     }
   }
@@ -131,11 +135,11 @@ class HomeRepository @Inject constructor(
           tempList[insertIndex] = tempList[insertIndex].copy(hasUnloadedStatus = false)
           tempList.addAll(insertIndex + 1, list)
         }
-        saveLatestTimelineToDb(tempList)
+        saveLatestTimelineToDb(tempList, accountDao.getActiveAccount()!!.id)
       }
   }
 
-  suspend fun fetchTimeline(maxId: String? = null, limit: Int = FETCHNUMBER): Result<List<Status>> {
+  suspend fun fetchTimeline(maxId: String? = null, limit: Int = FETCH_NUMBER): Result<List<Status>> {
     val response = api.homeTimeline(maxId = maxId, limit = limit)
     return if (response.isSuccessful && !response.body().isNullOrEmpty()) {
       val body = response.body()!!
@@ -151,7 +155,7 @@ class HomeRepository @Inject constructor(
     }
   }
 
-  suspend fun storeLastViewedTimelineOffset(index: Int, offset: Int) {
+  suspend fun saveLastViewedTimelineOffset(index: Int, offset: Int) {
     val activeAccount = accountDao.getActiveAccount()!!
     db.withTransaction {
       accountRepository.updateActiveAccount(
@@ -160,19 +164,14 @@ class HomeRepository @Inject constructor(
     }
   }
 
-  private suspend fun saveLatestTimelineToDb(statuses: List<Status>) {
-    db.withTransaction {
-      val accountId = accountDao.getActiveAccount()!!.id
-      timelineDao.clearAll(accountId)
-      timelineDao.insertOrUpdate(statuses.map { it.toEntity(accountId) })
-    }
-  }
+  private suspend fun saveLatestTimelineToDb(statuses: List<Status>, accountId: Long) =
+    timelineDao.cleanAndReinsert(statuses.map { it.toEntity(accountId) }, accountId)
 
-  private suspend fun fetchTimelineFlow(maxId: String?, limit: Int = FETCHNUMBER) = flow {
+  private suspend fun fetchTimelineFlow(maxId: String?, limit: Int = FETCH_NUMBER) = flow {
     emit(api.homeTimeline(maxId, limit = limit).getOrThrow())
   }
 
   companion object {
-    const val FETCHNUMBER = 40
+    const val FETCH_NUMBER = 40
   }
 }

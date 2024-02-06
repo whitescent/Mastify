@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.component.status
 
-import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,7 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,7 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -75,6 +72,7 @@ import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
+import com.github.whitescent.mastify.ui.component.LocalizedClickableText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
@@ -84,7 +82,7 @@ import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
-import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
@@ -229,7 +227,6 @@ private fun StatusContent(
   onClickMedia: (Int) -> Unit,
   navigateToProfile: (Account) -> Unit,
 ) {
-  val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
@@ -272,52 +269,50 @@ private fun StatusContent(
             )
           }
           WidthSpacer(value = 4.dp)
-          Column {
-            CenterRow {
-              Text(
-                text = remember(statusUiData.createdAt) {
-                  getRelativeTimeSpanString(
-                    context,
-                    statusUiData.createdAt.toInstant().toEpochMilliseconds(),
-                    Clock.System.now().toEpochMilliseconds()
-                  )
-                },
-                style = AppTheme.typography.statusUsername.copy(
-                  color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
-                ),
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-              )
-              when (statusUiData.visibility) {
-                StatusUiData.Visibility.Private -> {
-                  Icon(
-                    painter = painterResource(id = R.drawable.lock),
-                    contentDescription = null,
-                    modifier = Modifier
-                      .padding(horizontal = 8.dp)
-                      .size(20.dp),
-                    tint = AppTheme.colors.cardMenu,
-                  )
-                }
-                StatusUiData.Visibility.Unlisted -> {
-                  Icon(
-                    painter = painterResource(id = R.drawable.lock_open),
-                    contentDescription = null,
-                    modifier = Modifier
-                      .padding(horizontal = 8.dp)
-                      .size(20.dp),
-                    tint = AppTheme.colors.cardMenu,
-                  )
-                }
-                else -> WidthSpacer(value = 4.dp)
+          CenterRow {
+            Text(
+              text = remember(statusUiData.createdAt) {
+                getRelativeTimeSpanString(
+                  context,
+                  statusUiData.createdAt.toInstant().toEpochMilliseconds(),
+                  Clock.System.now().toEpochMilliseconds()
+                )
+              },
+              style = AppTheme.typography.statusUsername.copy(
+                color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
+              ),
+              overflow = TextOverflow.Ellipsis,
+              maxLines = 1,
+            )
+            when (statusUiData.visibility) {
+              StatusUiData.Visibility.Private -> {
+                Icon(
+                  painter = painterResource(id = R.drawable.lock),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(20.dp),
+                  tint = AppTheme.colors.cardMenu,
+                )
               }
-              ClickableIcon(
-                painter = painterResource(id = R.drawable.more),
-                tint = AppTheme.colors.cardMenu,
-                interactiveSize = 18.dp,
-                onClick = { openMenuSheet = true }
-              )
+              StatusUiData.Visibility.Unlisted -> {
+                Icon(
+                  painter = painterResource(id = R.drawable.lock_open),
+                  contentDescription = null,
+                  modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .size(20.dp),
+                  tint = AppTheme.colors.cardMenu,
+                )
+              }
+              else -> WidthSpacer(value = 4.dp)
             }
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.more),
+              tint = AppTheme.colors.cardMenu,
+              interactiveSize = 18.dp,
+              onClick = { openMenuSheet = true }
+            )
           }
         }
         Crossfade(hideSensitiveContent) {
@@ -338,39 +333,56 @@ private fun StatusContent(
               }
             }
             else -> {
-              Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.padding(top = 8.dp)
-              ) {
-                if (statusUiData.content.isNotEmpty()) {
-                  HtmlText(
-                    text = statusUiData.content,
-                    fontSize = (15.5).sp,
-                    maxLines = 11,
-                    onLinkClick = { span ->
-                      val mention = statusUiData.mentions.firstOrNull { it.url == span }
-                      if (mention != null) {
-                        navigateToProfile(mention.toAccount())
-                      } else {
-                        launchCustomChromeTab(
-                          context = context,
-                          uri = Uri.parse(span),
-                          toolbarColor = primaryColor.toArgb(),
-                        )
-                      }
+              Column {
+                if (statusUiData.isInReplyToSomeone) {
+                  LocalizedClickableText(
+                    stringRes = R.string.replying_to_title,
+                    highlightText = "@${statusUiData.mentions.first().username}",
+                    style = TextStyle(color = AppTheme.colors.primaryContent.copy(0.6f)),
+                    onClick = {
+                      statusLinkHandler(
+                        mentions = statusUiData.mentions,
+                        context = context,
+                        primaryColor = primaryColor,
+                        navigateToProfile = navigateToProfile,
+                        link = statusUiData.mentions.first().url
+                      )
                     },
-                    overflow = TextOverflow.Ellipsis
+                    fontSize = 14.sp
                   )
                 }
-                StatusLinkPreviewCard(card = statusUiData.card)
-                StatusPoll(statusUiData.poll) { id, choices ->
-                  action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
-                }
-                if (displayAttachments.isNotEmpty()) {
-                  StatusMedia(
-                    attachments = displayAttachments.toImmutableList(),
-                    onClick = onClickMedia,
-                  )
+                Column(
+                  verticalArrangement = Arrangement.spacedBy(12.dp),
+                  modifier = Modifier.padding(top = 6.dp)
+                ) {
+                  if (statusUiData.content.isNotEmpty()) {
+                    HtmlText(
+                      text = statusUiData.content,
+                      fontSize = (15.5).sp,
+                      maxLines = 11,
+                      onLinkClick = { span ->
+                        statusLinkHandler(
+                          mentions = statusUiData.mentions,
+                          context = context,
+                          primaryColor = primaryColor,
+                          navigateToProfile = navigateToProfile,
+                          link = span
+                        )
+                      },
+                      overflow = TextOverflow.Ellipsis,
+                      filterMentionText = statusUiData.isInReplyToSomeone
+                    )
+                  }
+                  StatusLinkPreviewCard(card = statusUiData.card)
+                  StatusPoll(statusUiData.poll) { id, choices ->
+                    action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
+                  }
+                  if (displayAttachments.isNotEmpty()) {
+                    StatusMedia(
+                      attachments = displayAttachments.toImmutableList(),
+                      onClick = onClickMedia,
+                    )
+                  }
                 }
               }
             }

@@ -131,7 +131,7 @@ fun AppScaffold(
         }
       },
       containerColor = Color.Black,
-      modifier = Modifier.fillMaxSize(),
+      modifier = Modifier.fillMaxSize()
     ) {
       DestinationsNavHost(
         engine = engine,
