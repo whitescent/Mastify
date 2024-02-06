@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.component.status
 
-import android.net.Uri
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,17 +49,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -77,6 +72,7 @@ import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
+import com.github.whitescent.mastify.ui.component.LocalizedClickableText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
@@ -86,7 +82,7 @@ import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
-import com.github.whitescent.mastify.utils.launchCustomChromeTab
+import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
@@ -339,23 +335,25 @@ private fun StatusContent(
             else -> {
               Column {
                 if (statusUiData.isInReplyToSomeone) {
-                  Text(
-                    text = buildAnnotatedString {
-                      withStyle(SpanStyle()) {
-                        append("回复给 ")
-                      }
-                      withStyle(SpanStyle(color = AppTheme.colors.accent.copy(alpha = 0.8f))) {
-                        append("@${statusUiData.mentions.first().username}")
-                      }
+                  LocalizedClickableText(
+                    stringRes = R.string.replying_to_title,
+                    highlightText = "@${statusUiData.mentions.first().username}",
+                    style = TextStyle(color = AppTheme.colors.primaryContent.copy(0.6f)),
+                    onClick = {
+                      statusLinkHandler(
+                        mentions = statusUiData.mentions,
+                        context = context,
+                        primaryColor = primaryColor,
+                        navigateToProfile = navigateToProfile,
+                        link = statusUiData.mentions.first().url
+                      )
                     },
-                    fontSize = 14.sp,
-                    color = AppTheme.colors.primaryContent.copy(0.6f),
-                    modifier = Modifier.padding(top = 3.dp),
+                    fontSize = 14.sp
                   )
                 }
                 Column(
                   verticalArrangement = Arrangement.spacedBy(12.dp),
-                  modifier = Modifier.padding(top = 4.dp)
+                  modifier = Modifier.padding(top = 6.dp)
                 ) {
                   if (statusUiData.content.isNotEmpty()) {
                     HtmlText(
@@ -363,16 +361,13 @@ private fun StatusContent(
                       fontSize = (15.5).sp,
                       maxLines = 11,
                       onLinkClick = { span ->
-                        val mention = statusUiData.mentions.firstOrNull { it.url == span }
-                        if (mention != null) {
-                          navigateToProfile(mention.toAccount())
-                        } else {
-                          launchCustomChromeTab(
-                            context = context,
-                            uri = Uri.parse(span),
-                            toolbarColor = primaryColor.toArgb(),
-                          )
-                        }
+                        statusLinkHandler(
+                          mentions = statusUiData.mentions,
+                          context = context,
+                          primaryColor = primaryColor,
+                          navigateToProfile = navigateToProfile,
+                          link = span
+                        )
                       },
                       overflow = TextOverflow.Ellipsis,
                       filterMentionText = statusUiData.isInReplyToSomeone
@@ -393,7 +388,7 @@ private fun StatusContent(
             }
           }
         }
-        HeightSpacer(value = 4.dp)
+        HeightSpacer(value = 6.dp)
         StatusActionsRow(
           statusId = statusUiData.actionableId,
           repliesCount = statusUiData.repliesCount,
