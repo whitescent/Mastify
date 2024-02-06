@@ -52,7 +52,9 @@ fun LocalizedClickableText(
     val endIndex = startIndex + highlightText.length
 
     append(formattedString.substring(0, startIndex))
-    withStyle(style = SpanStyle(color = AppTheme.colors.accent)) {
+    withStyle(
+      style = SpanStyle(color = AppTheme.colors.accent, fontSize = fontSize)
+    ) {
       pushStringAnnotation(tag = "URL", annotation = highlightText)
       append(formattedString.substring(startIndex, endIndex))
       pop()
@@ -72,6 +74,6 @@ fun LocalizedClickableText(
       indication = null,
       interactionSource = remember { MutableInteractionSource() }
     ),
-    color = AppTheme.colors.primaryContent.copy(0.6f)
+    color = AppTheme.colors.primaryContent.copy(0.45f)
   )
 }

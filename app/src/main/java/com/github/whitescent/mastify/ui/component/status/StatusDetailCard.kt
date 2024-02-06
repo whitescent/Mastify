@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,7 @@ import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
+import com.github.whitescent.mastify.ui.component.LocalizedClickableText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.action.BookmarkButton
@@ -166,40 +168,61 @@ fun StatusDetailCard(
             }
           }
           else -> {
-            Column(
-              verticalArrangement = Arrangement.spacedBy(12.dp),
-              modifier = Modifier.padding(top = 8.dp)
-            ) {
-              if (status.content.isNotEmpty()) {
-                SelectionContainer {
-                  HtmlText(
-                    text = status.content,
-                    fontSize = 18.sp,
-                    color = AppTheme.colors.primaryContent,
-                    onLinkClick = { span ->
-                      statusLinkHandler(
-                        mentions = status.mentions,
-                        context = context,
-                        primaryColor = primaryColor,
-                        navigateToProfile = navigateToProfile,
-                        link = span
-                      )
+            Column {
+              if (status.isInReplyToSomeone) {
+                LocalizedClickableText(
+                  stringRes = R.string.replying_to_title,
+                  highlightText = "@${status.mentions.first().username}",
+                  style = TextStyle(color = AppTheme.colors.primaryContent.copy(0.6f)),
+                  onClick = {
+                    statusLinkHandler(
+                      mentions = status.mentions,
+                      context = context,
+                      primaryColor = primaryColor,
+                      navigateToProfile = navigateToProfile,
+                      link = status.mentions.first().url
+                    )
+                  },
+                  fontSize = 16.sp,
+                  modifier = Modifier.padding(top = 6.dp)
+                )
+              }
+              Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(top = 8.dp)
+              ) {
+                if (status.content.isNotEmpty()) {
+                  SelectionContainer {
+                    HtmlText(
+                      text = status.content,
+                      fontSize = 18.sp,
+                      color = AppTheme.colors.primaryContent,
+                      onLinkClick = { span ->
+                        statusLinkHandler(
+                          mentions = status.mentions,
+                          context = context,
+                          primaryColor = primaryColor,
+                          navigateToProfile = navigateToProfile,
+                          link = span
+                        )
+                      },
+                      overflow = TextOverflow.Ellipsis,
+                      filterMentionText = status.isInReplyToSomeone
+                    )
+                  }
+                }
+                StatusLinkPreviewCard(card = status.card)
+                StatusPoll(status.poll) { id, choices ->
+                  action(StatusAction.VotePoll(id, choices, status.actionable))
+                }
+                if (displayAttachments.isNotEmpty()) {
+                  StatusMedia(
+                    attachments = displayAttachments,
+                    onClick = { targetIndex ->
+                      navigateToMedia(displayAttachments, targetIndex)
                     },
-                    overflow = TextOverflow.Ellipsis
                   )
                 }
-              }
-              StatusLinkPreviewCard(card = status.card)
-              StatusPoll(status.poll) { id, choices ->
-                action(StatusAction.VotePoll(id, choices, status.actionable))
-              }
-              if (displayAttachments.isNotEmpty()) {
-                StatusMedia(
-                  attachments = displayAttachments,
-                  onClick = { targetIndex ->
-                    navigateToMedia(displayAttachments, targetIndex)
-                  },
-                )
               }
             }
           }
