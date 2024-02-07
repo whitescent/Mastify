@@ -101,7 +101,6 @@ fun ReplyTextField(
     modifier = modifier
       .imePadding()
       .onGloballyPositioned {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@onGloballyPositioned
         // If the text field is at the bottom of the window, make the bottom corners rounded
         if (it.boundsInWindow().bottom == currentWindowSize.bounds.bottom.toFloat()) {
           bottomStartRadius = bottomStartCornerRadius
