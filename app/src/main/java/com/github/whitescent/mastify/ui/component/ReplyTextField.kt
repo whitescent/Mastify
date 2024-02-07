@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.ui.component
 
+import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
@@ -56,6 +57,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -65,10 +69,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.window.layout.WindowMetricsCalculator
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.windowBottomEndCornerRadius
+import com.github.whitescent.mastify.utils.windowBottomStartCornerRadius
 
 @Composable
 fun ReplyTextField(
@@ -82,12 +89,35 @@ fun ReplyTextField(
 ) {
   var expand by remember { mutableStateOf(false) }
   val focusRequester = remember { FocusRequester() }
+  val currentWindowSize = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(
+    LocalContext.current,
+  )
+  var bottomStartRadius by remember { mutableStateOf(0.dp) }
+  var bottomEndRadius by remember { mutableStateOf(0.dp) }
+  val bottomStartCornerRadius = windowBottomStartCornerRadius()
+  val bottomEndCornerRadius = windowBottomEndCornerRadius()
 
   Surface(
-    modifier = modifier.imePadding(),
+    modifier = modifier
+      .imePadding()
+      .onGloballyPositioned {
+        // If the text field is at the bottom of the window, make the bottom corners rounded
+        if (it.boundsInWindow().bottom == currentWindowSize.bounds.bottom.toFloat()) {
+          bottomStartRadius = bottomStartCornerRadius
+          bottomEndRadius = bottomEndCornerRadius
+        } else {
+          bottomStartRadius = 0.dp
+          bottomEndRadius = 0.dp
+        }
+      },
     color = AppTheme.colors.background,
-    shape = RoundedCornerShape(topStart = 15.dp, topEnd = 15.dp),
-    border = BorderStroke(1.dp, AppTheme.colors.replyTextFieldBorder)
+    shape = RoundedCornerShape(
+      topStart = 15.dp,
+      topEnd = 15.dp,
+      bottomStart = bottomStartRadius,
+      bottomEnd = bottomEndRadius,
+    ),
+    border = BorderStroke(1.dp, AppTheme.colors.replyTextFieldBorder),
   ) {
     AnimatedContent(
       targetState = expand

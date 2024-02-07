@@ -116,6 +116,7 @@ dependencies {
   implementation(libs.androidx.monitor)
   implementation(libs.androidx.junit.ktx)
   implementation(libs.androidx.media3.ui)
+  implementation(libs.androidx.window)
   debugImplementation(libs.androidx.compose.ui.tooling)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   implementation(libs.constraintlayout.compose)
