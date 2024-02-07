@@ -164,7 +164,10 @@ fun StatusDetailCard(
           true -> {
             Column {
               HeightSpacer(value = 4.dp)
-              SensitiveBar(spoilerText = status.spoilerText) { hideSensitiveContent = false }
+              SensitiveBar(
+                spoilerText = status.spoilerText,
+                emojis = status.emojis
+              ) { hideSensitiveContent = false }
             }
           }
           else -> {

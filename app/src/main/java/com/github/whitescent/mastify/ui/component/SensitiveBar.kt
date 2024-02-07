@@ -33,11 +33,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
 fun SensitiveBar(
   spoilerText: String,
+  emojis: List<Emoji>,
   onClick: () -> Unit,
 ) {
   Surface(
@@ -55,10 +57,11 @@ fun SensitiveBar(
       )
       WidthSpacer(value = 8.dp)
       Column {
-        Text(
+        TextWithEmoji(
           text = spoilerText,
           color = sensitiveContentColor,
-          fontSize = 16.sp
+          fontSize = 16.sp,
+          emojis = emojis
         )
         HeightSpacer(value = 6.dp)
         Text(

@@ -328,7 +328,8 @@ private fun StatusContent(
                   },
                   onClick = {
                     hideSensitiveContent = false
-                  }
+                  },
+                  emojis = statusUiData.emojis
                 )
               }
             }
