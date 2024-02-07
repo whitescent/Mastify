@@ -21,8 +21,6 @@ import androidx.compose.foundation.Indication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.ripple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -35,7 +33,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ClickableIcon(
   painter: Painter,
@@ -45,7 +42,7 @@ fun ClickableIcon(
   indication: Indication = ripple(
     bounded = false,
     radius = interactiveSize / 1.4f,
-    color = LocalRippleConfiguration.current.color
+    color = Color.Unspecified,
   ),
   enabled: Boolean = true,
   tint: Color = LocalContentColor.current,

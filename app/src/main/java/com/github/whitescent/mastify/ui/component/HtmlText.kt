@@ -90,7 +90,7 @@ fun HtmlText(
 ) {
   val document = remember(text) { Jsoup.parse(text) }
   val layoutResult = remember { mutableStateOf<TextLayoutResult?>(null) }
-  val value = remember(document) {
+  val value = remember(document, style) {
     buildContentAnnotatedString(document, urlSpanStyle, style, filterMentionText)
   }
   Text(

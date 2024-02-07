@@ -63,9 +63,14 @@
   <string name="link_preview_title">链接预览</string>
   <string name="replying_to_title">回复给 %s</string>
 
-  <!-- currentStatus detail screen -->
+  <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>
   <string name="uncategorized_title">未分类</string>
+  <string name="pick_users_title">选择需要回复的对象</string>
+  <string name="pick_users_description">你可以选择在这个讨论串中想要收到回复通知的对象</string>
+  <string name="reply_two_user">%s，%s</string>
+  <string name="reply_three_user">%s，%s 和 %s</string>
+  <string name="reply_more_user">%s，%s 和其他 %d 位用户</string>
 
   <plurals name="favs">
     <item quantity="other">%d 次喜欢</item>
@@ -158,4 +163,5 @@
   <string name="duration_7_days">1 周</string>
   <string name="poll_close_time">投票将会在 %s后结束</string>
 
+  <string name="ok_title">好的</string>
 </resources>

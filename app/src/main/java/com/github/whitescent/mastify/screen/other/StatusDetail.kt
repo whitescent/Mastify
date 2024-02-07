@@ -70,6 +70,8 @@ import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.EmojiSheet
 import com.github.whitescent.mastify.ui.component.ReplyTextField
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.dialog.InReplyToMultiSelectorDialog
+import com.github.whitescent.mastify.ui.component.dialog.rememberDialogState
 import com.github.whitescent.mastify.ui.component.status.StatusDetailCard
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
@@ -105,11 +107,14 @@ fun StatusDetail(
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>,
   viewModel: StatusDetailViewModel = hiltViewModel()
 ) {
-  val lazyState = rememberLazyListState()
   var openEmojiSheet by remember { mutableStateOf(false) }
+
+  val lazyState = rememberLazyListState()
   val sheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
   val snackbarState = rememberStatusSnackBarState()
+  val dialogState = rememberDialogState()
+
   val keyboard = LocalSoftwareKeyboardController.current
 
   val state = viewModel.uiState
@@ -185,12 +190,17 @@ fun StatusDetail(
         modifier = Modifier.weight(1f)
       )
       ReplyTextField(
-        targetAccount = viewModel.navArgs.status.account,
+        targetAccount = when (currentStatus.isInReplyTo) {
+          true -> state.threadList.filter { it.selected }.map { it.account }
+          else -> listOf(viewModel.navArgs.status.account)
+        },
         fieldValue = replyText,
         postState = state.postState,
         onValueChange = viewModel::updateTextFieldValue,
         replyToStatus = viewModel::replyToStatus,
-        openEmojiPicker = { openEmojiSheet = true }
+        openEmojiPicker = { openEmojiSheet = true },
+        showReplyUserButton = state.threadList.size > 1,
+        openReplyUserDialog = { dialogState.showDialog() }
       )
     }
     StatusSnackBar(
@@ -200,6 +210,12 @@ fun StatusDetail(
         .padding(start = 12.dp, end = 12.dp, bottom = 56.dp)
     )
   }
+
+  InReplyToMultiSelectorDialog(
+    dialogState = dialogState,
+    threads = state.threadList,
+    onClick = viewModel::updateThreads
+  )
 
   if (openEmojiSheet) {
     EmojiSheet(

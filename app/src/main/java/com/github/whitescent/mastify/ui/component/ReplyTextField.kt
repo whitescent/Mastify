@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.component
 
-import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
@@ -25,6 +24,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -67,6 +67,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.window.layout.WindowMetricsCalculator
@@ -79,13 +80,15 @@ import com.github.whitescent.mastify.utils.windowBottomStartCornerRadius
 
 @Composable
 fun ReplyTextField(
-  targetAccount: Account,
+  targetAccount: List<Account>,
   fieldValue: TextFieldValue,
   postState: PostState,
+  modifier: Modifier = Modifier,
+  showReplyUserButton: Boolean = false,
   onValueChange: (TextFieldValue) -> Unit,
   replyToStatus: () -> Unit,
   openEmojiPicker: () -> Unit,
-  modifier: Modifier = Modifier,
+  openReplyUserDialog: () -> Unit,
 ) {
   var expand by remember { mutableStateOf(false) }
   val focusRequester = remember { FocusRequester() }
@@ -130,34 +133,17 @@ fun ReplyTextField(
             targetAccount = targetAccount,
             postState = postState,
             onValueChange = onValueChange,
+            showReplyUserButton = showReplyUserButton,
             onFocusChanged = { focused -> expand = focused },
             replyToStatus = replyToStatus,
-            openEmojiPicker = openEmojiPicker
+            openEmojiPicker = openEmojiPicker,
+            openReplyUserDialog = openReplyUserDialog
           )
         }
         else -> {
           Column(Modifier.navigationBarsPadding().padding(20.dp).heightIn(max = 300.dp)) {
             if (fieldValue.text.isNotEmpty()) {
-              CenterRow {
-                Icon(
-                  painter = painterResource(id = R.drawable.reply_border_0_5),
-                  contentDescription = null,
-                  tint = AppTheme.colors.primaryContent,
-                  modifier = Modifier.size(20.dp)
-                )
-                CircleShapeAsyncImage(
-                  model = targetAccount.avatar,
-                  modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
-                  shape = AppTheme.shape.smallAvatar
-                )
-                TextWithEmoji(
-                  text = targetAccount.realDisplayName,
-                  emojis = targetAccount.emojis,
-                  fontSize = 18.sp,
-                  fontWeight = FontWeight.Medium,
-                  color = AppTheme.colors.primaryContent
-                )
-              }
+              ReplyTitleBar(targetAccount)
               HeightSpacer(value = 8.dp)
             }
             Text(
@@ -184,14 +170,94 @@ fun ReplyTextField(
 }
 
 @Composable
+private fun ReplyTitleBar(
+  targetAccount: List<Account>,
+) {
+  when (targetAccount.size) {
+    1 -> {
+      CenterRow {
+        Icon(
+          painter = painterResource(id = R.drawable.reply_border_0_5),
+          contentDescription = null,
+          tint = AppTheme.colors.primaryContent,
+          modifier = Modifier.size(20.dp)
+        )
+        CircleShapeAsyncImage(
+          model = targetAccount.first().avatar,
+          modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
+          shape = AppTheme.shape.smallAvatar
+        )
+        TextWithEmoji(
+          text = targetAccount.first().realDisplayName,
+          emojis = targetAccount.first().emojis,
+          fontSize = 18.sp,
+          fontWeight = FontWeight.Medium,
+          color = AppTheme.colors.primaryContent,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
+    }
+    else -> {
+      CenterRow {
+        Icon(
+          painter = painterResource(id = R.drawable.reply_border_0_5),
+          contentDescription = null,
+          tint = AppTheme.colors.primaryContent,
+          modifier = Modifier.size(20.dp)
+        )
+        CenterRow(horizontalArrangement = Arrangement.spacedBy((-32).dp)) {
+          targetAccount.forEachIndexed { _, account ->
+            CircleShapeAsyncImage(
+              model = account.avatar,
+              modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
+              shape = AppTheme.shape.smallAvatar
+            )
+          }
+        }
+        TextWithEmoji(
+          text = when (targetAccount.size) {
+            2 -> stringResource(
+              id = R.string.reply_two_user,
+              targetAccount.first().realDisplayName,
+              targetAccount.last().realDisplayName
+            )
+            3 -> stringResource(
+              id = R.string.reply_three_user,
+              targetAccount.first().realDisplayName,
+              targetAccount[1].realDisplayName,
+              targetAccount.last().realDisplayName
+            )
+            else -> stringResource(
+              id = R.string.reply_more_user,
+              targetAccount.first().realDisplayName,
+              targetAccount.last().realDisplayName,
+              targetAccount.size - 2
+            )
+          },
+          emojis = targetAccount.flatMap { it.emojis },
+          fontSize = 16.sp,
+          fontWeight = FontWeight.Medium,
+          color = AppTheme.colors.primaryContent,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun ReplyTextFieldWithToolBar(
   fieldValue: TextFieldValue,
   focusRequester: FocusRequester,
-  targetAccount: Account,
+  targetAccount: List<Account>,
   postState: PostState,
+  showReplyUserButton: Boolean,
   onValueChange: (TextFieldValue) -> Unit,
   onFocusChanged: (Boolean) -> Unit,
   replyToStatus: () -> Unit,
+  openReplyUserDialog: () -> Unit,
   openEmojiPicker: () -> Unit,
 ) {
   var isFocused by remember { mutableStateOf(false) }
@@ -209,26 +275,7 @@ private fun ReplyTextFieldWithToolBar(
         .background(Color(0xFFD9D9D9), RoundedCornerShape(3.dp))
         .align(Alignment.CenterHorizontally)
     )
-    CenterRow {
-      Icon(
-        painter = painterResource(id = R.drawable.reply_border_0_5),
-        contentDescription = null,
-        tint = AppTheme.colors.primaryContent,
-        modifier = Modifier.size(20.dp)
-      )
-      CircleShapeAsyncImage(
-        model = targetAccount.avatar,
-        modifier = Modifier.padding(horizontal = 12.dp).size(32.dp),
-        shape = AppTheme.shape.smallAvatar
-      )
-      TextWithEmoji(
-        text = targetAccount.realDisplayName,
-        emojis = targetAccount.emojis,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Medium,
-        color = AppTheme.colors.primaryContent
-      )
-    }
+    ReplyTitleBar(targetAccount)
     BasicTextField(
       value = fieldValue,
       onValueChange = onValueChange,
@@ -269,6 +316,15 @@ private fun ReplyTextFieldWithToolBar(
         interactiveSize = 24.dp,
         onClick = openEmojiPicker,
       )
+      if (showReplyUserButton) {
+        WidthSpacer(value = 8.dp)
+        ClickableIcon(
+          painter = painterResource(id = R.drawable.user_gear),
+          tint = AppTheme.colors.cardAction,
+          interactiveSize = 24.dp,
+          onClick = openReplyUserDialog,
+        )
+      }
       Spacer(Modifier.weight(1f))
       IconButton(
         onClick = {

@@ -38,6 +38,8 @@ import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
+import com.github.whitescent.mastify.ui.component.dialog.ReplyThread
+import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
@@ -177,11 +179,32 @@ class StatusDetailViewModel @Inject constructor(
           .collect {
             val combinedList = (it.ancestors.toUiData() +
               latestStatus + reorderDescendants(it.descendants)).toImmutableList()
-            uiState = uiState.copy(loading = false, statusList = combinedList)
+            uiState = uiState.copy(
+              loading = false,
+              statusList = combinedList,
+              threadList = (it.ancestors + navArgs.status).map { status ->
+                ReplyThread(
+                  content = generateHtmlContentWithEmoji(status.content, status.emojis),
+                  account = status.account,
+                  selected = status == navArgs.status
+                )
+              }.reversed().distinctBy { thread ->
+                thread.account.id
+              }.reversed()
+            )
             updateStatusInDatabase()
           }
       }
     }
+  }
+
+  fun updateThreads(index: Int, selected: Boolean) {
+    if (index == uiState.threadList.lastIndex) return
+    uiState = uiState.copy(
+      threadList = uiState.threadList.mapIndexed { i, thread ->
+        if (i == index) thread.copy(selected = selected) else thread
+      }
+    )
   }
 
   fun updateTextFieldValue(textFieldValue: TextFieldValue) { replyField = textFieldValue }
@@ -193,7 +216,7 @@ class StatusDetailViewModel @Inject constructor(
    * back to timeline screen
    */
   private fun updateStatusInDatabase() {
-    // if origin status id is null, it means the currentStatus.value if not from timeline screen
+    // if origin status id is null, it means the current status if not from timeline screen
     // so we don't need to update the status in database
     if (navArgs.originStatusId == null) return
     viewModelScope.launch {
@@ -221,7 +244,7 @@ class StatusDetailViewModel @Inject constructor(
     if (descendants.isEmpty() || descendants.size == 1)
       return descendants.toUiData().toImmutableList()
 
-    // remove some replies that did not reply to the currentStatus
+    // remove some replies that did not reply to the current Status
     val replyList = descendants.filter { it.inReplyToId == navArgs.status.actionableId }
     val finalList = mutableListOf<Status>()
 
@@ -252,6 +275,7 @@ class StatusDetailViewModel @Inject constructor(
 @Immutable
 data class StatusDetailUiState(
   val loading: Boolean = false,
+  val threadList: List<ReplyThread> = emptyList(),
   val instanceEmojis: ImmutableList<Emoji> = persistentListOf(),
   val statusList: ImmutableList<StatusUiData> = persistentListOf(),
   val postState: PostState = PostState.Idle

@@ -64,9 +64,14 @@
   <string name="link_preview_title">Link Preview</string>
   <string name="replying_to_title">Replying to %s</string>
 
-  <!-- currentStatus detail screen -->
+  <!-- status detail screen -->
   <string name="post_your_reply">post your reply</string>
   <string name="uncategorized_title">Uncategorized</string>
+  <string name="pick_users_title">Pick Users</string>
+  <string name="pick_users_description">You can choose who you want to be notified of replies in this thread</string>
+  <string name="reply_two_user">%s, %s</string>
+  <string name="reply_three_user">%s, %s and %s</string>
+  <string name="reply_more_user">%s, %s and %d other users</string>
 
   <plurals name="favs">
     <item quantity="one">%d Favorite</item>
@@ -161,4 +166,5 @@
   <string name="duration_7_days">1 week</string>
   <string name="poll_close_time">Voting will close in %s</string>
 
+  <string name="ok_title">OK</string>
 </resources>
