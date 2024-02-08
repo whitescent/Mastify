@@ -196,6 +196,8 @@ class StatusDetailViewModel @Inject constructor(
               latestStatus + reorderDescendants(statusContext.descendants)).toImmutableList()
             val threadList = statusContext.ancestors
               .filter { it.account.id != navArgs.status.account.id }
+              .reversed()
+              .distinctBy { it.account.id }
               .map {
                 ReplyThread(
                   content = generateHtmlContentWithEmoji(it.content, it.emojis),
