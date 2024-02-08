@@ -125,10 +125,14 @@ class StatusDetailViewModel @Inject constructor(
   }
 
   fun replyToStatus() {
+    if (uiState.postState == PostState.Posting) return
     uiState = uiState.copy(postState = PostState.Posting)
     viewModelScope.launch {
       statusRepository.createStatus(
-        content = "${navArgs.status.account.fullname} ${replyField.text}",
+        content = when (uiState.threadList.size) {
+          1 -> "${navArgs.status.account.fullname} ${replyField.text}"
+          else -> "${uiState.threadList.joinToString(separator = " "){ it.account.fullname }} ${replyField.text}"
+        },
         inReplyToId = navArgs.status.actionableId,
       )
         .catch {
@@ -153,6 +157,15 @@ class StatusDetailViewModel @Inject constructor(
   }
 
   init {
+    uiState = uiState.copy(
+      threadList = listOf(
+        ReplyThread(
+          content = generateHtmlContentWithEmoji(navArgs.status.content, navArgs.status.emojis),
+          account = navArgs.status.account,
+          selected = true
+        )
+      )
+    )
     var latestStatus = navArgs.status.toUiData()
     viewModelScope.launch {
       uiState = uiState.copy(
@@ -176,21 +189,23 @@ class StatusDetailViewModel @Inject constructor(
             uiState = uiState.copy(loading = false)
             it.printStackTrace()
           }
-          .collect {
-            val combinedList = (it.ancestors.toUiData() +
-              latestStatus + reorderDescendants(it.descendants)).toImmutableList()
+          .collect { statusContext ->
+            val combinedList = (statusContext.ancestors.toUiData() +
+              latestStatus + reorderDescendants(statusContext.descendants)).toImmutableList()
+            val threadList = statusContext.ancestors
+              .filter { it.account.id != navArgs.status.account.id }
+              .map {
+                ReplyThread(
+                  content = generateHtmlContentWithEmoji(it.content, it.emojis),
+                  account = it.account,
+                  selected = false
+                )
+              }
+              .reversed() + uiState.threadList
             uiState = uiState.copy(
               loading = false,
               statusList = combinedList,
-              threadList = (it.ancestors + navArgs.status).map { status ->
-                ReplyThread(
-                  content = generateHtmlContentWithEmoji(status.content, status.emojis),
-                  account = status.account,
-                  selected = status == navArgs.status
-                )
-              }.reversed().distinctBy { thread ->
-                thread.account.id
-              }.reversed()
+              threadList = threadList
             )
             updateStatusInDatabase()
           }
