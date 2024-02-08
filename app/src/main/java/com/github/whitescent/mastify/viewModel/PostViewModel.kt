@@ -109,6 +109,7 @@ class PostViewModel @Inject constructor(
   }
 
   fun postStatus() {
+    if (uiState.postState == PostState.Posting) return
     uiState = uiState.copy(postState = PostState.Posting)
     viewModelScope.launch {
       val poll = uiState.pollListModel
