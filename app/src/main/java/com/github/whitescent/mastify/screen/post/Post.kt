@@ -444,7 +444,7 @@ private fun PostAlbumPanel(
         items = mediaList,
         key = { _, item -> item.uri.toString() }
       ) { index, media ->
-        PostImage(
+        UploadImage(
           mediaModel = media,
           onCancelImage = { removeImage(media.uri) },
           modifier = Modifier

@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -46,13 +47,14 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.viewModel.MediaModel
 
 @Composable
-fun PostImage(
+fun UploadImage(
   mediaModel: MediaModel,
   onCancelImage: () -> Unit,
   modifier: Modifier = Modifier,
+  shape: Shape = AppTheme.shape.mediumAvatar
 ) {
   Box(
-    modifier = modifier.clip(AppTheme.shape.mediumAvatar).heightIn(max = 300.dp)
+    modifier = modifier.clip(shape).heightIn(max = 300.dp)
   ) {
     Box(
       modifier = Modifier.let {
