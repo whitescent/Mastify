@@ -14,6 +14,8 @@ Follow [Mastify](https://mastodon.social/@mastify) on Mastodon for the latest de
 Here're some features we're planning to implement in the future, you can check the project board [here](https://github.com/users/whitescent/projects/3?query=is%3Aopen+sort%3Aupdated-desc) for progress.
 
 - [x] Account Timeline (Individual algorithms to display the effect of a Twitter-like reply interface)
+- [x] Post Detail
+  - [x] select the users in the thread that need to receive notifications
 - [x] Check Account Profile
   - [ ] Follow/Unfollow Account
   - [ ] Edit Profile
@@ -40,6 +42,7 @@ Here're some features we're planning to implement in the future, you can check t
     - [ ] reply with poll
     - [ ] reply with visibility
   - [ ] Delete Post
+- [x] Light/Dark Theme
 - [ ] Account Action
   - [ ] Mute Account
   - [ ] Block Account
