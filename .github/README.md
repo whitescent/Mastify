@@ -13,6 +13,8 @@ Follow [Mastify](https://mastodon.social/@mastify) on Mastodon for the latest de
 
 Here're some features we're planning to implement in the future, you can check the project board [here](https://github.com/users/whitescent/projects/3?query=is%3Aopen+sort%3Aupdated-desc) for progress.
 
+- [x] Login
+- [x] Multi-Account support
 - [x] Account Timeline (Individual algorithms to display the effect of a Twitter-like reply interface)
 - [x] Post Detail
   - [x] select the users in the thread that need to receive notifications
@@ -34,6 +36,7 @@ Here're some features we're planning to implement in the future, you can check t
     - [ ] set spoiler warnings for post
     - [ ] support @user input function
     - [ ] support # function
+    - [ ] schedule post
   - [x] Favorite/Reblog/Bookmark/Poll Post
   - [x] Copy Post Text/Link
   - [x] Reply Post
