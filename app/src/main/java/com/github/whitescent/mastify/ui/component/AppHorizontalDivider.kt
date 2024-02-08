@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.ui.component
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +35,13 @@ fun AppHorizontalDivider(
   thickness: Dp = 0.5.dp,
   color: Color = AppTheme.colors.divider
 ) = HorizontalDivider(thickness = thickness, color = color, modifier = modifier)
+
+@Composable
+fun AppVerticalDivider(
+  modifier: Modifier = Modifier,
+  thickness: Dp = 0.5.dp,
+  color: Color = AppTheme.colors.divider
+) = VerticalDivider(thickness = thickness, color = color, modifier = modifier)
 
 @Composable
 fun AppHorizontalDashedDivider(

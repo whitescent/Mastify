@@ -78,8 +78,7 @@ class StatusDetailViewModel @Inject constructor(
   val snackBarFlow = timelineUseCase.snackBarFlow
   val navArgs: StatusDetailNavArgs = savedStateHandle.navArgs()
 
-  var replyField by mutableStateOf(TextFieldState())
-    private set
+  val replyField by mutableStateOf(TextFieldState())
 
   var uiState by mutableStateOf(StatusDetailUiState())
     private set

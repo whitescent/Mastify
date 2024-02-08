@@ -18,7 +18,9 @@
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
-  <string name="instance_address_tip">what is your instance server address?</string>
+  <string name="app_description">A feature-rich Mastodon Android client</string>
+  <string name="instance_address_tip">e.g. mastodon.social</string>
+  <string name="log_in_title">Login</string>
   <string name="log_in_to">Log in to %s</string>
   <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
   <string name="instance_verification_error">Error occurred during instance verification</string>

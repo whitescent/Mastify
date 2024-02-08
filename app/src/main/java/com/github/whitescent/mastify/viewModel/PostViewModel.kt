@@ -71,8 +71,7 @@ class PostViewModel @Inject constructor(
       initialValue = null
     )
 
-  var postTextField by mutableStateOf(TextFieldState())
-    private set
+  val postTextField by mutableStateOf(TextFieldState())
 
   var uiState by mutableStateOf(PostUiState())
     private set

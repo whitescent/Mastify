@@ -17,6 +17,8 @@
 
 package com.github.whitescent.mastify.viewModel
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,12 +28,14 @@ import androidx.lifecycle.viewModelScope
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.repository.LoginRepository
 import com.github.whitescent.mastify.data.repository.PreferenceRepository
+import com.github.whitescent.mastify.viewModel.LoginStatus.Failure
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalFoundationApi::class)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
   private val preferenceRepository: PreferenceRepository,
@@ -41,24 +45,18 @@ class LoginViewModel @Inject constructor(
   var uiState by mutableStateOf(LoginUiState())
     private set
 
+  val loginInput by mutableStateOf(TextFieldState())
+
   val instanceLocalError by derivedStateOf {
-    !loginRepository.isInstanceCorrect(uiState.text)
-  }
-
-  fun onValueChange(text: String) {
-    uiState = uiState.copy(text = text)
-  }
-
-  fun clearInputText() {
-    uiState = uiState.copy(text = "")
+    !loginRepository.isInstanceCorrect(loginInput.text.toString())
   }
 
   fun checkInstance() {
     viewModelScope.launch {
       uiState = uiState.copy(loginStatus = LoginStatus.Loading)
-      loginRepository.fetchInstanceInfo(uiState.text)
+      loginRepository.fetchInstanceInfo(loginInput.text.toString())
         .catch {
-          uiState = uiState.copy(loginStatus = LoginStatus.Failure)
+          uiState = uiState.copy(loginStatus = Failure)
         }
         .collect {
           authenticateApp()
@@ -68,13 +66,17 @@ class LoginViewModel @Inject constructor(
 
   private fun authenticateApp() {
     viewModelScope.launch(Dispatchers.IO) {
-      loginRepository.authenticateApp(uiState.text, R.string.app_name)
+      loginRepository.authenticateApp(loginInput.text.toString(), R.string.app_name)
         .catch {
           it.printStackTrace()
           uiState = uiState.copy(authenticateError = true)
         }
         .collect {
-          preferenceRepository.saveInstanceData(uiState.text, it.clientId, it.clientSecret)
+          preferenceRepository.saveInstanceData(
+            domain = loginInput.text.toString(),
+            clientId = it.clientId,
+            clientSecret = it.clientSecret
+          )
           uiState = uiState.copy(
             authenticateError = false,
             loginStatus = LoginStatus.Idle,
@@ -86,7 +88,6 @@ class LoginViewModel @Inject constructor(
 }
 
 data class LoginUiState(
-  val text: String = "",
   val authenticateError: Boolean = false,
   val loginStatus: LoginStatus = LoginStatus.Idle,
   val clientId: String = ""

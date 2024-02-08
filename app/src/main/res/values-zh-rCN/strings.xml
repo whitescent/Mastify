@@ -18,7 +18,9 @@
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
-  <string name="instance_address_tip">您所在的实例地址是什么？</string>
+  <string name="app_description">一个功能丰富的 Mastodon Android 客户端</string>
+  <string name="instance_address_tip">例如 mastodon.social</string>
+  <string name="log_in_title">登录</string>
   <string name="log_in_to">登录到 %s</string>
   <string name="failed_to_retrieve_instance">获取实例信息失败</string>
   <string name="instance_verification_error">验证实例时出现错误</string>
