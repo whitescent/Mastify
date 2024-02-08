@@ -17,6 +17,8 @@
 
 package com.github.whitescent.mastify.data.repository
 
+import android.content.Context
+import android.widget.Toast
 import at.connyduck.calladapter.networkresult.fold
 import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
@@ -27,13 +29,17 @@ import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
 import com.github.whitescent.mastify.utils.getServerErrorMessage
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import java.util.UUID
 import javax.inject.Inject
 
-class StatusRepository @Inject constructor(private val api: MastodonApi) {
+class StatusRepository @Inject constructor(
+  @ApplicationContext private val context: Context,
+  private val api: MastodonApi
+) {
 
   suspend fun getAccountStatus(
     onlyMedia: Boolean? = null,
@@ -109,13 +115,16 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
         val error = HttpException(response)
         val errorMessage = error.getServerErrorMessage()
         if (errorMessage == null) {
+          Toast.makeText(context, error.localizedMessage, Toast.LENGTH_SHORT).show()
           throw error
         } else {
+          Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
           throw Throwable(errorMessage)
         }
       }
     } catch (e: Exception) {
       e.printStackTrace()
+      Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
       throw e
     }
   }
