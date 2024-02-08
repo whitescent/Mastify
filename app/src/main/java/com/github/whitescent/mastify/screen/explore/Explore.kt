@@ -27,7 +27,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,6 +71,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
+import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -97,7 +97,6 @@ import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @AppNavGraph
 @Destination(
   style = BottomBarScreenTransitions::class
@@ -106,6 +105,7 @@ import kotlinx.coroutines.launch
 fun Explore(
   viewModel: ExploreViewModel = hiltViewModel(),
   appState: AppState,
+  activeAccount: AccountEntity,
   drawerState: DrawerState,
   navigator: DestinationsNavigator,
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
@@ -115,7 +115,6 @@ fun Explore(
   val density = LocalDensity.current
 
   val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
-  val activeAccount by viewModel.activityAccountFlow.collectAsStateWithLifecycle()
 
   // when user focus on searchBar, we need hide content
   var hideTitle by remember { mutableStateOf(false) }
@@ -138,102 +137,100 @@ fun Explore(
       .background(AppTheme.colors.background)
       .statusBarsPadding()
   ) {
-    if (activeAccount != null) {
-      Column {
-        Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
-          AnimatedVisibility(
-            visible = !hideTitle,
-            enter = slideInVertically {
-              with(density) { -40.dp.roundToPx() }
-            } + expandVertically(expandFrom = Alignment.Top) + fadeIn(initialAlpha = 0.3f),
-            exit = slideOutVertically() + shrinkVertically() + fadeOut()
-          ) {
-            Column {
-              CenterRow {
-                Text(
-                  text = stringResource(id = R.string.explore_instance, activeAccount!!.domain),
-                  fontSize = 24.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = AppTheme.colors.primaryContent,
-                  modifier = Modifier.weight(1f),
-                )
-                CircleShapeAsyncImage(
-                  model = activeAccount!!.profilePictureUrl,
-                  modifier = Modifier
-                    .size(36.dp)
-                    .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
-                  shape = AppTheme.shape.betweenSmallAndMediumAvatar,
-                  onClick = {
-                    scope.launch {
-                      drawerState.open()
-                    }
-                  }
-                )
-              }
-              HeightSpacer(value = 6.dp)
-            }
-          }
-          ExploreSearchBar(
-            text = uiState.text,
-            focusRequester = focusRequester,
-            onValueChange = viewModel::onValueChange,
-            clearText = viewModel::clearInputText,
-            onFocusChange = { hideTitle = it }
-          )
-          HeightSpacer(value = 4.dp)
-        }
-        Crossfade(
-          targetState = hideTitle,
-          animationSpec = tween()
+    Column {
+      Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
+        AnimatedVisibility(
+          visible = !hideTitle,
+          enter = slideInVertically {
+            with(density) { -40.dp.roundToPx() }
+          } + expandVertically(expandFrom = Alignment.Top) + fadeIn(initialAlpha = 0.3f),
+          exit = slideOutVertically() + shrinkVertically() + fadeOut()
         ) {
-          when (it) {
-            true -> {
-              ExploreSearchContent(
-                isTextEmpty = uiState.text.isEmpty(),
-                searchingResult = searchingResult
+          Column {
+            CenterRow {
+              Text(
+                text = stringResource(id = R.string.explore_instance, activeAccount.domain),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.primaryContent,
+                modifier = Modifier.weight(1f),
               )
-            }
-            else -> {
-              Column {
-                ExploreTabBar(
-                  currentExploreKind = currentExploreKind,
-                  modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
-                ) { kind ->
-                  viewModel.syncExploreKind(kind)
+              CircleShapeAsyncImage(
+                model = activeAccount.profilePictureUrl,
+                modifier = Modifier
+                  .size(36.dp)
+                  .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
+                shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+                onClick = {
                   scope.launch {
-                    pagerState.scrollToPage(kind)
+                    drawerState.open()
                   }
                 }
-                AppHorizontalDivider(thickness = 1.dp)
-                ExplorePager(
-                  state = pagerState,
-                  trendingStatusListState = trendingStatusListState,
-                  publicTimelineListState = publicTimelineListState,
-                  newsListState = newsListState,
-                  viewModel = viewModel,
-                  navigateToDetail = { targetStatus ->
-                    navigator.navigate(
-                      StatusDetailDestination(
-                        status = targetStatus,
-                        originStatusId = null
-                      )
+              )
+            }
+            HeightSpacer(value = 6.dp)
+          }
+        }
+        ExploreSearchBar(
+          text = uiState.text,
+          focusRequester = focusRequester,
+          onValueChange = viewModel::onValueChange,
+          clearText = viewModel::clearInputText,
+          onFocusChange = { hideTitle = it }
+        )
+        HeightSpacer(value = 4.dp)
+      }
+      Crossfade(
+        targetState = hideTitle,
+        animationSpec = tween()
+      ) {
+        when (it) {
+          true -> {
+            ExploreSearchContent(
+              isTextEmpty = uiState.text.isEmpty(),
+              searchingResult = searchingResult
+            )
+          }
+          else -> {
+            Column {
+              ExploreTabBar(
+                currentExploreKind = currentExploreKind,
+                modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
+              ) { kind ->
+                viewModel.syncExploreKind(kind)
+                scope.launch {
+                  pagerState.scrollToPage(kind)
+                }
+              }
+              AppHorizontalDivider(thickness = 1.dp)
+              ExplorePager(
+                state = pagerState,
+                trendingStatusListState = trendingStatusListState,
+                publicTimelineListState = publicTimelineListState,
+                newsListState = newsListState,
+                viewModel = viewModel,
+                navigateToDetail = { targetStatus ->
+                  navigator.navigate(
+                    StatusDetailDestination(
+                      status = targetStatus,
+                      originStatusId = null
                     )
-                  },
-                  navigateToMedia = { attachments, targetIndex ->
-                    navigator.navigate(
-                      StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                    )
-                  },
-                  navigateToProfile = { targetAccount ->
-                    navigator.navigate(
-                      ProfileDestination(targetAccount)
-                    )
-                  }
-                )
-                LaunchedEffect(pagerState) {
-                  snapshotFlow { pagerState.currentPage }.collect { page ->
-                    viewModel.syncExploreKind(page)
-                  }
+                  )
+                },
+                navigateToMedia = { attachments, targetIndex ->
+                  navigator.navigate(
+                    StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                  )
+                },
+                navigateToProfile = { targetAccount ->
+                  navigator.navigate(
+                    ProfileDestination(targetAccount)
+                  )
+                }
+              )
+              LaunchedEffect(pagerState) {
+                snapshotFlow { pagerState.currentPage }.collect { page ->
+                  viewModel.syncExploreKind(page)
                 }
               }
             }

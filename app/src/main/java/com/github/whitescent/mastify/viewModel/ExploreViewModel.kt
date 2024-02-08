@@ -27,7 +27,6 @@ import androidx.lifecycle.viewModelScope
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.repository.ExploreRepository
-import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.search.SearchResult
@@ -52,8 +51,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -65,22 +62,9 @@ import javax.inject.Inject
 @HiltViewModel
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class ExploreViewModel @Inject constructor(
-  db: AppDatabase,
   private val timelineUseCase: TimelineUseCase,
   private val exploreRepository: ExploreRepository,
 ) : ViewModel() {
-
-  private val accountDao = db.accountDao()
-
-  val activityAccountFlow = accountDao
-    .getActiveAccountFlow()
-    .distinctUntilChanged { old, new -> old?.id == new?.id }
-    .filterNotNull()
-    .stateIn(
-      scope = viewModelScope,
-      started = SharingStarted.Eagerly,
-      initialValue = null
-    )
 
   private var currentExploreKindFlow = MutableStateFlow(Trending)
 
