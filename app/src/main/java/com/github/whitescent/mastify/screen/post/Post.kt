@@ -22,6 +22,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,7 +42,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text2.BasicTextField2
+import androidx.compose.foundation.text2.input.insert
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -77,7 +79,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.repository.InstanceRepository.Companion.DEFAULT_CHARACTER_LIMIT
-import com.github.whitescent.mastify.extensions.buildTextWithLimit
 import com.github.whitescent.mastify.extensions.insertString
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -100,7 +101,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @AppNavGraph
 @Destination
 @Composable
@@ -119,7 +120,6 @@ fun Post(
 
   val activeAccount by viewModel.activeAccount.collectAsStateWithLifecycle()
   val allowPostStatus by viewModel.allowPostStatus.collectAsStateWithLifecycle()
-  val postTextField = viewModel.postTextField
   val state = viewModel.uiState
   val instanceUiData = state.instance
 
@@ -132,6 +132,7 @@ fun Post(
   val emojiSheetState = rememberModalBottomSheetState()
   val scope = rememberCoroutineScope()
   val albumRowState = rememberLazyListState()
+  val textFieldState = viewModel.postTextField
   val imagePicker = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.PickMultipleVisualMedia(4),
     onResult = {
@@ -182,7 +183,7 @@ fun Post(
         .padding(horizontal = 16.dp)
         .background(AppTheme.colors.background),
     ) {
-      Column(Modifier.weight(1f)) {
+      Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
         activeAccount?.let {
           Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
             CenterRow {
@@ -213,63 +214,65 @@ fun Post(
             }
           }
         }
-        BasicTextField(
-          value = postTextField.copy(
-            annotatedString = postTextField.text.buildTextWithLimit(
-              maxLength = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT,
-              textColor = AppTheme.colors.primaryContent,
-              warningBackgroundColor = AppTheme.colors.textLimitWarningBackground
-            )
-          ),
-          onValueChange = viewModel::updateTextFieldValue,
+        if (viewModel.medias.isNotEmpty()) {
+          PostAlbumPanel(
+            mediaList = viewModel.medias,
+            removeImage = viewModel::removeMedia,
+            state = albumRowState
+          )
+          HeightSpacer(value = 10.dp)
+        }
+        if (state.pollListModel.showPoll) {
+          NewPollSheet(
+            instanceData = instanceUiData,
+            optionList = pollOptionList,
+            close = {
+              viewModel.updatePollListModel(state.pollListModel.copy(showPoll = false))
+              focusRequester.requestFocus()
+            },
+            onPollListChange = {
+              viewModel.updatePollListModel(state.pollListModel.copy(list = it))
+            },
+            onPollValidChange = {
+              viewModel.updatePollListModel(state.pollListModel.copy(isPollListValid = it))
+            },
+            onPollTypeChange = {
+              viewModel.updatePollListModel(
+                state.pollListModel.copy(
+                  voteType = if (it == Single.ordinal) Single else Multiple
+                )
+              )
+            },
+            onDurationChange = {
+              viewModel.updatePollListModel(state.pollListModel.copy(duration = it))
+            },
+            onTextFieldFocusChange = {
+              focusedPollOptionIndex = it
+            }
+          )
+          HeightSpacer(value = 10.dp)
+        }
+        BasicTextField2(
+          state = textFieldState,
           modifier = Modifier
             .fillMaxSize()
             .focusRequester(focusRequester)
             .onFocusChanged { isEditorFocused = it.isFocused },
+          outputTransformation = {
+            // TODO: If BF2 supports AnnotatedString, replace this
+            // buildAnnotatedString {
+            //   textFieldState.text.toString().buildTextWithLimit(
+            //     maxLength = state.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT,
+            //     textColor = primaryContent,
+            //     warningBackgroundColor = warningBackgroundColor
+            //   )
+            // }
+          },
           textStyle = TextStyle(fontSize = 18.sp, color = AppTheme.colors.primaryContent),
           cursorBrush = SolidColor(AppTheme.colors.primaryContent),
-        ) {
-          Column(Modifier.verticalScroll(rememberScrollState())) {
-            if (viewModel.medias.isNotEmpty()) {
-              PostAlbumPanel(
-                mediaList = viewModel.medias,
-                removeImage = viewModel::removeMedia,
-                state = albumRowState
-              )
-              HeightSpacer(value = 10.dp)
-            }
-            if (state.pollListModel.showPoll) {
-              NewPollSheet(
-                instanceData = instanceUiData,
-                optionList = pollOptionList,
-                close = {
-                  viewModel.updatePollListModel(state.pollListModel.copy(showPoll = false))
-                  focusRequester.requestFocus()
-                },
-                onPollListChange = {
-                  viewModel.updatePollListModel(state.pollListModel.copy(list = it))
-                },
-                onPollValidChange = {
-                  viewModel.updatePollListModel(state.pollListModel.copy(isPollListValid = it))
-                },
-                onPollTypeChange = {
-                  viewModel.updatePollListModel(
-                    state.pollListModel.copy(
-                      voteType = if (it == Single.ordinal) Single else Multiple
-                    )
-                  )
-                },
-                onDurationChange = {
-                  viewModel.updatePollListModel(state.pollListModel.copy(duration = it))
-                },
-                onTextFieldFocusChange = {
-                  focusedPollOptionIndex = it
-                }
-              )
-              HeightSpacer(value = 10.dp)
-            }
+          decorator = {
             Box {
-              if (postTextField.text.isEmpty()) {
+              if (textFieldState.text.isEmpty()) {
                 Text(
                   text = stringResource(id = R.string.post_placeholder),
                   color = Color(0xFFB6B6B6),
@@ -279,7 +282,7 @@ fun Post(
               it()
             }
           }
-        }
+        )
       }
       PostToolBar(
         postActionGroup = {
@@ -327,7 +330,7 @@ fun Post(
         textLimitCircle = {
           instanceUiData?.let {
             TextProgressBar(
-              textLength = postTextField.text.length,
+              textLength = textFieldState.text.length,
               maxTextLength = instanceUiData.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT
             )
           }
@@ -335,7 +338,6 @@ fun Post(
         visibilityButton = {
           PostVisibilityButton(state.visibility) {
             scope.launch {
-              keyboard?.hide()
               openVisibilitySheet = true
             }
           }
@@ -372,15 +374,9 @@ fun Post(
       onSelectEmoji = {
         when (isEditorFocused) {
           true -> {
-            viewModel.updateTextFieldValue(
-              textFieldValue = viewModel.postTextField.copy(
-                text = viewModel.postTextField.text.insertString(
-                  insert = it,
-                  index = viewModel.postTextField.selection.start
-                ),
-                selection = TextRange(viewModel.postTextField.selection.start + it.length)
-              )
-            )
+            textFieldState.edit {
+              insert(selectionInChars.start, it)
+            }
           }
           false -> {
             val textFieldValue = pollOptionList[focusedPollOptionIndex]

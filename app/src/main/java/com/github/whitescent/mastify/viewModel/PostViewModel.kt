@@ -20,6 +20,8 @@ package com.github.whitescent.mastify.viewModel
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +39,7 @@ import com.github.whitescent.mastify.data.repository.StatusRepository
 import com.github.whitescent.mastify.data.repository.UploadEvent
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.model.InstanceEntity
-import com.github.whitescent.mastify.extensions.ifEmptyOr
+import com.github.whitescent.mastify.extensions.emptyOr
 import com.github.whitescent.mastify.network.model.status.NewPoll
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.VoteType.Single
@@ -51,6 +53,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalFoundationApi::class)
 class PostViewModel @Inject constructor(
   db: AppDatabase,
   private val instanceRepository: InstanceRepository,
@@ -68,7 +71,7 @@ class PostViewModel @Inject constructor(
       initialValue = null
     )
 
-  var postTextField by mutableStateOf(TextFieldValue(""))
+  var postTextField by mutableStateOf(TextFieldState())
     private set
 
   var uiState by mutableStateOf(PostUiState())
@@ -79,12 +82,15 @@ class PostViewModel @Inject constructor(
   val allowPostStatus: StateFlow<Boolean> =
     combine(
       snapshotFlow { medias.toList() },
-      snapshotFlow { postTextField },
+      snapshotFlow { postTextField.text },
       snapshotFlow { uiState },
-    ) { medias, postTextField, uiState ->
+    ) { medias, text, uiState ->
+
       val isMediaPrepared = medias.none { it.ids == null }
-      val isTextValid = postTextField.text.isNotEmpty() && !uiState.textExceedLimit
+      val isTextValid = text.isNotEmpty() && (text.length <=
+        (uiState.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT))
       val pollListModel = uiState.pollListModel
+
       when {
         medias.isEmpty() ->
           isTextValid && (!pollListModel.showPoll || pollListModel.isPollListValid)
@@ -107,10 +113,10 @@ class PostViewModel @Inject constructor(
     viewModelScope.launch {
       val poll = uiState.pollListModel
       statusRepository.createStatus(
-        content = postTextField.text,
+        content = postTextField.text.toString(),
         mediaIds = medias.map { it.ids!! },
         visibility = uiState.visibility,
-        poll = poll.list.ifEmptyOr { list ->
+        poll = poll.list.emptyOr { list ->
           NewPoll(list.map { it.text }, poll.duration, poll.voteType.isMultiple)
         }
       )
@@ -130,14 +136,6 @@ class PostViewModel @Inject constructor(
 
   fun updatePollListModel(pollListModel: PollListModel) {
     uiState = uiState.copy(pollListModel = pollListModel)
-  }
-
-  fun updateTextFieldValue(textFieldValue: TextFieldValue) {
-    postTextField = textFieldValue
-    uiState = uiState.copy(
-      textExceedLimit = postTextField.text.length >
-        (uiState.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT)
-    )
   }
 
   fun addMedia(uris: List<Uri>) {
@@ -196,6 +194,5 @@ data class PostUiState(
   val instance: InstanceEntity? = null,
   val postState: PostState = PostState.Idle,
   val visibility: Visibility = Visibility.Public,
-  val textExceedLimit: Boolean = false,
   val pollListModel: PollListModel = PollListModel()
 )

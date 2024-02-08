@@ -122,7 +122,7 @@ fun List<StatusUiData>.hasUnloadedParent(index: Int): Boolean {
   }
 }
 
-inline fun <S, B> S.ifEmptyOr(block: (S) -> B): B? where S : Collection<*> {
+inline fun <S, B> S.emptyOr(block: (S) -> B): B? where S : Collection<*> {
   return if (this.isEmpty()) null else block(this)
 }
 
