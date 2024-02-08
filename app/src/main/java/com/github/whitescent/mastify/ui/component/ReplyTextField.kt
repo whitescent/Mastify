@@ -21,6 +21,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -37,7 +38,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text2.BasicTextField2
+import androidx.compose.foundation.text2.input.TextFieldState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,7 +68,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,14 +79,14 @@ import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.windowBottomEndCornerRadius
 import com.github.whitescent.mastify.utils.windowBottomStartCornerRadius
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReplyTextField(
   targetAccount: List<Account>,
-  fieldValue: TextFieldValue,
+  textFieldState: TextFieldState,
   postState: PostState,
   modifier: Modifier = Modifier,
   showReplyUserButton: Boolean = false,
-  onValueChange: (TextFieldValue) -> Unit,
   replyToStatus: () -> Unit,
   openEmojiPicker: () -> Unit,
   openReplyUserDialog: () -> Unit,
@@ -128,11 +129,10 @@ fun ReplyTextField(
       when (it) {
         true -> {
           ReplyTextFieldWithToolBar(
-            fieldValue = fieldValue,
+            textFieldState = textFieldState,
             focusRequester = focusRequester,
             targetAccount = targetAccount,
             postState = postState,
-            onValueChange = onValueChange,
             showReplyUserButton = showReplyUserButton,
             onFocusChanged = { focused -> expand = focused },
             replyToStatus = replyToStatus,
@@ -142,13 +142,15 @@ fun ReplyTextField(
         }
         else -> {
           Column(Modifier.navigationBarsPadding().padding(20.dp).heightIn(max = 300.dp)) {
-            if (fieldValue.text.isNotEmpty()) {
+            if (textFieldState.text.isNotEmpty()) {
               ReplyTitleBar(targetAccount)
               HeightSpacer(value = 8.dp)
             }
             Text(
-              text = fieldValue.text.ifEmpty { stringResource(id = R.string.reply_placeholder) },
-              color = when (fieldValue.text.isEmpty()) {
+              text = textFieldState.text.toString().ifEmpty {
+                stringResource(id = R.string.reply_placeholder)
+              },
+              color = when (textFieldState.text.isEmpty()) {
                 true -> Color(0xFFB6B6B6)
                 else -> AppTheme.colors.primaryContent
               },
@@ -247,14 +249,14 @@ private fun ReplyTitleBar(
   }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ReplyTextFieldWithToolBar(
-  fieldValue: TextFieldValue,
+  textFieldState: TextFieldState,
   focusRequester: FocusRequester,
   targetAccount: List<Account>,
   postState: PostState,
   showReplyUserButton: Boolean,
-  onValueChange: (TextFieldValue) -> Unit,
   onFocusChanged: (Boolean) -> Unit,
   replyToStatus: () -> Unit,
   openReplyUserDialog: () -> Unit,
@@ -276,9 +278,8 @@ private fun ReplyTextFieldWithToolBar(
         .align(Alignment.CenterHorizontally)
     )
     ReplyTitleBar(targetAccount)
-    BasicTextField(
-      value = fieldValue,
-      onValueChange = onValueChange,
+    BasicTextField2(
+      state = textFieldState,
       modifier = Modifier
         .fillMaxWidth()
         .animateContentSize()
@@ -290,18 +291,19 @@ private fun ReplyTextFieldWithToolBar(
           isFocused = it.isFocused
         },
       textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
-      cursorBrush = SolidColor(AppTheme.colors.primaryContent)
-    ) {
-      Box {
-        if (fieldValue.text.isEmpty()) {
-          Text(
-            text = stringResource(id = R.string.reply_placeholder),
-            color = Color(0xFFB6B6B6)
-          )
+      cursorBrush = SolidColor(AppTheme.colors.primaryContent),
+      decorator = {
+        Box {
+          if (textFieldState.text.isEmpty()) {
+            Text(
+              text = stringResource(id = R.string.reply_placeholder),
+              color = Color(0xFFB6B6B6)
+            )
+          }
+          it()
         }
-        it()
       }
-    }
+    )
     CenterRow(Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
       ClickableIcon(
         painter = painterResource(id = R.drawable.image),
@@ -331,7 +333,7 @@ private fun ReplyTextFieldWithToolBar(
           replyToStatus()
           keyboard?.hide()
         },
-        enabled = fieldValue.text.isNotEmpty(),
+        enabled = textFieldState.text.isNotEmpty(),
         colors = IconButtonDefaults.filledIconButtonColors(
           containerColor = when (postState !is PostState.Failure) {
             true -> AppTheme.colors.accent

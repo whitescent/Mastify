@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.screen.other
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text2.input.insert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -45,7 +47,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,7 +58,6 @@ import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
-import com.github.whitescent.mastify.extensions.insertString
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -95,7 +95,7 @@ data class StatusDetailNavArgs(
   val originStatusId: String?
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @AppNavGraph
 @Destination(
   navArgsDelegate = StatusDetailNavArgs::class
@@ -118,7 +118,6 @@ fun StatusDetail(
   val keyboard = LocalSoftwareKeyboardController.current
 
   val state = viewModel.uiState
-  val replyText = viewModel.replyField
 
   val currentStatus by viewModel.currentStatus.collectAsStateWithLifecycle()
 
@@ -194,9 +193,8 @@ fun StatusDetail(
           true -> state.threadList.filter { it.selected }.map { it.account }
           else -> listOf(viewModel.navArgs.status.account)
         },
-        fieldValue = replyText,
+        textFieldState = viewModel.replyField,
         postState = state.postState,
-        onValueChange = viewModel::updateTextFieldValue,
         replyToStatus = viewModel::replyToStatus,
         openEmojiPicker = { openEmojiSheet = true },
         showReplyUserButton = state.threadList.size > 1,
@@ -222,12 +220,9 @@ fun StatusDetail(
       sheetState = sheetState,
       emojis = state.instanceEmojis,
       onSelectEmoji = {
-        viewModel.updateTextFieldValue(
-          textFieldValue = viewModel.replyField.copy(
-            text = viewModel.replyField.text.insertString(it, viewModel.replyField.selection.start),
-            selection = TextRange(viewModel.replyField.selection.start + it.length)
-          )
-        )
+        viewModel.replyField.edit {
+          insert(selectionInChars.start, it)
+        }
         scope.launch {
           sheetState.hide()
         }.invokeOnCompletion {

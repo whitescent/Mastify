@@ -17,12 +17,14 @@
 
 package com.github.whitescent.mastify.viewModel
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.foundation.text2.input.clearText
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -61,6 +63,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalFoundationApi::class)
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   db: AppDatabase,
@@ -75,7 +78,7 @@ class StatusDetailViewModel @Inject constructor(
   val snackBarFlow = timelineUseCase.snackBarFlow
   val navArgs: StatusDetailNavArgs = savedStateHandle.navArgs()
 
-  var replyField by mutableStateOf(TextFieldValue(""))
+  var replyField by mutableStateOf(TextFieldState())
     private set
 
   var uiState by mutableStateOf(StatusDetailUiState())
@@ -149,7 +152,7 @@ class StatusDetailViewModel @Inject constructor(
               )
             }.toImmutableList(),
           )
-          replyField = replyField.copy(text = "")
+          replyField.clearText()
           delay(50)
           uiState = uiState.copy(postState = PostState.Idle)
         }
@@ -221,8 +224,6 @@ class StatusDetailViewModel @Inject constructor(
       }
     )
   }
-
-  fun updateTextFieldValue(textFieldValue: TextFieldValue) { replyField = textFieldValue }
 
   /**
    * we need sync the latest status data to database, because if the user performs some action
