@@ -13,7 +13,7 @@ androidxBrowser = "1.7.0"
 androidxWindow = "1.2.0"
 androidDesugar = "2.0.4"
 
-compose = "1.7.0-alpha01"
+compose = "1.7.0-alpha02"
 composeCompiler = "1.5.8"
 composeShadowsPlus = "1.0.4"
 constraintlayoutCompose = "1.0.1"
