@@ -39,6 +39,7 @@ import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
 import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
+import com.github.whitescent.mastify.utils.isBottomBarScreen
 import com.github.whitescent.mastify.utils.rememberAppState
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
@@ -153,8 +154,9 @@ fun AppScaffold(
   LaunchedEffect(Unit) {
     viewModel.changeAccountFlow.collect {
       navController.navigate(navController.currentDestination!!.route!!) {
-        popUpTo(NavGraphs.app) {
-          inclusive = true
+        popUpTo(NavGraphs.app) { inclusive = true }
+        NavGraphs.app.destinations.forEach {
+          if (it.isBottomBarScreen) navController.clearBackStack(it.route)
         }
       }
     }
