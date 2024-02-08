@@ -9,6 +9,45 @@ Mastify is an open-source [Mastodon](https://joinmastodon.org/) Android client c
 
 Follow [Mastify](https://mastodon.social/@mastify) on Mastodon for the latest development progress!
 
+## Roadmap
+
+Here're some features we're planning to implement in the future, you can check the project board [here](https://github.com/users/whitescent/projects/3?query=is%3Aopen+sort%3Aupdated-desc) for progress.
+
+- [x] Account Timeline (Individual algorithms to display the effect of a Twitter-like reply interface)
+- [x] Check Account Profile
+  - [ ] Follow/Unfollow Account
+  - [ ] Edit Profile
+- [x] Explore
+  - [x] Trend posts in this instance
+  - [x] Timeline in this instance
+  - [x] News in this intance
+  - [ ] Trend tags in this instance
+  - [ ] Timelines for other instances
+- [x] Post Action
+  - [x] Publish post
+    - [x] publish post with text/emoji/images/videos/poll
+    - [x] set the visibility of post
+    - [ ] set the language of post
+    - [ ] set the sensitive of post
+    - [ ] set spoiler warnings for post
+    - [ ] support @user input function
+    - [ ] support # function
+  - [x] Favorite/Reblog/Bookmark/Poll Post
+  - [x] Copy Post Text/Link
+  - [x] Reply Post
+    - [x] reply with emoji 
+    - [ ] reply with images
+    - [ ] reply with poll
+    - [ ] reply with visibility
+  - [ ] Delete Post
+- [ ] Account Action
+  - [ ] Mute Account
+  - [ ] Block Account
+  - [ ] Report Account
+- [ ] Search
+- [ ] Notification
+- [ ] Settings
+
 ## Contributing
 
 IDE: [Android Studio Canary](https://developer.android.com/studio/preview)
