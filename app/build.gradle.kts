@@ -87,6 +87,9 @@ android {
       File(layout.buildDirectory.asFile.get(), "generated/ksp/$name/kotlin")
     )
   }
+  androidResources {
+    generateLocaleConfig = true
+  }
 }
 
 ksp {
