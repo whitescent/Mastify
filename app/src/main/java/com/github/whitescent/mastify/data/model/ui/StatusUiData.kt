@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.data.model.ui
 
 import androidx.compose.runtime.Immutable
+import com.github.whitescent.mastify.extensions.buildHtmlText
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Card
@@ -64,7 +65,7 @@ data class StatusUiData(
 
   val actionableId inline get() = reblog?.id ?: id
 
-  val parsedContent: String = Jsoup.parse(content).body().text()
+  val parsedContent: String = buildHtmlText(Jsoup.parse(content)).text
   val isInReplyTo inline get() = inReplyToId != null
 
   val isInReplyToSomeone inline get() = mentions.size == 1 && isInReplyTo

@@ -31,6 +31,10 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.status.Status
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.Node
+import org.jsoup.nodes.TextNode
 
 // get all items size from 0 to index
 fun <A, B> Map<A, List<B>>.getSizeOfIndex(index: Int): Int {
@@ -186,5 +190,66 @@ fun String.buildTextWithLimit(
         append(text.substring(startIndex = maxLength, endIndex = text.length))
       }
     }
+  }
+}
+
+fun buildHtmlText(
+  document: Document,
+  filterMentionText: Boolean = false
+): AnnotatedString {
+  if (filterMentionText && document.select("p").size == 1) {
+    document.select("br").remove()
+  }
+  return buildAnnotatedString {
+    document.body().childNodes().forEach {
+      renderNode(it, filterMentionText)
+    }
+  }
+}
+
+private fun skipElement(element: Element): Boolean = element.hasClass("invisible")
+
+private fun AnnotatedString.Builder.renderText(text: String) = append(text)
+
+private fun AnnotatedString.Builder.renderElement(
+  element: Element,
+  filterMentionText: Boolean = false
+) {
+  if (skipElement(element = element)) return
+  when (val normalName = element.normalName()) {
+    "a" -> {
+      if (element.hasClass("u-url mention") && filterMentionText) return
+      val href = element.attr("href")
+      pushStringAnnotation(tag = "fake", annotation = href)
+      append(element.text())
+      pop()
+    }
+
+    "br" -> renderText("\n")
+
+    "code", "pre" -> renderText(element.text())
+
+    "span", "p", "i", "em" -> {
+      if (!filterMentionText) {
+        if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
+      }
+
+      element.childNodes().forEach {
+        renderNode(
+          node = it,
+          filterMentionText = filterMentionText
+        )
+      }
+    }
+  }
+}
+
+private fun AnnotatedString.Builder.renderNode(
+  node: Node,
+  filterMentionText: Boolean = false
+) {
+  when (node) {
+    is Element -> renderElement(node, filterMentionText)
+    is TextNode -> renderText(if (filterMentionText) node.wholeText.trim() else node.wholeText)
   }
 }
