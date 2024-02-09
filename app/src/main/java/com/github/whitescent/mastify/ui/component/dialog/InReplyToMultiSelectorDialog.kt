@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
@@ -72,7 +71,7 @@ fun InReplyToMultiSelectorDialog(
     ) {
       Column(
         modifier = Modifier
-          .widthIn(max = 420.dp)
+          .fillMaxWidth(.85f)
           .clip(AppTheme.shape.mediumAvatar)
           .background(AppTheme.colors.bottomSheetBackground)
           .padding(horizontal = 28.dp, vertical = 20.dp)
