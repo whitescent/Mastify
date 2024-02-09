@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 @Stable
 class AppState(
   private val appContentPaddingTop: Dp,
-  private val appContentPaddingBottom: Dp,
+  private val appContentPaddingBottom: Dp
 ) {
 
   private val scrollToTopChannel = Channel<Unit>()
@@ -43,6 +43,8 @@ class AppState(
     PaddingValues(top = appContentPaddingTop, bottom = appContentPaddingBottom)
   )
     private set
+
+  var hideBottomBar by mutableStateOf(false)
 
   fun setPaddingValues(paddingValues: PaddingValues) {
     appPaddingValues = paddingValues
@@ -60,5 +62,7 @@ class AppState(
 
 @Composable
 fun rememberAppState(topPadding: Dp = 0.dp, bottomPadding: Dp = 0.dp): AppState {
-  return rememberSaveable(saver = AppState.saver) { AppState(topPadding, bottomPadding) }
+  return rememberSaveable(saver = AppState.saver) {
+    AppState(topPadding, bottomPadding)
+  }
 }

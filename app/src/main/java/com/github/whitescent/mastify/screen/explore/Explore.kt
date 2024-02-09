@@ -176,7 +176,10 @@ fun Explore(
           focusRequester = focusRequester,
           onValueChange = viewModel::onValueChange,
           clearText = viewModel::clearInputText,
-          onFocusChange = { hideTitle = it }
+          onFocusChange = {
+            hideTitle = it
+            appState.hideBottomBar = it
+          }
         )
         HeightSpacer(value = 4.dp)
       }
