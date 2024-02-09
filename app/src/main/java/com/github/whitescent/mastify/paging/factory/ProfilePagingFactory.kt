@@ -81,6 +81,6 @@ class ProfilePagingFactory(
       )
     }.getOrThrow()
     list.emit(response.distinctBy { it.id })
-    return LoadResult.Page(endReached = response.isEmpty())
+    return LoadResult.Page(endReached = response.isEmpty() || response.size < pageSize)
   }
 }
