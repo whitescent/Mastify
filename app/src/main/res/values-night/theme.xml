@@ -17,7 +17,7 @@
   -->
 
 <resources>
-  <style name="Theme.Mastify" parent="android:Theme.Material.Light.NoActionBar">
+  <style name="Theme.Mastify" parent="android:Theme.Material.NoActionBar">
     <item name="android:windowBackground">@color/black</item>
   </style>
   <style name="Theme.Mastify.Splash" parent="Theme.SplashScreen">
