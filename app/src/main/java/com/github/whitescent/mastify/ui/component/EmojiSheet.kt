@@ -103,6 +103,7 @@ fun EmojiSheet(
                         lazyGridState.scrollToItem(emojiGroup.getSizeOfIndex(index))
                       }
                     }
+                    .size(24.dp)
                 )
               }
             }
