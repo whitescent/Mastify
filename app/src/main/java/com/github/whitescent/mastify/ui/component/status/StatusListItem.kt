@@ -20,8 +20,6 @@ package com.github.whitescent.mastify.ui.component.status
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +79,7 @@ import com.github.whitescent.mastify.ui.component.status.action.ShareButton
 import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
@@ -135,11 +134,7 @@ fun StatusListItem(
       }
       Column(
         modifier = Modifier
-          .clickable(
-            onClick = navigateToDetail,
-            indication = null,
-            interactionSource = remember { MutableInteractionSource() }
-          )
+          .clickableWithoutIndication(onClick = navigateToDetail)
           .let {
             if (status.reblog == null) {
               it.drawWithContent {
