@@ -58,6 +58,8 @@ interface MastifyColorScheme {
   val dialogItemSelectedBackground: Color get() = Color(0xFF5691E1).copy(alpha = 0.8f)
   val dialogItemUnselectedBackground: Color
   val dialogItemUnselectedContent: Color
+  val searchPreviewBorder: Color
+  val searchPreviewBackground: Color
   val isLight: Boolean
 }
 
@@ -90,6 +92,8 @@ object LightColorScheme : MastifyColorScheme {
   override val textLimitWarningBackground: Color = Color(0xFFf8d3de)
   override val dialogItemUnselectedBackground: Color = Color(0xFF203148).copy(alpha = 0.06f)
   override val dialogItemUnselectedContent: Color = Color(0xFF969696)
+  override val searchPreviewBorder: Color = Color(0xFFD7D7D7).copy(.23f)
+  override val searchPreviewBackground: Color = Color(0xFFFAFAFA)
   override val isLight: Boolean = true
 }
 
@@ -122,6 +126,8 @@ object DarkColorScheme : MastifyColorScheme {
   override val textLimitWarningBackground = Color(0xFFf3222d)
   override val dialogItemUnselectedBackground: Color = Color(0xFFC3DDFF).copy(alpha = 0.38f)
   override val dialogItemUnselectedContent: Color = Color(0xFFEEEEEE)
+  override val searchPreviewBorder: Color = Color(0xFF3C3C3C)
+  override val searchPreviewBackground: Color = Color(0xFF232323)
   override val isLight = false
 }
 

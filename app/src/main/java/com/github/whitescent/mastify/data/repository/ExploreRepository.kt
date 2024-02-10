@@ -27,9 +27,14 @@ import javax.inject.Inject
 class ExploreRepository @Inject constructor(
   private val api: MastodonApi
 ) {
-  suspend fun getPreviewResultsForSearch(keyword: String): NetworkResult<SearchResult?> {
+
+  suspend fun getPreviewResultsForSearch(
+    keyword: String,
+    limit: Int? = null,
+    offset: Int? = null
+  ): NetworkResult<SearchResult?> {
     if (keyword.isBlank()) return NetworkResult.success(null)
-    return api.searchSync(query = keyword, limit = 10).fold(
+    return api.searchSync(query = keyword, limit = limit, offset = offset).fold(
       {
         NetworkResult.success(it)
       },

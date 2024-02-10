@@ -132,7 +132,7 @@ class ExploreViewModel @Inject constructor(
       .debounce(200)
       .mapLatest {
         // reset search response when query is empty
-        val api = exploreRepository.getPreviewResultsForSearch(it)
+        val api = exploreRepository.getPreviewResultsForSearch(it, 10)
         api.getOrNull().also {
           if (api.isFailure) searchErrorChannel.send(Unit)
         }

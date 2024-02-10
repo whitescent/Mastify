@@ -137,6 +137,15 @@
   <string name="news_is_empty">There is no news about this instance yet</string>
   <string name="oops_something_went_wrong">Oops! Something went wrong</string>
   <string name="retry">retry</string>
+  <string name="search_description">Try searching for people, topics or keywords</string>
+  <plurals name="search_preview_user">
+    <item quantity="one">%d user</item>
+    <item quantity="other">%d users</item>
+  </plurals>
+  <plurals name="search_preview_tags">
+    <item quantity="one">%d topic</item>
+    <item quantity="other">%d topics</item>
+  </plurals>
 
   <!--  Post screen-->
   <string name="public_title">Public</string>

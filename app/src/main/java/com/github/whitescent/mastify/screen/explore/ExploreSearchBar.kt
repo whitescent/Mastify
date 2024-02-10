@@ -42,6 +42,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -62,8 +63,10 @@ fun ExploreSearchBar(
   focusRequester: FocusRequester,
   onValueChange: (String) -> Unit,
   clearText: () -> Unit,
-  onFocusChange: (Boolean) -> Unit
+  onFocusChange: (Boolean) -> Unit,
+  navigateToSearchResult: () -> Unit
 ) {
+  val keyboard = LocalSoftwareKeyboardController.current
   BasicTextField(
     value = text,
     onValueChange = onValueChange,
@@ -77,7 +80,10 @@ fun ExploreSearchBar(
         onFocusChange(it.isFocused)
       },
     keyboardActions = KeyboardActions(
-      onSearch = { }
+      onSearch = {
+        keyboard?.hide()
+        navigateToSearchResult()
+      }
     ),
     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
   ) {

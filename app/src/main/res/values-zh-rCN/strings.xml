@@ -134,6 +134,13 @@
   <string name="news_is_empty">这个实例现在还没有新闻</string>
   <string name="oops_something_went_wrong">似乎出现了一点问题</string>
   <string name="retry">重试</string>
+  <string name="search_description">尝试搜索用户、主题或关键字</string>
+  <plurals name="search_preview_user">
+    <item quantity="other">%d 位用户</item>
+  </plurals>
+  <plurals name="search_preview_tags">
+    <item quantity="other">%d 个话题标签</item>
+  </plurals>
 
   <!--  Post screen-->
   <string name="public_title">公开</string>
