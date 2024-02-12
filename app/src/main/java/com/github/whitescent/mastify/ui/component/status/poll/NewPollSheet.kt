@@ -28,7 +28,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -249,7 +249,7 @@ fun NewPollSheet(
       sheetState = deadlineSheetState,
       containerColor = AppTheme.colors.bottomSheetBackground,
       onDismissRequest = { openDeadlineSheet = false },
-      windowInsets = WindowInsets.statusBars
+      windowInsets = WindowInsets.systemBars
     ) {
       Column(Modifier.padding(vertical = 14.dp)) {
         CenterRow(Modifier.padding(horizontal = 14.dp)) {

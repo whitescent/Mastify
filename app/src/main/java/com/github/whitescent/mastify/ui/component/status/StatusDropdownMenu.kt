@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -98,7 +98,7 @@ fun StatusActionDrawer(
   }
   ModalBottomSheet(
     sheetState = sheetState,
-    windowInsets = WindowInsets.statusBars,
+    windowInsets = WindowInsets.systemBars,
     containerColor = AppTheme.colors.bottomSheetBackground,
     modifier = modifier,
     onDismissRequest = onDismissRequest
