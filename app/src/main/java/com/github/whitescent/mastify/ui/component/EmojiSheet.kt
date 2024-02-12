@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -69,7 +69,7 @@ fun EmojiSheet(
   val lazyGridState = rememberLazyGridState()
   ModalBottomSheet(
     sheetState = sheetState,
-    windowInsets = WindowInsets.statusBars,
+    windowInsets = WindowInsets.systemBars,
     onDismissRequest = onDismissRequest,
     containerColor = AppTheme.colors.bottomSheetBackground
   ) {
