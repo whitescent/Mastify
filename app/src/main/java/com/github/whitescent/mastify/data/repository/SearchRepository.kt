@@ -15,18 +15,27 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.network.model.status
+package com.github.whitescent.mastify.data.repository
 
-import kotlinx.serialization.Serializable
+import at.connyduck.calladapter.networkresult.getOrThrow
+import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.network.model.search.SearchResult
+import javax.inject.Inject
 
-@Serializable
-data class Hashtag(
-  val name: String,
-  val url: String,
-  val following: Boolean?,
-  val history: List<History>?
+class SearchRepository @Inject constructor(
+  private val api: MastodonApi
 ) {
-  val todayPost get() = history?.firstOrNull()?.uses?.toInt() ?: 0
-  val posts get() = history?.sumOf { it.uses.toInt() } ?: 0
-  val participants get() = history?.sumOf { it.accounts.toInt() } ?: 0
+  suspend fun fetchSearchResult(
+    keyword: String,
+    type: String,
+    resolve: Boolean? = false,
+    limit: Int? = null,
+    offset: Int? = null
+  ): SearchResult = api.searchSync(
+    query = keyword,
+    limit = limit,
+    offset = offset,
+    type = type,
+    resolve = resolve
+  ).getOrThrow()
 }

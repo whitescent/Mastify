@@ -59,6 +59,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -73,6 +74,9 @@ import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Account
+import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Tags
+import com.github.whitescent.mastify.screen.search.SearchResultNavArgs
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -109,6 +113,7 @@ fun Explore(
   val uiState = viewModel.uiState
   val context = LocalContext.current
   val density = LocalDensity.current
+  val keyboard = LocalSoftwareKeyboardController.current
 
   val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
 
@@ -177,7 +182,7 @@ fun Explore(
             appState.hideBottomBar = it
           },
           navigateToSearchResult = {
-            navigator.navigate(SearchResultDestination)
+            navigator.navigate(SearchResultDestination(SearchResultNavArgs(uiState.text, null)))
           }
         )
         HeightSpacer(value = 8.dp)
@@ -189,12 +194,30 @@ fun Explore(
         when (it) {
           true -> {
             ExploreSearchPreviewContent(
-              isTextEmpty = uiState.text.isEmpty(),
+              query = uiState.text,
               searchingResult = searchingResult,
               navigateToAccount = { account ->
+                keyboard?.hide()
                 navigator.navigate(ProfileDestination(account))
               },
-              navigateToTag = {}
+              navigateToResult = {
+                keyboard?.hide()
+                navigator.navigate(
+                  SearchResultDestination(SearchResultNavArgs(uiState.text, null))
+                )
+              },
+              navigateToAccountInResult = {
+                keyboard?.hide()
+                navigator.navigate(
+                  SearchResultDestination(SearchResultNavArgs(uiState.text, Account))
+                )
+              },
+              navigateToTag = {
+                keyboard?.hide()
+                navigator.navigate(
+                  SearchResultDestination(SearchResultNavArgs(uiState.text, Tags))
+                )
+              }
             )
           }
           else -> {

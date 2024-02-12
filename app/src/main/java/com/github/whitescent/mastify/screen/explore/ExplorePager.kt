@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.explore
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
@@ -33,7 +32,6 @@ import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LazyPagingList
-import com.github.whitescent.mastify.paging.rememberPaginatorUiState
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.status.LazyTimelinePagingList
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
@@ -44,7 +42,6 @@ import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ExplorePager(
   state: PagerState,
@@ -94,7 +91,6 @@ fun ExplorePager(
         2 -> {
           LazyPagingList(
             paginator = viewModel.newsPaginator,
-            paginatorUiState = rememberPaginatorUiState(viewModel.newsPaginator),
             list = newsList.toImmutableList(),
             pagePlaceholderType = PagePlaceholderType.Explore(News),
             lazyListState = newsListState,

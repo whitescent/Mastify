@@ -84,7 +84,6 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.N
 import com.github.whitescent.mastify.extensions.getReplyChainType
 import com.github.whitescent.mastify.extensions.hasUnloadedParent
 import com.github.whitescent.mastify.paging.LazyPagingList
-import com.github.whitescent.mastify.paging.rememberPaginatorUiState
 import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -171,9 +170,6 @@ fun Home(
           lazyState.firstVisibleItemIndex == 0
         }
       }
-
-      val paginatorUiState = rememberPaginatorUiState(viewModel.paginator)
-
       Column {
         HomeTopBar(
           avatar = activeAccount.profilePictureUrl,
@@ -188,7 +184,6 @@ fun Home(
         Box {
           LazyPagingList(
             paginator = viewModel.paginator,
-            paginatorUiState = paginatorUiState,
             lazyListState = lazyState,
             pagePlaceholderType = PagePlaceholderType.Home,
             list = timeline,

@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.screen.explore
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -57,12 +58,14 @@ import com.github.whitescent.mastify.utils.clickableWithoutIndication
 
 @Composable
 fun ExploreSearchPreviewContent(
-  isTextEmpty: Boolean,
+  query: String,
   searchingResult: SearchResult?,
   navigateToAccount: (Account) -> Unit,
+  navigateToResult: () -> Unit,
+  navigateToAccountInResult: () -> Unit,
   navigateToTag: () -> Unit
 ) {
-  Crossfade(targetState = isTextEmpty) {
+  Crossfade(query.isEmpty()) {
     when (it) {
       true -> {
         Column(
@@ -86,9 +89,43 @@ fun ExploreSearchPreviewContent(
               .padding(horizontal = 12.dp)
               .verticalScroll(rememberScrollState())
           ) {
-            SearchPreviewPanel(PreviewType.Account, searchingResult, navigateToAccount, navigateToTag)
+            Surface(
+              shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+              color = AppTheme.colors.searchPreviewBackground,
+              contentColor = AppTheme.colors.primaryContent,
+              border = BorderStroke(0.4.dp, AppTheme.colors.searchPreviewBorder),
+              onClick = navigateToResult
+            ) {
+              CenterRow(Modifier.padding(horizontal = 8.dp)) {
+                Text(
+                  text = stringResource(id = R.string.find_result, query),
+                  modifier = Modifier.padding(12.dp).weight(1f),
+                  fontSize = 17.sp,
+                  fontWeight = FontWeight.Medium
+                )
+                Icon(
+                  painter = painterResource(R.drawable.right_arrow),
+                  contentDescription = null,
+                  modifier = Modifier.size(24.dp)
+                )
+              }
+            }
             HeightSpacer(value = 8.dp)
-            SearchPreviewPanel(PreviewType.Tags, searchingResult, navigateToAccount, navigateToTag)
+            SearchPreviewPanel(
+              type = SearchNavigateType.Account,
+              searchingResult = searchingResult,
+              navigateToAccount = navigateToAccount,
+              navigateToAccountInSearchResult = navigateToAccountInResult,
+              navigateToTag = navigateToTag
+            )
+            HeightSpacer(value = 8.dp)
+            SearchPreviewPanel(
+              type = SearchNavigateType.Tags,
+              searchingResult = searchingResult,
+              navigateToAccount = navigateToAccount,
+              navigateToAccountInSearchResult = navigateToAccountInResult,
+              navigateToTag = navigateToTag
+            )
           }
         }
       }
@@ -96,46 +133,51 @@ fun ExploreSearchPreviewContent(
   }
 }
 
-enum class PreviewType {
+enum class SearchNavigateType {
   Account, Tags
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SearchPreviewPanel(
-  type: PreviewType,
+  type: SearchNavigateType,
   searchingResult: SearchResult,
   navigateToAccount: (Account) -> Unit,
+  navigateToAccountInSearchResult: () -> Unit,
   navigateToTag: () -> Unit
 ) {
   when (type) {
-    PreviewType.Account -> if (searchingResult.accounts.isEmpty()) return
-    PreviewType.Tags -> if (searchingResult.hashtags.isEmpty()) return
+    SearchNavigateType.Account -> if (searchingResult.accounts.isEmpty()) return
+    SearchNavigateType.Tags -> if (searchingResult.hashtags.isEmpty()) return
   }
   Box(
     modifier = Modifier
       .clip(AppTheme.shape.betweenSmallAndMediumAvatar)
-      .border(0.4.dp, AppTheme.colors.searchPreviewBorder, AppTheme.shape.betweenSmallAndMediumAvatar)
+      .border(
+        width = 0.4.dp,
+        color = AppTheme.colors.searchPreviewBorder,
+        shape = AppTheme.shape.betweenSmallAndMediumAvatar
+      )
       .background(AppTheme.colors.searchPreviewBackground)
   ) {
     Column(Modifier.padding(vertical = 16.dp)) {
       CenterRow(
         modifier = Modifier
           .fillMaxWidth()
-          .clickableWithoutIndication {
-            when (type) {
-              PreviewType.Account -> { }
-              PreviewType.Tags -> { }
+          .clickableWithoutIndication(
+            onClick = when (type) {
+              SearchNavigateType.Account -> navigateToAccountInSearchResult
+              SearchNavigateType.Tags -> navigateToTag
             }
-          }
+          )
           .padding(horizontal = 16.dp)
       ) {
         CenterRow(Modifier.weight(1f)) {
           Icon(
             painter = painterResource(
               id = when (type) {
-                PreviewType.Account -> R.drawable.user_list
-                PreviewType.Tags -> R.drawable.hash_tag
+                SearchNavigateType.Account -> R.drawable.user_list
+                SearchNavigateType.Tags -> R.drawable.hash_tag
               }
             ),
             contentDescription = null,
@@ -145,9 +187,9 @@ private fun SearchPreviewPanel(
           WidthSpacer(value = 4.dp)
           Text(
             text = when (type) {
-              PreviewType.Account ->
+              SearchNavigateType.Account ->
                 pluralStringResource(R.plurals.search_preview_user, searchingResult.accounts.size, searchingResult.accounts.size)
-              PreviewType.Tags ->
+              SearchNavigateType.Tags ->
                 pluralStringResource(R.plurals.search_preview_tags, searchingResult.hashtags.size, searchingResult.hashtags.size)
             },
             color = AppTheme.colors.primaryContent,
@@ -164,7 +206,7 @@ private fun SearchPreviewPanel(
       }
       AppHorizontalDivider(Modifier.fillMaxWidth().padding(top = 12.dp))
       when (type) {
-        PreviewType.Account -> {
+        SearchNavigateType.Account -> {
           searchingResult.accounts.forEach {
             val isLatest = it == searchingResult.accounts.last()
             SearchPreviewResultUserItem(
@@ -183,7 +225,7 @@ private fun SearchPreviewPanel(
             if (!isLatest) AppHorizontalDivider(Modifier.fillMaxWidth())
           }
         }
-        PreviewType.Tags -> {
+        SearchNavigateType.Tags -> {
           FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp)

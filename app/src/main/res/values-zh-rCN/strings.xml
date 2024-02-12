@@ -135,12 +135,18 @@
   <string name="oops_something_went_wrong">似乎出现了一点问题</string>
   <string name="retry">重试</string>
   <string name="search_description">尝试搜索用户、主题或关键字</string>
+  <string name="find_result">寻找所有有关 “%s” 的结果</string>
   <plurals name="search_preview_user">
     <item quantity="other">%d 位用户</item>
   </plurals>
   <plurals name="search_preview_tags">
     <item quantity="other">%d 个话题标签</item>
   </plurals>
+  <string name="nothing_to_see_here">这里空空如也~</string>
+
+  <!-- Search screen -->
+  <string name="accounts_title">用户</string>
+  <string name="hashtags_title">话题标签</string>
 
   <!--  Post screen-->
   <string name="public_title">公开</string>

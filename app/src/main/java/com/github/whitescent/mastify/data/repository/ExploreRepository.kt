@@ -24,9 +24,7 @@ import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import javax.inject.Inject
 
-class ExploreRepository @Inject constructor(
-  private val api: MastodonApi
-) {
+class ExploreRepository @Inject constructor(private val api: MastodonApi) {
 
   suspend fun getPreviewResultsForSearch(
     keyword: String,

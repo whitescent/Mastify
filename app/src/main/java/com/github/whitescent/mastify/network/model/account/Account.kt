@@ -43,7 +43,7 @@ data class Account(
   val emojis: List<Emoji>
 ) {
 
-  val noteWithEmoji = generateHtmlContentWithEmoji(note, emojis)
+  val noteWithEmoji = generateHtmlContentWithEmoji(note, emojis).trim()
   val fieldsWithEmoji = fields.map {
     it.copy(
       name = generateHtmlContentWithEmoji(it.name, emojis),
