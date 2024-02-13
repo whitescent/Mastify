@@ -19,10 +19,8 @@ package com.github.whitescent.mastify.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
@@ -311,9 +309,8 @@ private fun NewStatusToast(
 ) {
   AnimatedVisibility(
     visible = visible,
-    enter = slideInVertically(tween(300)) + fadeIn(),
-    exit = scaleOut(targetScale = 0.8f) +
-      slideOutVertically(tween(300)) { -it } + fadeOut(),
+    enter = slideInVertically { -it * 4 } + fadeIn(),
+    exit = slideOutVertically { -it * 4 } + fadeOut(),
     modifier = modifier
   ) {
     Surface(
