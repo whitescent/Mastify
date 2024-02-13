@@ -44,8 +44,11 @@ class StatusSnackbarState {
   }
 }
 
-enum class StatusSnackbarType {
-  Text, Link, Bookmark, Error
+sealed class StatusSnackbarType {
+  data object Text : StatusSnackbarType()
+  data object Link : StatusSnackbarType()
+  data object Bookmark : StatusSnackbarType()
+  data class Error(val message: String?) : StatusSnackbarType()
 }
 
 @Composable

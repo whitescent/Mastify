@@ -95,7 +95,7 @@ interface MastodonApi {
   @GET("api/v1/statuses/{id}")
   suspend fun status(
     @Path("id") statusId: String
-  ): NetworkResult<Status>
+  ): Response<Status>
 
   @GET("api/v1/trends/statuses")
   suspend fun trendingStatus(
@@ -148,7 +148,7 @@ interface MastodonApi {
   @GET("api/v1/statuses/{id}/context")
   suspend fun statusContext(
     @Path("id") statusId: String
-  ): Response<StatusContext>
+  ): NetworkResult<StatusContext>
 
   @GET("api/v1/accounts/{id}")
   suspend fun account(

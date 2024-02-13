@@ -91,10 +91,10 @@ fun StatusSnackBar(
       Surface(
         shape = RoundedCornerShape(12.dp),
         color = when (type) {
-          StatusSnackbarType.Text -> Color(0xFF35465E)
-          StatusSnackbarType.Link -> Color(0xFF1B7CFF)
-          StatusSnackbarType.Bookmark -> Color(0xFF498AE0)
-          StatusSnackbarType.Error -> Color(0xFFF53232)
+          is StatusSnackbarType.Text -> Color(0xFF35465E)
+          is StatusSnackbarType.Link -> Color(0xFF1B7CFF)
+          is StatusSnackbarType.Bookmark -> Color(0xFF498AE0)
+          is StatusSnackbarType.Error -> Color(0xFFF53232)
         },
         contentColor = Color.White,
         shadowElevation = 4.dp,
@@ -104,25 +104,26 @@ fun StatusSnackBar(
           Icon(
             painter = painterResource(
               id = when (type) {
-                StatusSnackbarType.Text -> R.drawable.copy_fill
-                StatusSnackbarType.Link -> R.drawable.link_simple
-                StatusSnackbarType.Bookmark -> R.drawable.bookmark_fill
-                StatusSnackbarType.Error -> R.drawable.cloud_warning
+                is StatusSnackbarType.Text -> R.drawable.copy_fill
+                is StatusSnackbarType.Link -> R.drawable.link_simple
+                is StatusSnackbarType.Bookmark -> R.drawable.bookmark_fill
+                is StatusSnackbarType.Error -> R.drawable.cloud_warning
               }
             ),
             contentDescription = null,
             modifier = Modifier.size(24.dp)
           )
           WidthSpacer(value = 8.dp)
+          val snackbarMessage = when (type) {
+            is StatusSnackbarType.Text -> stringResource(R.string.text_copied)
+            is StatusSnackbarType.Link -> stringResource(R.string.link_copied)
+            is StatusSnackbarType.Bookmark -> stringResource(R.string.bookmarked_snackBar)
+            is StatusSnackbarType.Error -> {
+              type.message ?: stringResource(id = R.string.load_post_error)
+            }
+          }
           Text(
-            text = stringResource(
-              when (type) {
-                StatusSnackbarType.Text -> R.string.text_copied
-                StatusSnackbarType.Link -> R.string.link_copied
-                StatusSnackbarType.Bookmark -> R.string.bookmarked_snackBar
-                StatusSnackbarType.Error -> R.string.load_post_error
-              }
-            ),
+            text = snackbarMessage,
             fontSize = 16.sp,
           )
         }

@@ -46,6 +46,7 @@ import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.ResponseThrowable
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -179,7 +180,12 @@ class StatusDetailViewModel @Inject constructor(
         statusRepository.getSingleStatus(navArgs.status.id)
           .catch {
             it.printStackTrace()
-            timelineUseCase.onStatusLoadError()
+            timelineUseCase.onStatusLoadError((it as? ResponseThrowable) ?: it)
+            if (it as? ResponseThrowable != null && it.code == 404) {
+              val accountId = accountDao.getActiveAccount()!!.id
+              val isInDb = timelineDao.getSingleStatusWithId(accountId, navArgs.status.id) != null
+              if (isInDb) timelineDao.clear(accountId, navArgs.status.id)
+            }
           }
           .collect {
             latestStatus = it.toUiData()
