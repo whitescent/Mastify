@@ -88,6 +88,7 @@ import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
@@ -224,6 +225,9 @@ fun Home(
                   navigator.navigate(
                     StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
                   )
+                },
+                navigateToTagInfo = {
+                  navigator.navigate(TagInfoDestination(it))
                 },
                 navigateToProfile = {
                   navigator.navigate(ProfileDestination(it))

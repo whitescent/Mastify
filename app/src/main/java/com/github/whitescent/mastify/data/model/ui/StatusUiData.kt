@@ -22,6 +22,7 @@ import com.github.whitescent.mastify.extensions.buildHtmlText
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Card
+import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Mention
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
@@ -45,6 +46,7 @@ data class StatusUiData(
   val content: String,
   val accountEmojis: ImmutableList<Emoji>,
   val emojis: ImmutableList<Emoji>,
+  val tags: ImmutableList<Hashtag>,
   val mentions: ImmutableList<Mention>,
   val attachments: ImmutableList<Status.Attachment>,
   val actionable: Status,

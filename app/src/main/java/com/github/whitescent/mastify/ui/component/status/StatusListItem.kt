@@ -96,6 +96,7 @@ fun StatusListItem(
   action: (StatusAction) -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit
 ) {
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
@@ -172,7 +173,8 @@ fun StatusListItem(
           onClickMedia = {
             navigateToMedia(status.attachments, it)
           },
-          navigateToProfile = navigateToProfile
+          navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo
         )
       }
     }
@@ -221,6 +223,7 @@ private fun StatusContent(
   action: (StatusAction) -> Unit,
   onClickMedia: (Int) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
 ) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
@@ -341,6 +344,7 @@ private fun StatusContent(
                         context = context,
                         primaryColor = primaryColor,
                         navigateToProfile = navigateToProfile,
+                        navigateToTagInfo = navigateToTagInfo,
                         link = statusUiData.mentions.first().url
                       )
                     },
@@ -362,6 +366,7 @@ private fun StatusContent(
                           context = context,
                           primaryColor = primaryColor,
                           navigateToProfile = navigateToProfile,
+                          navigateToTagInfo = navigateToTagInfo,
                           link = span
                         )
                       },

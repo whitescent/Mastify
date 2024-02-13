@@ -163,7 +163,7 @@ class ExploreViewModel @Inject constructor(
         else -> Unit
       }
       timelineUseCase.onStatusAction(action)?.let { response ->
-        if (action is StatusAction.VotePoll) {
+        if (action is StatusAction.VotePoll && response.isSuccess) {
           val targetStatus = response.getOrNull()!!
           trendingPagingFactory.list.update {
             updatePollOfStatusList(it, targetStatus.id, targetStatus.poll!!)

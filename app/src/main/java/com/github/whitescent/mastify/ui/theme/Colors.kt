@@ -42,8 +42,8 @@ interface MastifyColorScheme {
   val hintText: Color
   val reblogged: Color
   val replyTextFieldBorder: Color
-  val followButton: Color
-  val unfollowButton: Color
+  val followButtonBackground: Color get() = accent
+  val unfollowButtonBackground: Color get() = Color(0xFFFF0000).copy(.56f)
   val defaultHeader: Color
   val divider: Color
   val bottomSheetBackground: Color
@@ -77,8 +77,6 @@ object LightColorScheme : MastifyColorScheme {
   override val hintText: Color = Color(0xFF1d9bf0)
   override val reblogged: Color = Color(0xFF18BE64)
   override val replyTextFieldBorder: Color = Color(0xFFE6E6E6)
-  override val followButton: Color = Color(0xFF007BEC)
-  override val unfollowButton: Color = Color(0xFF007BEC).copy(0.44f)
   override val defaultHeader: Color = Color(0xFF1d9bf0)
   override val divider: Color = Color(0xFFD7D7D7).copy(0.5f)
   override val bottomSheetBackground: Color = Color.White
@@ -111,8 +109,6 @@ object DarkColorScheme : MastifyColorScheme {
   override val hintText = Color(0xFF1d9bf0)
   override val reblogged = Color(0xFF18BE64)
   override val replyTextFieldBorder = Color(0xFF454545)
-  override val followButton = Color(0xFF1C79E7)
-  override val unfollowButton = Color.White.copy(0.44f)
   override val defaultHeader = Color(0xFF1d9bf0)
   override val divider = Color(0xFFD7D7D7).copy(0.1f)
   override val bottomSheetBackground = Color(0xFF31323A)

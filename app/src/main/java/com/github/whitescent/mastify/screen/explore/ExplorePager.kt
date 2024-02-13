@@ -52,6 +52,7 @@ fun ExplorePager(
   modifier: Modifier = Modifier,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
 ) {
   val trendingStatusList by viewModel.trending.collectAsStateWithLifecycle()
@@ -63,7 +64,7 @@ fun ExplorePager(
     pageContent = { page ->
       when (page) {
         0 -> LazyTimelinePagingList(
-          statusListState = trendingStatusListState,
+          lazyListState = trendingStatusListState,
           paginator = viewModel.trendingPaginator,
           pagingList = trendingStatusList.distinctBy { it.id }.toUiData().toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Explore(Trending),
@@ -73,10 +74,11 @@ fun ExplorePager(
           enablePullRefresh = true,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           navigateToMedia = navigateToMedia,
         )
         1 -> LazyTimelinePagingList(
-          statusListState = publicTimelineListState,
+          lazyListState = publicTimelineListState,
           paginator = viewModel.publicTimelinePaginator,
           pagingList = publicTimelineList.toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Explore(PublicTimeline),
@@ -86,6 +88,7 @@ fun ExplorePager(
           enablePullRefresh = true,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           navigateToMedia = navigateToMedia,
         )
         2 -> {

@@ -25,6 +25,7 @@ import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
 import com.github.whitescent.mastify.network.model.search.SearchResult
+import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.MediaUploadResult
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Poll
@@ -147,7 +148,7 @@ interface MastodonApi {
   @GET("api/v1/statuses/{id}/context")
   suspend fun statusContext(
     @Path("id") statusId: String
-  ): NetworkResult<StatusContext>
+  ): Response<StatusContext>
 
   @GET("api/v1/accounts/{id}")
   suspend fun account(
@@ -228,4 +229,23 @@ interface MastodonApi {
     @Part description: MultipartBody.Part? = null,
     @Part focus: MultipartBody.Part? = null
   ): Response<MediaUploadResult>
+
+  @GET("api/v1/tags/{name}")
+  suspend fun tag(@Path("name") name: String): NetworkResult<Hashtag>
+
+  @GET("api/v1/timelines/tag/{hashtag}")
+  suspend fun hashtagTimeline(
+    @Path("hashtag") hashtag: String,
+    @Query("any[]") any: List<String>?,
+    @Query("local") local: Boolean?,
+    @Query("max_id") maxId: String?,
+    @Query("since_id") sinceId: String?,
+    @Query("limit") limit: Int?
+  ): Response<List<Status>>
+
+  @POST("api/v1/tags/{name}/follow")
+  suspend fun followTag(@Path("name") name: String): NetworkResult<Hashtag>
+
+  @POST("api/v1/tags/{name}/unfollow")
+  suspend fun unfollowTag(@Path("name") name: String): NetworkResult<Hashtag>
 }

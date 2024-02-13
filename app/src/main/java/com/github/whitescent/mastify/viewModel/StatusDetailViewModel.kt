@@ -106,7 +106,7 @@ class StatusDetailViewModel @Inject constructor(
       statusList = updateStatusListActions(uiState.statusList, action, id).toImmutableList()
     )
     timelineUseCase.onStatusAction(action)?.let {
-      if (action is VotePoll) {
+      if (action is VotePoll && it.isSuccess) {
         val targetStatus = it.getOrNull()!!
         uiState = uiState.copy(
           statusList = updatePollOfStatusList(

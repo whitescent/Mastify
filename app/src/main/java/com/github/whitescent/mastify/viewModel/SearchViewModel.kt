@@ -149,7 +149,7 @@ class SearchViewModel @Inject constructor(
         updateStatusListActions(it, action, status.id)
       }
       timelineUseCase.onStatusAction(action)?.let { response ->
-        if (action is StatusAction.VotePoll) {
+        if (action is StatusAction.VotePoll && response.isSuccess) {
           val targetStatus = response.getOrNull()!!
           statusPagingFactory.list.update {
             TimelineUseCase.updatePollOfStatusList(

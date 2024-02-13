@@ -74,6 +74,7 @@ import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Account
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Tags
 import com.github.whitescent.mastify.screen.search.SearchResultNavArgs
@@ -217,6 +218,9 @@ fun Explore(
                 navigator.navigate(
                   SearchResultDestination(SearchResultNavArgs(uiState.text, Tags))
                 )
+              },
+              navigateToTagInfo = { hashtag ->
+                navigator.navigate(TagInfoDestination(hashtag))
               }
             )
           }
@@ -250,6 +254,9 @@ fun Explore(
                   navigator.navigate(
                     StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
                   )
+                },
+                navigateToTagInfo = { hashtag ->
+                  navigator.navigate(TagInfoDestination(hashtag))
                 },
                 navigateToProfile = { targetAccount ->
                   navigator.navigate(

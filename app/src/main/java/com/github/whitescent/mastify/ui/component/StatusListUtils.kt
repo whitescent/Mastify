@@ -51,6 +51,7 @@ fun LazyListScope.statusComment(
   action: (StatusAction, String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (List<Status.Attachment>, Int) -> Unit,
 ) {
   when (descendants.isEmpty()) {
@@ -69,6 +70,7 @@ fun LazyListScope.statusComment(
           navigateToDetail = { navigateToDetail(item.actionable) },
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           modifier = Modifier.fillMaxWidth().animateItemPlacement(),
         )
         if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()

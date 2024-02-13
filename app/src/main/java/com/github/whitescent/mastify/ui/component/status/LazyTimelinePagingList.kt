@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
@@ -75,7 +76,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun LazyTimelinePagingList(
-  statusListState: LazyListState,
+  lazyListState: LazyListState = rememberLazyListState(),
   paginator: Paginator,
   pagingList: ImmutableList<StatusUiData>,
   modifier: Modifier = Modifier,
@@ -86,6 +87,7 @@ fun LazyTimelinePagingList(
   action: (StatusAction, Status) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   val context = LocalContext.current
@@ -128,14 +130,14 @@ fun LazyTimelinePagingList(
         }
       }
       else -> {
-        val visibleItemsIndex by remember(statusListState) {
+        val visibleItemsIndex by remember(lazyListState) {
           derivedStateOf {
-            statusListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
+            lazyListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
           }
         }
         LazyColumn(
-          state = statusListState,
-          modifier = modifier.fillMaxSize().drawVerticalScrollbar(statusListState),
+          state = lazyListState,
+          modifier = modifier.drawVerticalScrollbar(lazyListState),
           contentPadding = contentPadding
         ) {
           itemsIndexed(
@@ -161,6 +163,7 @@ fun LazyTimelinePagingList(
               },
               navigateToProfile = navigateToProfile,
               navigateToMedia = navigateToMedia,
+              navigateToTagInfo = navigateToTagInfo
             )
             if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
               AppHorizontalDivider()

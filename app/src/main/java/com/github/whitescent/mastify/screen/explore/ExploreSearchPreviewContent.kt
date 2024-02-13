@@ -52,6 +52,7 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.TextWithEmoji
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
@@ -63,7 +64,8 @@ fun ExploreSearchPreviewContent(
   navigateToAccount: (Account) -> Unit,
   navigateToResult: () -> Unit,
   navigateToAccountInResult: () -> Unit,
-  navigateToTag: () -> Unit
+  navigateToTag: () -> Unit,
+  navigateToTagInfo: (String) -> Unit
 ) {
   Crossfade(query.isEmpty()) {
     when (it) {
@@ -116,7 +118,8 @@ fun ExploreSearchPreviewContent(
               searchingResult = searchingResult,
               navigateToAccount = navigateToAccount,
               navigateToAccountInSearchResult = navigateToAccountInResult,
-              navigateToTag = navigateToTag
+              navigateToTag = navigateToTag,
+              navigateToTagInfo = navigateToTagInfo
             )
             HeightSpacer(value = 8.dp)
             SearchPreviewPanel(
@@ -124,7 +127,8 @@ fun ExploreSearchPreviewContent(
               searchingResult = searchingResult,
               navigateToAccount = navigateToAccount,
               navigateToAccountInSearchResult = navigateToAccountInResult,
-              navigateToTag = navigateToTag
+              navigateToTag = navigateToTag,
+              navigateToTagInfo = navigateToTagInfo
             )
           }
         }
@@ -144,7 +148,8 @@ private fun SearchPreviewPanel(
   searchingResult: SearchResult,
   navigateToAccount: (Account) -> Unit,
   navigateToAccountInSearchResult: () -> Unit,
-  navigateToTag: () -> Unit
+  navigateToTag: () -> Unit,
+  navigateToTagInfo: (String) -> Unit
 ) {
   when (type) {
     SearchNavigateType.Account -> if (searchingResult.accounts.isEmpty()) return
@@ -210,9 +215,7 @@ private fun SearchPreviewPanel(
           searchingResult.accounts.forEach {
             val isLatest = it == searchingResult.accounts.last()
             SearchPreviewResultUserItem(
-              avatar = it.avatar,
-              username = it.realDisplayName,
-              instance = it.fullname,
+              account = it,
               modifier = Modifier
                 .fillMaxWidth()
                 .clickableWithoutIndication {
@@ -231,7 +234,9 @@ private fun SearchPreviewPanel(
             modifier = Modifier.padding(top = 12.dp, start = 12.dp, end = 12.dp)
           ) {
             searchingResult.hashtags.forEach {
-              SearchPreviewResultHashtagItem(it.name, navigateToTag)
+              SearchPreviewResultHashtagItem(it.name) {
+                navigateToTagInfo(it.name)
+              }
             }
           }
         }
@@ -257,26 +262,25 @@ private fun SearchPreviewResultHashtagItem(name: String, onClick: () -> Unit) {
 
 @Composable
 private fun SearchPreviewResultUserItem(
-  avatar: String,
-  username: String,
-  instance: String,
+  account: Account,
   modifier: Modifier = Modifier
 ) {
   CenterRow(modifier = modifier) {
     CircleShapeAsyncImage(
-      model = avatar,
+      model = account.avatar,
       shape = AppTheme.shape.betweenSmallAndMediumAvatar,
       modifier = Modifier.size(42.dp)
     )
     WidthSpacer(value = 6.dp)
     Column {
-      Text(
-        text = username,
+      TextWithEmoji(
+        text = account.realDisplayName,
         color = AppTheme.colors.primaryContent,
-        fontSize = 18.sp
+        fontSize = 18.sp,
+        emojis = account.emojis
       )
       Text(
-        text = instance,
+        text = account.domain,
         color = AppTheme.colors.primaryContent.copy(0.5f),
         fontSize = 14.sp
       )

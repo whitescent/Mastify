@@ -57,6 +57,7 @@ import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.screen.explore.ExploreSearchBar
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
@@ -147,7 +148,9 @@ fun SearchResult(
         navigateToDetail = {
           navigator.navigate(StatusDetailDestination(it.actionableStatus, null))
         },
-        navigateToTagInfo = { },
+        navigateToTagInfo = {
+          navigator.navigate(TagInfoDestination(it))
+        },
         navigateToMedia = { attachments, targetIndex ->
           navigator.navigate(
             StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)

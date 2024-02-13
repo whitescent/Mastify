@@ -41,6 +41,7 @@ fun Status.toUiData(): StatusUiData = StatusUiData(
   accountEmojis = (reblog?.account?.emojis ?: account.emojis).toImmutableList(),
   emojis = (reblog?.emojis ?: emojis).toImmutableList(),
   mentions = (reblog?.mentions ?: mentions).toImmutableList(),
+  tags = (reblog?.tags ?: tags).toImmutableList(),
   card = (reblog?.card ?: card)?.let {
     it.copy(
       title = it.title.trim(),

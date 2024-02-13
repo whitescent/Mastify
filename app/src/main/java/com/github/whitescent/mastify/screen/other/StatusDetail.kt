@@ -64,6 +64,7 @@ import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.ClickableIcon
@@ -186,6 +187,9 @@ fun StatusDetail(
         navigateToProfile = {
           navigator.navigate(ProfileDestination(it))
         },
+        navigateToTagInfo = {
+          navigator.navigate(TagInfoDestination(it))
+        },
         modifier = Modifier.weight(1f)
       )
       ReplyTextField(
@@ -289,6 +293,7 @@ fun StatusDetailContent(
   action: (StatusAction, String) -> Unit,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (List<Attachment>, Int) -> Unit,
 ) {
   val currentStatusIndex by remember(statusList.size) {
@@ -312,6 +317,7 @@ fun StatusDetailContent(
             action = { action(it, repliedStatus.id) },
             navigateToMedia = navigateToMedia,
             navigateToProfile = navigateToProfile,
+            navigateToTagInfo = navigateToTagInfo,
             inReply = currentStatusIndex != 0
           )
         } else {
@@ -322,7 +328,8 @@ fun StatusDetailContent(
             hasUnloadedParent = false,
             navigateToDetail = { navigateToDetail(repliedStatus.actionable) },
             navigateToMedia = navigateToMedia,
-            navigateToProfile = navigateToProfile
+            navigateToProfile = navigateToProfile,
+            navigateToTagInfo = navigateToTagInfo
           )
         }
       }
@@ -338,7 +345,8 @@ fun StatusDetailContent(
           action = action,
           navigateToDetail = navigateToDetail,
           navigateToMedia = navigateToMedia,
-          navigateToProfile = navigateToProfile
+          navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo
         )
       }
     }

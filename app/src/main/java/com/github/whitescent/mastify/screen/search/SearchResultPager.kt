@@ -33,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,7 +63,7 @@ fun SearchResultPager(
   viewModel: SearchViewModel,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
-  navigateToTagInfo: () -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Status.Attachment>, Int) -> Unit,
 ) {
   val statusListState = rememberLazyListState()
@@ -80,7 +79,7 @@ fun SearchResultPager(
     pageContent = { page ->
       when (page) {
         0 -> LazyTimelinePagingList(
-          statusListState = statusListState,
+          lazyListState = statusListState,
           paginator = viewModel.statusPaginator,
           pagingList = statusList.toImmutableList(),
           pagePlaceholderType = PagePlaceholderType.Normal,
@@ -90,6 +89,7 @@ fun SearchResultPager(
           enablePullRefresh = true,
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           navigateToMedia = navigateToMedia,
         )
         1 -> {
@@ -157,14 +157,15 @@ fun SearchResultPager(
             items(hashtagList) {
               Column(
                 modifier = Modifier
-                  .clickableWithoutIndication(onClick = navigateToTagInfo)
-                  .padding(8.dp)
+                  .fillMaxWidth()
+                  .clickableWithoutIndication(onClick = { navigateToTagInfo(it.name) })
+                  .padding(8.dp),
               ) {
                 Text(
                   text = "#${it.name}",
                   fontSize = 18.sp,
                   fontWeight = FontWeight.SemiBold,
-                  color = Color(0xFF434855)
+                  color = AppTheme.colors.primaryContent.copy(.85f)
                 )
                 HeightSpacer(value = 4.dp)
                 Text(

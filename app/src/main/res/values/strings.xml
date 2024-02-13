@@ -152,6 +152,12 @@
   <!-- Search screen -->
   <string name="accounts_title">Accounts</string>
   <string name="hashtags_title">Hashtags</string>
+  <string name="follow_hashtag">Follow \#%s</string>
+  <string name="following_hashtag">Following \#%s</string>
+  <string name="participant_count">%d participants</string>
+  <string name="posts_week">%d posts this week</string>
+  <string name="posts_today">%d posts today</string>
+  <string name="back_to_top">Back to top</string>
 
   <!--  Post screen-->
   <string name="public_title">Public</string>

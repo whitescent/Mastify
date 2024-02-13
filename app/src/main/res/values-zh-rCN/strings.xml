@@ -147,6 +147,12 @@
   <!-- Search screen -->
   <string name="accounts_title">用户</string>
   <string name="hashtags_title">话题标签</string>
+  <string name="follow_hashtag">关注 \#%s</string>
+  <string name="following_hashtag">正在关注 \#%s</string>
+  <string name="participant_count">%d 位用户参与了讨论</string>
+  <string name="posts_week">本周有 %d 条嘟文</string>
+  <string name="posts_today">今天有 %d 个嘟文</string>
+  <string name="back_to_top">返回顶部</string>
 
   <!--  Post screen-->
   <string name="public_title">公开</string>
