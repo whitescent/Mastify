@@ -181,7 +181,7 @@ class StatusDetailViewModel @Inject constructor(
           .catch {
             it.printStackTrace()
             timelineUseCase.onStatusLoadError((it as? ResponseThrowable) ?: it)
-            if (it as? ResponseThrowable != null) {
+            if (it as? ResponseThrowable != null && it.code == 404) {
               val accountId = accountDao.getActiveAccount()!!.id
               val isInDb = timelineDao.getSingleStatusWithId(accountId, navArgs.status.id) != null
               if (isInDb) timelineDao.clear(accountId, navArgs.status.id)
