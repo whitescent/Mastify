@@ -24,7 +24,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -84,6 +83,7 @@ import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
@@ -236,6 +236,9 @@ fun Profile(
                     originStatusId = null
                   )
                 )
+              },
+              navigateToTagInfo = {
+                navigator.navigate(TagInfoDestination(it))
               },
               navigateToMedia = { attachments, targetIndex ->
                 navigator.navigate(
@@ -546,9 +549,11 @@ fun UserMetricPanel(
 fun FollowButton(isFollowing: Boolean) {
   Box(
     modifier = Modifier.fillMaxWidth()
-      .border(
-        width = 2.dp,
-        color = if (isFollowing) AppTheme.colors.unfollowButton else AppTheme.colors.followButton,
+      .background(
+        color = when (isFollowing) {
+          true -> AppTheme.colors.unfollowButtonBackground
+          else -> AppTheme.colors.followButtonBackground
+        },
         shape = AppTheme.shape.mediumAvatar
       )
       .clip(AppTheme.shape.mediumAvatar),
@@ -558,7 +563,7 @@ fun FollowButton(isFollowing: Boolean) {
       text = stringResource(
         id = if (isFollowing) R.string.unfollow_title else R.string.follow_title
       ),
-      color = AppTheme.colors.primaryContent,
+      color = Color.White,
       modifier = Modifier.padding(10.dp),
       fontSize = 18.sp,
       fontWeight = FontWeight.Bold

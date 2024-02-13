@@ -28,6 +28,7 @@ import com.github.whitescent.mastify.network.model.status.NewPoll
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.StatusContext
+import com.github.whitescent.mastify.utils.getOrThrow
 import com.github.whitescent.mastify.utils.getServerErrorMessage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow

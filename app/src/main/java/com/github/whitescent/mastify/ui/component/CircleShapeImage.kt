@@ -37,9 +37,9 @@ fun CircleShapeAsyncImage(
   shape: Shape = AppTheme.shape.smallAvatar,
   contentScale: ContentScale = ContentScale.Fit,
   alpha: Float = 1f,
+  color: Color = AppTheme.colors.background,
   colorFilter: ColorFilter? = null,
   onClick: (() -> Unit)? = null,
-  color: Color = AppTheme.colors.background
 ) {
   Surface(
     modifier = modifier,

@@ -20,8 +20,6 @@ package com.github.whitescent.mastify.ui.component.status
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +79,7 @@ import com.github.whitescent.mastify.ui.component.status.action.ShareButton
 import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
@@ -97,6 +96,7 @@ fun StatusListItem(
   action: (StatusAction) -> Unit,
   navigateToDetail: () -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit
 ) {
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
@@ -135,11 +135,7 @@ fun StatusListItem(
       }
       Column(
         modifier = Modifier
-          .clickable(
-            onClick = navigateToDetail,
-            indication = null,
-            interactionSource = remember { MutableInteractionSource() }
-          )
+          .clickableWithoutIndication(onClick = navigateToDetail)
           .let {
             if (status.reblog == null) {
               it.drawWithContent {
@@ -177,7 +173,8 @@ fun StatusListItem(
           onClickMedia = {
             navigateToMedia(status.attachments, it)
           },
-          navigateToProfile = navigateToProfile
+          navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo
         )
       }
     }
@@ -226,6 +223,7 @@ private fun StatusContent(
   action: (StatusAction) -> Unit,
   onClickMedia: (Int) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
 ) {
   val context = LocalContext.current
   val primaryColor = AppTheme.colors.primaryContent
@@ -346,6 +344,7 @@ private fun StatusContent(
                         context = context,
                         primaryColor = primaryColor,
                         navigateToProfile = navigateToProfile,
+                        navigateToTagInfo = navigateToTagInfo,
                         link = statusUiData.mentions.first().url
                       )
                     },
@@ -367,6 +366,7 @@ private fun StatusContent(
                           context = context,
                           primaryColor = primaryColor,
                           navigateToProfile = navigateToProfile,
+                          navigateToTagInfo = navigateToTagInfo,
                           link = span
                         )
                       },

@@ -125,7 +125,7 @@ fun AppScaffold(
   ) {
     Scaffold(
       bottomBar = {
-        if (destination.shouldShowScaffoldElements()) {
+        if (destination.shouldShowScaffoldElements() && !appState.hideBottomBar) {
           BottomBar(
             navController = navController,
             destination = destination,

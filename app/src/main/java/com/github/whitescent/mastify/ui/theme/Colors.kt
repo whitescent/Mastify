@@ -42,8 +42,8 @@ interface MastifyColorScheme {
   val hintText: Color
   val reblogged: Color
   val replyTextFieldBorder: Color
-  val followButton: Color
-  val unfollowButton: Color
+  val followButtonBackground: Color get() = accent
+  val unfollowButtonBackground: Color get() = Color(0xFFFF0000).copy(.56f)
   val defaultHeader: Color
   val divider: Color
   val bottomSheetBackground: Color
@@ -58,6 +58,8 @@ interface MastifyColorScheme {
   val dialogItemSelectedBackground: Color get() = Color(0xFF5691E1).copy(alpha = 0.8f)
   val dialogItemUnselectedBackground: Color
   val dialogItemUnselectedContent: Color
+  val searchPreviewBorder: Color
+  val searchPreviewBackground: Color
   val isLight: Boolean
 }
 
@@ -75,8 +77,6 @@ object LightColorScheme : MastifyColorScheme {
   override val hintText: Color = Color(0xFF1d9bf0)
   override val reblogged: Color = Color(0xFF18BE64)
   override val replyTextFieldBorder: Color = Color(0xFFE6E6E6)
-  override val followButton: Color = Color(0xFF007BEC)
-  override val unfollowButton: Color = Color(0xFF007BEC).copy(0.44f)
   override val defaultHeader: Color = Color(0xFF1d9bf0)
   override val divider: Color = Color(0xFFD7D7D7).copy(0.5f)
   override val bottomSheetBackground: Color = Color.White
@@ -90,6 +90,8 @@ object LightColorScheme : MastifyColorScheme {
   override val textLimitWarningBackground: Color = Color(0xFFf8d3de)
   override val dialogItemUnselectedBackground: Color = Color(0xFF203148).copy(alpha = 0.06f)
   override val dialogItemUnselectedContent: Color = Color(0xFF969696)
+  override val searchPreviewBorder: Color = Color(0xFFD7D7D7).copy(.23f)
+  override val searchPreviewBackground: Color = Color(0xFFFAFAFA)
   override val isLight: Boolean = true
 }
 
@@ -107,8 +109,6 @@ object DarkColorScheme : MastifyColorScheme {
   override val hintText = Color(0xFF1d9bf0)
   override val reblogged = Color(0xFF18BE64)
   override val replyTextFieldBorder = Color(0xFF454545)
-  override val followButton = Color(0xFF1C79E7)
-  override val unfollowButton = Color.White.copy(0.44f)
   override val defaultHeader = Color(0xFF1d9bf0)
   override val divider = Color(0xFFD7D7D7).copy(0.1f)
   override val bottomSheetBackground = Color(0xFF31323A)
@@ -122,6 +122,8 @@ object DarkColorScheme : MastifyColorScheme {
   override val textLimitWarningBackground = Color(0xFFf3222d)
   override val dialogItemUnselectedBackground: Color = Color(0xFFC3DDFF).copy(alpha = 0.38f)
   override val dialogItemUnselectedContent: Color = Color(0xFFEEEEEE)
+  override val searchPreviewBorder: Color = Color(0xFF3C3C3C)
+  override val searchPreviewBackground: Color = Color(0xFF232323)
   override val isLight = false
 }
 

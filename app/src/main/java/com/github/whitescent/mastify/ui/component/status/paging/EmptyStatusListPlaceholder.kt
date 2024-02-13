@@ -73,6 +73,7 @@ fun EmptyStatusListPlaceholder(
                 ExplorerKind.News -> R.string.news_is_empty
               }
             }
+            is PagePlaceholderType.Normal -> R.string.nothing_to_see_here
           }
         ),
         fontWeight = FontWeight.Medium,
@@ -84,6 +85,7 @@ fun EmptyStatusListPlaceholder(
 }
 
 sealed class PagePlaceholderType {
+  data object Normal : PagePlaceholderType()
   data object Home : PagePlaceholderType()
   data class Profile(val isSelf: Boolean) : PagePlaceholderType()
   data class Explore(val explorerKind: ExplorerKind) : PagePlaceholderType()

@@ -125,7 +125,7 @@ private fun AnnotatedString.Builder.renderElement(
 
     "br" -> renderText("\n")
 
-    "code", "pre" -> renderText(element.text())
+    "code", "pre", "strong" -> renderText(element.text())
 
     "span", "p", "i", "em" -> {
       if (!filterMentionText) {

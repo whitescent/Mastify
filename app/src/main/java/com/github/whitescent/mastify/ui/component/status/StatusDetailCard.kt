@@ -83,6 +83,7 @@ fun StatusDetailCard(
   inReply: Boolean = false,
   action: (StatusAction) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit
 ) {
   var openMenuSheet by remember { mutableStateOf(false) }
@@ -183,6 +184,7 @@ fun StatusDetailCard(
                       context = context,
                       primaryColor = primaryColor,
                       navigateToProfile = navigateToProfile,
+                      navigateToTagInfo = navigateToTagInfo,
                       link = status.mentions.first().url
                     )
                   },
@@ -206,6 +208,7 @@ fun StatusDetailCard(
                           context = context,
                           primaryColor = primaryColor,
                           navigateToProfile = navigateToProfile,
+                          navigateToTagInfo = navigateToTagInfo,
                           link = span
                         )
                       },

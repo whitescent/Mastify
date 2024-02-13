@@ -137,6 +137,27 @@
   <string name="news_is_empty">There is no news about this instance yet</string>
   <string name="oops_something_went_wrong">Oops! Something went wrong</string>
   <string name="retry">retry</string>
+  <string name="search_description">Try searching for people, topics or keywords</string>
+  <string name="find_result">Find all results for \"%s\"</string>
+  <plurals name="search_preview_user">
+    <item quantity="one">%d user</item>
+    <item quantity="other">%d users</item>
+  </plurals>
+  <plurals name="search_preview_tags">
+    <item quantity="one">%d topic</item>
+    <item quantity="other">%d topics</item>
+  </plurals>
+  <string name="nothing_to_see_here">There\'s nothing here</string>
+
+  <!-- Search screen -->
+  <string name="accounts_title">Accounts</string>
+  <string name="hashtags_title">Hashtags</string>
+  <string name="follow_hashtag">Follow \#%s</string>
+  <string name="following_hashtag">Following \#%s</string>
+  <string name="participant_count">%d participants</string>
+  <string name="posts_week">%d posts this week</string>
+  <string name="posts_today">%d posts today</string>
+  <string name="back_to_top">Back to top</string>
 
   <!--  Post screen-->
   <string name="public_title">Public</string>

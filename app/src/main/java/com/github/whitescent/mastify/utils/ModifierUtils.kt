@@ -15,18 +15,19 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.network.model.status
+package com.github.whitescent.mastify.utils
 
-import kotlinx.serialization.Serializable
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.Modifier
 
-@Serializable
-data class Hashtag(
-  val name: String,
-  val url: String,
-  val following: Boolean?,
-  val history: List<History>?
-) {
-  val todayPost get() = history?.firstOrNull()?.uses?.toInt() ?: 0
-  val posts get() = history?.sumOf { it.uses.toInt() } ?: 0
-  val participants get() = history?.sumOf { it.accounts.toInt() } ?: 0
-}
+fun Modifier.clickableWithoutIndication(
+  enabled: Boolean = true,
+  onClick: () -> Unit
+) = Modifier.then(
+  clickable(
+    onClick = onClick,
+    enabled = enabled,
+    indication = null,
+    interactionSource = null,
+  )
+)

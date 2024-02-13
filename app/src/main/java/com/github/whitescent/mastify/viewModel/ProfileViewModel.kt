@@ -180,8 +180,8 @@ class ProfileViewModel @Inject constructor(
         updateStatusListActions(it, action, status.id)
       }
       timelineUseCase.onStatusAction(action)?.let { response ->
-        val targetStatus = response.getOrNull()!!
-        if (action is VotePoll) {
+        if (action is VotePoll && response.isSuccess) {
+          val targetStatus = response.getOrNull()!!
           statusPagingFactory.list.update {
             updatePollOfStatusList(it, targetStatus.id, targetStatus.poll!!)
           }

@@ -18,11 +18,8 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -31,6 +28,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 
 /**
  * This is a temporary workaround
@@ -69,11 +67,7 @@ fun LocalizedClickableText(
     text = annotatedText,
     fontSize = fontSize,
     style = style,
-    modifier = modifier.clickable(
-      onClick = onClick,
-      indication = null,
-      interactionSource = remember { MutableInteractionSource() }
-    ),
+    modifier = modifier.clickableWithoutIndication(onClick = onClick),
     color = AppTheme.colors.primaryContent.copy(0.45f)
   )
 }

@@ -85,7 +85,8 @@ fun HtmlText(
   urlSpanStyle: SpanStyle = SpanStyle(
     color = Color(0xFF0079D3),
     textDecoration = TextDecoration.None,
-    fontSize = style.fontSize
+    fontSize = style.fontSize,
+    fontWeight = FontWeight.SemiBold
   )
 ) {
   val document = remember(text) { Jsoup.parse(text) }
@@ -118,6 +119,7 @@ fun HtmlText(
       onTextLayout(it)
     },
     fontSize = fontSize,
+    fontWeight = fontWeight,
     style = style,
     maxLines = maxLines,
     overflow = overflow,
@@ -189,6 +191,8 @@ private fun AnnotatedString.Builder.renderElement(
     }
 
     "br" -> renderText("\n", textStyle)
+
+    "strong" -> renderText(element.text(), textStyle.copy(fontWeight = FontWeight.Bold))
 
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 

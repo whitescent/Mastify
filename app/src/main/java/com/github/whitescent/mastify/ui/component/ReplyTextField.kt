@@ -23,8 +23,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -76,6 +74,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.PostState
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.utils.windowBottomEndCornerRadius
 import com.github.whitescent.mastify.utils.windowBottomStartCornerRadius
 
@@ -156,13 +155,9 @@ fun ReplyTextField(
               },
               modifier = Modifier
                 .fillMaxWidth()
-                .clickable(
-                  onClick = {
-                    expand = true
-                  },
-                  indication = null,
-                  interactionSource = remember { MutableInteractionSource() }
-                ),
+                .clickableWithoutIndication {
+                  expand = true
+                }
             )
           }
         }

@@ -29,16 +29,23 @@ fun statusLinkHandler(
   context: Context,
   primaryColor: Color,
   link: String?,
-  navigateToProfile: (Account) -> Unit
+  navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit
 ) {
+  val regex = """.*/tags/(.+)""".toRegex()
   val mention = mentions.firstOrNull { it.url == link }
-  if (mention != null) {
-    navigateToProfile(mention.toAccount())
-  } else {
-    launchCustomChromeTab(
-      context = context,
-      uri = Uri.parse(link),
-      toolbarColor = primaryColor.toArgb()
-    )
+  val hashtag = link?.contains("tags")?.let {
+    regex.matchEntire(link)?.groupValues?.getOrNull(1)
+  }
+  when {
+    mention != null -> navigateToProfile(mention.toAccount())
+    hashtag != null -> navigateToTagInfo(hashtag)
+    else -> {
+      launchCustomChromeTab(
+        context = context,
+        uri = Uri.parse(link),
+        toolbarColor = primaryColor.toArgb()
+      )
+    }
   }
 }

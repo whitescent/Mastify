@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.profile
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.HorizontalPager
@@ -35,7 +34,6 @@ import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ProfilePager(
   state: PagerState,
@@ -45,6 +43,7 @@ fun ProfilePager(
   viewModel: ProfileViewModel,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToTagInfo: (String) -> Unit,
   navigateToMedia: (ImmutableList<Attachment>, Int) -> Unit,
 ) {
   val statusList by viewModel.profileStatus.collectAsStateWithLifecycle()
@@ -57,7 +56,7 @@ fun ProfilePager(
     pageContent = {
       when (it) {
         0 -> LazyTimelinePagingList(
-          statusListState = statusListState,
+          lazyListState = statusListState,
           paginator = viewModel.statusPaginator,
           pagingList = statusList.toImmutableList(),
           pagePlaceholderType = Profile(isSelf = viewModel.uiState.isSelf!!),
@@ -66,10 +65,11 @@ fun ProfilePager(
           },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           navigateToMedia = navigateToMedia,
         )
         1 -> LazyTimelinePagingList(
-          statusListState = statusListWithReplyState,
+          lazyListState = statusListWithReplyState,
           paginator = viewModel.statusWithReplyPaginator,
           pagingList = statusListWithReply.toImmutableList(),
           pagePlaceholderType = Profile(isSelf = viewModel.uiState.isSelf!!),
@@ -78,10 +78,11 @@ fun ProfilePager(
           },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           navigateToMedia = navigateToMedia,
         )
         2 -> LazyTimelinePagingList(
-          statusListState = statusListWithMediaState,
+          lazyListState = statusListWithMediaState,
           paginator = viewModel.statusWithMediaPaginator,
           pagingList = statusListWithMedia.toImmutableList(),
           pagePlaceholderType = Profile(isSelf = viewModel.uiState.isSelf!!),
@@ -90,6 +91,7 @@ fun ProfilePager(
           },
           navigateToDetail = navigateToDetail,
           navigateToProfile = navigateToProfile,
+          navigateToTagInfo = navigateToTagInfo,
           navigateToMedia = navigateToMedia,
         )
       }

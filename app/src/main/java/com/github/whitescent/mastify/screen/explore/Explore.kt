@@ -34,13 +34,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Badge
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -61,7 +59,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,15 +70,18 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.database.model.AccountEntity
-import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
+import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
+import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
+import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Account
+import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Tags
+import com.github.whitescent.mastify.screen.search.SearchResultNavArgs
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
-import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -113,6 +114,7 @@ fun Explore(
   val uiState = viewModel.uiState
   val context = LocalContext.current
   val density = LocalDensity.current
+  val keyboard = LocalSoftwareKeyboardController.current
 
   val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
 
@@ -135,7 +137,7 @@ fun Explore(
     modifier = Modifier
       .fillMaxSize()
       .background(AppTheme.colors.background)
-      .statusBarsPadding()
+      .systemBarsPadding()
   ) {
     Column {
       Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
@@ -176,9 +178,15 @@ fun Explore(
           focusRequester = focusRequester,
           onValueChange = viewModel::onValueChange,
           clearText = viewModel::clearInputText,
-          onFocusChange = { hideTitle = it }
+          onFocusChange = {
+            hideTitle = it
+            appState.hideBottomBar = it
+          },
+          navigateToSearchResult = {
+            navigator.navigate(SearchResultDestination(SearchResultNavArgs(uiState.text, null)))
+          }
         )
-        HeightSpacer(value = 4.dp)
+        HeightSpacer(value = 8.dp)
       }
       Crossfade(
         targetState = hideTitle,
@@ -186,9 +194,34 @@ fun Explore(
       ) {
         when (it) {
           true -> {
-            ExploreSearchContent(
-              isTextEmpty = uiState.text.isEmpty(),
-              searchingResult = searchingResult
+            ExploreSearchPreviewContent(
+              query = uiState.text,
+              searchingResult = searchingResult,
+              navigateToAccount = { account ->
+                keyboard?.hide()
+                navigator.navigate(ProfileDestination(account))
+              },
+              navigateToResult = {
+                keyboard?.hide()
+                navigator.navigate(
+                  SearchResultDestination(SearchResultNavArgs(uiState.text, null))
+                )
+              },
+              navigateToAccountInResult = {
+                keyboard?.hide()
+                navigator.navigate(
+                  SearchResultDestination(SearchResultNavArgs(uiState.text, Account))
+                )
+              },
+              navigateToTag = {
+                keyboard?.hide()
+                navigator.navigate(
+                  SearchResultDestination(SearchResultNavArgs(uiState.text, Tags))
+                )
+              },
+              navigateToTagInfo = { hashtag ->
+                navigator.navigate(TagInfoDestination(hashtag))
+              }
             )
           }
           else -> {
@@ -221,6 +254,9 @@ fun Explore(
                   navigator.navigate(
                     StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
                   )
+                },
+                navigateToTagInfo = { hashtag ->
+                  navigator.navigate(TagInfoDestination(hashtag))
                 },
                 navigateToProfile = { targetAccount ->
                   navigator.navigate(
@@ -320,105 +356,6 @@ fun ExploreTabBar(
           modifier = Modifier.padding(12.dp),
         )
       }
-    }
-  }
-}
-
-@Composable
-fun ExploreSearchContent(
-  isTextEmpty: Boolean,
-  searchingResult: SearchResult?
-) {
-  Crossfade(targetState = isTextEmpty) {
-    when (it) {
-      true -> {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp),
-          horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-          Text(
-            text = "Try searching for people, topics or keywords",
-            color = AppTheme.colors.primaryContent.copy(0.5f),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.ExtraBold
-          )
-        }
-      }
-      else -> {
-        if (searchingResult?.accounts?.isNotEmpty() == true) {
-          Column(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(horizontal = 12.dp, vertical = 8.dp)
-          ) {
-            CenterRow {
-              Icon(
-                painter = painterResource(id = R.drawable.user),
-                contentDescription = null,
-                tint = AppTheme.colors.primaryContent,
-                modifier = Modifier.size(24.dp)
-              )
-              WidthSpacer(value = 4.dp)
-              Text(
-                text = "用户",
-                color = AppTheme.colors.primaryContent,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-              )
-              WidthSpacer(value = 4.dp)
-              Badge(
-                containerColor = AppTheme.colors.accent,
-                contentColor = Color.White,
-                modifier = Modifier.align(Alignment.CenterVertically)
-              ) {
-                Text(
-                  text = when (searchingResult.accounts.size > 10) {
-                    true -> "10+"
-                    else -> searchingResult.accounts.size.toString()
-                  }
-                )
-              }
-            }
-            HeightSpacer(value = 8.dp)
-            Column(Modifier.padding(start = 8.dp)) {
-              searchingResult.accounts.forEach { user ->
-                SearchPreviewResultUserItem(user.avatar, user.realDisplayName, user.fullname)
-                HeightSpacer(value = 8.dp)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-@Composable
-private fun SearchPreviewResultUserItem(
-  avatar: String,
-  username: String,
-  instance: String,
-) {
-  CenterRow {
-    CircleShapeAsyncImage(
-      model = avatar,
-      shape = AppTheme.shape.betweenSmallAndMediumAvatar,
-      modifier = Modifier.size(42.dp)
-    )
-    WidthSpacer(value = 6.dp)
-    Column {
-      Text(
-        text = username,
-        color = AppTheme.colors.primaryContent,
-        fontSize = 18.sp
-      )
-      Text(
-        text = instance,
-        color = AppTheme.colors.primaryContent.copy(0.5f),
-        fontSize = 14.sp
-      )
     }
   }
 }

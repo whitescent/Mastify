@@ -18,8 +18,6 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,8 +38,8 @@ import androidx.navigation.NavController
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.BottomBarItem
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.ramcosta.composedestinations.navigation.navigate
-import com.ramcosta.composedestinations.navigation.popUpTo
 
 @Composable
 fun BottomBar(
@@ -62,22 +60,18 @@ fun BottomBar(
         Column(
           modifier = Modifier
             .weight(1f)
-            .clickable(
-              onClick = {
-                if (destination.route == screen.direction.route) scrollToTop()
-                else {
-                  navController.navigate(screen.direction) {
-                    popUpTo(destination.route) {
-                      saveState = true
-                      inclusive = true
-                    }
-                    restoreState = true
+            .clickableWithoutIndication {
+              if (destination.route == screen.direction.route) scrollToTop()
+              else {
+                navController.navigate(screen.direction) {
+                  popUpTo(destination.route) {
+                    saveState = true
+                    inclusive = true
                   }
+                  restoreState = true
                 }
-              },
-              indication = null,
-              interactionSource = MutableInteractionSource()
-            )
+              }
+            }
             .navigationBarsPadding()
             .padding(top = 20.dp, start = 24.dp, end = 24.dp, bottom = 20.dp),
           verticalArrangement = Arrangement.Center,

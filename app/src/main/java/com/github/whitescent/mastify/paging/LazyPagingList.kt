@@ -52,6 +52,7 @@ import com.github.whitescent.mastify.paging.PageLoadState.NotLoading
 import com.github.whitescent.mastify.paging.PageLoadState.Refresh
 import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
+import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
@@ -66,8 +67,9 @@ import kotlinx.coroutines.launch
 fun <T : Any> LazyPagingList(
   paginator: Paginator,
   modifier: Modifier = Modifier,
-  paginatorUiState: PaginatorUiState,
+  paginatorUiState: PaginatorUiState = rememberPaginatorUiState(paginator),
   list: ImmutableList<T>,
+  showScrollbar: Boolean = true,
   lazyListState: LazyListState = rememberLazyListState(),
   contentPadding: PaddingValues = PaddingValues(0.dp),
   pagePlaceholderType: PagePlaceholderType,
@@ -133,7 +135,10 @@ fun <T : Any> LazyPagingList(
         }
         LazyColumn(
           state = lazyListState,
-          modifier = modifier,
+          modifier = modifier
+            .let {
+              if (showScrollbar) it.drawVerticalScrollbar(lazyListState) else it
+            },
           contentPadding = contentPadding,
           reverseLayout = reverseLayout,
           verticalArrangement = verticalArrangement,
