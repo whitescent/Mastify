@@ -183,6 +183,7 @@
   <string name="duration_3_days">3 天</string>
   <string name="duration_7_days">1 周</string>
   <string name="poll_close_time">投票将会在 %s后结束</string>
+  <string name="new_moment">发布新鲜事</string>
 
   <string name="ok_title">好的</string>
 </resources>

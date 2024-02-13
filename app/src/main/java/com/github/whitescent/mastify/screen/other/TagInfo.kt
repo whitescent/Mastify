@@ -143,6 +143,36 @@ fun TagInfo(
         .padding(horizontal = 12.dp)
         .statusBarsPadding()
     ) {
+      LazyTimelinePagingList(
+        paginator = viewModel.tagPaginator,
+        pagingList = timeline.toImmutableList(),
+        lazyListState = lazyListState,
+        pagePlaceholderType = PagePlaceholderType.Normal,
+        action = viewModel::onStatusAction,
+        navigateToDetail = {
+          navigator.navigate(StatusDetailDestination(it.actionableStatus, null))
+        },
+        navigateToMedia = { attachments, targetIndex ->
+          navigator.navigate(
+            StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+          )
+        },
+        navigateToProfile = { targetAccount ->
+          navigator.navigate(
+            ProfileDestination(targetAccount)
+          )
+        },
+        navigateToTagInfo = {
+          navigator.navigate(TagInfoDestination(it))
+        },
+        modifier = Modifier
+          .offset {
+            IntOffset(
+              x = 0,
+              y = (scrollState.offset.value + headerHeight).roundToInt()
+            )
+          }
+      )
       Column {
         CenterRow {
           IconButton(
@@ -176,7 +206,9 @@ fun TagInfo(
                 text = uiState.hashtag,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.primaryContent
+                color = AppTheme.colors.primaryContent,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
               )
               CenterRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
@@ -239,36 +271,6 @@ fun TagInfo(
         }
       }
     }
-    LazyTimelinePagingList(
-      paginator = viewModel.tagPaginator,
-      pagingList = timeline.toImmutableList(),
-      lazyListState = lazyListState,
-      pagePlaceholderType = PagePlaceholderType.Normal,
-      action = viewModel::onStatusAction,
-      navigateToDetail = {
-        navigator.navigate(StatusDetailDestination(it.actionableStatus, null))
-      },
-      navigateToMedia = { attachments, targetIndex ->
-        navigator.navigate(
-          StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-        )
-      },
-      navigateToProfile = { targetAccount ->
-        navigator.navigate(
-          ProfileDestination(targetAccount)
-        )
-      },
-      navigateToTagInfo = {
-        navigator.navigate(TagInfoDestination(it))
-      },
-      modifier = Modifier
-        .offset {
-          IntOffset(
-            x = 0,
-            y = (scrollState.offset.value + headerHeight).roundToInt()
-          )
-        }
-    )
     AnimatedVisibility(
       visible = showScrollToTopButton,
       modifier = Modifier

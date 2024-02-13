@@ -159,7 +159,7 @@ fun Post(
       },
       title = {
         Text(
-          text = "New Moment",
+          text = stringResource(id = R.string.new_moment),
           fontSize = 18.sp,
           fontWeight = FontWeight.Bold,
           color = AppTheme.colors.primaryContent
