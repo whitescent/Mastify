@@ -197,10 +197,13 @@ private fun AnnotatedString.Builder.renderElement(
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 
     "span", "p", "i", "em" -> {
+      val prevNode = element.previousSibling()
+      val isParagraph = normalName == "p" && prevNode?.normalName() == "p"
       if (!filterMentionText) {
-        if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
+        if (isParagraph) append("\n\n")
+      } else {
+        if (isParagraph && prevNode?.hasTextNode() == true) append("\n\n")
       }
-
       element.childNodes().forEach {
         renderNode(
           node = it,
@@ -226,6 +229,15 @@ private fun AnnotatedString.Builder.renderText(text: String, textStyle: TextStyl
   pushStyle(textStyle.toSpanStyle())
   append(text)
   pop()
+}
+
+private fun Node.hasTextNode(): Boolean {
+  if (this is Element && hasClass("u-url mention")) return false
+  if (this is TextNode && !this.isBlank) return true
+  for (child in this.childNodes()) {
+    if (child.hasTextNode()) return true
+  }
+  return false
 }
 
 private fun skipElement(element: Element): Boolean = element.hasClass("invisible")

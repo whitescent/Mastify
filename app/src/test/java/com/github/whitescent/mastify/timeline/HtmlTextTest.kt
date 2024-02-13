@@ -83,6 +83,14 @@ class HtmlTextTest {
       buildContentAnnotatedString(document, false).text
     )
   }
+
+  @Test
+  fun `test p label`() {
+    val text = "<p><span class=\"h-card\" translate=\"no\"><a href=\"https://androiddev.social/@andy\" class=\"u-url mention\">@<span>andy</span></a></span> yess 100% compose</p><p><a href=\"https://github.com/whitescent/Mastify\" target=\"_blank\" rel=\"nofollow noopener noreferrer\" translate=\"no\"><span class=\"invisible\">https://</span><span class=\"\">github.com/whitescent/Mastify</span><span class=\"invisible\"></span></a></p>"
+    val document = Jsoup.parse(text)
+    val expected = "yess 100% compose\n\nhttps://github.com/whitescent/Mastify"
+    assertEquals(expected, buildContentAnnotatedString(document, true).text)
+  }
 }
 
 private fun buildContentAnnotatedString(
@@ -128,10 +136,13 @@ private fun AnnotatedString.Builder.renderElement(
     "code", "pre", "strong" -> renderText(element.text())
 
     "span", "p", "i", "em" -> {
+      val prevNode = element.previousSibling()
+      val isParagraph = normalName == "p" && prevNode?.normalName() == "p"
       if (!filterMentionText) {
-        if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
+        if (isParagraph) append("\n\n")
+      } else {
+        if (isParagraph && prevNode?.hasTextNode() == true) append("\n\n")
       }
-
       element.childNodes().forEach {
         renderNode(
           node = it,
@@ -140,6 +151,15 @@ private fun AnnotatedString.Builder.renderElement(
       }
     }
   }
+}
+
+private fun Node.hasTextNode(): Boolean {
+  if (this is Element && hasClass("u-url mention")) return false
+  if (this is TextNode && !this.isBlank) return true
+  for (child in this.childNodes()) {
+    if (child.hasTextNode()) return true
+  }
+  return false
 }
 
 private fun AnnotatedString.Builder.renderText(text: String) = append(text)
