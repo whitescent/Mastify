@@ -18,7 +18,6 @@
 package com.github.whitescent.mastify.data.repository
 
 import android.content.Context
-import android.widget.Toast
 import at.connyduck.calladapter.networkresult.fold
 import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
@@ -27,13 +26,11 @@ import com.github.whitescent.mastify.network.model.status.MediaAttribute
 import com.github.whitescent.mastify.network.model.status.NewPoll
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.network.model.status.StatusContext
 import com.github.whitescent.mastify.utils.getOrThrow
-import com.github.whitescent.mastify.utils.getServerErrorMessage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import retrofit2.HttpException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -63,14 +60,11 @@ class StatusRepository @Inject constructor(
             temp = statusList.toMutableList()
             statusList.forEach { status ->
               if (status.isInReplyTo) {
-                api.status(status.inReplyToId!!).fold(
-                  { repliedStatus ->
+                getSingleStatus(status.inReplyToId!!)
+                  .catch { it.printStackTrace() }
+                  .collect { repliedStatus ->
                     temp.add(temp.indexOf(status), repliedStatus)
-                  },
-                  { e ->
-                    e.printStackTrace()
                   }
-                )
               }
             }
           }
@@ -95,46 +89,32 @@ class StatusRepository @Inject constructor(
     poll: NewPoll? = null,
     language: String? = null
   ): Flow<Status> = flow {
-    try {
-      val response = api.createStatus(
-        idempotencyKey = UUID.randomUUID().toString(),
-        status = NewStatus(
-          status = content,
-          warningText = warningText,
-          inReplyToId = inReplyToId,
-          visibility = visibility.toString(),
-          sensitive = sensitive,
-          mediaIds = mediaIds,
-          mediaAttributes = mediaAttributes,
-          scheduledAt = scheduledAt,
-          poll = poll,
-          language = language,
-        )
+    api.createStatus(
+      idempotencyKey = UUID.randomUUID().toString(),
+      status = NewStatus(
+        status = content,
+        warningText = warningText,
+        inReplyToId = inReplyToId,
+        visibility = visibility.toString(),
+        sensitive = sensitive,
+        mediaIds = mediaIds,
+        mediaAttributes = mediaAttributes,
+        scheduledAt = scheduledAt,
+        poll = poll,
+        language = language,
       )
-      if (response.isSuccessful && response.body() != null) emit(response.body()!!)
-      else {
-        val error = HttpException(response)
-        val errorMessage = error.getServerErrorMessage()
-        if (errorMessage == null) {
-          Toast.makeText(context, error.localizedMessage, Toast.LENGTH_SHORT).show()
-          throw error
-        } else {
-          Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-          throw Throwable(errorMessage)
-        }
-      }
+    ).getOrThrow()
+  }
+
+  suspend fun getSingleStatus(id: String) = flow {
+    try {
+      emit(api.status(id).getOrThrow())
     } catch (e: Exception) {
-      e.printStackTrace()
-      Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
       throw e
     }
   }
 
-  suspend fun getSingleStatus(id: String): Flow<Status> = flow {
-    emit(api.status(id).getOrThrow())
-  }
-
-  suspend fun getStatusContext(id: String): Flow<StatusContext> = flow {
+  suspend fun getStatusContext(id: String) = flow {
     emit(api.statusContext(id).getOrThrow())
   }
 }

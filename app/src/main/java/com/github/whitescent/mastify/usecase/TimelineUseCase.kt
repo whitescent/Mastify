@@ -94,7 +94,8 @@ class TimelineUseCase @Inject constructor(
     }
   }
 
-  suspend fun onStatusLoadError() = snackBarChanel.send(StatusSnackbarType.Error)
+  suspend fun onStatusLoadError(throwable: Throwable?) =
+    snackBarChanel.send(StatusSnackbarType.Error(throwable?.localizedMessage))
 
   companion object {
     /**

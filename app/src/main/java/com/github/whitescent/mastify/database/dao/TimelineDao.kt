@@ -70,6 +70,9 @@ interface TimelineDao {
   )
   suspend fun getTopId(accountId: Long): String?
 
+  @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId AND id = :timelineId")
+  suspend fun clear(accountId: Long, timelineId: String)
+
   @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId")
   suspend fun clearAll(accountId: Long)
 

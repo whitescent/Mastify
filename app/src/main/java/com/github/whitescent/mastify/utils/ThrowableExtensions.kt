@@ -43,6 +43,14 @@ fun Throwable.getServerErrorMessage(): String? {
   return null
 }
 
+data class ResponseThrowable(
+  val code: Int,
+  val errorMessage: String?
+) : Throwable() {
+  override val message: String? = errorMessage
+  override fun getLocalizedMessage(): String? = errorMessage
+}
+
 fun <T> Response<T>.getOrThrow(): T {
   val responseBody = body()
   if (isSuccessful && responseBody != null) return body()!!
@@ -50,9 +58,9 @@ fun <T> Response<T>.getOrThrow(): T {
     val error = HttpException(this)
     val errorMessage = error.getServerErrorMessage()
     if (errorMessage == null) {
-      throw error
+      throw ResponseThrowable(this.code(), error.localizedMessage)
     } else {
-      throw Throwable(errorMessage)
+      throw ResponseThrowable(this.code(), errorMessage)
     }
   }
 }
