@@ -132,6 +132,36 @@ fun TagInfo(
         } else it
       }
   ) {
+    LazyTimelinePagingList(
+      paginator = viewModel.tagPaginator,
+      pagingList = timeline.toImmutableList(),
+      lazyListState = lazyListState,
+      pagePlaceholderType = PagePlaceholderType.Normal,
+      action = viewModel::onStatusAction,
+      navigateToDetail = {
+        navigator.navigate(StatusDetailDestination(it.actionableStatus, null))
+      },
+      navigateToMedia = { attachments, targetIndex ->
+        navigator.navigate(
+          StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+        )
+      },
+      navigateToProfile = { targetAccount ->
+        navigator.navigate(
+          ProfileDestination(targetAccount)
+        )
+      },
+      navigateToTagInfo = {
+        navigator.navigate(TagInfoDestination(it))
+      },
+      modifier = Modifier
+        .offset {
+          IntOffset(
+            x = 0,
+            y = (scrollState.offset.value + headerHeight).roundToInt()
+          )
+        }
+    )
     Box(
       modifier = Modifier
         .onSizeChanged {
@@ -143,36 +173,6 @@ fun TagInfo(
         .padding(horizontal = 12.dp)
         .statusBarsPadding()
     ) {
-      LazyTimelinePagingList(
-        paginator = viewModel.tagPaginator,
-        pagingList = timeline.toImmutableList(),
-        lazyListState = lazyListState,
-        pagePlaceholderType = PagePlaceholderType.Normal,
-        action = viewModel::onStatusAction,
-        navigateToDetail = {
-          navigator.navigate(StatusDetailDestination(it.actionableStatus, null))
-        },
-        navigateToMedia = { attachments, targetIndex ->
-          navigator.navigate(
-            StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-          )
-        },
-        navigateToProfile = { targetAccount ->
-          navigator.navigate(
-            ProfileDestination(targetAccount)
-          )
-        },
-        navigateToTagInfo = {
-          navigator.navigate(TagInfoDestination(it))
-        },
-        modifier = Modifier
-          .offset {
-            IntOffset(
-              x = 0,
-              y = (scrollState.offset.value + headerHeight).roundToInt()
-            )
-          }
-      )
       Column {
         CenterRow {
           IconButton(
