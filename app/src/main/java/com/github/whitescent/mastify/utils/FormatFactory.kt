@@ -18,9 +18,9 @@
 package com.github.whitescent.mastify.utils
 
 import kotlinx.datetime.toInstant
+import kotlinx.datetime.toJavaInstant
 import java.text.DateFormat
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -35,8 +35,8 @@ object FormatFactory {
       .format(timestamp.toInstant().toEpochMilliseconds())
   }
   fun getTime(timestamp: String): String {
-    val date = timestamp.toInstant().toEpochMilliseconds()
-    return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(date))
+    val formatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
+    return formatter.format(Date.from(timestamp.toInstant().toJavaInstant()))
   }
   fun getPercentageString(value: Float): String {
     val percentInstance = NumberFormat.getPercentInstance()

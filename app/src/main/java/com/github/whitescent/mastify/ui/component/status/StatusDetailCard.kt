@@ -17,7 +17,9 @@
 
 package com.github.whitescent.mastify.ui.component.status
 
+import android.net.Uri
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -40,6 +42,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
+import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status.Application
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
@@ -71,6 +75,7 @@ import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -238,8 +243,9 @@ fun StatusDetailCard(
       StatusDetailInfo(
         reblogsCount = status.reblogsCount,
         favouritesCount = status.favouritesCount,
+        visibility = status.visibility,
         createdAt = status.createdAt,
-        application = status.application
+        application = status.application,
       )
       HeightSpacer(value = 8.dp)
       StatusDetailActionsRow(
@@ -303,17 +309,26 @@ private fun StatusDetailActionsRow(
 private fun StatusDetailInfo(
   reblogsCount: Int,
   favouritesCount: Int,
+  visibility: Visibility,
   createdAt: String,
   application: Application?,
 ) {
+  val context = LocalContext.current
+  val toolbarColor = AppTheme.colors.primaryContent
   Column {
     CenterRow(Modifier.fillMaxWidth()) {
       CenterRow(Modifier.weight(1f)) {
         Icon(
-          painter = painterResource(id = R.drawable.globe),
+          painter = when (visibility) {
+            Visibility.Public -> painterResource(R.drawable.globe)
+            Visibility.Unlisted -> painterResource(R.drawable.lock_open)
+            Visibility.Private -> painterResource(R.drawable.lock)
+            Visibility.Direct -> painterResource(R.drawable.at)
+            else -> throw IllegalArgumentException("Invalid visibility: $visibility")
+          },
           contentDescription = null,
           tint = Color(0xFF999999),
-          modifier = Modifier.size(20.dp)
+          modifier = Modifier.size(20.dp),
         )
         WidthSpacer(value = 4.dp)
         Text(
@@ -326,7 +341,15 @@ private fun StatusDetailInfo(
         if (it.name.isNotEmpty()) {
           Text(
             text = application.name,
-            color = AppTheme.colors.hintText
+            color = AppTheme.colors.hintText,
+            modifier = Modifier
+              .clickable(it.website != null) {
+                launchCustomChromeTab(
+                  context = context,
+                  uri = Uri.parse(it.website),
+                  toolbarColor = toolbarColor.toArgb(),
+                )
+              },
           )
         }
       }
