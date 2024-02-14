@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.data.repository
 
-import android.content.Context
 import at.connyduck.calladapter.networkresult.fold
 import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
@@ -27,17 +26,13 @@ import com.github.whitescent.mastify.network.model.status.NewPoll
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.utils.getOrThrow
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
 import javax.inject.Inject
 
-class StatusRepository @Inject constructor(
-  @ApplicationContext private val context: Context,
-  private val api: MastodonApi
-) {
+class StatusRepository @Inject constructor(private val api: MastodonApi) {
 
   suspend fun getAccountStatus(
     onlyMedia: Boolean? = null,
@@ -89,21 +84,23 @@ class StatusRepository @Inject constructor(
     poll: NewPoll? = null,
     language: String? = null
   ): Flow<Status> = flow {
-    api.createStatus(
-      idempotencyKey = UUID.randomUUID().toString(),
-      status = NewStatus(
-        status = content,
-        warningText = warningText,
-        inReplyToId = inReplyToId,
-        visibility = visibility.toString(),
-        sensitive = sensitive,
-        mediaIds = mediaIds,
-        mediaAttributes = mediaAttributes,
-        scheduledAt = scheduledAt,
-        poll = poll,
-        language = language,
-      )
-    ).getOrThrow()
+    emit(
+      api.createStatus(
+        idempotencyKey = UUID.randomUUID().toString(),
+        status = NewStatus(
+          status = content,
+          warningText = warningText,
+          inReplyToId = inReplyToId,
+          visibility = visibility.toString(),
+          sensitive = sensitive,
+          mediaIds = mediaIds,
+          mediaAttributes = mediaAttributes,
+          scheduledAt = scheduledAt,
+          poll = poll,
+          language = language,
+        )
+      ).getOrThrow()
+    )
   }
 
   suspend fun getSingleStatus(id: String) = flow {
