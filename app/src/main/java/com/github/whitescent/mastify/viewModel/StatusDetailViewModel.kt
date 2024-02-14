@@ -171,6 +171,7 @@ class StatusDetailViewModel @Inject constructor(
     )
     var latestStatus = navArgs.status.toUiData()
     viewModelScope.launch {
+      val accountId = accountDao.getActiveAccount()!!.accountId
       uiState = uiState.copy(
         loading = true,
         statusList = persistentListOf(latestStatus),
@@ -182,9 +183,9 @@ class StatusDetailViewModel @Inject constructor(
             it.printStackTrace()
             timelineUseCase.onStatusLoadError((it as? ResponseThrowable) ?: it)
             if (it as? ResponseThrowable != null && it.code == 404) {
-              val accountId = accountDao.getActiveAccount()!!.id
-              val isInDb = timelineDao.getSingleStatusWithId(accountId, navArgs.status.id) != null
-              if (isInDb) timelineDao.clear(accountId, navArgs.status.id)
+              val dbId = accountDao.getActiveAccount()!!.id
+              val isInDb = timelineDao.getSingleStatusWithId(dbId, navArgs.status.id) != null
+              if (isInDb) timelineDao.clear(dbId, navArgs.status.id)
             }
           }
           .collect {
@@ -201,7 +202,7 @@ class StatusDetailViewModel @Inject constructor(
             val combinedList = (statusContext.ancestors.toUiData() +
               latestStatus + reorderDescendants(statusContext.descendants)).toImmutableList()
             val threadList = statusContext.ancestors
-              .filter { it.account.id != navArgs.status.account.id }
+              .filter { it.account.id != navArgs.status.account.id && it.account.id != accountId }
               .reversed()
               .distinctBy { it.account.id }
               .map {
