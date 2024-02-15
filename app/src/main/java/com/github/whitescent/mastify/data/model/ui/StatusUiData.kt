@@ -76,9 +76,11 @@ data class StatusUiData(
     Start, Continue, End, Null
   }
 
-  enum class Visibility {
-
-    Public, Unlisted, Private, Direct, Unknown;
+  sealed class Visibility {
+    object Public : Visibility()
+    object Private : Visibility()
+    object Unlisted : Visibility()
+    object Direct : Visibility()
 
     val rebloggingAllowed get() = (this == Public || this == Unlisted)
 
@@ -88,22 +90,23 @@ data class StatusUiData(
         Unlisted -> "unlisted"
         Private -> "private"
         Direct -> "direct"
-        Unknown -> "unknown"
       }
     }
 
     companion object {
+      val entries = listOf(Public, Private, Unlisted, Direct)
+
       fun byString(s: String): Visibility {
         return when (s) {
           "public" -> Public
           "unlisted" -> Unlisted
           "private" -> Private
           "direct" -> Direct
-          "unknown" -> Unknown
-          else -> Unknown
+          else -> Public
         }
       }
     }
   }
+
   companion object
 }

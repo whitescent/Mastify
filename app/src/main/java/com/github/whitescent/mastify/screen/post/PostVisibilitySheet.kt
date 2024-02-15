@@ -100,7 +100,6 @@ private fun PostVisibilityItem(
   visibility: Visibility,
   onClick: () -> Unit,
 ) {
-  if (visibility == Visibility.Unknown) return
   Surface(
     shape = RoundedCornerShape(14.dp),
     border = if (selected) BorderStroke((2.5).dp, AppTheme.colors.bottomSheetSelectedBorder) else null,
@@ -119,7 +118,6 @@ private fun PostVisibilityItem(
             Visibility.Unlisted -> painterResource(R.drawable.lock_open)
             Visibility.Private -> painterResource(R.drawable.lock)
             Visibility.Direct -> painterResource(R.drawable.at)
-            else -> throw IllegalArgumentException("Invalid visibility: $visibility")
           },
           contentDescription = null,
           tint = AppTheme.colors.primaryContent,
@@ -133,7 +131,6 @@ private fun PostVisibilityItem(
               Visibility.Unlisted -> R.string.visibility_unlisted
               Visibility.Private -> R.string.visibility_private
               Visibility.Direct -> R.string.visibility_direct
-              else -> throw IllegalArgumentException("Invalid visibility: $visibility")
             }
           ),
           color = AppTheme.colors.primaryContent,

@@ -324,7 +324,6 @@ private fun StatusDetailInfo(
             Visibility.Unlisted -> painterResource(R.drawable.lock_open)
             Visibility.Private -> painterResource(R.drawable.lock)
             Visibility.Direct -> painterResource(R.drawable.at)
-            else -> throw IllegalArgumentException("Invalid visibility: $visibility")
           },
           contentDescription = null,
           tint = Color(0xFF999999),
