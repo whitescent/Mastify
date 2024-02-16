@@ -23,9 +23,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -98,12 +99,12 @@ fun StatusActionDrawer(
   }
   ModalBottomSheet(
     sheetState = sheetState,
-    windowInsets = WindowInsets.systemBars,
+    windowInsets = WindowInsets.statusBars,
     containerColor = AppTheme.colors.bottomSheetBackground,
     modifier = modifier,
     onDismissRequest = onDismissRequest
     ) {
-      Column(Modifier.padding(bottom = 12.dp)) {
+      Column(Modifier.navigationBarsPadding()) {
         actions.forEach {
           StatusMenuListItem(
             action = it,

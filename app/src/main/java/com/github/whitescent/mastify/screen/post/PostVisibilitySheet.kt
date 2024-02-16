@@ -21,9 +21,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -58,10 +59,10 @@ fun PostVisibilitySheet(
   ModalBottomSheet(
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,
-    windowInsets = WindowInsets.systemBars,
+    windowInsets = WindowInsets.statusBars,
     containerColor = AppTheme.colors.bottomSheetBackground,
   ) {
-    Column(Modifier.padding(vertical = 10.dp)) {
+    Column(Modifier.padding(vertical = 10.dp).navigationBarsPadding()) {
       Text(
         text = stringResource(id = R.string.change_post_visibility),
         fontSize = 20.sp,

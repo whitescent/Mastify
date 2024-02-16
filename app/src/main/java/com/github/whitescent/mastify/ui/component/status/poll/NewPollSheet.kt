@@ -26,9 +26,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -249,9 +250,9 @@ fun NewPollSheet(
       sheetState = deadlineSheetState,
       containerColor = AppTheme.colors.bottomSheetBackground,
       onDismissRequest = { openDeadlineSheet = false },
-      windowInsets = WindowInsets.systemBars
+      windowInsets = WindowInsets.statusBars
     ) {
-      Column(Modifier.padding(vertical = 14.dp)) {
+      Column(Modifier.padding(vertical = 14.dp).navigationBarsPadding()) {
         CenterRow(Modifier.padding(horizontal = 14.dp)) {
           Icon(
             painter = painterResource(id = R.drawable.calendar),
