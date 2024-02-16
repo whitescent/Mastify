@@ -48,6 +48,7 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
+import com.github.whitescent.mastify.ui.component.TextWithEmoji
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.LazyTimelinePagingList
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
@@ -118,11 +119,12 @@ fun SearchResultPager(
                   WidthSpacer(value = 6.dp)
                   Column {
                     Column {
-                      Text(
+                      TextWithEmoji(
                         text = it.realDisplayName,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = AppTheme.colors.primaryContent
+                        color = AppTheme.colors.primaryContent,
+                        emojis = it.emojis,
                       )
                       Text(
                         text = it.fullname,
