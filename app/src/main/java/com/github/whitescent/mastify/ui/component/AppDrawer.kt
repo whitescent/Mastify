@@ -57,7 +57,6 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
@@ -261,7 +260,6 @@ fun AppDrawer(
 @Composable
 private fun DrawerMenu() {
   val context = LocalContext.current
-  val primaryColor = AppTheme.colors.primaryContent
   AppDrawerMenu.entries.forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
       AppHorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -271,8 +269,7 @@ private fun DrawerMenu() {
         "about" -> {
           launchCustomChromeTab(
             context = context,
-            uri = Uri.parse("https://github.com/whitescent/Mastify"),
-            toolbarColor = primaryColor.toArgb(),
+            uri = Uri.parse("https://github.com/whitescent/Mastify")
           )
         }
       }

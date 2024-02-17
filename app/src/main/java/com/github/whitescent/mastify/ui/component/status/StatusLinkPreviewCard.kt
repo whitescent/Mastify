@@ -36,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,15 +59,13 @@ fun StatusLinkPreviewCard(
   modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
-  val toolbarColor = AppTheme.colors.primaryContent
   if (card != null) {
     Card(
       modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
       onClick = {
         launchCustomChromeTab(
           context = context,
-          uri = Uri.parse(card.url),
-          toolbarColor = toolbarColor.toArgb(),
+          uri = Uri.parse(card.url)
         )
       },
       shape = AppTheme.shape.mediumAvatar,

@@ -39,8 +39,9 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,16 +50,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.bundleOf
 import coil.compose.AsyncImage
 import com.github.whitescent.R
+import com.github.whitescent.mastify.extensions.buildHtmlText
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -79,11 +84,29 @@ import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import com.github.whitescent.mastify.viewModel.ProfileUiState
 import kotlinx.coroutines.launch
+import org.jsoup.Jsoup
 
 data class FieldChipColorScheme(
   val containerColor: Color,
   val contentColor: Color
-)
+) {
+  companion object {
+    val saver: Saver<FieldChipColorScheme, *> = Saver(
+      save = {
+        bundleOf(
+          "containerColor" to it.containerColor.toArgb(),
+          "contentColor" to it.contentColor.toArgb()
+        )
+      },
+      restore = {
+        FieldChipColorScheme(
+          containerColor = Color(it.getInt("containerColor")),
+          contentColor = Color(it.getInt("contentColor"))
+        )
+      }
+    )
+  }
+}
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +119,7 @@ fun ProfileHeader(
 ) {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
-  val primaryColor = AppTheme.colors.primaryContent
+  val clipManager = LocalClipboardManager.current
   val fieldChipColorScheme = listOf(
     FieldChipColorScheme(Color(0XFFfffbea), Color(0xFFb3530d)),
     FieldChipColorScheme(Color(0XFFF0F9FF), Color(0xFF046B9F))
@@ -198,7 +221,6 @@ fun ProfileHeader(
               statusLinkHandler(
                 mentions = emptyList(),
                 context = context,
-                primaryColor = primaryColor,
                 link = url,
                 navigateToProfile = {},
                 navigateToTagInfo = { navigateToTagInfo(it) }
@@ -208,7 +230,7 @@ fun ProfileHeader(
         )
       }
       Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
       ) {
         FlowRow(
@@ -217,8 +239,15 @@ fun ProfileHeader(
           verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
           uiState.account.fieldsWithEmoji.forEach {
+            val parsedFieldValue = buildAnnotatedString {
+              append(
+                buildHtmlText(Jsoup.parse(it.value)).text
+              )
+            }.text
             val tooltipState = rememberTooltipState(isPersistent = true)
-            val colorScheme = remember { fieldChipColorScheme.random() }
+            val colorScheme = rememberSaveable(saver = FieldChipColorScheme.saver) {
+              fieldChipColorScheme.random()
+            }
             TooltipBox(
               positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(14.dp),
               tooltip = {
@@ -231,7 +260,19 @@ fun ProfileHeader(
                     .background(colorScheme.containerColor, CircleShape)
                 ) {
                   CenterRow(
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    modifier = Modifier
+                      .let {
+                        when (FormatFactory.isValidUrl(parsedFieldValue)) {
+                          true -> it.clickableWithoutIndication {
+                            launchCustomChromeTab(
+                              context = context,
+                              uri = Uri.parse(FormatFactory.ensureHttpPrefix(parsedFieldValue))
+                            )
+                          }
+                          false -> it
+                        }
+                      }
+                      .padding(horizontal = 20.dp, vertical = 8.dp)
                   ) {
                     HtmlText(
                       text = it.value,
@@ -241,22 +282,40 @@ fun ProfileHeader(
                       onLinkClick = { url ->
                         launchCustomChromeTab(
                           context = context,
-                          uri = Uri.parse(url),
-                          toolbarColor = primaryColor.toArgb(),
+                          uri = Uri.parse(url)
                         )
                       },
                       color = colorScheme.contentColor,
                       modifier = Modifier.weight(1f, false)
                     )
                     WidthSpacer(value = 4.dp)
-                    Icon(
-                      painter = painterResource(id = R.drawable.copy_fill),
-                      contentDescription = null,
-                      modifier = Modifier
-                        .size(24.dp)
-                        .clickableWithoutIndication { },
-                      tint = colorScheme.contentColor
-                    )
+                    when (FormatFactory.isValidUrl(parsedFieldValue)) {
+                      true -> {
+                        Icon(
+                          painter = painterResource(id = R.drawable.link_simple),
+                          contentDescription = null,
+                          modifier = Modifier.size(24.dp),
+                          tint = colorScheme.contentColor
+                        )
+                      }
+                      else -> {
+                        Icon(
+                          painter = painterResource(id = R.drawable.copy_fill),
+                          contentDescription = null,
+                          modifier = Modifier
+                            .size(24.dp)
+                            .clickableWithoutIndication {
+                              clipManager.setText(
+                                buildAnnotatedString {
+                                  append(parsedFieldValue)
+                                }
+                              )
+                              tooltipState.dismiss()
+                            },
+                          tint = colorScheme.contentColor
+                        )
+                      }
+                    }
                   }
                 }
               },

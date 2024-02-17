@@ -226,7 +226,6 @@ private fun StatusContent(
   navigateToTagInfo: (String) -> Unit,
 ) {
   val context = LocalContext.current
-  val primaryColor = AppTheme.colors.primaryContent
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
     mutableStateOf(statusUiData.sensitive || (statusUiData.spoilerText.isNotEmpty()))
   }
@@ -342,7 +341,6 @@ private fun StatusContent(
                       statusLinkHandler(
                         mentions = statusUiData.mentions,
                         context = context,
-                        primaryColor = primaryColor,
                         navigateToProfile = navigateToProfile,
                         navigateToTagInfo = navigateToTagInfo,
                         link = statusUiData.mentions.first().url
@@ -364,7 +362,6 @@ private fun StatusContent(
                         statusLinkHandler(
                           mentions = statusUiData.mentions,
                           context = context,
-                          primaryColor = primaryColor,
                           navigateToProfile = navigateToProfile,
                           navigateToTagInfo = navigateToTagInfo,
                           link = span

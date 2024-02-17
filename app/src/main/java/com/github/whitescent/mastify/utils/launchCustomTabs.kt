@@ -19,17 +19,15 @@ package com.github.whitescent.mastify.utils
 
 import android.content.Context
 import android.net.Uri
-import androidx.annotation.ColorInt
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
-fun launchCustomChromeTab(
-  context: Context,
-  uri: Uri,
-  @ColorInt toolbarColor: Int
-) {
+fun launchCustomChromeTab(context: Context, uri: Uri) {
+  val color = Color(0xFF081B34).toArgb()
   val customTabBarColor = CustomTabColorSchemeParams.Builder()
-    .setToolbarColor(toolbarColor).build()
+    .setToolbarColor(color).build()
   val customTabsIntent = CustomTabsIntent.Builder()
     .setDefaultColorSchemeParams(customTabBarColor)
     .build()

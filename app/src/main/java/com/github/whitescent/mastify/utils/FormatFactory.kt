@@ -43,4 +43,22 @@ object FormatFactory {
     percentInstance.maximumFractionDigits = if (value > 0.01f) 0 else 2
     return percentInstance.format(value)
   }
+  fun ensureHttpPrefix(url: String): String {
+    return if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      return "https://$url"
+    } else url
+  }
+  fun isValidUrl(url: String): Boolean {
+    val urlRegex = (
+      "^(https?://)?" +
+        "((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|" +
+        "localhost|" +
+        "((\\d{1,3}\\.){3}\\d{1,3}))" +
+        "(\\:\\d+)?(/[-a-z\\d%_.~+]*)*" +
+        "(\\?[;&a-z\\d%_.~+=-]*)?" +
+        "(\\#[-a-z\\d_]*)?\$"
+      ).toRegex(RegexOption.IGNORE_CASE)
+
+    return urlRegex.matches(url)
+  }
 }

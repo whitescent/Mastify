@@ -19,15 +19,12 @@ package com.github.whitescent.mastify.utils
 
 import android.content.Context
 import android.net.Uri
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Mention
 
 fun statusLinkHandler(
   mentions: List<Mention>,
   context: Context,
-  primaryColor: Color,
   link: String?,
   navigateToProfile: (Account) -> Unit,
   navigateToTagInfo: (String) -> Unit
@@ -43,8 +40,7 @@ fun statusLinkHandler(
     else -> {
       launchCustomChromeTab(
         context = context,
-        uri = Uri.parse(link),
-        toolbarColor = primaryColor.toArgb()
+        uri = Uri.parse(link)
       )
     }
   }
