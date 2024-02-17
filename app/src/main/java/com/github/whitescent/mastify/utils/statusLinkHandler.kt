@@ -21,6 +21,8 @@ import android.content.Context
 import android.net.Uri
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Mention
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 fun statusLinkHandler(
   mentions: List<Mention>,
@@ -36,7 +38,7 @@ fun statusLinkHandler(
   }
   when {
     mention != null -> navigateToProfile(mention.toAccount())
-    hashtag != null -> navigateToTagInfo(hashtag)
+    hashtag != null -> navigateToTagInfo(URLDecoder.decode(hashtag, StandardCharsets.UTF_8.toString()))
     else -> {
       launchCustomChromeTab(
         context = context,
