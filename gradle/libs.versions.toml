@@ -43,6 +43,7 @@ lottie = "6.0.0"
 leakcanary = "2.12"
 composeDestinations = "1.10.0"
 hilt = "2.50"
+haze = "0.5.2"
 paging3 = "3.2.1"
 splashScreen = "1.0.1"
 junit = "4.13.2"
@@ -124,6 +125,7 @@ mockk = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 mockk-agent = { module = "io.mockk:mockk-agent", version.ref = "mockk" }
 
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 compose-media = { module = "com.github.fengdai.compose:media", version.ref = "media" }
 zoomable = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil", version.ref = "zoomimage" }
 lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }

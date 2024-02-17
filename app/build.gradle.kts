@@ -33,8 +33,8 @@ android {
     applicationId = "com.github.whitescent.mastify"
     minSdk = 21
     targetSdk = 34
-    versionCode = 14
-    versionName = "1.3.2-alpha"
+    versionCode = 15
+    versionName = "1.3.4-alpha"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     vectorDrawables {
       useSupportLibrary = true
@@ -172,6 +172,7 @@ dependencies {
   implementation(libs.zoomable)
   implementation(libs.lottie)
   implementation(libs.splash)
+  implementation(libs.haze)
   debugImplementation(libs.leakcanary)
 
   implementation(libs.kotlinx.datetime)
