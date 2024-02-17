@@ -248,4 +248,15 @@ interface MastodonApi {
 
   @POST("api/v1/tags/{name}/unfollow")
   suspend fun unfollowTag(@Path("name") name: String): NetworkResult<Hashtag>
+
+  @FormUrlEncoded
+  @POST("api/v1/accounts/{id}/follow")
+  suspend fun followAccount(
+    @Path("id") accountId: String,
+    @Field("reblogs") showReblogs: Boolean? = null,
+    @Field("notify") notify: Boolean? = null
+  ): NetworkResult<Relationship>
+
+  @POST("api/v1/accounts/{id}/unfollow")
+  suspend fun unfollowAccount(@Path("id") accountId: String): NetworkResult<Relationship>
 }

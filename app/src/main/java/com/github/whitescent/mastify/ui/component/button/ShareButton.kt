@@ -15,43 +15,39 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.ui.component.status.action
+package com.github.whitescent.mastify.ui.component.button
 
-import androidx.compose.animation.animateColorAsState
+import android.content.Intent
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.core.content.ContextCompat
 import com.github.whitescent.R
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
-fun BookmarkButton(
-  bookmarked: Boolean,
+fun ShareButton(
+  link: String,
   modifier: Modifier = Modifier,
-  unbookmarkedColor: Color = AppTheme.colors.primaryContent,
-  onClick: (Boolean) -> Unit,
+  @DrawableRes id: Int = R.drawable.share,
+  tint: Color = AppTheme.colors.cardAction,
 ) {
-  var bookmarkState by remember(bookmarked) { mutableStateOf(bookmarked) }
-  val animatedIconColor by animateColorAsState(
-    targetValue = if (bookmarkState) Color(0xFF498AE0) else unbookmarkedColor,
-  )
+  val context = LocalContext.current
   ClickableIcon(
-    painter = painterResource(
-      id = when (bookmarkState) {
-        true -> R.drawable.bookmark_fill
-        else -> R.drawable.bookmark
-      }
-    ),
+    painter = painterResource(id = id),
     modifier = modifier,
-    tint = animatedIconColor,
+    tint = tint,
   ) {
-    bookmarkState = !bookmarkState
-    onClick(bookmarkState)
+    val sendIntent: Intent = Intent(Intent.ACTION_SEND).apply {
+      putExtra(Intent.EXTRA_TEXT, link)
+      type = "text/html"
+    }
+
+    val shareIntent = Intent.createChooser(sendIntent, null)
+    ContextCompat.startActivity(context, shareIntent, null)
   }
 }

@@ -31,6 +31,6 @@ data class Relationship(
   val requested: Boolean,
   @SerialName("showing_reblogs") val showingReblogs: Boolean,
   @SerialName("domain_blocking") val blockingDomain: Boolean,
-  val note: String?,
-  val notifying: Boolean?
+  val note: String,
+  val notifying: Boolean
 )

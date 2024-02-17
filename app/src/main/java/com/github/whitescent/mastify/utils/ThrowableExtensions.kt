@@ -46,7 +46,7 @@ fun Throwable.getServerErrorMessage(): String? {
 data class ResponseThrowable(
   val code: Int,
   val errorMessage: String?
-) : Throwable() {
+) : Exception() {
   override val message: String? = errorMessage
   override fun getLocalizedMessage(): String? = errorMessage
 }

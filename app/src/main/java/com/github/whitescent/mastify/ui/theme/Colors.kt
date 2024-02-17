@@ -43,7 +43,7 @@ interface MastifyColorScheme {
   val reblogged: Color
   val replyTextFieldBorder: Color
   val followButtonBackground: Color get() = accent
-  val unfollowButtonBackground: Color get() = Color(0xFFFF0000).copy(.56f)
+  val unfollowButtonBackground: Color get() = Color(0xFF081B34)
   val defaultHeader: Color
   val divider: Color
   val bottomSheetBackground: Color

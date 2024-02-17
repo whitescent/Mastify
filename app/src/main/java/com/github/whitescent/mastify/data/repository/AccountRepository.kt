@@ -83,4 +83,11 @@ class AccountRepository @Inject constructor(
         )
       }
   }
+
+  suspend fun followAccount(id: String, follow: Boolean, notify: Boolean? = null) = flow {
+    emit(
+      value = if (follow) api.followAccount(id, notify = notify).getOrThrow()
+      else api.unfollowAccount(id).getOrThrow()
+    )
+  }
 }

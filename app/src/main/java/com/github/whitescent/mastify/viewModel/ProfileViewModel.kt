@@ -32,6 +32,7 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.ProfilePagingFactory
@@ -40,6 +41,7 @@ import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
+import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithMedia
@@ -144,9 +146,9 @@ class ProfileViewModel @Inject constructor(
         .catch { }
         .collect {
           val account = it.first
-          val relationship = it.second
+          val relationships = it.second
           uiState = uiState.copy(
-            isFollowing = relationship.first().following,
+            relationship = relationships.firstOrNull(),
             account = account
           )
         }
@@ -161,6 +163,23 @@ class ProfileViewModel @Inject constructor(
           }
         }
       }
+    }
+  }
+
+  fun followAccount(follow: Boolean, notify: Boolean? = null) {
+    viewModelScope.launch {
+      uiState = uiState.copy(followState = PostState.Posting)
+      accountRepository
+        .followAccount(navArgs.account.id, follow, notify)
+        .catch {
+          uiState = uiState.copy(followState = PostState.Failure(it))
+        }
+        .collect {
+          uiState = uiState.copy(
+            relationship = it,
+            followState = PostState.Success
+          )
+        }
     }
   }
 
@@ -210,7 +229,8 @@ class ProfileViewModel @Inject constructor(
 data class ProfileUiState(
   val account: Account,
   val isSelf: Boolean? = null,
-  val isFollowing: Boolean? = null,
+  val relationship: Relationship? = null,
+  val followState: PostState = PostState.Idle
 )
 
 enum class ProfileKind(

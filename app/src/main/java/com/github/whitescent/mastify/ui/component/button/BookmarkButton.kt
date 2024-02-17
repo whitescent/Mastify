@@ -15,39 +15,43 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.ui.component.status.action
+package com.github.whitescent.mastify.ui.component.button
 
-import android.content.Intent
-import androidx.annotation.DrawableRes
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.core.content.ContextCompat
 import com.github.whitescent.R
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
-fun ShareButton(
-  link: String,
+fun BookmarkButton(
+  bookmarked: Boolean,
   modifier: Modifier = Modifier,
-  @DrawableRes id: Int = R.drawable.share,
-  tint: Color = AppTheme.colors.cardAction,
+  unbookmarkedColor: Color = AppTheme.colors.primaryContent,
+  onClick: (Boolean) -> Unit,
 ) {
-  val context = LocalContext.current
+  var bookmarkState by remember(bookmarked) { mutableStateOf(bookmarked) }
+  val animatedIconColor by animateColorAsState(
+    targetValue = if (bookmarkState) Color(0xFF498AE0) else unbookmarkedColor,
+  )
   ClickableIcon(
-    painter = painterResource(id = id),
+    painter = painterResource(
+      id = when (bookmarkState) {
+        true -> R.drawable.bookmark_fill
+        else -> R.drawable.bookmark
+      }
+    ),
     modifier = modifier,
-    tint = tint,
+    tint = animatedIconColor,
   ) {
-    val sendIntent: Intent = Intent(Intent.ACTION_SEND).apply {
-      putExtra(Intent.EXTRA_TEXT, link)
-      type = "text/html"
-    }
-
-    val shareIntent = Intent.createChooser(sendIntent, null)
-    ContextCompat.startActivity(context, shareIntent, null)
+    bookmarkState = !bookmarkState
+    onClick(bookmarkState)
   }
 }
