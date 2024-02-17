@@ -50,6 +50,8 @@ class DialogState(
 }
 
 @Composable
-fun rememberDialogState(): DialogState = rememberSaveable(saver = DialogState.saver) {
-  DialogState()
+fun rememberDialogState(
+  initialShow: Boolean = false
+): DialogState = rememberSaveable(saver = DialogState.saver) {
+  DialogState(initialShow)
 }

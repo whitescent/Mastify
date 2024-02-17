@@ -32,6 +32,7 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.extensions.updateStatusActionData
 import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.ProfilePagingFactory
@@ -40,6 +41,7 @@ import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
+import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithMedia
@@ -47,6 +49,7 @@ import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithReply
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -144,9 +147,9 @@ class ProfileViewModel @Inject constructor(
         .catch { }
         .collect {
           val account = it.first
-          val relationship = it.second
+          val relationships = it.second
           uiState = uiState.copy(
-            isFollowing = relationship.first().following,
+            relationship = relationships.firstOrNull(),
             account = account
           )
         }
@@ -161,6 +164,41 @@ class ProfileViewModel @Inject constructor(
           }
         }
       }
+    }
+  }
+
+  fun followAccount(follow: Boolean, notify: Boolean? = null) {
+    viewModelScope.launch {
+      uiState = uiState.copy(followState = PostState.Posting)
+      accountRepository
+        .followAccount(navArgs.account.id, follow, notify)
+        .catch {
+          uiState = uiState.copy(followState = PostState.Failure(it))
+        }
+        .collect {
+          uiState = uiState.copy(
+            relationship = it,
+            followState = PostState.Success
+          )
+        }
+    }
+  }
+
+  fun lookupAccount(acct: String) {
+    viewModelScope.launch {
+      uiState = uiState.copy(searchState = PostState.Posting)
+      accountRepository.lookupAccount(acct)
+        .catch {
+          uiState = uiState.copy(searchState = PostState.Failure(it))
+        }
+        .collect {
+          uiState = uiState.copy(
+            searchedAccount = it,
+            searchState = PostState.Success
+          )
+          delay(500)
+          uiState = uiState.copy(searchState = PostState.Idle)
+        }
     }
   }
 
@@ -209,8 +247,11 @@ class ProfileViewModel @Inject constructor(
 
 data class ProfileUiState(
   val account: Account,
+  val searchedAccount: Account? = null,
   val isSelf: Boolean? = null,
-  val isFollowing: Boolean? = null,
+  val relationship: Relationship? = null,
+  val followState: PostState = PostState.Idle,
+  val searchState: PostState = PostState.Idle
 )
 
 enum class ProfileKind(

@@ -42,7 +42,6 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -67,10 +66,10 @@ import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.LocalizedClickableText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.status.action.BookmarkButton
-import com.github.whitescent.mastify.ui.component.status.action.FavoriteButton
-import com.github.whitescent.mastify.ui.component.status.action.ReblogButton
-import com.github.whitescent.mastify.ui.component.status.action.ShareButton
+import com.github.whitescent.mastify.ui.component.button.BookmarkButton
+import com.github.whitescent.mastify.ui.component.button.FavoriteButton
+import com.github.whitescent.mastify.ui.component.button.ReblogButton
+import com.github.whitescent.mastify.ui.component.button.ShareButton
 import com.github.whitescent.mastify.ui.component.status.poll.StatusPoll
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory
@@ -102,7 +101,6 @@ fun StatusDetailCard(
   }
 
   val context = LocalContext.current
-  val primaryColor = AppTheme.colors.primaryContent
   val avatarSizePx = with(LocalDensity.current) { statusAvatarSize.toPx() }
   val contentPaddingPx = with(LocalDensity.current) { statusContentHorizontalPadding.toPx() }
   val avatarHalfSize = avatarSizePx / 2
@@ -187,7 +185,6 @@ fun StatusDetailCard(
                     statusLinkHandler(
                       mentions = status.mentions,
                       context = context,
-                      primaryColor = primaryColor,
                       navigateToProfile = navigateToProfile,
                       navigateToTagInfo = navigateToTagInfo,
                       link = status.mentions.first().url
@@ -211,7 +208,6 @@ fun StatusDetailCard(
                         statusLinkHandler(
                           mentions = status.mentions,
                           context = context,
-                          primaryColor = primaryColor,
                           navigateToProfile = navigateToProfile,
                           navigateToTagInfo = navigateToTagInfo,
                           link = span
@@ -314,7 +310,6 @@ private fun StatusDetailInfo(
   application: Application?,
 ) {
   val context = LocalContext.current
-  val toolbarColor = AppTheme.colors.primaryContent
   Column {
     CenterRow(Modifier.fillMaxWidth()) {
       CenterRow(Modifier.weight(1f)) {
@@ -345,8 +340,7 @@ private fun StatusDetailInfo(
               .clickable(it.website != null) {
                 launchCustomChromeTab(
                   context = context,
-                  uri = Uri.parse(it.website),
-                  toolbarColor = toolbarColor.toArgb(),
+                  uri = Uri.parse(it.website)
                 )
               },
           )

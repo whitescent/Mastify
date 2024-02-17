@@ -54,7 +54,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -258,8 +257,7 @@ fun Login(
             "&scope=$CLIENT_SCOPES" +
             "&redirect_uri=$REDIRECT_URIS" +
             "&response_type=code"
-        ),
-        toolbarColor = Color(0xFF3F4366).toArgb()
+        )
       )
     }
   }

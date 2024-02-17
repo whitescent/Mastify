@@ -15,33 +15,36 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.ui.component.status.action
+package com.github.whitescent.mastify.ui.component.dialog
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import com.github.whitescent.R
-import com.github.whitescent.mastify.ui.component.ClickableIcon
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
-fun FavoriteButton(
-  favorited: Boolean,
-  modifier: Modifier = Modifier,
-  unfavoritedColor: Color = AppTheme.colors.cardAction,
-  onClick: (Boolean) -> Unit,
+fun BasicDialog(
+  dialogState: DialogState,
+  properties: DialogProperties = DialogProperties(),
+  content: @Composable () -> Unit
 ) {
-  val animatedFavIconColor by animateColorAsState(
-    targetValue = if (favorited) AppTheme.colors.cardLike else unfavoritedColor,
-  )
-  ClickableIcon(
-    painter = painterResource(id = if (favorited) R.drawable.heart_fill else R.drawable.heart),
-    modifier = modifier,
-    tint = animatedFavIconColor,
-  ) {
-    onClick(!favorited)
+  if (dialogState.show) {
+    Dialog(
+      onDismissRequest = dialogState::closeDialog,
+      properties = properties,
+      content = {
+        Box(
+          modifier = Modifier
+            .background(AppTheme.colors.background, AppTheme.shape.smallAvatar)
+            .clip(AppTheme.shape.smallAvatar)
+        ) {
+          content()
+        }
+      }
+    )
   }
 }

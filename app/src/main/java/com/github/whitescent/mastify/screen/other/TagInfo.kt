@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.other
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -38,7 +37,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -75,10 +73,10 @@ import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.ui.component.button.FollowButton
 import com.github.whitescent.mastify.ui.component.status.LazyTimelinePagingList
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.rememberTimelineNestedScrollConnectionState
 import com.github.whitescent.mastify.viewModel.TagViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -230,42 +228,26 @@ fun TagInfo(
             }
           }
           if (uiState.following != null) {
-            Button(
-              onClick = viewModel::followHashtag,
-              modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .animateContentSize(),
-              shape = AppTheme.shape.smallAvatar,
-              colors = ButtonDefaults.buttonColors(
-                containerColor = when (uiState.following) {
-                  true -> AppTheme.colors.unfollowButtonBackground
-                  else -> AppTheme.colors.followButtonBackground
-                }
-              )
+            FollowButton(
+              followed = uiState.following,
+              postState = uiState.followState,
+              onClick = { viewModel.followHashtag() },
+              modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
             ) {
-              when (uiState.followState == PostState.Posting) {
-                true -> CircularProgressIndicator(
-                  color = Color.White,
-                  modifier = Modifier.size(24.dp),
-                  strokeWidth = 1.5.dp
-                )
-                else -> {
-                  Text(
-                    text = stringResource(
-                      id = when (uiState.following) {
-                        true -> R.string.following_hashtag
-                        else -> R.string.follow_hashtag
-                      },
-                      uiState.hashtag
-                    ),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 17.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                  )
-                }
-              }
+              Text(
+                text = stringResource(
+                  id = when (uiState.following) {
+                    true -> R.string.following_hashtag
+                    else -> R.string.follow_hashtag
+                  },
+                  uiState.hashtag
+                ),
+                fontWeight = FontWeight.Medium,
+                fontSize = 17.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = Color.White
+              )
             }
           }
         }

@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -57,7 +56,6 @@ fun ExploreNewsItem(
   news: News
 ) {
   val context = LocalContext.current
-  val toolbarColor = AppTheme.colors.primaryContent
   Box(
     modifier = Modifier
       .fillMaxWidth()
@@ -66,8 +64,7 @@ fun ExploreNewsItem(
       .clickable {
         launchCustomChromeTab(
           context = context,
-          uri = Uri.parse(news.url),
-          toolbarColor = toolbarColor.toArgb(),
+          uri = Uri.parse(news.url)
         )
       }
   ) {

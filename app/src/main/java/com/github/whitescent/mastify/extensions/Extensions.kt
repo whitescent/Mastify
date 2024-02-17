@@ -207,9 +207,15 @@ fun buildHtmlText(
   }
 }
 
-private fun skipElement(element: Element): Boolean = element.hasClass("invisible")
-
-private fun AnnotatedString.Builder.renderText(text: String) = append(text)
+private fun AnnotatedString.Builder.renderNode(
+  node: Node,
+  filterMentionText: Boolean = false
+) {
+  when (node) {
+    is Element -> renderElement(node, filterMentionText)
+    is TextNode -> renderText(if (filterMentionText) node.wholeText.trim() else node.wholeText)
+  }
+}
 
 private fun AnnotatedString.Builder.renderElement(
   element: Element,
@@ -227,13 +233,16 @@ private fun AnnotatedString.Builder.renderElement(
 
     "br" -> renderText("\n")
 
-    "code", "pre" -> renderText(element.text())
+    "code", "pre", "strong" -> renderText(element.text())
 
     "span", "p", "i", "em" -> {
+      val prevNode = element.previousSibling()
+      val isParagraph = normalName == "p" && prevNode?.normalName() == "p"
       if (!filterMentionText) {
-        if (normalName == "p" && element.previousSibling()?.normalName() == "p") append("\n\n")
+        if (isParagraph) append("\n\n")
+      } else {
+        if (isParagraph && prevNode?.hasTextNode() == true) append("\n\n")
       }
-
       element.childNodes().forEach {
         renderNode(
           node = it,
@@ -244,12 +253,15 @@ private fun AnnotatedString.Builder.renderElement(
   }
 }
 
-private fun AnnotatedString.Builder.renderNode(
-  node: Node,
-  filterMentionText: Boolean = false
-) {
-  when (node) {
-    is Element -> renderElement(node, filterMentionText)
-    is TextNode -> renderText(if (filterMentionText) node.wholeText.trim() else node.wholeText)
+private fun Node.hasTextNode(): Boolean {
+  if (this is Element && hasClass("u-url mention")) return false
+  if (this is TextNode && !this.isBlank) return true
+  for (child in this.childNodes()) {
+    if (child.hasTextNode()) return true
   }
+  return false
 }
+
+private fun AnnotatedString.Builder.renderText(text: String) = append(text)
+
+private fun skipElement(element: Element): Boolean = element.hasClass("invisible")
