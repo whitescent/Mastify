@@ -259,4 +259,9 @@ interface MastodonApi {
 
   @POST("api/v1/accounts/{id}/unfollow")
   suspend fun unfollowAccount(@Path("id") accountId: String): NetworkResult<Relationship>
+
+  @GET("api/v1/accounts/lookup")
+  suspend fun lookupAccount(
+    @Query("acct") acct: String
+  ): Response<Account>
 }

@@ -49,6 +49,7 @@ import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithReply
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -183,6 +184,24 @@ class ProfileViewModel @Inject constructor(
     }
   }
 
+  fun lookupAccount(acct: String) {
+    viewModelScope.launch {
+      uiState = uiState.copy(searchState = PostState.Posting)
+      accountRepository.lookupAccount(acct)
+        .catch {
+          uiState = uiState.copy(searchState = PostState.Failure(it))
+        }
+        .collect {
+          uiState = uiState.copy(
+            searchedAccount = it,
+            searchState = PostState.Success
+          )
+          delay(500)
+          uiState = uiState.copy(searchState = PostState.Idle)
+        }
+    }
+  }
+
   fun syncProfileTab(page: Int) {
     currentProfileKindFlow.value = ProfileKind.entries.toTypedArray()[page]
   }
@@ -228,9 +247,11 @@ class ProfileViewModel @Inject constructor(
 
 data class ProfileUiState(
   val account: Account,
+  val searchedAccount: Account? = null,
   val isSelf: Boolean? = null,
   val relationship: Relationship? = null,
-  val followState: PostState = PostState.Idle
+  val followState: PostState = PostState.Idle,
+  val searchState: PostState = PostState.Idle
 )
 
 enum class ProfileKind(

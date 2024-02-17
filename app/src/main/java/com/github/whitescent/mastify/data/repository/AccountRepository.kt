@@ -24,6 +24,7 @@ import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.utils.getOrThrow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -89,5 +90,9 @@ class AccountRepository @Inject constructor(
       value = if (follow) api.followAccount(id, notify = notify).getOrThrow()
       else api.unfollowAccount(id).getOrThrow()
     )
+  }
+
+  suspend fun lookupAccount(acct: String) = flow {
+    emit(api.lookupAccount(acct).getOrThrow())
   }
 }

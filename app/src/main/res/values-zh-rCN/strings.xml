@@ -98,6 +98,7 @@
   <string name="empty_status">"这个家伙还没有发布过任何嘟文"</string>
   <string name="empty_status_self">你还没有发布过嘟文哦</string>
   <string name="empty_timeline">"你还没有关注其他人哦"</string>
+  <string name="searching_account">搜寻用户 ing…</string>
 
 
   <!--These are for timestamps on statuses. For example: "16s" or "2d"-->

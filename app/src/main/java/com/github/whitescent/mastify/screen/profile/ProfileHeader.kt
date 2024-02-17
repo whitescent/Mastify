@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.screen.profile
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -39,6 +41,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -75,16 +78,21 @@ import com.github.whitescent.mastify.ui.component.avatarStartPadding
 import com.github.whitescent.mastify.ui.component.button.EditProfileButton
 import com.github.whitescent.mastify.ui.component.button.FollowButton
 import com.github.whitescent.mastify.ui.component.button.SubscribeButton
+import com.github.whitescent.mastify.ui.component.dialog.BasicDialog
+import com.github.whitescent.mastify.ui.component.dialog.rememberDialogState
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayoutState
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.theme.shape.SmoothCornerShape
 import com.github.whitescent.mastify.utils.FormatFactory
+import com.github.whitescent.mastify.utils.FormatFactory.getAcctFromUrl
+import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import com.github.whitescent.mastify.viewModel.ProfileUiState
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import java.net.MalformedURLException
 
 data class FieldChipColorScheme(
   val containerColor: Color,
@@ -113,10 +121,13 @@ data class FieldChipColorScheme(
 fun ProfileHeader(
   uiState: ProfileUiState,
   profileLayoutState: ProfileLayoutState,
+  searchAccount: (String) -> Unit,
   follow: (Boolean) -> Unit,
   subscribe: (Boolean) -> Unit,
+  navigateToAccount: () -> Unit,
   navigateToTagInfo: (String) -> Unit
 ) {
+  val dialogState = rememberDialogState()
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
   val clipManager = LocalClipboardManager.current
@@ -217,6 +228,11 @@ fun ProfileHeader(
           ),
           onLinkClick = { url ->
             if (url.contains("@")) {
+              try {
+                searchAccount(getAcctFromUrl(url))
+              } catch (e: MalformedURLException) {
+                Toast.makeText(context, "host Invalid", Toast.LENGTH_SHORT).show()
+              }
             } else {
               statusLinkHandler(
                 mentions = emptyList(),
@@ -424,6 +440,43 @@ fun ProfileHeader(
           }
         }
       }
+    }
+  }
+
+  LaunchedEffect(uiState.searchState) {
+    when (uiState.searchState) {
+      is PostState.Posting -> dialogState.showDialog()
+      is PostState.Failure -> {
+        dialogState.closeDialog()
+        Toast.makeText(
+          context,
+          uiState.searchState.throwable.localizedMessage,
+          Toast.LENGTH_SHORT
+        ).show()
+      }
+      is PostState.Success -> {
+        dialogState.closeDialog()
+        navigateToAccount()
+      }
+      is PostState.Idle -> Unit
+    }
+  }
+
+  BasicDialog(
+    dialogState = dialogState
+  ) {
+    CenterRow(Modifier.padding(24.dp)) {
+      Text(
+        text = stringResource(id = R.string.searching_account),
+        fontSize = 18.sp,
+        color = AppTheme.colors.primaryContent
+      )
+      WidthSpacer(value = 6.dp)
+      CircularProgressIndicator(
+        color = AppTheme.colors.accent,
+        modifier = Modifier.size(16.dp),
+        strokeWidth = 1.dp
+      )
     }
   }
 }

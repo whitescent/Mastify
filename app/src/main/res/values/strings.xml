@@ -101,6 +101,7 @@
   <string name="empty_status">This guy hasn\'t yet made a post</string>
   <string name="empty_status_self">You haven\'t posted yet</string>
   <string name="empty_timeline">"You haven't followed anyone else yet"</string>
+  <string name="searching_account">Searching account…</string>
 
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
   <string name="status_created_at_now">now</string>

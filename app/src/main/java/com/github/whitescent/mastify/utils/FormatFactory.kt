@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.utils
 
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toJavaInstant
+import java.net.MalformedURLException
 import java.text.DateFormat
 import java.text.NumberFormat
 import java.util.Date
@@ -29,6 +30,17 @@ object FormatFactory {
     val regex = Regex("^(?:https?://)?(?:www\\.)?([\\w.-]+)")
     val matchResult = regex.find(url)
     return matchResult?.groups?.get(1)?.value ?: ""
+  }
+  fun getAcctFromUrl(mastodonUrl: String): String {
+    val url = try {
+      java.net.URL(mastodonUrl)
+    } catch (e: MalformedURLException) {
+      throw IllegalArgumentException("Invalid URL format")
+    }
+    val domain = url.host
+    val path = url.path
+    val username = path.substringAfterLast("@")
+    return "$username@$domain"
   }
   fun getLocalizedDateTime(timestamp: String): String {
     return DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault())

@@ -106,6 +106,10 @@ fun Profile(
           profileLayoutState = profileLayoutState,
           follow = viewModel::followAccount,
           subscribe = { viewModel.followAccount(true, it) },
+          searchAccount = viewModel::lookupAccount,
+          navigateToAccount = {
+            navigator.navigate(ProfileDestination(uiState.searchedAccount!!))
+          },
           navigateToTagInfo = {
             navigator.navigate(TagInfoDestination(it))
           }
