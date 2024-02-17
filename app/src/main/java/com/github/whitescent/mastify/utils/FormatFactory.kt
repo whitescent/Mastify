@@ -35,9 +35,24 @@ object FormatFactory {
       .format(timestamp.toInstant().toEpochMilliseconds())
   }
   fun getTime(timestamp: String): String {
-    val formatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
-    return formatter.format(Date.from(timestamp.toInstant().toJavaInstant()))
+    val zonedDateTime: ZonedDateTime = ZonedDateTime.ofInstant(
+      Instant.ofEpochSecond(timestamp.toLong()), 
+      ZoneId.systemDefault()
+    )
+
+    val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
+    val timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+
+    val formattedDate = zonedDateTime.format(dateFormatter.withLocale(Locale.getDefault()))
+    val formattedTime = zonedDateTime.format(timeFormatter.withLocale(Locale.getDefault()))
+
+    val dateComponents = formattedDate.split("/")
+
+    val monthAndDay = "${dateComponents[0]}/${dateComponents[1]}"
+
+    return "$monthAndDay $formattedTime"
   }
+
   fun getPercentageString(value: Float): String {
     val percentInstance = NumberFormat.getPercentInstance()
     percentInstance.maximumFractionDigits = if (value > 0.01f) 0 else 2
