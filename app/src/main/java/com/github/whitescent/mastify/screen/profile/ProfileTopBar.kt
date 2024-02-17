@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -104,7 +105,11 @@ fun ProfileTopBar(
             overflow = TextOverflow.Ellipsis
           )
           Text(
-            text = stringResource(id = R.string.post_count, account.statusesCount),
+            text = pluralStringResource(
+              R.plurals.post_count,
+              account.statusesCount.toInt(),
+              account.statusesCount,
+            ),
             fontSize = 14.sp,
             color = Color.White,
           )

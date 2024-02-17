@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,6 +86,7 @@ import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
+import logcat.logcat
 import kotlin.math.roundToInt
 
 data class TagInfoNavArgs(val name: String)
@@ -210,19 +212,27 @@ fun TagInfo(
               )
               CenterRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                  text = stringResource(id = R.string.posts_week, uiState.posts),
-                  fontSize = 14.sp,
-                  color = AppTheme.colors.primaryContent.copy(.65f)
-                )
-                Text(
-                  text = stringResource(id = R.string.participant_count, uiState.participants),
+                  text = pluralStringResource(R.plurals.posts_week, uiState.posts, uiState.posts),
                   fontSize = 14.sp,
                   color = AppTheme.colors.primaryContent.copy(.65f),
                 )
                 Text(
-                  text = stringResource(id = R.string.posts_today, uiState.postsToday),
+                  text = pluralStringResource(
+                    R.plurals.participant_count,
+                    uiState.participants,
+                    uiState.participants,
+                  ),
                   fontSize = 14.sp,
-                  color = AppTheme.colors.primaryContent.copy(.65f)
+                  color = AppTheme.colors.primaryContent.copy(.65f),
+                )
+                Text(
+                  text = pluralStringResource(
+                    R.plurals.posts_today,
+                    uiState.postsToday,
+                    uiState.postsToday,
+                  ),
+                  fontSize = 14.sp,
+                  color = AppTheme.colors.primaryContent.copy(.65f),
                 )
               }
             }

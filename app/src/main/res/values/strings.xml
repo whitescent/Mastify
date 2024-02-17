@@ -88,19 +88,22 @@
   <!--  profile screen-->
   <string name="account_joined">Joined %s</string>
   <string name="post_title">Posts</string>
-  <string name="post_count">%s Posts</string>
+  <plurals name="post_count">
+    <item quantity="one">%d Post</item>
+    <item quantity="other">%d Posts</item>
+  </plurals>
   <string name="follow_title">Follow</string>
   <string name="follow_pending_title">Pending</string>
   <string name="subscribe_title">Subscribe</string>
-  <string name="unsubscribe_title">Subscribe</string>
+  <string name="unsubscribe_title">Unsubscribe</string>
   <string name="following_title">Following</string>
   <string name="follower_title">Followers</string>
   <string name="reply_title">Replies</string>
   <string name="media_title">Media</string>
   <string name="edit_profile">Edit Profile</string>
-  <string name="empty_status">This guy hasn\'t yet made a post</string>
-  <string name="empty_status_self">You haven\'t posted yet</string>
-  <string name="empty_timeline">"You haven't followed anyone else yet"</string>
+  <string name="empty_status">This guy hasn’t yet made a post</string>
+  <string name="empty_status_self">You haven’t posted yet</string>
+  <string name="empty_timeline">"You haven’t followed anyone else yet"</string>
   <string name="searching_account">Searching account…</string>
 
   <!--These are for timestamps on posts. For example: "16s" or "2d"-->
@@ -150,16 +153,25 @@
     <item quantity="one">%d topic</item>
     <item quantity="other">%d topics</item>
   </plurals>
-  <string name="nothing_to_see_here">There\'s nothing here</string>
+  <string name="nothing_to_see_here">There’s nothing here</string>
 
   <!-- Search screen -->
   <string name="accounts_title">Accounts</string>
   <string name="hashtags_title">Hashtags</string>
   <string name="follow_hashtag">Follow \#%s</string>
   <string name="following_hashtag">Following \#%s</string>
-  <string name="participant_count">%d participants</string>
-  <string name="posts_week">%d posts this week</string>
-  <string name="posts_today">%d posts today</string>
+  <plurals name="participant_count">
+    <item quantity="one">%d participant</item>
+    <item quantity="other">%d participants</item>
+  </plurals>
+  <plurals name="posts_week">
+    <item quantity="one">%d post this week</item>
+    <item quantity="other">%d posts this week</item>
+  </plurals>
+  <plurals name="posts_today">
+    <item quantity="one">%d post today</item>
+    <item quantity="other">%d posts today</item>
+  </plurals>
   <string name="back_to_top">Back to top</string>
 
   <!--  Post screen-->
@@ -167,7 +179,7 @@
   <string name="unlisted">Unlisted</string>
   <string name="private_title">Private</string>
   <string name="direct">Direct</string>
-  <string name="reply_placeholder">Anything you\'d like to share?</string>
+  <string name="reply_placeholder">Anything you’d like to share?</string>
   <string name="post_placeholder">Share your thoughts at the moment!</string>
   <string name="change_post_visibility">Change Post visibility</string>
   <string name="visibility_description">Change the visibility of your Post to make sure only the people you want can see your content.</string>
