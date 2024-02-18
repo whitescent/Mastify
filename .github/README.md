@@ -19,7 +19,7 @@ Here're some features we're planning to implement in the future, you can check t
 - [x] Post Detail
   - [x] select the users in the thread that need to receive notifications
 - [x] Check Account Profile
-  - [ ] Follow/Unfollow Account
+  - [x] Follow/Unfollow Account
   - [ ] Edit Profile
 - [x] Explore
   - [x] Trend posts in this instance
@@ -50,7 +50,7 @@ Here're some features we're planning to implement in the future, you can check t
   - [ ] Mute Account
   - [ ] Block Account
   - [ ] Report Account
-- [ ] Search
+- [x] Search
 - [ ] Notification
 - [ ] Settings
 
