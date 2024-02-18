@@ -17,10 +17,13 @@
 
 package com.github.whitescent.mastify.utils
 
+import android.icu.text.DateFormat
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toLocalDateTime
 import java.net.MalformedURLException
-import java.text.DateFormat
 import java.text.NumberFormat
 import java.util.Date
 import java.util.Locale
@@ -43,9 +46,19 @@ object FormatFactory {
     return "$username@$domain"
   }
   fun getLocalizedDateTime(timestamp: String): String {
-    return DateFormat.getDateInstance(DateFormat.DEFAULT, Locale.getDefault())
-      .format(timestamp.toInstant().toEpochMilliseconds())
+    val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
+    val targetYear = timestamp.toInstant().toLocalDateTime(TimeZone.currentSystemDefault()).year
+
+    val pattern = if (currentYear == targetYear) {
+      DateFormat.ABBR_MONTH_DAY
+    } else {
+      DateFormat.YEAR_ABBR_MONTH_DAY
+    }
+    val formatter = DateFormat.getPatternInstance(pattern, Locale.getDefault())
+    return formatter.format(Date.from(timestamp.toInstant().toJavaInstant()))
   }
+  // This function follows the locale format, not the system format (24 hour or 12 hour mode).
+  // If the system format is desired, use [android.text.format.DateFormat] (requires a Context).
   fun getTime(timestamp: String): String {
     val formatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
     return formatter.format(Date.from(timestamp.toInstant().toJavaInstant()))
