@@ -31,7 +31,7 @@ android {
 
   defaultConfig {
     applicationId = "com.github.whitescent.mastify"
-    minSdk = 21
+    minSdk = 24
     targetSdk = 34
     versionCode = 16
     versionName = "1.4.0-alpha"
