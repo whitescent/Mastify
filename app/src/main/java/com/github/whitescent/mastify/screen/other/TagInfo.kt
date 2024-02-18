@@ -86,7 +86,6 @@ import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import logcat.logcat
 import kotlin.math.roundToInt
 
 data class TagInfoNavArgs(val name: String)
