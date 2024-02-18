@@ -91,6 +91,14 @@ class HtmlTextTest {
     val expected = "yess 100% compose\n\nhttps://github.com/whitescent/Mastify"
     assertEquals(expected, buildContentAnnotatedString(document, true).text)
   }
+
+  @Test
+  fun `test br label`() {
+    val text = "<p><span class=\"h-card\" translate=\"no\"><a href=\"https://o3o.ca/@lazzzis\" class=\"u-url mention\">@<span>lazzzis</span></a></span> 混音算编曲的一部分，不过混音部分也能单独拿出来做（一般是整首都做得差不多的时候），一般编曲环节也要做混音。<br />后者的话，一般就是指的混音吧</p>"
+    val document = Jsoup.parse(text)
+    val expected = "混音算编曲的一部分，不过混音部分也能单独拿出来做（一般是整首都做得差不多的时候），一般编曲环节也要做混音。\n后者的话，一般就是指的混音吧"
+    assertEquals(expected, buildContentAnnotatedString(document, true).text)
+  }
 }
 
 private fun buildContentAnnotatedString(
@@ -98,7 +106,8 @@ private fun buildContentAnnotatedString(
   filterMentionText: Boolean = false
 ): AnnotatedString {
   if (filterMentionText && document.select("p").size == 1) {
-    document.select("br").remove()
+    val br = document.select("br")
+    if (!br.prev().hasText()) document.select("br").remove()
   }
   return buildAnnotatedString {
     document.body().childNodes().forEach {
