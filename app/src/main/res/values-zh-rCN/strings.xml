@@ -85,7 +85,9 @@
   <!--  profile screen-->
   <string name="account_joined">%s 加入</string>
   <string name="post_title">嘟文</string>
-  <string name="post_count">%s 条嘟文</string>
+  <plurals name="post_count">
+    <item quantity="other">%s 条嘟文</item>
+  </plurals>
   <string name="follow_title">关注</string>
   <string name="follow_pending_title">等待请求</string>
   <string name="subscribe_title">订阅通知</string>
@@ -152,9 +154,15 @@
   <string name="hashtags_title">话题标签</string>
   <string name="follow_hashtag">关注 \#%s</string>
   <string name="following_hashtag">正在关注 \#%s</string>
-  <string name="participant_count">%d 位用户参与了讨论</string>
-  <string name="posts_week">本周有 %d 条嘟文</string>
-  <string name="posts_today">今天有 %d 个嘟文</string>
+  <plurals name="participant_count">
+    <item quantity="other">%d 位用户参与了讨论</item>
+  </plurals>
+  <plurals name="posts_week">
+    <item quantity="other">本周有 %d 条嘟文</item>
+  </plurals>
+  <plurals name="posts_today">
+    <item quantity="other">今天有 %d 条嘟文</item>
+  </plurals>
   <string name="back_to_top">返回顶部</string>
 
   <!--  Post screen-->

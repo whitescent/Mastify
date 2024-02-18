@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -171,7 +172,7 @@ fun SearchResultPager(
                 )
                 HeightSpacer(value = 4.dp)
                 Text(
-                  text = stringResource(id = R.string.post_count, it.posts),
+                  text = pluralStringResource(id = R.plurals.post_count, it.posts, it.posts),
                   fontSize = 15.sp,
                   fontWeight = FontWeight.Medium,
                   color = AppTheme.colors.primaryContent.copy(.55f),
