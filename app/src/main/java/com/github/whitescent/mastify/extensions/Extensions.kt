@@ -198,8 +198,12 @@ fun buildHtmlText(
   filterMentionText: Boolean = false
 ): AnnotatedString {
   if (filterMentionText && document.select("p").size == 1) {
-    val br = document.select("br")
-    if (!br.prev().hasText()) document.select("br").remove()
+    val brElements = document.select("br")
+    for (br in brElements) {
+      val prev = br.previousSibling()
+      val hasTextBefore = prev is TextNode && prev.text().trim().isNotEmpty()
+      if (!hasTextBefore) document.select("br").remove()
+    }
   }
   return buildAnnotatedString {
     document.body().childNodes().forEach {
