@@ -47,7 +47,7 @@
   <string name="link_copied">嘟文链接已复制到剪贴板</string>
   <string name="bookmarked_snackBar">已收藏到你的书签</string>
   <string name="load_post_error">加载嘟文时发生错误</string>
-  <string name="click_to_display_content">Click to display content</string>
+  <string name="click_to_display_content">单击以显示内容</string>
   <string name="copy_text">复制文本内容</string>
   <string name="copy_link">复制嘟文链接</string>
   <string name="bookmark">添加到书签</string>
@@ -80,7 +80,7 @@
   <string name="account_joined">%s 加入</string>
   <string name="post_title">嘟文</string>
   <plurals name="post_count">
-    <item quantity="other">%s 条嘟文</item>
+    <item quantity="other">%d 条嘟文</item>
   </plurals>
   <string name="follow_title">关注</string>
   <string name="follow_pending_title">等待请求</string>
