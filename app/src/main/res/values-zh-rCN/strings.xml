@@ -80,7 +80,7 @@
   <string name="account_joined">%s 加入</string>
   <string name="post_title">嘟文</string>
   <plurals name="post_count">
-    <item quantity="other">%s 条嘟文</item>
+    <item quantity="other">%d 条嘟文</item>
   </plurals>
   <string name="follow_title">关注</string>
   <string name="follow_pending_title">等待请求</string>
