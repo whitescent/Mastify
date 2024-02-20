@@ -107,13 +107,21 @@ class HtmlTextTest {
     val expected = "网的确好2333"
     assertEquals(expected, buildContentAnnotatedString(document, true).text)
   }
+
+  @Test
+  fun `test br label 3`() {
+    val text = "<p><span class=\"h-card\" translate=\"no\"><a href=\"https://mastodon.ktachibana.party/@kt\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@<span>kt</span></a></span> <br>传说中的roadstreet么</p><p>-某群呆多了天天想回加-</p>"
+    val document = Jsoup.parse(text)
+    val expected = "传说中的roadstreet么\n\n-某群呆多了天天想回加-"
+    assertEquals(expected, buildContentAnnotatedString(document, true).text)
+  }
 }
 
 private fun buildContentAnnotatedString(
   document: Document,
   filterMentionText: Boolean = false
 ): AnnotatedString {
-  if (filterMentionText && document.select("p").size == 1) {
+  if (filterMentionText) {
     val brElements = document.select("br")
     for (br in brElements) {
       val prev = br.previousSibling()

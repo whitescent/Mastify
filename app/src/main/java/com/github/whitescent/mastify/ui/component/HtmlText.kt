@@ -147,7 +147,7 @@ private fun buildContentAnnotatedString(
   textStyle: TextStyle,
   filterMentionText: Boolean
 ): AnnotatedString {
-  if (filterMentionText && document.select("p").size == 1) {
+  if (filterMentionText) {
     val brElements = document.select("br")
     for (br in brElements) {
       val prev = br.previousSibling()
