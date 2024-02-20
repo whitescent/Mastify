@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright 2024 WhiteScent
   ~
@@ -14,7 +15,6 @@
   ~ You should have received a copy of the GNU General Public License along with Mastify; if not,
   ~ see <http://www.gnu.org/licenses>.
   -->
-
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
@@ -24,11 +24,9 @@
   <string name="log_in_to">登录到 %s</string>
   <string name="failed_to_retrieve_instance">获取实例信息失败</string>
   <string name="instance_verification_error">验证实例时出现错误</string>
-
   <!-- oauth screen -->
   <string name="title_connecting">正在连接中…</string>
   <string name="error_invalid_domain">无效的域名</string>
-
   <!-- home screen -->
   <string name="home_title">主页</string>
   <string name="user_boosted">%s 转嘟了</string>
@@ -64,7 +62,6 @@
   <string name="load_more_title">加载更多</string>
   <string name="link_preview_title">链接预览</string>
   <string name="replying_to_title">回复给 %s</string>
-
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>
   <string name="uncategorized_title">未分类</string>
@@ -73,15 +70,12 @@
   <string name="reply_two_user">%s，%s</string>
   <string name="reply_three_user">%s，%s 和 %s</string>
   <string name="reply_more_user">%s，%s 和其他 %d 位用户</string>
-
   <plurals name="favs">
     <item quantity="other">%d 次喜欢</item>
   </plurals>
-
   <plurals name="reblogs">
     <item quantity="other">%d 次转嘟</item>
   </plurals>
-
   <!--  profile screen-->
   <string name="account_joined">%s 加入</string>
   <string name="post_title">嘟文</string>
@@ -97,13 +91,11 @@
   <string name="reply_title">回复</string>
   <string name="media_title">媒体</string>
   <string name="edit_profile">编辑个人资料</string>
-  <string name="empty_status">"这个家伙还没有发布过任何嘟文"</string>
+  <string name="empty_status">这个家伙还没有发布过任何嘟文</string>
   <string name="empty_status_self">你还没有发布过嘟文哦</string>
   <string name="empty_timeline">"你还没有关注其他人哦"</string>
   <string name="searching_account">搜寻用户 ing…</string>
-
-
-  <!--These are for timestamps on statuses. For example: "16s" or "2d"-->
+  <!--These are for timestamps on posts. For example: "16s" or "2d"-->
   <string name="status_created_at_now">刚刚</string>
   <string name="abbreviated_in_years">%d 年内</string>
   <string name="abbreviated_in_days">%d 天内</string>
@@ -115,7 +107,6 @@
   <string name="abbreviated_hours_ago">%d 小时前</string>
   <string name="abbreviated_minutes_ago">%d 分钟前</string>
   <string name="abbreviated_seconds_ago">%d 秒前</string>
-
   <string name="vote_poll_day">%d 天后投票结束</string>
   <string name="vote_poll_hours">%d 小时后投票结束</string>
   <string name="vote_poll_minutes">%d 分钟后投票结束</string>
@@ -128,7 +119,6 @@
   <plurals name="votes">
     <item quantity="other">%d 票</item>
   </plurals>
-
   <!-- Explore screen -->
   <string name="explore_instance">探索 %s</string>
   <string name="trending_title">热门嘟文</string>
@@ -148,7 +138,6 @@
     <item quantity="other">%d 个话题标签</item>
   </plurals>
   <string name="nothing_to_see_here">这里空空如也~</string>
-
   <!-- Search screen -->
   <string name="accounts_title">用户</string>
   <string name="hashtags_title">话题标签</string>
@@ -164,7 +153,6 @@
     <item quantity="other">今天有 %d 条嘟文</item>
   </plurals>
   <string name="back_to_top">返回顶部</string>
-
   <!--  Post screen-->
   <string name="public_title">公开</string>
   <string name="unlisted">不列出</string>
@@ -195,6 +183,5 @@
   <string name="duration_7_days">1 周</string>
   <string name="poll_close_time">投票将会在 %s后结束</string>
   <string name="new_moment">发布新鲜事</string>
-
   <string name="ok_title">好的</string>
 </resources>
