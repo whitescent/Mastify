@@ -17,7 +17,7 @@
   -->
 <resources>
   <!-- login screen -->
-  <string name="app_name">Mastify</string>
+  <string name="app_name">TEST</string>
   <string name="app_description">A feature-rich Mastodon Android client</string>
   <string name="instance_address_tip">e.g. mastodon.social</string>
   <string name="log_in_title">Login</string>
