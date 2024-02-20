@@ -183,5 +183,5 @@
   <string name="duration_7_days">1 week</string>
   <string name="poll_close_time">Voting will close in %s</string>
   <string name="new_moment">New moment</string>
-  <string name="ok_title">OK</string>
+  <!--  <string name="ok_title">OK</string>-->
 </resources>
