@@ -205,6 +205,8 @@ private fun AnnotatedString.Builder.renderElement(
 
     "br" -> renderText("\n", textStyle)
 
+    "del" -> renderText(element.text(), textStyle.copy(textDecoration = TextDecoration.LineThrough))
+
     "strong" -> renderText(element.text(), textStyle.copy(fontWeight = FontWeight.Bold))
 
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering

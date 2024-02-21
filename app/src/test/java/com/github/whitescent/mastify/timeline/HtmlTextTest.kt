@@ -48,6 +48,14 @@ class HtmlTextTest {
   }
 
   @Test
+  fun `test del label parse`() {
+    val text = "<p><span>还是觉得某些群体在「非受众」的游戏内曲解角色和要求「增加与我们群体有关的内容」十分过分了。<br><br>玩家应该是去寻找适合自己群体的游戏，而不是对其它游戏说三道四吧。<br><br></span><del>没有？没有的话就自己做啊。</del></p>"
+    val document = Jsoup.parse(text)
+    val expected = "还是觉得某些群体在「非受众」的游戏内曲解角色和要求「增加与我们群体有关的内容」十分过分了。\n\n玩家应该是去寻找适合自己群体的游戏，而不是对其它游戏说三道四吧。\n\n没有？没有的话就自己做啊。"
+    assertEquals(expected, buildContentAnnotatedString(document).text)
+  }
+
+  @Test
   fun `test reply text`() {
     val text = "<p><a href=\"https://mastodon.ktachibana.party/@kt\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@kt@mastodon.ktachibana.party</a><span> 想用 KTT 了 他真可爱！</span></p>"
     val document = Jsoup.parse(text)
@@ -163,6 +171,8 @@ private fun AnnotatedString.Builder.renderElement(
     "br" -> renderText("\n")
 
     "code", "pre", "strong" -> renderText(element.text())
+
+    "del" -> renderText(element.text())
 
     "span", "p", "i", "em" -> {
       val prevNode = element.previousSibling()
