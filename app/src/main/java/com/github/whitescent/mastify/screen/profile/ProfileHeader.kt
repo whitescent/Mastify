@@ -66,7 +66,6 @@ import androidx.compose.ui.unit.sp
 import androidx.core.os.bundleOf
 import coil.compose.AsyncImage
 import com.github.whitescent.R
-import com.github.whitescent.mastify.extensions.buildHtmlText
 import com.github.whitescent.mastify.ui.component.AvatarWithCover
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
@@ -75,6 +74,7 @@ import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.TextWithEmoji
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.avatarStartPadding
+import com.github.whitescent.mastify.ui.component.buildPlainText
 import com.github.whitescent.mastify.ui.component.button.EditProfileButton
 import com.github.whitescent.mastify.ui.component.button.FollowButton
 import com.github.whitescent.mastify.ui.component.button.SubscribeButton
@@ -91,7 +91,6 @@ import com.github.whitescent.mastify.utils.launchCustomChromeTab
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import com.github.whitescent.mastify.viewModel.ProfileUiState
 import kotlinx.coroutines.launch
-import org.jsoup.Jsoup
 import java.net.MalformedURLException
 
 data class FieldChipColorScheme(
@@ -256,9 +255,7 @@ fun ProfileHeader(
         ) {
           uiState.account.fieldsWithEmoji.forEach {
             val parsedFieldValue = buildAnnotatedString {
-              append(
-                buildHtmlText(Jsoup.parse(it.value)).text
-              )
+              append(buildPlainText((it.value), false))
             }.text
             val tooltipState = rememberTooltipState(isPersistent = true)
             val colorScheme = rememberSaveable(saver = FieldChipColorScheme.saver) {

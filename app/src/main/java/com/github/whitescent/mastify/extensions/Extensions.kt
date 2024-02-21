@@ -31,10 +31,6 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.status.Status
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
 
 // get all items size from 0 to index
 fun <A, B> Map<A, List<B>>.getSizeOfIndex(index: Int): Int {
@@ -192,81 +188,3 @@ fun String.buildTextWithLimit(
     }
   }
 }
-
-fun buildHtmlText(
-  document: Document,
-  filterMentionText: Boolean = false
-): AnnotatedString {
-  if (filterMentionText) {
-    val brElements = document.select("br")
-    for (br in brElements) {
-      val prev = br.previousSibling()
-      val hasTextBefore = prev is TextNode && prev.text().trim().isNotEmpty()
-      if (!hasTextBefore) document.select("br").remove()
-    }
-  }
-  return buildAnnotatedString {
-    document.body().childNodes().forEach {
-      renderNode(it, filterMentionText)
-    }
-  }
-}
-
-private fun AnnotatedString.Builder.renderNode(
-  node: Node,
-  filterMentionText: Boolean = false
-) {
-  when (node) {
-    is Element -> renderElement(node, filterMentionText)
-    is TextNode -> renderText(if (filterMentionText) node.wholeText.trim() else node.wholeText)
-  }
-}
-
-private fun AnnotatedString.Builder.renderElement(
-  element: Element,
-  filterMentionText: Boolean = false
-) {
-  if (skipElement(element = element)) return
-  when (val normalName = element.normalName()) {
-    "a" -> {
-      if (element.hasClass("u-url mention") && filterMentionText) return
-      val href = element.attr("href")
-      pushStringAnnotation(tag = "fake", annotation = href)
-      append(element.text())
-      pop()
-    }
-
-    "br" -> renderText("\n")
-
-    "code", "pre", "strong" -> renderText(element.text())
-
-    "span", "p", "i", "em" -> {
-      val prevNode = element.previousSibling()
-      val isParagraph = normalName == "p" && prevNode?.normalName() == "p"
-      if (!filterMentionText) {
-        if (isParagraph) append("\n\n")
-      } else {
-        if (isParagraph && prevNode?.hasTextNode() == true) append("\n\n")
-      }
-      element.childNodes().forEach {
-        renderNode(
-          node = it,
-          filterMentionText = filterMentionText
-        )
-      }
-    }
-  }
-}
-
-private fun Node.hasTextNode(): Boolean {
-  if (this is Element && hasClass("u-url mention")) return false
-  if (this is TextNode && !this.isBlank) return true
-  for (child in this.childNodes()) {
-    if (child.hasTextNode()) return true
-  }
-  return false
-}
-
-private fun AnnotatedString.Builder.renderText(text: String) = append(text)
-
-private fun skipElement(element: Element): Boolean = element.hasClass("invisible")

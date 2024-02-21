@@ -18,7 +18,6 @@
 package com.github.whitescent.mastify.data.model.ui
 
 import androidx.compose.runtime.Immutable
-import com.github.whitescent.mastify.extensions.buildHtmlText
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Card
@@ -28,7 +27,6 @@ import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.ui.component.buildPlainText
 import kotlinx.collections.immutable.ImmutableList
-import org.jsoup.Jsoup
 
 @Immutable
 data class StatusUiData(
@@ -68,9 +66,9 @@ data class StatusUiData(
 
   val actionableId inline get() = reblog?.id ?: id
 
-  val parsedContent: String = buildHtmlText(Jsoup.parse(content)).text
+  val parsedContent: String = buildPlainText(content, false)
   val isInReplyTo inline get() = inReplyToId != null
-  val hasVisibleText : Boolean = buildPlainText(content, isInReplyToSomeone).trim().isNotEmpty()
+  val hasVisibleText: Boolean = buildPlainText(content, isInReplyToSomeone).trim().isNotEmpty()
 
   val isInReplyToSomeone inline get() = mentions.size == 1 && isInReplyTo
 

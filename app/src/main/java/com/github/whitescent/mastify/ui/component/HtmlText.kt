@@ -147,7 +147,7 @@ fun buildPlainText(content: String, filterMentionText: Boolean): String =
     TextStyle.Default.toSpanStyle(),
     TextStyle.Default,
     filterMentionText,
-  ).toString()
+  ).text
 
 private fun buildContentAnnotatedString(
   document: Document,
