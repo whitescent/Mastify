@@ -198,7 +198,7 @@ fun StatusDetailCard(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(top = 8.dp)
               ) {
-                if (status.content.isNotEmpty()) {
+                if (status.hasVisibleText) {
                   SelectionContainer {
                     HtmlText(
                       text = status.content,

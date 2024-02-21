@@ -26,6 +26,7 @@ import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.Mention
 import com.github.whitescent.mastify.network.model.status.Poll
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.ui.component.buildPlainText
 import kotlinx.collections.immutable.ImmutableList
 import org.jsoup.Jsoup
 
@@ -69,6 +70,7 @@ data class StatusUiData(
 
   val parsedContent: String = buildHtmlText(Jsoup.parse(content)).text
   val isInReplyTo inline get() = inReplyToId != null
+  val hasVisibleText : Boolean = buildPlainText(content, isInReplyToSomeone).trim().isNotEmpty()
 
   val isInReplyToSomeone inline get() = mentions.size == 1 && isInReplyTo
 

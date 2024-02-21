@@ -86,6 +86,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
+import org.jsoup.Jsoup
 
 @Composable
 fun StatusListItem(
@@ -353,7 +354,7 @@ private fun StatusContent(
                   verticalArrangement = Arrangement.spacedBy(12.dp),
                   modifier = Modifier.padding(top = 6.dp)
                 ) {
-                  if (statusUiData.content.isNotEmpty()) {
+                  if (statusUiData.hasVisibleText) {
                     HtmlText(
                       text = statusUiData.content,
                       fontSize = (15.5).sp,
