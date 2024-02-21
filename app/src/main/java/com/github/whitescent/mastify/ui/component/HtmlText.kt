@@ -141,6 +141,14 @@ fun HtmlText(
   )
 }
 
+fun buildPlainText(content: String, filterMentionText: Boolean): String =
+  buildContentAnnotatedString(
+    Jsoup.parse(content),
+    TextStyle.Default.toSpanStyle(),
+    TextStyle.Default,
+    filterMentionText,
+  ).toString()
+
 private fun buildContentAnnotatedString(
   document: Document,
   urlSpanStyle: SpanStyle,
