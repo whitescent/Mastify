@@ -134,6 +134,7 @@ fun HtmlText(
       ) { target ->
         AsyncImage(
           model = target,
+          modifier = Modifier.fillMaxSize(),
           contentDescription = null
         )
       }
