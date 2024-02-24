@@ -40,6 +40,13 @@ class HtmlTextTest {
   }
 
   @Test
+  fun `test normal parse 2`() {
+    val text = "<p><span class=\"h-card\" translate=\"no\"><a href=\"https://bgme.me/@bgme\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@<span>bgme</span></a></span></p><p>blackblaze b2 可能稍微便宜一点点 <a href=\"https://www.backblaze.com/cloud-storage/pricing\" rel=\"nofollow noopener noreferrer\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">backblaze.com/cloud-storage/pr</span><span class=\"invisible\">icing</span></a> 但是也实在找不出比这更便宜的 managed s3 储存了</p><p>要再便宜的话可能就得哪里找个裸机然后自己搭个 minio 之类的上去</p>"
+    val document = Jsoup.parse(text)
+    assertEquals("blackblaze b2 可能稍微便宜一点点 https://www.backblaze.com/cloud-storage/pricing 但是也实在找不出比这更便宜的 managed s3 储存了\n\n要再便宜的话可能就得哪里找个裸机然后自己搭个 minio 之类的上去", buildContentAnnotatedString(document, true).text)
+  }
+
+  @Test
   fun `test p label parse`() {
     val text = "<p>Tailscale finally offers a solution to avoid choosing the sub-optimal DERP regions (kind of), by specifying <code>derpmap</code> in ACLs.  :ablobhungry:</p><p><a href=\"https://github.com/tailscale/tailscale/issues/6187#issuecomment-1928098737\" rel=\"nofollow noopener noreferrer\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">github.com/tailscale/tailscale</span><span class=\"invisible\">/issues/6187#issuecomment-1928098737</span></a></p>"
     val document = Jsoup.parse(text)
@@ -123,6 +130,23 @@ class HtmlTextTest {
     val expected = "传说中的roadstreet么\n\n-某群呆多了天天想回加-"
     assertEquals(expected, buildContentAnnotatedString(document, true).text)
   }
+
+  @Test
+  fun `test complex text`() {
+    val text = "<p>Hi <a href=\"https://androiddev.social/tags/AndroidDev\" class=\"mention hashtag\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">#<span>AndroidDev</span></a></p><p>I'm working on a Mastodon client that's written entirely in Jetpack Compose and is open source <a href=\"https://github.com/whitescent/Mastify\" rel=\"nofollow noopener noreferrer\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">github.com/whitescent/Mastify</span><span class=\"invisible\"></span></a><br>and now available in Google Play Early Access <a href=\"https://play.google.com/store/apps/details?id=com.github.whitescent.mastify\" rel=\"nofollow noopener noreferrer\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">play.google.com/store/apps/det</span><span class=\"invisible\">ails?id=com.github.whitescent.mastify</span></a></p><p>Note: There are many features that have not been implemented yet</p><p>If you can provide some suggestions about App, or contribute to this project, I will be very grateful! :androidPetPet:</p><p>If you want to follow Mastify's development progress, you can follow this account <span class=\"h-card\" translate=\"no\"><a href=\"https://mastodon.social/@mastify\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@<span>mastify</span></a></span></p>"
+    val document = Jsoup.parse(text)
+    val expected = "Hi #AndroidDev\n" +
+      "\n" +
+      "I'm working on a Mastodon client that's written entirely in Jetpack Compose and is open source https://github.com/whitescent/Mastify\n" +
+      "and now available in Google Play Early Access https://play.google.com/store/apps/details?id=com.github.whitescent.mastify\n" +
+      "\n" +
+      "Note: There are many features that have not been implemented yet\n" +
+      "\n" +
+      "If you can provide some suggestions about App, or contribute to this project, I will be very grateful! :androidPetPet:\n" +
+      "\n" +
+      "If you want to follow Mastify's development progress, you can follow this account @mastify"
+    assertEquals(expected, buildContentAnnotatedString(document).text)
+  }
 }
 
 private fun buildContentAnnotatedString(
@@ -150,7 +174,12 @@ private fun AnnotatedString.Builder.renderNode(
 ) {
   when (node) {
     is Element -> renderElement(node, filterMentionText)
-    is TextNode -> renderText(if (filterMentionText) node.wholeText.trim() else node.wholeText)
+    is TextNode -> {
+      println("current text ${node.text()} prev ${node.previousSibling()?.toString()} next ${node.nextSibling()?.toString()}\n\n")
+      if (filterMentionText) {
+        renderText(if (node.shouldTrimStart()) node.wholeText.trimStart() else node.wholeText)
+      } else renderText(node.wholeText,)
+    }
   }
 }
 
@@ -199,6 +228,14 @@ private fun Node.hasTextNode(): Boolean {
     if (child.hasTextNode()) return true
   }
   return false
+}
+
+private fun Node.shouldTrimStart(): Boolean {
+  val prevHasATag = parentNode()?.childNodes()?.any {
+    it is Element && it.normalName() == "a" && !it.hasClass("u-url mention")
+  }
+  val prevHasText = (parentNode() is TextNode && parentNode()?.toString()?.isNotBlank() == true)
+  return prevHasATag == false && !prevHasText
 }
 
 private fun AnnotatedString.Builder.renderText(text: String) = append(text)

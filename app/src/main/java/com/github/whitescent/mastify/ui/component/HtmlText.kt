@@ -179,10 +179,11 @@ private fun AnnotatedString.Builder.renderNode(
 ) {
   when (node) {
     is Element -> renderElement(node, urlSpanStyle, textStyle, filterMentionText)
-    is TextNode -> renderText(
-      text = if (filterMentionText) node.wholeText.trim() else node.wholeText,
-      textStyle = textStyle
-    )
+    is TextNode -> {
+      if (filterMentionText) {
+        renderText(if (node.shouldTrimStart()) node.wholeText.trimStart() else node.wholeText, textStyle)
+      } else renderText(node.wholeText, textStyle)
+    }
   }
 }
 
@@ -254,6 +255,14 @@ private fun Node.hasTextNode(): Boolean {
     if (child.hasTextNode()) return true
   }
   return false
+}
+
+private fun Node.shouldTrimStart(): Boolean {
+  val prevHasATag = parentNode()?.childNodes()?.any {
+    it is Element && it.normalName() == "a" && !it.hasClass("u-url mention")
+  }
+  val prevHasText = (parentNode() is TextNode && parentNode()?.toString()?.isNotBlank() == true)
+  return prevHasATag == false && !prevHasText
 }
 
 private fun skipElement(element: Element): Boolean = element.hasClass("invisible")
