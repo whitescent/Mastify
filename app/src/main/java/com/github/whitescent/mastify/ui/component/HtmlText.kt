@@ -101,7 +101,7 @@ fun HtmlText(
         val change = awaitFirstDown()
         val annotation =
           layoutResult.value?.getOffsetForPosition(change.position)?.let {
-            value.getStringAnnotations(start = it, end = it).firstOrNull()
+            value.getStringAnnotations(start = it, end = it).firstOrNull { it.item != ID_IMAGE }
           }
         annotation?.let {
           if (change.pressed != change.previousPressed) change.consume()
