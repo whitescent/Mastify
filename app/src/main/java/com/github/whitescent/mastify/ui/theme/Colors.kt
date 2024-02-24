@@ -40,7 +40,7 @@ interface MastifyColorScheme {
   val cardLike: Color get() = Color(0xFFEF7096)
   val replyLine: Color
   val hintText: Color
-  val reblogged: Color
+  val reblogged: Color get() = Color(0xFF18BE64)
   val replyTextFieldBorder: Color
   val followButtonBackground: Color get() = accent
   val unfollowButtonBackground: Color get() = Color(69, 69, 69)
@@ -75,7 +75,6 @@ object LightColorScheme : MastifyColorScheme {
   override val secondaryContent: Color = Color(0xFF7489A6)
   override val replyLine: Color = Color(0xFFcfd9de)
   override val hintText: Color = Color(0xFF1d9bf0)
-  override val reblogged: Color = Color(0xFF18BE64)
   override val replyTextFieldBorder: Color = Color(0xFFE6E6E6)
   override val defaultHeader: Color = Color(0xFF1d9bf0)
   override val divider: Color = Color(0xFFD7D7D7).copy(0.5f)
@@ -107,7 +106,6 @@ object DarkColorScheme : MastifyColorScheme {
   override val secondaryContent = Color(0xFF7489A6)
   override val replyLine = Color(0xFF333638)
   override val hintText = Color(0xFF1d9bf0)
-  override val reblogged = Color(0xFF18BE64)
   override val replyTextFieldBorder = Color(0xFF454545)
   override val defaultHeader = Color(0xFF1d9bf0)
   override val divider = Color(0xFFD7D7D7).copy(0.1f)

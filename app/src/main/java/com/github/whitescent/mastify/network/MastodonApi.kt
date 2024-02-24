@@ -24,6 +24,7 @@ import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
+import com.github.whitescent.mastify.network.model.notification.Notification
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.MediaUploadResult
@@ -264,4 +265,16 @@ interface MastodonApi {
   suspend fun lookupAccount(
     @Query("acct") acct: String
   ): Response<Account>
+
+  @GET("api/v1/notifications")
+  suspend fun notifications(
+    /** Return results older than this ID */
+    @Query("max_id") maxId: String? = null,
+    /** Return results immediately newer than this ID */
+    @Query("min_id") minId: String? = null,
+    /** Maximum number of results to return. Defaults to 15, max is 30 */
+    @Query("limit") limit: Int? = null,
+    /** Types to excludes from the results */
+    @Query("exclude_types[]") excludes: List<String>? = null
+  ): Response<List<Notification>>
 }

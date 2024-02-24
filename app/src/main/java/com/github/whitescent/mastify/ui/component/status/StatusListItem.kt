@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,7 +71,7 @@ import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.HtmlText
-import com.github.whitescent.mastify.ui.component.LocalizedClickableText
+import com.github.whitescent.mastify.ui.component.LocalizedAnnotatedText
 import com.github.whitescent.mastify.ui.component.SensitiveBar
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.button.FavoriteButton
@@ -86,7 +87,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
-import org.jsoup.Jsoup
 
 @Composable
 fun StatusListItem(
@@ -334,7 +334,7 @@ private fun StatusContent(
             else -> {
               Column {
                 if (statusUiData.isInReplyToSomeone) {
-                  LocalizedClickableText(
+                  LocalizedAnnotatedText(
                     stringRes = R.string.replying_to_title,
                     highlightText = "@${statusUiData.mentions.first().username}",
                     style = TextStyle(color = AppTheme.colors.primaryContent.copy(0.6f)),
@@ -347,7 +347,9 @@ private fun StatusContent(
                         link = statusUiData.mentions.first().url
                       )
                     },
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    highlightSpanStyle = SpanStyle(color = AppTheme.colors.accent, 14.sp),
+                    allowHighLightClick = true
                   )
                 }
                 Column(

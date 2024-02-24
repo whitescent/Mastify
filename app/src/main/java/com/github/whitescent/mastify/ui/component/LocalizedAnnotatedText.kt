@@ -21,12 +21,16 @@ import androidx.annotation.StringRes
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
+import com.github.whitescent.mastify.mapper.toShortCode
+import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
 
@@ -35,13 +39,19 @@ import com.github.whitescent.mastify.utils.clickableWithoutIndication
  * https://issuetracker.google.com/issues/139320238
  */
 @Composable
-fun LocalizedClickableText(
+fun LocalizedAnnotatedText(
   @StringRes stringRes: Int,
   highlightText: String,
   modifier: Modifier = Modifier,
   fontSize: TextUnit = TextUnit.Unspecified,
-  style: TextStyle = TextStyle.Default.copy(fontSize = fontSize),
-  onClick: () -> Unit,
+  color: Color = AppTheme.colors.primaryContent.copy(0.45f),
+  style: TextStyle = TextStyle.Default.copy(fontSize = fontSize, color = color),
+  highlightSpanStyle: SpanStyle,
+  allowHighLightClick: Boolean,
+  maxLines: Int = Int.MAX_VALUE,
+  emojis: List<Emoji> = emptyList(),
+  emojiSize: TextUnit = fontSize,
+  onClick: (() -> Unit)? = null,
 ) {
   val text = stringResource(stringRes, highlightText)
   val formattedString = text.format(highlightText)
@@ -50,11 +60,9 @@ fun LocalizedClickableText(
     val endIndex = startIndex + highlightText.length
 
     append(formattedString.substring(0, startIndex))
-    withStyle(
-      style = SpanStyle(color = AppTheme.colors.accent, fontSize = fontSize)
-    ) {
+    withStyle(style = highlightSpanStyle) {
       pushStringAnnotation(tag = "URL", annotation = highlightText)
-      append(formattedString.substring(startIndex, endIndex))
+      annotateInlineEmojis(formattedString.substring(startIndex, endIndex), emojis.toShortCode())
       pop()
     }
 
@@ -67,7 +75,13 @@ fun LocalizedClickableText(
     text = annotatedText,
     fontSize = fontSize,
     style = style,
-    modifier = modifier.clickableWithoutIndication(onClick = onClick),
-    color = AppTheme.colors.primaryContent.copy(0.45f)
+    modifier = modifier.clickableWithoutIndication(
+      onClick = { onClick?.invoke() },
+      enabled = allowHighLightClick,
+    ),
+    color = color,
+    overflow = TextOverflow.Ellipsis,
+    maxLines = maxLines,
+    inlineContent = inlineTextContentWithEmoji(emojis, emojiSize),
   )
 }

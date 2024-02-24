@@ -36,8 +36,10 @@ import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.ExploreDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
+import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.explore.Explore
+import com.github.whitescent.mastify.screen.notification.Notification
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
 import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
@@ -155,6 +157,14 @@ fun AppScaffold(
             drawerState = drawerState,
             navigator = destinationsNavigator,
             resultRecipient = resultRecipient(),
+          )
+        }
+        composable(NotificationDestination) {
+          Notification(
+            activeAccount = activeAccount!!,
+            drawerState = drawerState,
+            appState = appState,
+            navigator = destinationsNavigator
           )
         }
       }
