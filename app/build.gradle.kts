@@ -35,7 +35,7 @@ android {
     targetSdk = 34
     versionCode = 16
     versionName = "1.4.0-alpha"
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "com.github.whitescent.mastify.ui.CustomTestRunner"
     vectorDrawables {
       useSupportLibrary = true
     }
