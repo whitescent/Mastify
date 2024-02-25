@@ -17,25 +17,30 @@
 
 package com.github.whitescent.mastify.ui
 
+import android.app.Activity
+import android.view.inputmethod.InputMethodManager
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
+import androidx.core.view.WindowInsetsCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.whitescent.mastify.MainActivity
 import com.github.whitescent.mastify.screen.login.Login
+import com.github.whitescent.mastify.ui.theme.MastifyTheme
 import com.github.whitescent.mastify.viewModel.LoginViewModel
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import javax.inject.Inject
-
-// This test doesn't work right now
-// I haven't figured out how to use hiltViewModel in a unit test :(
 
 @HiltAndroidTest
+@OptIn(ExperimentalFoundationApi::class)
 class AppUiTest {
 
   @get:Rule
@@ -44,7 +49,6 @@ class AppUiTest {
   @get:Rule
   var composeTestRule = createAndroidComposeRule<MainActivity>()
 
-  @Inject
   lateinit var loginViewModel: LoginViewModel
 
   @Before
@@ -54,11 +58,27 @@ class AppUiTest {
 
   @Test
   fun myTest() {
-    composeTestRule.setContent {
-      Login(loginViewModel)
+    composeTestRule.activity.setContent {
+      loginViewModel = hiltViewModel()
+      MastifyTheme {
+        Login(loginViewModel)
+      }
     }
     composeTestRule.onNodeWithTag("domain input").performTextInput("w a")
-    composeTestRule.waitUntil(2000L) { true }
-    composeTestRule.onNodeWithText("Invalid domain entered").assertIsDisplayed()
+    Assert.assertEquals("w a", loginViewModel.loginInput.text.toString())
+
+    // Hide keyboard; otherwise the text is covered by the keyboard
+    composeTestRule.runOnUiThread {
+      val imm =
+        composeTestRule.activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+      imm.hideSoftInputFromWindow(composeTestRule.activity.currentFocus?.windowToken, 0)
+    }
+    composeTestRule.waitUntil(20000L) {
+      !composeTestRule.activity.window.decorView.rootWindowInsets.isVisible(WindowInsetsCompat.Type.ime())
+    }
+
+    composeTestRule.onNodeWithText("Invalid domain entered")
+      .assertExists()
+      .assertIsDisplayed()
   }
 }
