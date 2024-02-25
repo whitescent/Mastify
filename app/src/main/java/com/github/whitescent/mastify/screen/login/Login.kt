@@ -56,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -151,7 +152,8 @@ fun Login(
         modifier = Modifier
           .clip(SmoothCornerShape(14.dp))
           .background(if (isSystemInDarkTheme()) Color(0xFF575B7A) else Color.White)
-          .border(1.3.dp, Color(0xFF79B2FF), SmoothCornerShape(14.dp)),
+          .border(1.3.dp, Color(0xFF79B2FF), SmoothCornerShape(14.dp))
+          .testTag("domain input"),
         cursorBrush = SolidColor(AppTheme.colors.primaryContent),
         textStyle = TextStyle(color = AppTheme.colors.primaryContent, fontSize = 16.sp),
         decorator = {
