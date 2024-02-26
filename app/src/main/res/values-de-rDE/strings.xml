@@ -48,20 +48,20 @@
   <string name="bookmarked_snackBar">Zu Favoriten hinzugefügt</string>
   <string name="load_post_error">Beim Laden des Beitrags ist ein Fehler aufgetreten</string>
   <string name="click_to_display_content">Klicken um Inhalt anzuzeigen</string>
-  <string name="copy_text">Copy Text</string>
-  <string name="copy_link">Copy Link</string>
-  <string name="bookmark">Bookmark</string>
-  <string name="delete_bookmark">Delete Bookmark</string>
-  <string name="mute_account">Mute %s</string>
-  <string name="block_account">Block %s</string>
-  <string name="report">Report</string>
-  <string name="many_posts_title">Many posts</string>
+  <string name="copy_text">Text kopieren</string>
+  <string name="copy_link">Link kopieren</string>
+  <string name="bookmark">Lesezeichen</string>
+  <string name="delete_bookmark">Lesezeichen löschen</string>
+  <string name="mute_account">%s stummschalten</string>
+  <string name="block_account">%s blockieren</string>
+  <string name="report">Melden</string>
+  <string name="many_posts_title">Viele Beiträge</string>
   <plurals name="new_post">
-    <item quantity="one">%d new post</item>
+    <item quantity="one">%d neuer Beitrag</item>
     <item quantity="other">%d new posts</item>
   </plurals>
-  <string name="load_more_title">Load More</string>
-  <string name="link_preview_title">Link Preview</string>
+  <string name="load_more_title">Mehr laden</string>
+  <string name="link_preview_title">Link Vorschau</string>
   <string name="replying_to_title">Replying to %s</string>
   <!-- status detail screen -->
   <string name="post_your_reply">post your reply</string>
