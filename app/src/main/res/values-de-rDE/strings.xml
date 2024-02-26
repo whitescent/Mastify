@@ -18,18 +18,18 @@
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
-  <string name="app_description">A feature-rich Mastodon Android client</string>
-  <string name="instance_address_tip">e.g. mastodon.social</string>
-  <string name="log_in_title">Login</string>
-  <string name="log_in_to">Log in to %s</string>
-  <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
-  <string name="instance_verification_error">Error occurred during instance verification</string>
+  <string name="app_description">Ein funktionsreicher Mastodon Android Client</string>
+  <string name="instance_address_tip">z.B. mastodon.social</string>
+  <string name="log_in_title">Anmelden</string>
+  <string name="log_in_to">Bei %s anmelden</string>
+  <string name="failed_to_retrieve_instance">Fehler beim Abrufen der Instanzinformationen</string>
+  <string name="instance_verification_error">Fehler bei der Verifizierung der Instanz</string>
   <!-- oauth screen -->
-  <string name="title_connecting">Connecting…</string>
-  <string name="error_invalid_domain">Invalid domain entered</string>
+  <string name="title_connecting">Verbinde…</string>
+  <string name="error_invalid_domain">Ungültige Domain eingegeben</string>
   <!-- home screen -->
-  <string name="home_title">Home</string>
-  <string name="user_boosted">%s boosted</string>
+  <string name="home_title">Startseite</string>
+  <string name="user_boosted">%s geboostet</string>
   <string name="title_add_account">Add Account</string>
   <string name="title_profile">Profile</string>
   <string name="title_bookmarks">Bookmarks</string>
