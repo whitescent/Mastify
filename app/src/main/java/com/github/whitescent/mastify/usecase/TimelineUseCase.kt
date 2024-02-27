@@ -149,29 +149,36 @@ class TimelineUseCase @Inject constructor(
       statusId: String
     ): List<Status> {
       val newList = list.toMutableList()
-      val index = newList.indexOfFirst { it.actionableId == statusId }
-      if (index != -1) {
-        var status = newList[index]
+      newList.forEachIndexed { index, current ->
+        if (current.actionableId == statusId) {
+          var status = newList[index]
 
-        val favorite = getStatusFavorite(status, action)
-        val favouritesCount = getStatusFavoriteCount(status, action)
+          val favorite = getStatusFavorite(status, action)
+          val favouritesCount = getStatusFavoriteCount(status, action)
 
-        val reblog = getStatusReblog(status, action)
-        val reblogsCount = getStatusReblogCount(status, action)
+          val reblog = getStatusReblog(status, action)
+          val reblogsCount = getStatusReblogCount(status, action)
 
-        val bookmark = getStatusBookmark(status, action)
+          val bookmark = getStatusBookmark(status, action)
 
-        status = status.copy(
-          favorited = favorite,
-          favouritesCount = favouritesCount,
-          reblogged = reblog,
-          reblogsCount = reblogsCount,
-          bookmarked = bookmark
-        )
-
-        newList[index] = status
-        return newList
-      } else return list
+          status = status.copy(
+            favorited = favorite,
+            favouritesCount = favouritesCount,
+            reblogged = reblog,
+            reblogsCount = reblogsCount,
+            bookmarked = bookmark,
+            reblog = status.reblog?.copy(
+              favorited = favorite,
+              favouritesCount = favouritesCount,
+              reblogged = reblog,
+              reblogsCount = reblogsCount,
+              bookmarked = bookmark
+            )
+          )
+          newList[index] = status
+        }
+      }
+      return newList
     }
 
     fun updateSingleStatusActions(currentStatus: Status, action: StatusAction): Status {
