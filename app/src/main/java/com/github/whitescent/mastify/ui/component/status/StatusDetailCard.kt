@@ -193,8 +193,7 @@ fun StatusDetailCard(
                   },
                   fontSize = 16.sp,
                   modifier = Modifier.padding(top = 6.dp),
-                  highlightSpanStyle = SpanStyle(color = AppTheme.colors.accent, 18.sp),
-                  allowHighLightClick = true
+                  highlightSpanStyle = SpanStyle(color = AppTheme.colors.accent, 18.sp)
                 )
               }
               Column(

@@ -17,13 +17,20 @@
 
 package com.github.whitescent.mastify.extensions
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Continue
@@ -31,6 +38,9 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Start
 import com.github.whitescent.mastify.network.model.status.Status
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 // get all items size from 0 to index
 fun <A, B> Map<A, List<B>>.getSizeOfIndex(index: Int): Int {
@@ -185,6 +195,19 @@ fun String.buildTextWithLimit(
       ) {
         append(text.substring(startIndex = maxLength, endIndex = text.length))
       }
+    }
+  }
+}
+
+@Composable
+inline fun <reified T> Flow<T>.observeWithLifecycle(
+  lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current,
+  minActiveState: Lifecycle.State = Lifecycle.State.STARTED,
+  noinline action: suspend (T) -> Unit
+) {
+  LaunchedEffect(Unit) {
+    lifecycleOwner.lifecycleScope.launch {
+      flowWithLifecycle(lifecycleOwner.lifecycle, minActiveState).collectLatest(action)
     }
   }
 }

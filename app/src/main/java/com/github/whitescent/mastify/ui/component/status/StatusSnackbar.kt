@@ -19,12 +19,6 @@ package com.github.whitescent.mastify.ui.component.status
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.EaseInOutQuad
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.VisibilityThreshold
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -43,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
@@ -62,28 +55,10 @@ fun StatusSnackBar(
     targetState = data,
     transitionSpec = {
       ContentTransform(
-        targetContentEnter = slideInVertically(
-          animationSpec = when (isSwitching) {
-            // We want it to have some delay when switching so the old toast goes up first
-            true -> tween(440, easing = CubicBezierEasing(0.56f, -0.41f, 0.4f, 1.4f))
-            // Otherwise, we just use the normal animation
-            false -> spring(
-              stiffness = Spring.StiffnessMediumLow,
-              visibilityThreshold = IntOffset.VisibilityThreshold
-            )
-          },
-          initialOffsetY = { it }
-        ) + fadeIn(tween(if (isSwitching) 300 else 400)),
-        initialContentExit = when (isSwitching) {
-          // We want to slide up the old toast when we switch to a new one
-          true -> slideOutVertically(
-            animationSpec = tween(480, easing = EaseInOutQuad),
-            targetOffsetY = { -(it * 1.3).toInt() }
-          ) + fadeOut(tween(480))
-          // Otherwise, we just drop the toast down
-          false -> slideOutVertically(tween(260), targetOffsetY = { it }) + fadeOut()
-        },
-      ).using(SizeTransform(clip = false))
+        targetContentEnter = slideInVertically { it } + fadeIn(tween(if (isSwitching) 300 else 400)),
+        initialContentExit = slideOutVertically(tween(260), targetOffsetY = { it }) + fadeOut(),
+        sizeTransform = null
+      )
     },
     modifier = modifier.fillMaxWidth()
   ) {

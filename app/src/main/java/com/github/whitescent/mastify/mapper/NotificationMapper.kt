@@ -20,12 +20,14 @@ package com.github.whitescent.mastify.mapper
 import com.github.whitescent.mastify.data.model.ui.NotificationUiData
 import com.github.whitescent.mastify.network.model.notification.Notification
 
-fun Notification.toUiData() = NotificationUiData(
+fun Notification.toUiData(lastNotificationId: String?) = NotificationUiData(
   type = Notification.byString(this.type),
   id = id,
   account = account,
+  createdAt = createdAt,
   status = status?.toUiData(),
-  report = report
+  report = report,
+  unread = lastNotificationId?.let { this.id > it } ?: false
 )
 
-fun List<Notification>.toUiData() = map { it.toUiData() }
+fun List<Notification>.toUiData(lastNotificationId: String?) = map { it.toUiData(lastNotificationId) }

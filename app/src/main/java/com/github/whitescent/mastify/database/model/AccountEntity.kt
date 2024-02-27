@@ -44,7 +44,8 @@ data class AccountEntity(
   val followingCount: Long,
   val statusesCount: Long,
   @ColumnInfo(defaultValue = "0") val firstVisibleItemIndex: Int,
-  @ColumnInfo(defaultValue = "0") val offset: Int
+  @ColumnInfo(defaultValue = "0") val offset: Int,
+  val lastNotificationId: String?
 ) {
 
   val fullname: String get() = "@$username@$domain"

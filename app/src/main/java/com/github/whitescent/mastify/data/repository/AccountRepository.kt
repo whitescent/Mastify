@@ -79,7 +79,8 @@ class AccountRepository @Inject constructor(
             accountId = activeAccount.accountId,
             id = activeAccount.id,
             firstVisibleItemIndex = activeAccount.firstVisibleItemIndex,
-            offset = activeAccount.offset
+            offset = activeAccount.offset,
+            lastNotificationId = activeAccount.lastNotificationId
           )
         )
       }
@@ -94,5 +95,13 @@ class AccountRepository @Inject constructor(
 
   suspend fun lookupAccount(acct: String) = flow {
     emit(api.lookupAccount(acct).getOrThrow())
+  }
+
+  suspend fun acceptFollowRequest(id: String) = flow {
+    emit(api.authorizeFollowRequest(id).getOrThrow())
+  }
+
+  suspend fun rejectFollowRequest(id: String) = flow {
+    emit(api.rejectFollowRequest(id).getOrThrow())
   }
 }

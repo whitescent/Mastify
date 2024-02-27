@@ -48,6 +48,7 @@ fun Account.toEntity(
   accountId: String,
   firstVisibleItemIndex: Int,
   offset: Int,
+  lastNotificationId: String?,
 ): AccountEntity {
   return AccountEntity(
     accountId = accountId,
@@ -70,5 +71,6 @@ fun Account.toEntity(
     id = id,
     firstVisibleItemIndex = firstVisibleItemIndex,
     offset = offset,
+    lastNotificationId = lastNotificationId
   )
 }

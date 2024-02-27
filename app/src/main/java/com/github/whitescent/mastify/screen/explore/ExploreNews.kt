@@ -46,9 +46,8 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
+import com.github.whitescent.mastify.utils.FormatFactory.getRelativeTimeSpanString
 import com.github.whitescent.mastify.utils.launchCustomChromeTab
-import kotlinx.datetime.Clock
 import kotlinx.datetime.toInstant
 
 @Composable
@@ -101,11 +100,7 @@ fun ExploreNewsItem(
           Box(Modifier.size(2.dp).background(Color.White, CircleShape))
           WidthSpacer(value = 4.dp)
           Text(
-            text = getRelativeTimeSpanString(
-              context,
-              news.publishedAt.toInstant().toEpochMilliseconds(),
-              Clock.System.now().toEpochMilliseconds()
-            ),
+            text = getRelativeTimeSpanString(news.publishedAt.toInstant().toEpochMilliseconds()),
             color = Color.White,
             fontSize = 14.sp
           )

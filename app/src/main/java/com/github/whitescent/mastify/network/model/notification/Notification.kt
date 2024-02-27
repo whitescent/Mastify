@@ -20,12 +20,14 @@ package com.github.whitescent.mastify.network.model.notification
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.account.Report
 import com.github.whitescent.mastify.network.model.status.Status
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Notification(
   val type: String,
   val id: String,
+  @SerialName("created_at") val createdAt: String,
   val account: Account,
   val status: Status?,
   val report: Report?
@@ -34,15 +36,16 @@ data class Notification(
   sealed class Type {
 
     sealed class BasicEvent : Type()
+    sealed class SpecialEvent : Type()
 
     object Mention : BasicEvent()
     object Favourite : BasicEvent()
     object Reblog : BasicEvent()
-    object Status : Type()
-    object Follow : Type()
-    object FollowRequest : Type()
-    object Poll : Type()
-    object Update : Type()
+    object Status : BasicEvent()
+    object Follow : SpecialEvent()
+    object FollowRequest : SpecialEvent()
+    object Poll : SpecialEvent()
+    object Update : BasicEvent()
     object Unknown : Type()
 
     // https://docs.joinmastodon.org/methods/notifications/#get

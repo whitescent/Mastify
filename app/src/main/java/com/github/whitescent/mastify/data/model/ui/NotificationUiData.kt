@@ -24,7 +24,9 @@ import com.github.whitescent.mastify.network.model.notification.Notification
 data class NotificationUiData(
   val type: Notification.Type,
   val id: String,
+  val createdAt: String,
   val account: Account,
   val status: StatusUiData?,
-  val report: Report?
+  val report: Report?,
+  val unread: Boolean = false
 )

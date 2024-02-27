@@ -45,7 +45,6 @@ class AppViewModel @Inject constructor(
   private val accountDao = db.accountDao()
 
   private val accountListFlow = accountDao.getAccountListFlow()
-
   private val activeAccountFlow = accountDao.getActiveAccountFlow().filterNotNull()
 
   private val changeAccountChannel = Channel<Unit>()
@@ -97,8 +96,3 @@ class AppViewModel @Inject constructor(
     }
   }
 }
-
-data class TimelinePosition(
-  val index: Int = 0,
-  val offset: Int = 0
-)

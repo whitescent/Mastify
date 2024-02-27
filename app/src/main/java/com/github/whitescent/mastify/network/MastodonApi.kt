@@ -268,13 +268,16 @@ interface MastodonApi {
 
   @GET("api/v1/notifications")
   suspend fun notifications(
-    /** Return results older than this ID */
     @Query("max_id") maxId: String? = null,
-    /** Return results immediately newer than this ID */
     @Query("min_id") minId: String? = null,
-    /** Maximum number of results to return. Defaults to 15, max is 30 */
+    @Query("types") types: List<String>? = null,
     @Query("limit") limit: Int? = null,
-    /** Types to excludes from the results */
     @Query("exclude_types[]") excludes: List<String>? = null
   ): Response<List<Notification>>
+
+  @POST("api/v1/follow_requests/{id}/authorize")
+  suspend fun authorizeFollowRequest(@Path("id") accountId: String): NetworkResult<Relationship>
+
+  @POST("api/v1/follow_requests/{id}/reject")
+  suspend fun rejectFollowRequest(@Path("id") accountId: String): NetworkResult<Relationship>
 }

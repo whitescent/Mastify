@@ -47,7 +47,6 @@ fun LocalizedAnnotatedText(
   color: Color = AppTheme.colors.primaryContent.copy(0.45f),
   style: TextStyle = TextStyle.Default.copy(fontSize = fontSize, color = color),
   highlightSpanStyle: SpanStyle,
-  allowHighLightClick: Boolean,
   maxLines: Int = Int.MAX_VALUE,
   emojis: List<Emoji> = emptyList(),
   emojiSize: TextUnit = fontSize,
@@ -77,7 +76,7 @@ fun LocalizedAnnotatedText(
     style = style,
     modifier = modifier.clickableWithoutIndication(
       onClick = { onClick?.invoke() },
-      enabled = allowHighLightClick,
+      enabled = onClick != null,
     ),
     color = color,
     overflow = TextOverflow.Ellipsis,

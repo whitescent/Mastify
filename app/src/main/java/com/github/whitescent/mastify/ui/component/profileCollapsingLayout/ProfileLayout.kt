@@ -58,6 +58,8 @@ fun ProfileLayout(
     )
     val bodyContentPlaceable = measurables[1].measure(constraints)
     val topBarPlaceable = measurables[2].measure(constraints)
+
+    println("placeables ${topBarPlaceable.height} ${topBarPlaceable.width}")
     layout(constraints.maxWidth, constraints.maxHeight) {
       state.updateBounds((collapsingTopPlaceable.height - topBarPlaceable.height).toFloat())
       collapsingTopPlaceable.place(0, state.offset.value.roundToInt())

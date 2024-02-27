@@ -69,7 +69,7 @@ object LightColorScheme : MastifyColorScheme {
   override val accent: Color = Color(0xFF046FFF)
   override val accent10: Color = Color(0xE6046FFF).copy(alpha = 0.1f)
   override val background: Color = Color.White
-  override val secondaryBackground: Color = Color.White
+  override val secondaryBackground: Color = Color(0xFFF5F5F5)
   override val bottomBarBackground: Color = Color.White
   override val cardBackground: Color = Color.White
   override val secondaryContent: Color = Color(0xFF7489A6)
@@ -100,7 +100,7 @@ object DarkColorScheme : MastifyColorScheme {
   override val accent = Color(0xFF046FFF)
   override val accent10 = Color(0xE6046FFF).copy(alpha = 0.1f)
   override val background = Color(0xFF141417)
-  override val secondaryBackground = Color.Black
+  override val secondaryBackground = Color(0x0FFFFFFF)
   override val bottomBarBackground = Color(0xFF242424)
   override val cardBackground = Color(0x0FFFFFFF)
   override val secondaryContent = Color(0xFF7489A6)

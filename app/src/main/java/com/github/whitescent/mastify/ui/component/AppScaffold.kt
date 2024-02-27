@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.ui.component
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,6 +61,7 @@ import com.ramcosta.composedestinations.spec.Route
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun AppScaffold(
@@ -129,6 +131,7 @@ fun AppScaffold(
       bottomBar = {
         if (destination.shouldShowScaffoldElements() && !appState.hideBottomBar) {
           BottomBar(
+            appState = appState,
             navController = navController,
             destination = destination,
             scrollToTop = {
@@ -167,10 +170,6 @@ fun AppScaffold(
             navigator = destinationsNavigator
           )
         }
-      }
-      // remove this when https://issuetracker.google.com/issues/311726095 resolved
-      LaunchedEffect(it) {
-        appState.setPaddingValues(it)
       }
     }
   }

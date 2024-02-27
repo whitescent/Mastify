@@ -30,8 +30,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -70,6 +72,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.database.model.AccountEntity
+import com.github.whitescent.mastify.extensions.observeWithLifecycle
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
 import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
@@ -281,24 +284,23 @@ fun Explore(
         .padding(
           start = 12.dp,
           end = 12.dp,
-          bottom = appState.appPaddingValues.calculateBottomPadding()
+          bottom = WindowInsets.navigationBars.getBottom(density).dp
         )
     )
+  }
+
+  appState.scrollToTopFlow.observeWithLifecycle {
+    when (currentExploreKind) {
+      Trending -> trendingStatusListState.scrollToItem(0)
+      PublicTimeline -> publicTimelineListState.scrollToItem(0)
+      News -> newsListState.scrollToItem(0)
+    }
   }
 
   LaunchedEffect(Unit) {
     launch {
       viewModel.snackBarFlow.collect {
         snackbarState.show(it)
-      }
-    }
-    launch {
-      appState.scrollToTopFlow.collect {
-        when (currentExploreKind) {
-          Trending -> trendingStatusListState.scrollToItem(0)
-          PublicTimeline -> publicTimelineListState.scrollToItem(0)
-          News -> newsListState.scrollToItem(0)
-        }
       }
     }
     launch {

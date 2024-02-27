@@ -24,10 +24,9 @@ fun Modifier.clickableWithoutIndication(
   enabled: Boolean = true,
   onClick: () -> Unit
 ) = Modifier.then(
-  clickable(
+  if (enabled) clickable(
     onClick = onClick,
-    enabled = enabled,
     indication = null,
     interactionSource = null,
-  )
+  ) else Modifier
 )

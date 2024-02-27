@@ -19,22 +19,44 @@ package com.github.whitescent.mastify.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.NotificationRepository
-import com.github.whitescent.mastify.mapper.toUiData
+import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.NotificationPagingFactory
+import com.github.whitescent.mastify.paging.factory.UnreadEvent
+import com.github.whitescent.mastify.ui.component.status.StatusSnackbarType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
-  private val repository: NotificationRepository
+  db: AppDatabase,
+  repository: NotificationRepository,
+  private val accountRepository: AccountRepository
 ) : ViewModel() {
 
-  private val notificationPagingFactory = NotificationPagingFactory(repository)
+  private val notificationPagingFactory = NotificationPagingFactory(db, accountRepository, repository)
+
+  private val snackBarChanel = Channel<StatusSnackbarType>(Channel.BUFFERED)
+  val snackBarFlow = snackBarChanel.receiveAsFlow()
+
+  private val unreadChannel = Channel<UnreadEvent>(Channel.BUFFERED)
+  val unreadFlow = unreadChannel.receiveAsFlow()
+
+  init {
+    viewModelScope.launch {
+      notificationPagingFactory.unreadFlow.collect {
+        unreadChannel.send(it)
+      }
+    }
+  }
 
   val paginator = Paginator(
     pageSize = PAGE_SIZE,
@@ -42,12 +64,33 @@ class NotificationViewModel @Inject constructor(
   )
 
   val notifications = notificationPagingFactory.list
-    .map { it.toUiData() }
     .stateIn(
       scope = viewModelScope,
       started = SharingStarted.Eagerly,
       initialValue = emptyList()
     )
+
+  fun acceptFollowRequest(id: String) {
+    viewModelScope.launch {
+      accountRepository.acceptFollowRequest(id)
+        .catch {
+          it.printStackTrace()
+          snackBarChanel.send(StatusSnackbarType.Error(it.localizedMessage))
+        }
+        .collect {}
+    }
+  }
+
+  fun rejectFollowRequest(id: String) {
+    viewModelScope.launch {
+      accountRepository.rejectFollowRequest(id)
+        .catch {
+          it.printStackTrace()
+          snackBarChanel.send(StatusSnackbarType.Error(it.localizedMessage))
+        }
+        .collect {}
+    }
+  }
 
   companion object {
     const val PAGE_SIZE = 20

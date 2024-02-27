@@ -86,7 +86,8 @@ class OauthViewModel @Inject constructor(
             accountId = it.id,
             id = 0,
             firstVisibleItemIndex = 0,
-            offset = 0
+            offset = 0,
+            lastNotificationId = null,
           )
         )
         instanceRepository.upsertInstanceInfo()

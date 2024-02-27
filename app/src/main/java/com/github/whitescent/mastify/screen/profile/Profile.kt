@@ -59,7 +59,6 @@ import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememb
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.viewModel.ProfileKind
 import com.github.whitescent.mastify.viewModel.ProfileViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -76,7 +75,6 @@ data class ProfileNavArgs(val account: Account)
 )
 @Composable
 fun Profile(
-  appState: AppState,
   navigator: DestinationsNavigator,
   viewModel: ProfileViewModel = hiltViewModel(),
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
@@ -173,8 +171,7 @@ fun Profile(
       topBar = {
         ProfileTopBar(
           alpha = { profileLayoutState.progress },
-          account = uiState.account,
-          topPadding = appState.appPaddingValues.calculateTopPadding(),
+          account = uiState.account
         )
       },
     )

@@ -19,11 +19,16 @@ package com.github.whitescent.mastify.screen.notification.event
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -33,7 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +50,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.notification.Notification
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.ui.component.AsyncBlurImage
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -52,21 +58,24 @@ import com.github.whitescent.mastify.ui.component.HtmlText
 import com.github.whitescent.mastify.ui.component.LocalizedAnnotatedText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
-import com.github.whitescent.mastify.utils.getRelativeTimeSpanString
-import kotlinx.datetime.Clock
+import com.github.whitescent.mastify.utils.FormatFactory.getRelativeTimeSpanString
 import kotlinx.datetime.toInstant
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BasicEvent(
-  event: Notification.Type,
+  event: Notification.Type.BasicEvent,
   actionAccount: Account,
+  createdAt: String,
   status: StatusUiData,
   modifier: Modifier = Modifier,
   navigateToDetail: (Status) -> Unit,
   navigateToProfile: (Account) -> Unit
 ) {
-  val context = LocalContext.current
-  Row(modifier.fillMaxWidth()) {
+  Row(
+    modifier = modifier
+      .fillMaxWidth()
+  ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       CircleShapeAsyncImage(
         model = actionAccount.avatar,
@@ -79,9 +88,10 @@ fun BasicEvent(
         painter = painterResource(
           id = when (event) {
             is Notification.Type.Favourite -> R.drawable.heart_fill
-            is Notification.Type.Reblog -> R.drawable.repeat
+            is Notification.Type.Reblog -> R.drawable.repeat_bold
             is Notification.Type.Mention -> R.drawable.at_bold
-            else -> throw IllegalArgumentException()
+            is Notification.Type.Status -> R.drawable.bell_ringing_bold
+            is Notification.Type.Update -> R.drawable.edit_bold
           }
         ),
         contentDescription = null,
@@ -89,7 +99,8 @@ fun BasicEvent(
           is Notification.Type.Favourite -> AppTheme.colors.cardLike
           is Notification.Type.Reblog -> AppTheme.colors.reblogged
           is Notification.Type.Mention -> Color(0xFFA55FFF)
-          else -> throw IllegalArgumentException()
+          is Notification.Type.Status -> Color(0xFFFF4D00)
+          is Notification.Type.Update -> Color(0xFFA72626)
         },
         modifier = Modifier.size(20.dp),
       )
@@ -97,34 +108,33 @@ fun BasicEvent(
     WidthSpacer(value = 8.dp)
     Column {
       CenterRow {
-        LocalizedAnnotatedText(
-          stringRes = when (event) {
-            is Notification.Type.Favourite -> R.string.someone_liked_your_post
-            is Notification.Type.Reblog -> R.string.someone_boosted_your_post
-            is Notification.Type.Mention -> R.string.someone_mentioned_you
-            else -> throw IllegalArgumentException()
-          },
-          emojis = actionAccount.emojis,
-          highlightText = actionAccount.realDisplayName,
-          allowHighLightClick = false,
-          highlightSpanStyle = SpanStyle(
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = AppTheme.colors.primaryContent
-          ),
-          fontSize = 15.sp,
-          modifier = Modifier.weight(1f),
-          color = AppTheme.colors.primaryContent.copy(.65f),
-          maxLines = 1
-        )
-        WidthSpacer(value = 6.dp)
+        CenterRow(
+          modifier = Modifier.weight(1f)
+        ) {
+          LocalizedAnnotatedText(
+            stringRes = when (event) {
+              is Notification.Type.Favourite -> R.string.someone_liked_your_post
+              is Notification.Type.Reblog -> R.string.someone_boosted_your_post
+              is Notification.Type.Mention -> R.string.someone_mentioned_you
+              is Notification.Type.Status -> R.string.someone_share_new_post
+              is Notification.Type.Update -> R.string.someone_update_post
+            },
+            emojis = actionAccount.emojis,
+            highlightText = actionAccount.realDisplayName,
+            highlightSpanStyle = SpanStyle(
+              fontSize = 16.sp,
+              fontWeight = FontWeight.Bold,
+              color = AppTheme.colors.primaryContent
+            ),
+            fontSize = 16.sp,
+            color = AppTheme.colors.primaryContent.copy(.65f),
+            maxLines = 1
+          )
+          WidthSpacer(value = 6.dp)
+        }
         Text(
-          text = remember(status.createdAt) {
-            getRelativeTimeSpanString(
-              context,
-              status.createdAt.toInstant().toEpochMilliseconds(),
-              Clock.System.now().toEpochMilliseconds()
-            )
+          text = remember(createdAt) {
+            getRelativeTimeSpanString(createdAt.toInstant().toEpochMilliseconds())
           },
           style = AppTheme.typography.statusUsername.copy(
             color = AppTheme.colors.primaryContent.copy(alpha = 0.48f),
@@ -132,26 +142,66 @@ fun BasicEvent(
         )
       }
       HeightSpacer(value = 4.dp)
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
-          .clip(AppTheme.shape.smallAvatar)
-          .clickable {
-            navigateToDetail(status.actionable)
+      when (status.content.isNotBlank()) {
+        true -> {
+          Column {
+            Box(
+              modifier = Modifier
+                .fillMaxWidth()
+                .clip(AppTheme.shape.smallAvatar)
+                .clickable {
+                  navigateToDetail(status.actionable)
+                }
+                .background(
+                  color = when (event !is Notification.Type.Mention) {
+                    true -> AppTheme.colors.secondaryBackground
+                    else -> Color(0xFFA55FFF).copy(.13f)
+                  },
+                  shape = AppTheme.shape.smallAvatar
+                )
+            ) {
+              HtmlText(
+                text = status.content,
+                color = AppTheme.colors.primaryContent,
+                maxLines = 6,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(10.dp),
+                filterMentionText = status.isInReplyToSomeone
+              )
+            }
+            HeightSpacer(value = 4.dp)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+              status.attachments.forEach { attachments ->
+                AsyncBlurImage(
+                  url = attachments.previewUrl,
+                  blurHash = status.attachments.first().blurhash ?: "",
+                  contentDescription = null,
+                  modifier = Modifier
+                    .clip(AppTheme.shape.smallAvatar)
+                    .requiredSize(80.dp)
+                    .aspectRatio(1f),
+                  contentScale = ContentScale.Crop
+                )
+              }
+            }
           }
-          .background(
-            color = if (event !is Notification.Type.Mention) Color(0xFFF5F5F5) else Color(0xFFA55FFF).copy(.13f),
-            shape = AppTheme.shape.smallAvatar
-          )
-      ) {
-        HtmlText(
-          text = status.content,
-          color = AppTheme.colors.primaryContent,
-          maxLines = 6,
-          overflow = TextOverflow.Ellipsis,
-          modifier = Modifier.padding(10.dp),
-          filterMentionText = status.isInReplyToSomeone
-        )
+        }
+        false -> {
+          FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            status.attachments.forEach { attachments ->
+              AsyncBlurImage(
+                url = attachments.previewUrl,
+                blurHash = status.attachments.first().blurhash ?: "",
+                contentDescription = null,
+                modifier = Modifier
+                  .clip(AppTheme.shape.smallAvatar)
+                  .requiredSize(80.dp)
+                  .aspectRatio(1f),
+                contentScale = ContentScale.Crop
+              )
+            }
+          }
+        }
       }
     }
   }

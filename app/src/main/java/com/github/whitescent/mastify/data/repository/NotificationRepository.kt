@@ -28,7 +28,8 @@ class NotificationRepository @Inject constructor(
   suspend fun getAccountNotifications(
     maxId: String? = null,
     minId: String? = null,
+    types: List<String>? = null,
     limit: Int? = null,
     excludes: List<String>? = null
-  ) = api.notifications(maxId, minId, limit, excludes).getOrThrow()
+  ) = api.notifications(maxId, minId, types, limit, excludes).getOrThrow()
 }
