@@ -51,7 +51,11 @@ Here're some features we're planning to implement in the future, you can check t
   - [ ] Block Account
   - [ ] Report Account
 - [x] Search
-- [ ] Notification
+- [x] Notifications
+  - [x] read notifications
+  - [ ] group the list of notifications
+  - [ ] filter by notification category
+  - [ ] receive notifications from servers
 - [ ] Settings
 
 ## Contributing
