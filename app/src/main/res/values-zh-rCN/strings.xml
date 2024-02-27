@@ -95,18 +95,6 @@
   <string name="empty_status_self">你还没有发布过嘟文哦</string>
   <string name="empty_timeline">"你还没有关注其他人哦"</string>
   <string name="searching_account">搜寻用户 ing…</string>
-  <!--These are for timestamps on posts. For example: "16s" or "2d"-->
-  <string name="status_created_at_now">刚刚</string>
-  <string name="abbreviated_in_years">%d 年内</string>
-  <string name="abbreviated_in_days">%d 天内</string>
-  <string name="abbreviated_in_hours">%d 小时内</string>
-  <string name="abbreviated_in_minutes">%d 分钟内</string>
-  <string name="abbreviated_in_seconds">%d 秒内</string>
-  <string name="abbreviated_years_ago">%d 年前</string>
-  <string name="abbreviated_days_ago">%d 天前</string>
-  <string name="abbreviated_hours_ago">%d 小时前</string>
-  <string name="abbreviated_minutes_ago">%d 分钟前</string>
-  <string name="abbreviated_seconds_ago">%d 秒前</string>
   <string name="vote_poll_day">%d 天后投票结束</string>
   <string name="vote_poll_hours">%d 小时后投票结束</string>
   <string name="vote_poll_minutes">%d 分钟后投票结束</string>
@@ -184,4 +172,14 @@
   <string name="poll_close_time">投票将会在 %s后结束</string>
   <string name="new_moment">发布新鲜事</string>
   <string name="ok_title">好的</string>
+  <!-- Notification screen -->
+  <string name="notifications_title">通知</string>
+  <string name="someone_liked_your_post">%s 喜欢了你的嘟文</string>
+  <string name="someone_boosted_your_post">%s 转发了你的嘟文</string>
+  <string name="someone_mentioned_you">%s 在一篇嘟文提及了你</string>
+  <string name="someone_followed_you">%s 正在关注你</string>
+  <string name="someone_request_follow_you">%s 请求关注你</string>
+  <string name="someone_share_new_post">%s 分享了一篇嘟文</string>
+  <string name="someone_update_post">%s 更新了一篇嘟文</string>
+  <string name="someone_poll_end">%s 创建的投票结束了</string>
 </resources>
