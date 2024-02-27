@@ -24,6 +24,7 @@ import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.instance.AppCredentials
 import com.github.whitescent.mastify.network.model.instance.InstanceInfo
+import com.github.whitescent.mastify.network.model.notification.Notification
 import com.github.whitescent.mastify.network.model.search.SearchResult
 import com.github.whitescent.mastify.network.model.status.Hashtag
 import com.github.whitescent.mastify.network.model.status.MediaUploadResult
@@ -264,4 +265,19 @@ interface MastodonApi {
   suspend fun lookupAccount(
     @Query("acct") acct: String
   ): Response<Account>
+
+  @GET("api/v1/notifications")
+  suspend fun notifications(
+    @Query("max_id") maxId: String? = null,
+    @Query("min_id") minId: String? = null,
+    @Query("types") types: List<String>? = null,
+    @Query("limit") limit: Int? = null,
+    @Query("exclude_types[]") excludes: List<String>? = null
+  ): Response<List<Notification>>
+
+  @POST("api/v1/follow_requests/{id}/authorize")
+  suspend fun authorizeFollowRequest(@Path("id") accountId: String): NetworkResult<Relationship>
+
+  @POST("api/v1/follow_requests/{id}/reject")
+  suspend fun rejectFollowRequest(@Path("id") accountId: String): NetworkResult<Relationship>
 }

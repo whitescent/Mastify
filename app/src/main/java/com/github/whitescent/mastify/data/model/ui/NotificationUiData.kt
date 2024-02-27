@@ -15,18 +15,18 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.utils
+package com.github.whitescent.mastify.data.model.ui
 
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.Modifier
+import com.github.whitescent.mastify.network.model.account.Account
+import com.github.whitescent.mastify.network.model.account.Report
+import com.github.whitescent.mastify.network.model.notification.Notification
 
-fun Modifier.clickableWithoutIndication(
-  enabled: Boolean = true,
-  onClick: () -> Unit
-) = Modifier.then(
-  if (enabled) clickable(
-    onClick = onClick,
-    indication = null,
-    interactionSource = null,
-  ) else Modifier
+data class NotificationUiData(
+  val type: Notification.Type,
+  val id: String,
+  val createdAt: String,
+  val account: Account,
+  val status: StatusUiData?,
+  val report: Report?,
+  val unread: Boolean = false
 )

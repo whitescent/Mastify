@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.data.repository.AccountRepository
 import com.github.whitescent.mastify.data.repository.InstanceRepository
 import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.paging.factory.UnreadEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,8 +46,10 @@ class AppViewModel @Inject constructor(
   private val accountDao = db.accountDao()
 
   private val accountListFlow = accountDao.getAccountListFlow()
-
   private val activeAccountFlow = accountDao.getActiveAccountFlow().filterNotNull()
+
+  private val unreadChannel = Channel<UnreadEvent>(Channel.BUFFERED)
+  val unreadFlow = unreadChannel.receiveAsFlow()
 
   private val changeAccountChannel = Channel<Unit>()
   val changeAccountFlow = changeAccountChannel.receiveAsFlow()
@@ -92,13 +95,9 @@ class AppViewModel @Inject constructor(
 
   fun changeActiveAccount(accountId: Long) {
     viewModelScope.launch {
+      unreadChannel.send(UnreadEvent.DismissAll)
       accountRepository.setActiveAccount(accountId)
       changeAccountChannel.send(Unit)
     }
   }
 }
-
-data class TimelinePosition(
-  val index: Int = 0,
-  val offset: Int = 0
-)

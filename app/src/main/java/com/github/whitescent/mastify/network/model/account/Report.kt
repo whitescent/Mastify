@@ -15,18 +15,16 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.utils
+package com.github.whitescent.mastify.network.model.account
 
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.Modifier
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-fun Modifier.clickableWithoutIndication(
-  enabled: Boolean = true,
-  onClick: () -> Unit
-) = Modifier.then(
-  if (enabled) clickable(
-    onClick = onClick,
-    indication = null,
-    interactionSource = null,
-  ) else Modifier
+@Serializable
+data class Report(
+  val id: String,
+  val category: String,
+  @SerialName("status_ids") val statusIds: List<String>?,
+  @SerialName("created_at") val createdAt: String,
+  @SerialName("target_account") val targetAccount: Account
 )

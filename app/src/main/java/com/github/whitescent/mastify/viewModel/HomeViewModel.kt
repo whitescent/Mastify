@@ -178,6 +178,11 @@ class HomeViewModel @Inject constructor(
     homeRepository.saveLastViewedTimelineOffset(firstVisibleItemIndex, offset)
 }
 
+data class TimelinePosition(
+  val index: Int = 0,
+  val offset: Int = 0
+)
+
 data class HomeUserData(
   val activeAccount: AccountEntity,
   val timeline: ImmutableList<StatusUiData>,

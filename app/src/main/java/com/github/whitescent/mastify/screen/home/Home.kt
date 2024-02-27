@@ -28,9 +28,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -63,6 +65,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -81,6 +84,7 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.E
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.Null
 import com.github.whitescent.mastify.extensions.getReplyChainType
 import com.github.whitescent.mastify.extensions.hasUnloadedParent
+import com.github.whitescent.mastify.extensions.observeWithLifecycle
 import com.github.whitescent.mastify.paging.LazyPagingList
 import com.github.whitescent.mastify.screen.destinations.PostDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
@@ -120,6 +124,7 @@ fun Home(
 ) {
   val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
   val uiState = viewModel.uiState
+  val density = LocalDensity.current
 
   var refreshing by remember { mutableStateOf(false) }
 
@@ -143,7 +148,7 @@ fun Home(
       .fillMaxSize()
       .background(AppTheme.colors.background)
       .statusBarsPadding()
-      .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
+      .padding(bottom = WindowInsets.navigationBars.getBottom(density).dp)
       .pullRefresh(pullRefreshState)
       .semantics {
         testTagsAsResourceId = true
@@ -271,14 +276,14 @@ fun Home(
           }
         }
       }
+
       PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
 
+      appState.scrollToTopFlow.observeWithLifecycle {
+        lazyState.scrollToItem(0)
+      }
+
       LaunchedEffect(activeAccount.id) {
-        launch {
-          appState.scrollToTopFlow.collect {
-            lazyState.scrollToItem(0)
-          }
-        }
         launch {
           snapshotFlow { firstVisibleIndex }
             .debounce(500L)

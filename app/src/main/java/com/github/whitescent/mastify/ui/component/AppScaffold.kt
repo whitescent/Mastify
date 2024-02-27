@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.ui.component
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,13 +32,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.whitescent.mastify.paging.factory.UnreadEvent
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.ExploreDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
+import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.explore.Explore
+import com.github.whitescent.mastify.screen.notification.Notification
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
 import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
@@ -58,6 +62,7 @@ import com.ramcosta.composedestinations.spec.Route
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun AppScaffold(
@@ -127,6 +132,7 @@ fun AppScaffold(
       bottomBar = {
         if (destination.shouldShowScaffoldElements() && !appState.hideBottomBar) {
           BottomBar(
+            appState = appState,
             navController = navController,
             destination = destination,
             scrollToTop = {
@@ -157,20 +163,34 @@ fun AppScaffold(
             resultRecipient = resultRecipient(),
           )
         }
-      }
-      // remove this when https://issuetracker.google.com/issues/311726095 resolved
-      LaunchedEffect(it) {
-        appState.setPaddingValues(it)
+        composable(NotificationDestination) {
+          Notification(
+            activeAccount = activeAccount!!,
+            drawerState = drawerState,
+            appState = appState,
+            navigator = destinationsNavigator
+          )
+        }
       }
     }
   }
 
   LaunchedEffect(Unit) {
-    viewModel.changeAccountFlow.collect {
-      navController.navigate(navController.currentDestination!!.route!!) {
-        popUpTo(NavGraphs.app) { inclusive = true }
-        NavGraphs.app.destinations.forEach {
-          if (it.isBottomBarScreen) navController.clearBackStack(it.route)
+    launch {
+      viewModel.changeAccountFlow.collect {
+        navController.navigate(navController.currentDestination!!.route!!) {
+          popUpTo(NavGraphs.app) { inclusive = true }
+          NavGraphs.app.destinations.forEach {
+            if (it.isBottomBarScreen) navController.clearBackStack(it.route)
+          }
+        }
+      }
+    }
+    launch {
+      viewModel.unreadFlow.collect {
+        when (it) {
+          is UnreadEvent.DismissAll -> appState.unreadNotifications = 0
+          else -> Unit
         }
       }
     }

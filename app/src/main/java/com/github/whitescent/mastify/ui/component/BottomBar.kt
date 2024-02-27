@@ -18,31 +18,34 @@
 package com.github.whitescent.mastify.ui.component
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.BottomBarItem
-import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.ramcosta.composedestinations.navigation.navigate
 
 @Composable
 fun BottomBar(
+  appState: AppState,
   navController: NavController,
   destination: Destination,
   scrollToTop: () -> Unit,
@@ -55,14 +58,15 @@ fun BottomBar(
     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     color = AppTheme.colors.bottomBarBackground,
   ) {
-    CenterRow {
+    CenterRow(Modifier.navigationBarsPadding()) {
       BottomBarItem.entries.forEachIndexed { _, screen ->
-        Column(
-          modifier = Modifier
-            .weight(1f)
-            .clickableWithoutIndication {
-              if (destination.route == screen.direction.route) scrollToTop()
-              else {
+        val selected = destination.route == screen.direction.route
+        NavigationBarItem(
+          selected = selected,
+          onClick = {
+            when (selected) {
+              true -> scrollToTop()
+              false -> {
                 navController.navigate(screen.direction) {
                   popUpTo(destination.route) {
                     saveState = true
@@ -72,17 +76,32 @@ fun BottomBar(
                 }
               }
             }
-            .navigationBarsPadding()
-            .padding(top = 20.dp, start = 24.dp, end = 24.dp, bottom = 20.dp),
-          verticalArrangement = Arrangement.Center,
-          horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-          BottomBarIcon(
-            icon = screen.icon,
-            selected = destination == screen.direction,
-            modifier = Modifier
-          )
-        }
+          },
+          icon = {
+            BadgedBox(
+              badge = {
+                if (appState.unreadNotifications > 0 && screen == BottomBarItem.Notification) {
+                  Badge(
+                    containerColor = Color(0xFFFF0000),
+                    contentColor = Color.White
+                  ) {
+                    Text("${appState.unreadNotifications}")
+                  }
+                }
+              }
+            ) {
+              BottomBarIcon(
+                icon = screen.icon,
+                selected = destination == screen.direction,
+                modifier = Modifier
+              )
+            }
+          },
+          colors = NavigationBarItemDefaults.colors(
+            indicatorColor = Color.Transparent,
+            selectedIconColor = AppTheme.colors.primaryContent
+          ),
+        )
       }
     }
   }

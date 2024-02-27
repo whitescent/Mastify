@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.utils
 
 import android.icu.text.DateFormat
+import android.text.format.DateUtils
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -34,6 +35,7 @@ object FormatFactory {
     val matchResult = regex.find(url)
     return matchResult?.groups?.get(1)?.value ?: ""
   }
+
   fun getAcctFromUrl(mastodonUrl: String): String {
     val url = try {
       java.net.URL(mastodonUrl)
@@ -45,6 +47,7 @@ object FormatFactory {
     val username = path.substringAfterLast("@")
     return "$username@$domain"
   }
+
   fun getLocalizedDateTime(timestamp: String): String {
     val currentYear = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year
     val targetYear = timestamp.toInstant().toLocalDateTime(TimeZone.currentSystemDefault()).year
@@ -57,22 +60,26 @@ object FormatFactory {
     val formatter = DateFormat.getPatternInstance(pattern, Locale.getDefault())
     return formatter.format(Date.from(timestamp.toInstant().toJavaInstant()))
   }
+
   // This function follows the locale format, not the system format (24 hour or 12 hour mode).
   // If the system format is desired, use [android.text.format.DateFormat] (requires a Context).
   fun getTime(timestamp: String): String {
     val formatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
     return formatter.format(Date.from(timestamp.toInstant().toJavaInstant()))
   }
+
   fun getPercentageString(value: Float): String {
     val percentInstance = NumberFormat.getPercentInstance()
     percentInstance.maximumFractionDigits = if (value > 0.01f) 0 else 2
     return percentInstance.format(value)
   }
+
   fun ensureHttpPrefix(url: String): String {
     return if (!url.startsWith("http://") && !url.startsWith("https://")) {
       return "https://$url"
     } else url
   }
+
   fun isValidUrl(url: String): Boolean {
     val urlRegex = (
       "^(https?://)?" +
@@ -85,5 +92,14 @@ object FormatFactory {
       ).toRegex(RegexOption.IGNORE_CASE)
 
     return urlRegex.matches(url)
+  }
+
+  fun getRelativeTimeSpanString(timestamp: Long): String {
+    return DateUtils.getRelativeTimeSpanString(
+      timestamp,
+      Clock.System.now().toEpochMilliseconds(),
+      DateUtils.MINUTE_IN_MILLIS,
+      DateUtils.FORMAT_ABBREV_RELATIVE
+    ).toString()
   }
 }

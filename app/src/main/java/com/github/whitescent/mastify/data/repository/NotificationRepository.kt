@@ -15,18 +15,21 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-package com.github.whitescent.mastify.utils
+package com.github.whitescent.mastify.data.repository
 
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.Modifier
+import com.github.whitescent.mastify.network.MastodonApi
+import com.github.whitescent.mastify.utils.getOrThrow
+import javax.inject.Inject
 
-fun Modifier.clickableWithoutIndication(
-  enabled: Boolean = true,
-  onClick: () -> Unit
-) = Modifier.then(
-  if (enabled) clickable(
-    onClick = onClick,
-    indication = null,
-    interactionSource = null,
-  ) else Modifier
-)
+class NotificationRepository @Inject constructor(
+  private val api: MastodonApi
+) {
+
+  suspend fun getAccountNotifications(
+    maxId: String? = null,
+    minId: String? = null,
+    types: List<String>? = null,
+    limit: Int? = null,
+    excludes: List<String>? = null
+  ) = api.notifications(maxId, minId, types, limit, excludes).getOrThrow()
+}
