@@ -70,6 +70,24 @@ class NotificationViewModel @Inject constructor(
       initialValue = emptyList()
     )
 
+  fun dismissNotification(index: Int) {
+    viewModelScope.launch {
+      val list = notificationPagingFactory.list.value.toMutableList()
+      list[index] = list[index].copy(unread = false)
+      notificationPagingFactory.list.emit(list)
+      unreadChannel.send(UnreadEvent.Dismiss)
+    }
+  }
+
+  fun dismissAllNotification() {
+    viewModelScope.launch {
+      val list = notificationPagingFactory.list.value.toMutableList()
+        .map { it.copy(unread = false) }
+      notificationPagingFactory.list.emit(list)
+      unreadChannel.send(UnreadEvent.DismissAll)
+    }
+  }
+
   fun acceptFollowRequest(id: String) {
     viewModelScope.launch {
       accountRepository.acceptFollowRequest(id)

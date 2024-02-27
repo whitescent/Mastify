@@ -76,6 +76,8 @@ class NotificationPagingFactory(
 sealed class UnreadEvent {
   data class Refresh(val count: Int) : UnreadEvent()
   data class Append(val count: Int) : UnreadEvent()
+  data object Dismiss : UnreadEvent()
+  data object DismissAll : UnreadEvent()
 }
 
 private fun getUnreadCount(list: List<NotificationUiData>, lastId: String): Int =

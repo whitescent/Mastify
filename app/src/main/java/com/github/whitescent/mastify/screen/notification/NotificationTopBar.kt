@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import com.github.whitescent.R
 import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
+import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
@@ -38,24 +40,34 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 fun NotificationTopBar(
   activeAccount: AccountEntity,
   modifier: Modifier = Modifier,
+  dismissAllNotification: () -> Unit,
   openDrawer: () -> Unit,
 ) {
   CenterRow(modifier.fillMaxWidth()) {
-    CircleShapeAsyncImage(
-      model = activeAccount.profilePictureUrl,
-      modifier = Modifier
-        .size(36.dp)
-        .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
-      shape = AppTheme.shape.betweenSmallAndMediumAvatar,
-      onClick = openDrawer
-    )
-    WidthSpacer(value = 6.dp)
-    Text(
-      text = stringResource(R.string.notifications_title),
-      fontSize = 24.sp,
-      fontWeight = FontWeight.Bold,
-      color = AppTheme.colors.primaryContent,
-      modifier = Modifier.weight(1f),
-    )
+    CenterRow(Modifier.weight(1f)) {
+      CircleShapeAsyncImage(
+        model = activeAccount.profilePictureUrl,
+        modifier = Modifier
+          .size(36.dp)
+          .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
+        shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+        onClick = openDrawer
+      )
+      WidthSpacer(value = 6.dp)
+      Text(
+        text = stringResource(R.string.notifications_title),
+        fontSize = 24.sp,
+        fontWeight = FontWeight.Bold,
+        color = AppTheme.colors.primaryContent,
+        modifier = Modifier.weight(1f),
+      )
+    }
+    ClickableIcon(
+      painter = painterResource(id = R.drawable.checks_bold),
+      tint = AppTheme.colors.primaryContent,
+      modifier = Modifier.size(24.dp),
+    ) {
+      dismissAllNotification()
+    }
   }
 }

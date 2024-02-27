@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.whitescent.mastify.paging.factory.UnreadEvent
 import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
@@ -175,11 +176,21 @@ fun AppScaffold(
   }
 
   LaunchedEffect(Unit) {
-    viewModel.changeAccountFlow.collect {
-      navController.navigate(navController.currentDestination!!.route!!) {
-        popUpTo(NavGraphs.app) { inclusive = true }
-        NavGraphs.app.destinations.forEach {
-          if (it.isBottomBarScreen) navController.clearBackStack(it.route)
+    launch {
+      viewModel.changeAccountFlow.collect {
+        navController.navigate(navController.currentDestination!!.route!!) {
+          popUpTo(NavGraphs.app) { inclusive = true }
+          NavGraphs.app.destinations.forEach {
+            if (it.isBottomBarScreen) navController.clearBackStack(it.route)
+          }
+        }
+      }
+    }
+    launch {
+      viewModel.unreadFlow.collect {
+        when (it) {
+          is UnreadEvent.DismissAll -> appState.unreadNotifications = 0
+          else -> Unit
         }
       }
     }
