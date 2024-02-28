@@ -32,7 +32,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import androidx.room.withTransaction
 import androidx.test.core.app.ApplicationProvider
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -95,7 +95,7 @@ class DatabaseTest {
     for (index in 1..2) {
       activeCode = if (activeCode == 2L) 1L else 2L
       accountDao.setActiveAccount(activeCode)
-      launch {
+      runBlocking {
         cleanAndReinsert()
       }
     }
