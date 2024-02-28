@@ -18,7 +18,6 @@
 package com.github.whitescent.mastify.screen.notification.event
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,6 +58,7 @@ import com.github.whitescent.mastify.ui.component.LocalizedAnnotatedText
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.FormatFactory.getRelativeTimeSpanString
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import kotlinx.datetime.toInstant
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -75,6 +75,7 @@ fun BasicEvent(
   Row(
     modifier = modifier
       .fillMaxWidth()
+      .clickableWithoutIndication { navigateToDetail(status.actionable) },
   ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
       CircleShapeAsyncImage(
@@ -142,16 +143,13 @@ fun BasicEvent(
         )
       }
       HeightSpacer(value = 4.dp)
-      when (status.content.isNotBlank()) {
+      when (status.hasVisibleText) {
         true -> {
           Column {
             Box(
               modifier = Modifier
                 .fillMaxWidth()
                 .clip(AppTheme.shape.smallAvatar)
-                .clickable {
-                  navigateToDetail(status.actionable)
-                }
                 .background(
                   color = when (event !is Notification.Type.Mention) {
                     true -> AppTheme.colors.secondaryBackground
