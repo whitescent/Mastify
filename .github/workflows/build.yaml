@@ -1,4 +1,4 @@
-// https://github.com/marketplace/actions/automated-build-android-app-with-github-action
+# https://github.com/marketplace/actions/automated-build-android-app-with-github-action
 name: Build and test
 
 env:
@@ -6,7 +6,6 @@ env:
   main_project_module: app
 
 on:
-
   push:
     branches:
       - 'action-dev'
