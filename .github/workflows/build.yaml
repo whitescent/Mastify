@@ -1,5 +1,4 @@
-# https://github.com/marketplace/actions/automated-build-android-app-with-github-action
-name: Build and test
+name: Build & Test
 
 env:
   # The name of the main module repository
@@ -37,8 +36,10 @@ jobs:
 
       # Run Build Project
       - name: Build gradle project
-        run: ./gradlew build
+        run: ./gradlew app:assemble
 
       # Run Tests Build
       - name: Run gradle tests
         run: ./gradlew app:testDebugUnitTest 
+
+      # TODO: setup benchmarks
