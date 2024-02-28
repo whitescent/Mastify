@@ -20,10 +20,13 @@ package com.github.whitescent.mastify.network
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.database.dao.AccountDao
 import com.github.whitescent.mastify.database.model.AccountEntity
+import com.github.whitescent.mastify.database.util.Converters
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.mockwebserver.MockResponse
@@ -32,8 +35,10 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 
 // This test verifies whether our custom interceptor is effective
+@RunWith(AndroidJUnit4::class)
 class InstanceSwitchAuthInterceptorTest {
 
   private val mockWebServer = MockWebServer()
@@ -44,7 +49,12 @@ class InstanceSwitchAuthInterceptorTest {
   fun setup() {
     mockWebServer.start()
     val context = ApplicationProvider.getApplicationContext<Context>()
-    db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+    db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
+      .addTypeConverter(Converters(json = Json {
+        ignoreUnknownKeys = true
+        explicitNulls = false
+      }))
+      .build()
     accountDao = db.accountDao()
   }
 
@@ -104,7 +114,7 @@ class InstanceSwitchAuthInterceptorTest {
       username = "username",
       displayName = "displayName",
       note = "note",
-      domain = "mydomain",
+      domain = mockWebServer.hostName,
       profilePictureUrl = "avatar",
       header = "header",
       followersCount = 0,
@@ -120,6 +130,7 @@ class InstanceSwitchAuthInterceptorTest {
       id = 0,
       firstVisibleItemIndex = 0,
       offset = 0,
+      lastNotificationId = "114514"
     )
     accountDao.insert(fakeAccount)
 
