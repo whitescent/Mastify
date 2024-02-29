@@ -95,7 +95,7 @@
   <string name="reply_title">Antworten</string>
   <string name="media_title">Medien</string>
   <string name="edit_profile">Profil bearbeiten</string>
-  <string name="empty_status">Noch kein Tröt vorhanden</string>
+  <string name="empty_status">Hier wurde noch nichts getrötet</string>
   <string name="empty_status_self">Du hast noch nichts gepostet</string>
   <string name="empty_timeline">"Du folgst noch niemandem"</string>
   <string name="searching_account">Konto durchsuchen…</string>
