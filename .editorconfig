@@ -17,14 +17,6 @@ ij_any_keep_indents_on_empty_lines = false
 max_line_length = off
 
 [*.{kt,kts}]
-ktlint_standard_filename = disabled
-ktlint_standard_wrapping = disabled
-ktlint_standard_import-ordering = enabled
-ktlint_standard_max-line-length = disabled
-ktlint_standard_multiline-if-else = disabled
-ktlint_standard_argument-list-wrapping = disabled
-ktlint_standard_trailing-comma-on-declaration-site = disabled
-ktlint_function_signature_body_expression_wrapping = multiline
 ij_kotlin_align_multiline_extends_list = true
 ij_kotlin_align_multiline_parameters = true
 ij_kotlin_align_multiline_parameters_in_calls = true
