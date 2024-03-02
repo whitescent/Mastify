@@ -57,7 +57,6 @@ fun PostVisibilityButton(
           Unlisted -> painterResource(R.drawable.lock_open)
           Private -> painterResource(R.drawable.lock)
           Direct -> painterResource(R.drawable.at)
-          else -> throw IllegalArgumentException("Invalid visibility")
         },
         contentDescription = null,
         modifier = Modifier.size(20.dp),
@@ -71,7 +70,6 @@ fun PostVisibilityButton(
             Unlisted -> R.string.unlisted
             Private -> R.string.private_title
             Direct -> R.string.direct
-            else -> throw IllegalArgumentException("Invalid visibility")
           },
         ),
         color = Color(0xFF777777)
