@@ -22,6 +22,8 @@ plugins {
   id("dagger.hilt.android.plugin")
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
+  alias(libs.plugins.google.services)
+  alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -157,6 +159,13 @@ dependencies {
 
   implementation(libs.ktsoup.core)
   implementation(libs.ktsoup.fx)
+
+  implementation(libs.work.runtime.ktx)
+  implementation(libs.work.testing)
+
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.analytics)
+  implementation(libs.firebase.crashlytics)
 
   implementation(libs.coil)
   implementation(libs.coil.compose)
