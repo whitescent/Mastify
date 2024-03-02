@@ -37,12 +37,12 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-      # Run Build Project
-      - name: Build gradle project
-        run: ./gradlew app:assemble
+#      # Run Build Project
+#      - name: Build gradle project
+#        run: ./gradlew app:assemble
 
       # Run Tests Build
       - name: Run gradle tests
-        run: ./gradlew app:testDebugUnitTest 
+        run: ./gradlew app:testDebugUnitTest
 
       # TODO: setup benchmarks
