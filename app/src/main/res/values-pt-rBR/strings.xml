@@ -192,4 +192,6 @@
   <string name="someone_share_new_post">%s compartilhou uma nova postagem</string>
   <string name="someone_update_post">%s atualizou uma postagem</string>
   <string name="someone_poll_end">A enquete de %s terminou</string>
+  <string name="notification_background_work_channel_name">Background Work</string>
+  <string name="notification_background_work_channel_description">Notifications for Mastify working in the background</string>
 </resources>
