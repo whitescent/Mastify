@@ -45,9 +45,9 @@ jobs:
         run: |
           echo $SGOOGLE_SERVICES | base64 -d > app/google-services.json
 
-     # Run Build Project
-     - name: Build gradle project
-       run: ./gradlew app:assemble
+      # Run Build Project
+      - name: Build gradle project
+        run: ./gradlew app:assemble
 
       # Run Tests Build
       - name: Run gradle tests
