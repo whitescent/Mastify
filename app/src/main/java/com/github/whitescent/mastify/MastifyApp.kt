@@ -19,18 +19,32 @@ package com.github.whitescent.mastify
 
 import android.app.Application
 import android.os.Build.VERSION.SDK_INT
+import androidx.work.Configuration
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
 import coil.decode.VideoFrameDecoder
 import com.github.whitescent.R
+import com.github.whitescent.mastify.data.repository.NotificationRepository.Companion.createWorkerNotificationChannel
+import com.github.whitescent.mastify.database.AppDatabase
+import com.github.whitescent.mastify.work.TimelineWork
+import com.github.whitescent.mastify.work.TimelineWorkFactory
 import dagger.hilt.android.HiltAndroidApp
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 
 @HiltAndroidApp
 class MastifyApp : Application(), ImageLoaderFactory {
+  @Inject
+  lateinit var db: AppDatabase
+
   override fun newImageLoader(): ImageLoader {
     val context = this.applicationContext
     return ImageLoader.Builder(context)
@@ -49,6 +63,26 @@ class MastifyApp : Application(), ImageLoaderFactory {
 
   override fun onCreate() {
     super.onCreate()
+    createWorkerNotificationChannel(this.applicationContext)
+
+    WorkManager.initialize(
+      this,
+      Configuration.Builder()
+        .setMinimumLoggingLevel(android.util.Log.DEBUG)
+        .setWorkerFactory(TimelineWorkFactory(db))
+        .build()
+    )
+
+    val pruneCacheWorker = PeriodicWorkRequestBuilder<TimelineWork>(6, TimeUnit.HOURS)
+      .setConstraints(Constraints.Builder().setRequiresDeviceIdle(true).build())
+      .build()
+
+    WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+      TimelineWork.TAG,
+      ExistingPeriodicWorkPolicy.KEEP,
+      pruneCacheWorker
+    )
+
     AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = LogPriority.VERBOSE)
   }
 }

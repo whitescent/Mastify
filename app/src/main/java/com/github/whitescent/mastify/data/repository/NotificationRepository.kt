@@ -17,14 +17,20 @@
 
 package com.github.whitescent.mastify.data.repository
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
+import com.github.whitescent.R
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.utils.getOrThrow
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class NotificationRepository @Inject constructor(
-  private val api: MastodonApi
+  private val api: MastodonApi,
+  @ApplicationContext val context: Context
 ) {
-
   suspend fun getAccountNotifications(
     maxId: String? = null,
     minId: String? = null,
@@ -32,4 +38,24 @@ class NotificationRepository @Inject constructor(
     limit: Int? = null,
     excludes: List<String>? = null
   ) = api.notifications(maxId, minId, types, limit, excludes).getOrThrow()
+
+  companion object {
+    fun createWorkerNotificationChannel(context: Context) {
+      val notificationManager = context.getSystemService(NotificationManager::class.java)
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val name = context.getString(R.string.notification_background_work_channel_name)
+        val descriptionText =
+          context.getString(
+            R.string.notification_background_work_channel_description
+          )
+        val importance = NotificationManager.IMPORTANCE_NONE
+        val channel = NotificationChannel(WORK_CHANNEL_NAME, name, importance)
+        channel.description = descriptionText
+        channel.setShowBadge(true)
+        notificationManager.createNotificationChannel(channel)
+      }
+    }
+
+    private const val WORK_CHANNEL_NAME = "CHANNEL_BACKGROUND_TASK"
+  }
 }

@@ -39,6 +39,9 @@ interface AccountDao {
   suspend fun getAccount(id: Long): AccountEntity
 
   @Query("SELECT * FROM ACCOUNTENTITY")
+  suspend fun getAccountList(): List<AccountEntity>
+
+  @Query("SELECT * FROM ACCOUNTENTITY")
   fun getAccountListFlow(): Flow<List<AccountEntity>>
 
   @Query("SELECT * FROM ACCOUNTENTITY WHERE isActive = 1 LIMIT 1")
