@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TimelineDao {
-
   @Insert(onConflict = REPLACE)
   suspend fun insertOrUpdate(vararg timelineEntity: TimelineEntity)
 
@@ -75,6 +74,18 @@ interface TimelineDao {
 
   @Query("DELETE FROM timelineentity WHERE timelineUserId = :accountId")
   suspend fun clearAll(accountId: Long)
+
+  @Query(
+    """
+    DELETE FROM timelineentity
+    WHERE id NOT IN (
+        SELECT id FROM timelineentity WHERE timelineUserId = :accountId
+        ORDER BY LENGTH(id) DESC, id DESC
+        LIMIT :range
+    )
+    """
+  )
+  suspend fun cleanupOldTimeline(accountId: Long, range: Int)
 
   @Transaction
   suspend fun cleanAndReinsert(timelineEntity: List<TimelineEntity>, id: Long) {

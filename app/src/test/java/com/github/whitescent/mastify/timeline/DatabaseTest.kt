@@ -32,6 +32,12 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import androidx.room.withTransaction
 import androidx.test.core.app.ApplicationProvider
+import androidx.work.CoroutineWorker
+import androidx.work.ListenableWorker
+import androidx.work.WorkerFactory
+import androidx.work.WorkerParameters
+import androidx.work.testing.TestListenableWorkerBuilder
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -40,21 +46,26 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class DatabaseTest {
-
   private lateinit var accountDao: TestAccountDao
   private lateinit var timelineDao: TestTimelineDao
   private lateinit var db: TestAppDatabase
+  private lateinit var context: Context
 
   @Before
-  fun createDb() {
+  fun setup() {
     val context = ApplicationProvider.getApplicationContext<Context>()
+    this.context = context
     db = Room.inMemoryDatabaseBuilder(context, TestAppDatabase::class.java).build()
     accountDao = db.accountDao()
     timelineDao = db.timelineDao()
+    // val config = Configuration.Builder()
+    //   .setMinimumLoggingLevel(Log.DEBUG)
+    //   .setExecutor(SynchronousExecutor())
+    //   .build()
+    // WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
   }
 
   @After
@@ -102,6 +113,35 @@ class DatabaseTest {
     assertEquals(31, timelineDao.getList(1).size)
     assertEquals(11, timelineDao.getList(2).size)
   }
+
+  @Test
+  fun `prune timeline entity`() = runTest {
+    val account = AccountItem(0, "m.cmx", "lucky", true)
+    accountDao.insert(account)
+    timelineDao.insertOrUpdate((1..600).toList().map { TimelineItem(0, 1, it.toString()) })
+    assertEquals(600, timelineDao.getList(1).size)
+    timelineDao.cleanupOldTimeline(1, 400)
+    val list = timelineDao.getList(1)
+    assertEquals(400, list.size)
+  }
+
+  @Test
+  @Throws(Exception::class)
+  fun testPeriodicWork() = runBlocking {
+    val account = AccountItem(0, "m.cmx", "lucky", true)
+    accountDao.insert(account)
+    timelineDao.insertOrUpdate((1..600).toList().map { TimelineItem(0, 1, it.toString()) })
+    assertEquals(600, timelineDao.getList(1).size)
+
+    val request =
+      TestListenableWorkerBuilder<TestTimelineWork>(context)
+        .setWorkerFactory(TestWorkFactory(db))
+        .build()
+
+    val result = request.doWork()
+    assertEquals(ListenableWorker.Result.success(), result)
+    assertEquals(400, timelineDao.getList(1).size)
+  }
 }
 
 @Entity
@@ -119,7 +159,7 @@ private data class AccountItem(
       parentColumns = ["id"],
       childColumns = ["timelineAccountId"]
     )
-  ],
+  ]
 )
 private data class TimelineItem(
   @PrimaryKey(autoGenerate = true) val id: Int,
@@ -133,12 +173,12 @@ private data class TimelineItem(
 )
 private abstract class TestAppDatabase() : RoomDatabase() {
   abstract fun accountDao(): TestAccountDao
+
   abstract fun timelineDao(): TestTimelineDao
 }
 
 @Dao
 private interface TestAccountDao {
-
   @Query("SELECT * FROM AccountItem WHERE id = :id LIMIT 1")
   suspend fun getAccountById(id: Long): AccountItem
 
@@ -169,7 +209,6 @@ private interface TestAccountDao {
 
 @Dao
 private interface TestTimelineDao {
-
   @Query("DELETE FROM timelineitem WHERE timelineAccountId = :accountId")
   suspend fun clearAll(accountId: Long)
 
@@ -178,4 +217,52 @@ private interface TestTimelineDao {
 
   @Query("SELECT * FROM timelineitem WHERE timelineAccountId = :accountId")
   suspend fun getList(accountId: Long): List<TimelineItem>
+
+  @Query(
+    """
+    DELETE FROM timelineitem
+    WHERE id NOT IN (
+        SELECT id FROM timelineitem WHERE timelineAccountId  =:accountId
+        ORDER BY LENGTH(id) DESC, id DESC
+        LIMIT :range
+    )
+    """
+  )
+  suspend fun cleanupOldTimeline(accountId: Long, range: Int)
+}
+
+private class TestWorkFactory(
+  private val db: TestAppDatabase
+) : WorkerFactory() {
+  override fun createWorker(
+    appContext: Context,
+    workerClassName: String,
+    workerParameters: WorkerParameters
+  ): TestTimelineWork = TestTimelineWork(appContext, workerParameters, db)
+}
+
+private class TestTimelineWork(
+  context: Context,
+  parameters: WorkerParameters,
+  db: TestAppDatabase
+) : CoroutineWorker(context, parameters) {
+  private val timelineDao = db.timelineDao()
+  private val accountDao = db.accountDao()
+
+  override suspend fun doWork(): Result = try {
+    val activeAccount = accountDao.getActiveAccount()
+    if (activeAccount != null) {
+      timelineDao.cleanupOldTimeline(activeAccount.id, MAX_TIMELINE_SIZE)
+      Result.success()
+    } else {
+      Result.failure()
+    }
+  } catch (e: Exception) {
+    e.printStackTrace()
+    Result.failure()
+  }
+
+  companion object {
+    private const val MAX_TIMELINE_SIZE = 400
+  }
 }

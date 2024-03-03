@@ -26,4 +26,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00FFFFFF</color>
     <color name="app_background">#404366</color>
+    <color name="notification_background">#83a2ef</color>
 </resources>
