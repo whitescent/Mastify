@@ -11,6 +11,7 @@ on:
   pull_request:
     branches:
       - main
+      - ci-setup
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -37,9 +38,16 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-#      # Run Build Project
-#      - name: Build gradle project
-#        run: ./gradlew app:assemble
+
+      - name: Add google-services.json
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+        run: |
+          echo $SGOOGLE_SERVICES | base64 -d > app/google-services.json
+
+     # Run Build Project
+     - name: Build gradle project
+       run: ./gradlew app:assemble
 
       # Run Tests Build
       - name: Run gradle tests
