@@ -115,6 +115,20 @@ class HtmlTextTest {
   }
 
   @Test
+  fun `test strong text` () {
+    val text = "<p><b>伟大的粗体 sex</b></p>"
+    val expected = "伟大的粗体 sex"
+    assertEquals(expected, buildPlainText(text, true))
+  }
+
+  @Test
+  fun `test strong text2` () {
+    val text = "<p><strong>伟大的粗体 sex</strong></p>"
+    val expected = "伟大的粗体 sex"
+    assertEquals(expected, buildPlainText(text, true))
+  }
+
+  @Test
   fun `test complex text`() {
     val text = "<p>Hi <a href=\"https://androiddev.social/tags/AndroidDev\" class=\"mention hashtag\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">#<span>AndroidDev</span></a></p><p>I'm working on a Mastodon client that's written entirely in Jetpack Compose and is open source <a href=\"https://github.com/whitescent/Mastify\" rel=\"nofollow noopener noreferrer\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"\">github.com/whitescent/Mastify</span><span class=\"invisible\"></span></a><br>and now available in Google Play Early Access <a href=\"https://play.google.com/store/apps/details?id=com.github.whitescent.mastify\" rel=\"nofollow noopener noreferrer\" translate=\"no\" target=\"_blank\"><span class=\"invisible\">https://</span><span class=\"ellipsis\">play.google.com/store/apps/det</span><span class=\"invisible\">ails?id=com.github.whitescent.mastify</span></a></p><p>Note: There are many features that have not been implemented yet</p><p>If you can provide some suggestions about App, or contribute to this project, I will be very grateful! :androidPetPet:</p><p>If you want to follow Mastify's development progress, you can follow this account <span class=\"h-card\" translate=\"no\"><a href=\"https://mastodon.social/@mastify\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@<span>mastify</span></a></span></p>"
     val expected = "Hi #AndroidDev\n" +

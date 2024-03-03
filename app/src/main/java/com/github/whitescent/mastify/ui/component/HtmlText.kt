@@ -207,9 +207,14 @@ private fun AnnotatedString.Builder.renderElement(
 
     "br" -> renderText("\n", textStyle)
 
-    "del" -> renderText(element.text(), textStyle.copy(textDecoration = TextDecoration.LineThrough))
+    "del", "s" -> renderText(
+      element.text(),
+      textStyle.copy(textDecoration = TextDecoration.LineThrough),
+    )
 
-    "strong" -> renderText(element.text(), textStyle.copy(fontWeight = FontWeight.Bold))
+    "strong", "b" -> renderText(element.text(), textStyle.copy(fontWeight = FontWeight.Bold))
+
+    "u" -> renderText(element.text(), textStyle.copy(textDecoration = TextDecoration.Underline))
 
     "code", "pre" -> renderText(element.text(), textStyle) // TODO Try highlighting rendering
 
