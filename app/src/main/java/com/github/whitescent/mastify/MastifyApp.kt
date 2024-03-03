@@ -41,7 +41,8 @@ import logcat.AndroidLogcatLogger
 import logcat.LogPriority
 
 @HiltAndroidApp
-class MastifyApp : Application(), ImageLoaderFactory {
+class MastifyApp : Application(), ImageLoaderFactory, Configuration.Provider {
+
   @Inject
   lateinit var db: AppDatabase
 
@@ -65,14 +66,6 @@ class MastifyApp : Application(), ImageLoaderFactory {
     super.onCreate()
     createWorkerNotificationChannel(this.applicationContext)
 
-    WorkManager.initialize(
-      this,
-      Configuration.Builder()
-        .setMinimumLoggingLevel(android.util.Log.DEBUG)
-        .setWorkerFactory(TimelineWorkFactory(db))
-        .build()
-    )
-
     val pruneCacheWorker = PeriodicWorkRequestBuilder<TimelineWork>(6, TimeUnit.HOURS)
       .setConstraints(Constraints.Builder().setRequiresDeviceIdle(true).build())
       .build()
@@ -84,5 +77,12 @@ class MastifyApp : Application(), ImageLoaderFactory {
     )
 
     AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = LogPriority.VERBOSE)
+  }
+
+  override val workManagerConfiguration: Configuration by lazy {
+    Configuration.Builder()
+      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setWorkerFactory(TimelineWorkFactory(db))
+      .build()
   }
 }

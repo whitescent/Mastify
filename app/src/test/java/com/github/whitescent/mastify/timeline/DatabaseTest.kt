@@ -61,11 +61,6 @@ class DatabaseTest {
     db = Room.inMemoryDatabaseBuilder(context, TestAppDatabase::class.java).build()
     accountDao = db.accountDao()
     timelineDao = db.timelineDao()
-    // val config = Configuration.Builder()
-    //   .setMinimumLoggingLevel(Log.DEBUG)
-    //   .setExecutor(SynchronousExecutor())
-    //   .build()
-    // WorkManagerTestInitHelper.initializeTestWorkManager(context, config)
   }
 
   @After

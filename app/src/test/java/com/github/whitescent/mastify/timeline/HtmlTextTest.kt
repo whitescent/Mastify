@@ -115,14 +115,14 @@ class HtmlTextTest {
   }
 
   @Test
-  fun `test strong text` () {
+  fun `test strong text`() {
     val text = "<p><b>伟大的粗体 sex</b></p>"
     val expected = "伟大的粗体 sex"
     assertEquals(expected, buildPlainText(text, true))
   }
 
   @Test
-  fun `test strong text2` () {
+  fun `test strong text2`() {
     val text = "<p><strong>伟大的粗体 sex</strong></p>"
     val expected = "伟大的粗体 sex"
     assertEquals(expected, buildPlainText(text, true))
