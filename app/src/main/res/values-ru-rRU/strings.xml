@@ -58,6 +58,8 @@
   <string name="many_posts_title">Many posts</string>
   <plurals name="new_post">
     <item quantity="one">%d new post</item>
+    <item quantity="few">%d new posts</item>
+    <item quantity="many">%d new posts</item>
     <item quantity="other">%d new posts</item>
   </plurals>
   <string name="load_more_title">Load More</string>
@@ -73,10 +75,14 @@
   <string name="reply_more_user">%s, %s and %d other users</string>
   <plurals name="favs">
     <item quantity="one">%d Favorite</item>
+    <item quantity="few">%d Favorites</item>
+    <item quantity="many">%d Favorites</item>
     <item quantity="other">%d Favorites</item>
   </plurals>
   <plurals name="reblogs">
     <item quantity="one">%d Boost</item>
+    <item quantity="few">%d Boosts</item>
+    <item quantity="many">%d Boosts</item>
     <item quantity="other">%d Boosts</item>
   </plurals>
   <!--  profile screen-->
@@ -84,6 +90,8 @@
   <string name="post_title">Posts</string>
   <plurals name="post_count">
     <item quantity="one">%d Post</item>
+    <item quantity="few">%d Posts</item>
+    <item quantity="many">%d Posts</item>
     <item quantity="other">%d Posts</item>
   </plurals>
   <string name="follow_title">Follow</string>
@@ -110,6 +118,8 @@
   <string name="vote_failed_title">Vote Failed: %s</string>
   <plurals name="votes">
     <item quantity="one">%d vote</item>
+    <item quantity="few">%d votes</item>
+    <item quantity="many">%d votes</item>
     <item quantity="other">%d votes</item>
   </plurals>
   <!-- Explore screen -->
@@ -126,10 +136,14 @@
   <string name="find_result">Find all results for \"%s\"</string>
   <plurals name="search_preview_user">
     <item quantity="one">%d user</item>
+    <item quantity="few">%d users</item>
+    <item quantity="many">%d users</item>
     <item quantity="other">%d users</item>
   </plurals>
   <plurals name="search_preview_tags">
     <item quantity="one">%d topic</item>
+    <item quantity="few">%d topics</item>
+    <item quantity="many">%d topics</item>
     <item quantity="other">%d topics</item>
   </plurals>
   <string name="nothing_to_see_here">There’s nothing here</string>
@@ -140,14 +154,20 @@
   <string name="following_hashtag">Following \#%s</string>
   <plurals name="participant_count">
     <item quantity="one">%d participant</item>
+    <item quantity="few">%d participants</item>
+    <item quantity="many">%d participants</item>
     <item quantity="other">%d participants</item>
   </plurals>
   <plurals name="posts_week">
     <item quantity="one">%d post this week</item>
+    <item quantity="few">%d posts this week</item>
+    <item quantity="many">%d posts this week</item>
     <item quantity="other">%d posts this week</item>
   </plurals>
   <plurals name="posts_today">
     <item quantity="one">%d post today</item>
+    <item quantity="few">%d posts today</item>
+    <item quantity="many">%d posts today</item>
     <item quantity="other">%d posts today</item>
   </plurals>
   <string name="back_to_top">Back to top</string>

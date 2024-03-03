@@ -182,4 +182,6 @@
   <string name="someone_share_new_post">%s 分享了一篇嘟文</string>
   <string name="someone_update_post">%s 更新了一篇嘟文</string>
   <string name="someone_poll_end">%s 创建的投票结束了</string>
+  <string name="notification_background_work_channel_name">后台工作</string>
+  <string name="notification_background_work_channel_description">当 Mastify 在后台工作的时候的通知</string>
 </resources>

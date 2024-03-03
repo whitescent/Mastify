@@ -20,7 +20,7 @@
   <string name="app_name">Mastify</string>
   <string name="app_description">A feature-rich Mastodon Android client</string>
   <string name="instance_address_tip">Amedya mastodon.social</string>
-  <string name="log_in_title">Login</string>
+  <string name="log_in_title">Qqen</string>
   <string name="log_in_to">Tuqqna ɣer %s</string>
   <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
   <string name="instance_verification_error">Error occurred during instance verification</string>
@@ -33,13 +33,13 @@
   <string name="title_add_account">Rnu amiḍan</string>
   <string name="title_profile">Amaɣnu</string>
   <string name="title_bookmarks">Ticraḍ</string>
-  <string name="title_favorites">Favorites</string>
-  <string name="title_lists">Lists</string>
+  <string name="title_favorites">Imenyafen</string>
+  <string name="title_lists">Tibdarin</string>
   <string name="title_draft">Irewwayen</string>
   <string name="title_settings">Iɣewwaren</string>
   <string name="title_about_mastify">Ɣef Mastify</string>
   <string name="title_logout">Ffeɣ</string>
-  <string name="sensitive_content">Sensitive Content</string>
+  <string name="sensitive_content">Agbur amḥulfu</string>
   <string name="reply_a_post">replied a post</string>
   <string name="started_a_discussion_thread">Started a discussion thread</string>
   <string name="show_more_replies">Show more replies</string>
@@ -69,7 +69,7 @@
   <string name="pick_users_title">Pick Users</string>
   <string name="pick_users_description">You can choose who you want to be notified of replies in this thread</string>
   <string name="reply_two_user">%s, %s</string>
-  <string name="reply_three_user">%s, %s and %s</string>
+  <string name="reply_three_user">%s, %s akked %s</string>
   <string name="reply_more_user">%s, %s and %d other users</string>
   <plurals name="favs">
     <item quantity="one">%d Favorite</item>
@@ -81,20 +81,20 @@
   </plurals>
   <!--  profile screen-->
   <string name="account_joined">Joined %s</string>
-  <string name="post_title">Posts</string>
+  <string name="post_title">Tisuffaɣ</string>
   <plurals name="post_count">
     <item quantity="one">%d Post</item>
     <item quantity="other">%d Posts</item>
   </plurals>
-  <string name="follow_title">Follow</string>
+  <string name="follow_title">Ḍfeṛ</string>
   <string name="follow_pending_title">Pending</string>
   <string name="subscribe_title">Subscribe</string>
   <string name="unsubscribe_title">Unsubscribe</string>
   <string name="following_title">Following</string>
-  <string name="follower_title">Followers</string>
+  <string name="follower_title">Imeḍfaṛen</string>
   <string name="reply_title">Replies</string>
-  <string name="media_title">Media</string>
-  <string name="edit_profile">Edit Profile</string>
+  <string name="media_title">Amidya</string>
+  <string name="edit_profile">Ẓreg amaɣnu</string>
   <string name="empty_status">This guy hasn’t yet made a post</string>
   <string name="empty_status_self">You haven’t posted yet</string>
   <string name="empty_timeline">"You haven’t followed anyone else yet"</string>
@@ -116,12 +116,12 @@
   <string name="explore_instance">Explore %s</string>
   <string name="trending_title">Trending</string>
   <string name="public_timeline">Public Timeline</string>
-  <string name="news_title">News</string>
-  <string name="search_title">Search</string>
+  <string name="news_title">Isallen</string>
+  <string name="search_title">Nadi</string>
   <string name="timeline_is_empty">There are no posts here yet</string>
   <string name="news_is_empty">There is no news about this instance yet</string>
   <string name="oops_something_went_wrong">Oops! Something went wrong</string>
-  <string name="retry">retry</string>
+  <string name="retry">ɛreḍ tikelt nniḍen</string>
   <string name="search_description">Try searching for people, topics or keywords</string>
   <string name="find_result">Find all results for \"%s\"</string>
   <plurals name="search_preview_user">
@@ -135,8 +135,8 @@
   <string name="nothing_to_see_here">There’s nothing here</string>
   <!-- Search screen -->
   <string name="accounts_title">Accounts</string>
-  <string name="hashtags_title">Hashtags</string>
-  <string name="follow_hashtag">Follow \#%s</string>
+  <string name="hashtags_title">Ihacṭagen</string>
+  <string name="follow_hashtag">Ḍfeṛ \#%s</string>
   <string name="following_hashtag">Following \#%s</string>
   <plurals name="participant_count">
     <item quantity="one">%d participant</item>
@@ -172,18 +172,18 @@
   <string name="poll_type">Type</string>
   <string name="poll_deadlines">Setting deadlines</string>
   <string name="duplicate_poll_option">duplicate option content</string>
-  <string name="duration_5_min">5 minutes</string>
-  <string name="duration_30_min">30 minutes</string>
-  <string name="duration_1_hour">1 hour</string>
-  <string name="duration_6_hours">6 hours</string>
-  <string name="duration_1_day">1 day</string>
-  <string name="duration_3_days">3 days</string>
-  <string name="duration_7_days">1 week</string>
+  <string name="duration_5_min">5 n tesdatin</string>
+  <string name="duration_30_min">30 n tesdatin</string>
+  <string name="duration_1_hour">1 n wesrag</string>
+  <string name="duration_6_hours">6 n yisragen</string>
+  <string name="duration_1_day">1 n wass</string>
+  <string name="duration_3_days">3 n wussan</string>
+  <string name="duration_7_days">1 umalas</string>
   <string name="poll_close_time">Voting will close in %s</string>
   <string name="new_moment">New moment</string>
   <string name="ok_title">OK</string>
   <!-- Notification screen -->
-  <string name="notifications_title">Notifications</string>
+  <string name="notifications_title">Ilɣa</string>
   <string name="someone_liked_your_post">%s liked your post</string>
   <string name="someone_boosted_your_post">%s boosted your post</string>
   <string name="someone_mentioned_you">%s mentioned you in a post</string>
@@ -192,4 +192,6 @@
   <string name="someone_share_new_post">%s shared a new post</string>
   <string name="someone_update_post">%s has updated a post</string>
   <string name="someone_poll_end">%s\'s poll has ended</string>
+  <string name="notification_background_work_channel_name">Background Work</string>
+  <string name="notification_background_work_channel_description">Notifications for Mastify working in the background</string>
 </resources>

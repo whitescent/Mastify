@@ -57,7 +57,6 @@
   <string name="report">Report</string>
   <string name="many_posts_title">Many posts</string>
   <plurals name="new_post">
-    <item quantity="one">%d new post</item>
     <item quantity="other">%d new posts</item>
   </plurals>
   <string name="load_more_title">Load More</string>
@@ -72,18 +71,15 @@
   <string name="reply_three_user">%s, %s and %s</string>
   <string name="reply_more_user">%s, %s and %d other users</string>
   <plurals name="favs">
-    <item quantity="one">%d Favorite</item>
     <item quantity="other">%d Favorites</item>
   </plurals>
   <plurals name="reblogs">
-    <item quantity="one">%d Boost</item>
     <item quantity="other">%d Boosts</item>
   </plurals>
   <!--  profile screen-->
   <string name="account_joined">Joined %s</string>
   <string name="post_title">Posts</string>
   <plurals name="post_count">
-    <item quantity="one">%d Post</item>
     <item quantity="other">%d Posts</item>
   </plurals>
   <string name="follow_title">Follow</string>
@@ -109,7 +105,6 @@
   <string name="vote_title">Vote</string>
   <string name="vote_failed_title">Vote Failed: %s</string>
   <plurals name="votes">
-    <item quantity="one">%d vote</item>
     <item quantity="other">%d votes</item>
   </plurals>
   <!-- Explore screen -->
@@ -125,11 +120,9 @@
   <string name="search_description">Try searching for people, topics or keywords</string>
   <string name="find_result">Find all results for \"%s\"</string>
   <plurals name="search_preview_user">
-    <item quantity="one">%d user</item>
     <item quantity="other">%d users</item>
   </plurals>
   <plurals name="search_preview_tags">
-    <item quantity="one">%d topic</item>
     <item quantity="other">%d topics</item>
   </plurals>
   <string name="nothing_to_see_here">There’s nothing here</string>
@@ -139,15 +132,12 @@
   <string name="follow_hashtag">Follow \#%s</string>
   <string name="following_hashtag">Following \#%s</string>
   <plurals name="participant_count">
-    <item quantity="one">%d participant</item>
     <item quantity="other">%d participants</item>
   </plurals>
   <plurals name="posts_week">
-    <item quantity="one">%d post this week</item>
     <item quantity="other">%d posts this week</item>
   </plurals>
   <plurals name="posts_today">
-    <item quantity="one">%d post today</item>
     <item quantity="other">%d posts today</item>
   </plurals>
   <string name="back_to_top">Back to top</string>
