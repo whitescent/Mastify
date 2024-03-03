@@ -11,14 +11,12 @@ on:
   pull_request:
     branches:
       - main
-      - ci-setup
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -31,19 +29,20 @@ jobs:
       - name: Set Up JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+          distribution: "temurin"
+          java-version: "17"
+          cache: "gradle"
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
-
       - name: Add google-services.json
-        env:
-          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
-        run: |
-          echo $SGOOGLE_SERVICES | base64 -d > app/google-services.json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.3
+        with:
+          name: "google-services.json"
+          json: ${{ secrets.GOOGLE_SERVICES }}
+          dir: "app/"
 
       # Run Build Project
       - name: Build gradle project
