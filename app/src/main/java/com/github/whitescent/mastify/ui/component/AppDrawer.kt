@@ -85,6 +85,7 @@ fun AppDrawer(
   changeAccount: (Long) -> Unit,
   navigateToLogin: () -> Unit,
   navigateToProfile: (Account) -> Unit,
+  navigateToSettings: () -> Unit
 ) {
   val scope = rememberCoroutineScope()
   ModalDrawerSheet(
@@ -107,19 +108,17 @@ fun AppDrawer(
     ) {
       when (activeAccount.isEmptyHeader) {
         true -> Box(modifier = Modifier.fillMaxSize().background(AppTheme.colors.defaultHeader))
-        else -> {
-          AsyncImage(
-            model = activeAccount.header,
-            contentDescription = null,
-            modifier = Modifier
-              .fillMaxSize()
-              .drawWithContent {
-                this.drawContent()
-                drawRect(Color.Black.copy(0.35f))
-              },
-            contentScale = ContentScale.Crop,
-          )
-        }
+        else -> AsyncImage(
+          model = activeAccount.header,
+          contentDescription = null,
+          modifier = Modifier
+            .fillMaxSize()
+            .drawWithContent {
+              this.drawContent()
+              drawRect(Color.Black.copy(0.35f))
+            },
+          contentScale = ContentScale.Crop
+        )
       }
       Column(
         modifier = Modifier.statusBarsPadding().padding(horizontal = 20.dp)
@@ -188,7 +187,7 @@ fun AppDrawer(
                     }
                   }
                 }
-                .padding(12.dp),
+                .padding(12.dp)
             ) {
               CircleShapeAsyncImage(
                 model = account.profilePictureUrl,
@@ -240,13 +239,15 @@ fun AppDrawer(
               text = stringResource(id = R.string.title_add_account),
               fontSize = 16.sp,
               fontWeight = FontWeight(500),
-              color = AppTheme.colors.primaryContent,
+              color = AppTheme.colors.primaryContent
             )
           }
           AppHorizontalDivider()
         }
       }
-      DrawerMenu()
+      DrawerMenu(
+        navigateToSettings = navigateToSettings
+      )
     }
 
     LaunchedEffect(drawerState.isOpen) {
@@ -258,20 +259,20 @@ fun AppDrawer(
 }
 
 @Composable
-private fun DrawerMenu() {
+private fun DrawerMenu(navigateToSettings: () -> Unit) {
   val context = LocalContext.current
   AppDrawerMenu.entries.forEach {
     if (it.route == AppDrawerMenu.Settings.route) {
       AppHorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
     }
     DrawerMenuItem(it.icon, it.redId) {
-      when (it.route) {
-        "about" -> {
-          launchCustomChromeTab(
-            context = context,
-            uri = Uri.parse("https://github.com/whitescent/Mastify")
-          )
-        }
+      when (it) {
+        AppDrawerMenu.About -> launchCustomChromeTab(
+          context = context,
+          uri = Uri.parse("https://github.com/whitescent/Mastify")
+        )
+        AppDrawerMenu.Settings -> navigateToSettings()
+        else -> Unit
       }
     }
   }
@@ -295,14 +296,14 @@ private fun DrawerMenuItem(icon: Int, name: Int, onClick: () -> Unit) {
           painter = painterResource(id = icon),
           contentDescription = null,
           modifier = Modifier.size(24.dp),
-          tint = AppTheme.colors.primaryContent,
+          tint = AppTheme.colors.primaryContent
         )
       }
       WidthSpacer(value = 8.dp)
       Text(
         text = stringResource(id = name),
         fontSize = 18.sp,
-        color = AppTheme.colors.primaryContent,
+        color = AppTheme.colors.primaryContent
       )
     }
   }
@@ -311,7 +312,7 @@ private fun DrawerMenuItem(icon: Int, name: Int, onClick: () -> Unit) {
 enum class AppDrawerMenu(
   @DrawableRes val icon: Int,
   @StringRes val redId: Int,
-  val route: String,
+  val route: String
 ) {
   Profile(R.drawable.user, R.string.title_profile, "profile"),
   Bookmarks(R.drawable.bookmark_simple, R.string.title_bookmarks, "bookmarks"),
@@ -323,5 +324,4 @@ enum class AppDrawerMenu(
   Logout(R.drawable.sign_out, R.string.title_logout, "logout")
 }
 
-private fun Modifier.drawerListItemPadding(): Modifier =
-  this.padding(horizontal = 16.dp, vertical = 6.dp)
+private fun Modifier.drawerListItemPadding(): Modifier = this.padding(horizontal = 16.dp, vertical = 6.dp)
