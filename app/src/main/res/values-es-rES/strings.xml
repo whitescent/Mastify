@@ -194,4 +194,16 @@
   <string name="someone_poll_end">%s\'s poll has ended</string>
   <string name="notification_background_work_channel_name">Background Work</string>
   <string name="notification_background_work_channel_description">Notifications for Mastify working in the background</string>
+  <!-- Settings screen -->
+  <string name="settings_title">Settings</string>
+  <string name="privacy_settings_title">Privacy</string>
+  <string name="firebase_crashlytics_settings_description">    Enabling this option will upload crash information to Google when you use the app.
+    \nIt helps developers analyze the causes of crashes and improve application stability.
+    \nIf you don\'t feel comfortable sharing your data, feel free to turn off this option.
+  </string>
+  <string name="firebase_analytics_settings_description">    Enabling this option will collect and send usage statistics to Google when you use the app.
+    \nThis will help developers understand application usage patterns and optimize user experience.
+    \nAll data collected will be used to analyze and improve the app and will not be used for any other commercial purpose.
+    \nIf you have concerns about your privacy, feel free to turn off this option.
+  </string>
 </resources>
