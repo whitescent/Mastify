@@ -35,16 +35,23 @@ import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.work.TimelineWork
 import com.github.whitescent.mastify.work.TimelineWorkFactory
 import dagger.hilt.android.HiltAndroidApp
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import logcat.AndroidLogcatLogger
 import logcat.LogPriority
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltAndroidApp
 class MastifyApp : Application(), ImageLoaderFactory, Configuration.Provider {
 
   @Inject
   lateinit var db: AppDatabase
+
+  override val workManagerConfiguration: Configuration by lazy {
+    Configuration.Builder()
+      .setMinimumLoggingLevel(android.util.Log.INFO)
+      .setWorkerFactory(TimelineWorkFactory(db))
+      .build()
+  }
 
   override fun newImageLoader(): ImageLoader {
     val context = this.applicationContext
@@ -77,12 +84,5 @@ class MastifyApp : Application(), ImageLoaderFactory, Configuration.Provider {
     )
 
     AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = LogPriority.VERBOSE)
-  }
-
-  override val workManagerConfiguration: Configuration by lazy {
-    Configuration.Builder()
-      .setMinimumLoggingLevel(android.util.Log.INFO)
-      .setWorkerFactory(TimelineWorkFactory(db))
-      .build()
   }
 }
