@@ -96,6 +96,7 @@ android {
 
 ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
+  arg("mmkv.ktx.packageName", "$group.codegen")
 }
 
 dependencies {
@@ -175,7 +176,11 @@ dependencies {
   implementation(libs.compose.shadow.plus)
   implementation(libs.compose.destinations.animations.core)
   ksp(libs.compose.destinations.ksp)
+
   implementation(libs.mmkv)
+  implementation(libs.mmkv.ktx)
+  ksp(libs.mmkv.ktx.compiler)
+
   implementation(libs.logcat)
   implementation(libs.jsoup)
   implementation(libs.zoomable)

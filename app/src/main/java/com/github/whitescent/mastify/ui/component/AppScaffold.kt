@@ -40,6 +40,7 @@ import com.github.whitescent.mastify.screen.destinations.ExploreDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
+import com.github.whitescent.mastify.screen.destinations.SettingsDestination
 import com.github.whitescent.mastify.screen.explore.Explore
 import com.github.whitescent.mastify.screen.notification.Notification
 import com.github.whitescent.mastify.screen.startAppDestination
@@ -121,6 +122,13 @@ fun AppScaffold(
                 drawerState.close()
               }
             }
+          },
+          navigateToSettings = {
+            navController.navigate(SettingsDestination) {
+              scope.launch {
+                drawerState.close()
+              }
+            }
           }
         )
       }
@@ -137,7 +145,7 @@ fun AppScaffold(
             destination = destination,
             scrollToTop = {
               scope.launch { appState.scrollToTop() }
-            },
+            }
           )
         }
       },
@@ -160,7 +168,7 @@ fun AppScaffold(
             activeAccount = activeAccount!!,
             drawerState = drawerState,
             navigator = destinationsNavigator,
-            resultRecipient = resultRecipient(),
+            resultRecipient = resultRecipient()
           )
         }
         composable(NotificationDestination) {
