@@ -46,7 +46,6 @@ leakcanary = "2.12"
 composeDestinations = "1.10.0"
 hilt = "2.50"
 haze = "0.5.2"
-googleServices = "4.4.1"
 firebase = "32.7.3"
 firebaseCrashlyticsPlugin = "2.9.9"
 paging3 = "3.2.1"
@@ -161,11 +160,9 @@ profileinstaller = { module = "androidx.profileinstaller:profileinstaller", vers
 androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
 androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase" }
-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }

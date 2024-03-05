@@ -29,12 +29,7 @@ class SettingsViewModel @Inject constructor(
 
   val preference = preferenceRepository.preference.userPreference.asStateFlow()
 
-  fun setFirebaseAnalyticsEnabled(enabled: Boolean) {
-    preferenceRepository.setFirebaseAnalyticsEnabled(enabled)
-  }
-
   fun setFirebaseCrashlyticsEnabled(enabled: Boolean) {
     preferenceRepository.setFirebaseCrashlyticsEnabled(enabled)
   }
-
 }

@@ -57,7 +57,6 @@ enum class PrivacySettings(
   @StringRes val description: Int
 ) {
   FirebaseCrashlytics("Firebase Crashlytics", R.string.firebase_crashlytics_settings_description),
-  FirebaseAnalytics("Firebase Analytics", R.string.firebase_analytics_settings_description)
 }
 
 @Destination
@@ -105,7 +104,6 @@ fun Settings(
       HeightSpacer(value = 6.dp)
       PrivacySettings(
         preference = preference,
-        onFirebaseAnalyticsEnabledChange = viewModel::setFirebaseAnalyticsEnabled,
         onFirebaseCrashlyticsEnabledChange = viewModel::setFirebaseCrashlyticsEnabled
       )
     }
@@ -115,7 +113,6 @@ fun Settings(
 @Composable
 private fun PrivacySettings(
   preference: UserPreference,
-  onFirebaseAnalyticsEnabledChange: (Boolean) -> Unit,
   onFirebaseCrashlyticsEnabledChange: (Boolean) -> Unit
 ) {
   Column(
@@ -149,14 +146,8 @@ private fun PrivacySettings(
           },
           option = {
             SwitchButton(
-              enabled = when (it) {
-                PrivacySettings.FirebaseAnalytics -> preference.enableFirebaseAnalytics
-                PrivacySettings.FirebaseCrashlytics -> preference.enableFirebaseCrashlytics
-              },
-              onValueChange = when (it) {
-                PrivacySettings.FirebaseAnalytics -> onFirebaseAnalyticsEnabledChange
-                PrivacySettings.FirebaseCrashlytics -> onFirebaseCrashlyticsEnabledChange
-              },
+              enabled = preference.enableFirebaseCrashlytics,
+              onValueChange = onFirebaseCrashlyticsEnabledChange,
             )
           },
           content = {

@@ -33,15 +33,12 @@
     android:supportsRtl="true"
     android:theme="@style/Theme.Mastify.Splash"
     tools:targetApi="33">
+
     <profileable
       android:shell="true"
       tools:targetApi="34"/>
 
-    <meta-data
-      android:name="firebase_crashlytics_collection_enabled"
-      android:value="false" />
-
-    <meta-data android:name="firebase_analytics_collection_enabled" android:value="false" />
+    <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
 
     <provider
       android:name="androidx.startup.InitializationProvider"

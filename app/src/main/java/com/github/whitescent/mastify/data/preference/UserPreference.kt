@@ -25,7 +25,5 @@ import com.meowool.mmkv.ktx.Preferences
 @Preferences
 data class UserPreference(
   @PersistDefaultValue
-  val enableFirebaseAnalytics: Boolean = false,
-  @PersistDefaultValue
   val enableFirebaseCrashlytics: Boolean = false
 )

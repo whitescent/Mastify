@@ -21,7 +21,6 @@ import Mastify.codegen.PreferencesFactory
 import Mastify.codegen.update
 import com.github.whitescent.mastify.data.model.InstanceModel
 import com.google.firebase.Firebase
-import com.google.firebase.analytics.analytics
 import com.google.firebase.crashlytics.crashlytics
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,13 +36,6 @@ class PreferenceRepository @Inject constructor() {
 
   fun saveInstanceData(domain: String, clientId: String, clientSecret: String) {
     instance = InstanceModel(domain, clientId, clientSecret)
-  }
-
-  fun setFirebaseAnalyticsEnabled(enabled: Boolean) {
-    preference.userPreference.update {
-      it.enableFirebaseAnalytics = enabled
-    }
-    Firebase.analytics.setAnalyticsCollectionEnabled(enabled)
   }
 
   fun setFirebaseCrashlyticsEnabled(enabled: Boolean) {
