@@ -32,6 +32,7 @@ buildscript {
 plugins {
   // https://github.com/google/dagger/issues/3965#issuecomment-1662360344
   alias(libs.plugins.ksp) apply false
+  alias(libs.plugins.google.services) apply false
   alias(libs.plugins.firebase.crashlytics) apply false
 }
 

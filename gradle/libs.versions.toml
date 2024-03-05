@@ -47,6 +47,7 @@ composeDestinations = "1.10.0"
 hilt = "2.50"
 haze = "0.5.2"
 firebase = "32.7.3"
+googleServices = "4.4.1"
 firebaseCrashlyticsPlugin = "2.9.9"
 paging3 = "3.2.1"
 splashScreen = "1.0.1"
@@ -166,3 +167,4 @@ firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
