@@ -105,7 +105,7 @@
   <string name="vote_poll_soon_ending">A votação está prestes a terminar</string>
   <string name="vote_poll_expired">A votação terminou</string>
   <string name="vote_no_deadline">Sem prazo de votação</string>
-  <string name="vote_poll_participants_count">%d voted</string>
+  <string name="vote_poll_participants_count">%d voto(s)</string>
   <string name="vote_title">Votar</string>
   <string name="vote_failed_title">Falha ao votar: %s</string>
   <plurals name="votes">
@@ -143,12 +143,12 @@
     <item quantity="other">%d participantes</item>
   </plurals>
   <plurals name="posts_week">
-    <item quantity="one">%d post this week</item>
-    <item quantity="other">%d posts this week</item>
+    <item quantity="one">%d post esta semana</item>
+    <item quantity="other">%d posts esta semana</item>
   </plurals>
   <plurals name="posts_today">
-    <item quantity="one">%d post today</item>
-    <item quantity="other">%d posts today</item>
+    <item quantity="one">%d post hoje</item>
+    <item quantity="other">%d posts hoje</item>
   </plurals>
   <string name="back_to_top">Voltar ao topo</string>
   <!--  Post screen-->
@@ -171,7 +171,7 @@
   <string name="add_poll_option">Adicionar nova opção</string>
   <string name="poll_type">Tipo</string>
   <string name="poll_deadlines">Definir prazos</string>
-  <string name="duplicate_poll_option">duplicate option content</string>
+  <string name="duplicate_poll_option">opção de conteúdo duplicado</string>
   <string name="duration_5_min">5 minutos</string>
   <string name="duration_30_min">30 minutos</string>
   <string name="duration_1_hour">1 hora</string>
