@@ -214,7 +214,7 @@ fun Login(
           disabledContainerColor = Color.Gray.copy(.5f),
           disabledContentColor = Color.White.copy(.5f)
         ),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().testTag("login button"),
         enabled = !viewModel.instanceLocalError
       ) {
         when (state.loginStatus) {

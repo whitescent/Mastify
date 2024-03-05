@@ -29,8 +29,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.mastify.paging.factory.UnreadEvent
 import com.github.whitescent.mastify.screen.NavGraphs
@@ -64,7 +67,7 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AppScaffold(
   startRoute: Route,
@@ -134,7 +137,9 @@ fun AppScaffold(
       }
     },
     gesturesEnabled = destination.shouldShowScaffoldElements(),
-    modifier = Modifier.fillMaxSize()
+    modifier = Modifier.fillMaxSize().semantics {
+      testTagsAsResourceId = true
+    }
   ) {
     Scaffold(
       bottomBar = {

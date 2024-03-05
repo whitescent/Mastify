@@ -15,6 +15,13 @@
  * see <http://www.gnu.org/licenses>.
  */
 
+import java.io.FileInputStream
+import java.util.Properties
+
+val mastodonProperties = Properties().apply {
+  load(FileInputStream(project.file("mastodon.properties")))
+}
+
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
 plugins {
   id("com.android.test")
@@ -41,6 +48,10 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  buildFeatures {
+    buildConfig = true
+  }
+
   buildTypes {
     // This benchmark buildType is used for benchmarking, and should function like your
     // release build (for example, with minification on). It"s signed with a debug key
@@ -49,6 +60,10 @@ android {
       isDebuggable = true
       signingConfig = getByName("debug").signingConfig
       matchingFallbacks += listOf("release")
+
+      buildConfigField("String", "MASTODON_USERNAME", "\"${mastodonProperties["MASTODON_USERNAME"]}\"")
+      buildConfigField("String", "MASTODON_PASSWORD", "\"${mastodonProperties["MASTODON_PASSWORD"]}\"")
+      buildConfigField("String", "MASTODON_SITE", "\"${mastodonProperties["MASTODON_SITE"]}\"")
     }
   }
 

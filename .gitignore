@@ -17,3 +17,4 @@ local.properties
 /app/release
 /app/schemas/com.github.whitescent.mastify.timeline.TestAppDatabase/*
 google-services.json
+/app/benchmark/mastodon.properties

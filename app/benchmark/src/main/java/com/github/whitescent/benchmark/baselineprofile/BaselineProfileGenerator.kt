@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.Until
+import com.github.whitescent.benchmark.BuildConfig
 import com.github.whitescent.benchmark.utils.isLoggedIn
 import com.github.whitescent.benchmark.utils.waitForObject
 import org.junit.Rule
@@ -39,39 +40,52 @@ class BaselineProfileGenerator {
 
   @RequiresApi(Build.VERSION_CODES.P)
   @Test
-  fun generate() = baselineProfileRule.collect(
-    packageName = "com.github.whitescent.mastify",
-    maxIterations = 1,
-    stableIterations = 1
-  ) {
-    startActivityAndWait()
+  fun generate() {
+    val username = BuildConfig.MASTODON_USERNAME
+    val password = BuildConfig.MASTODON_PASSWORD
+    val site = BuildConfig.MASTODON_SITE
 
-    if (!device.isLoggedIn) {
-      val loginInput = device.findObject(By.res("domain input"))
+    baselineProfileRule.collect(
+      packageName = "com.github.whitescent.mastify",
+      maxIterations = 1,
+      stableIterations = 1
+    ) {
+      startActivityAndWait()
 
-      loginInput.text = "m.cmx.im"
+      if (!device.isLoggedIn) {
+        val loginInput = device.findObject(By.res("domain input"))
 
-      device.waitForObject(By.res("login button"), 5000L)
+        loginInput.text = site
 
-      device.performActionAndWait(
-        { device.findObject(By.res("login button")).click() },
-        Until.newWindow(),
-        2000
-      )
+        device.waitForObject(By.res("login button"), 5000L)
 
-      device.waitForObject(By.text("同意授权"), 5000L)
-      device.findObject(By.text("同意授权")).click()
+        device.performActionAndWait(
+          { device.findObject(By.res("login button")).click() },
+          Until.newWindow(),
+          2000
+        )
 
-      device.waitForObject(By.res("home timeline"), 5000L)
-    }
+        if (device.hasObject(By.hint("电子邮件地址"))) {
+          device.waitForObject(By.hint("电子邮件地址"), 5000L).text = username
+          device.waitForObject(By.hint("密码"), 5000L).text = password
+          device.findObject(By.text("登录")).click()
+        }
 
-    val column = device.findObject(By.res("home timeline"))
 
-    repeat(20) {
-      column.swipe(Direction.UP, 1f)
-    }
-    repeat(10) {
-      column.swipe(Direction.DOWN, 1f)
+        device.waitForObject(By.text("同意授权"), 5000L)
+        device.findObject(By.text("同意授权")).click()
+
+        device.waitForObject(By.res("home timeline"), 5000L)
+      }
+
+      val column = device.findObject(By.res("home timeline"))
+
+      repeat(20) {
+        column.swipe(Direction.UP, 1f)
+      }
+      repeat(10) {
+        column.swipe(Direction.DOWN, 1f)
+      }
     }
   }
 }
