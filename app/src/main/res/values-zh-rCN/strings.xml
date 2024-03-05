@@ -190,8 +190,4 @@
   <string name="firebase_crashlytics_settings_description">启用此选项将会上传 你在使用应用过程中产生的崩溃信息到 Google 上。
 \n它有助于开发者分析崩溃的原因，提高应用的稳定性。
 \n如果您对个人隐私有所顾虑，请随时关闭此选项。</string>
-  <string name="firebase_analytics_settings_description">启用此选项将会收集您在使用应用过程中的使用情况统计信息，并发送到 Google 上。
-\n这将帮助开发者了解应用的使用模式，优化用户体验。
-\n所有收集的数据都将用于分析和改进应用，不会用于任何其他商业用途。
-\n如果您对个人隐私有所顾虑，请随时关闭此选项。</string>
 </resources>
