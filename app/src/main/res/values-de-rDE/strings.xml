@@ -83,7 +83,7 @@
   <string name="account_joined">%s ist beigetreten</string>
   <string name="post_title">Beiträge</string>
   <plurals name="post_count">
-    <item quantity="one">%d Post</item>
+    <item quantity="one">%d Beitrag</item>
     <item quantity="other">%d Beiträge</item>
   </plurals>
   <string name="follow_title">Folgen</string>
@@ -109,7 +109,7 @@
   <string name="vote_title">Abstimmen</string>
   <string name="vote_failed_title">Abstimmung fehlgeschlagen: %s</string>
   <plurals name="votes">
-    <item quantity="one">%d vote</item>
+    <item quantity="one">%d Stimme</item>
     <item quantity="other">%d Stimmen</item>
   </plurals>
   <!-- Explore screen -->
@@ -125,11 +125,11 @@
   <string name="search_description">Suche nach Mitgliedern, Themen und Stichwörtern</string>
   <string name="find_result">Finde alle Ergebnisse für \"%s\"</string>
   <plurals name="search_preview_user">
-    <item quantity="one">%d user</item>
+    <item quantity="one">%d Benutzer</item>
     <item quantity="other">%d Benutzer</item>
   </plurals>
   <plurals name="search_preview_tags">
-    <item quantity="one">%d topic</item>
+    <item quantity="one">%d Thema</item>
     <item quantity="other">%d Themen</item>
   </plurals>
   <string name="nothing_to_see_here">Hier gibt es nichts zu sehen</string>
@@ -139,7 +139,7 @@
   <string name="follow_hashtag">Folge %s</string>
   <string name="following_hashtag">Folgt \#%s</string>
   <plurals name="participant_count">
-    <item quantity="one">%d participant</item>
+    <item quantity="one">%d Teilnehmer</item>
     <item quantity="other">%d Teilnehmer</item>
   </plurals>
   <plurals name="posts_week">
@@ -148,7 +148,7 @@
   </plurals>
   <plurals name="posts_today">
     <item quantity="one">%d post today</item>
-    <item quantity="other">%,d Beiträge heute</item>
+    <item quantity="other">%d Beiträge heute</item>
   </plurals>
   <string name="back_to_top">Zurück nach oben</string>
   <!--  Post screen-->
@@ -192,13 +192,13 @@
   <string name="someone_share_new_post">%s hat einen neuen Beitrag geteilt</string>
   <string name="someone_update_post">%s hat einen Beitrag aktualisiert:</string>
   <string name="someone_poll_end">%s’s Umfrage ist beendet</string>
-  <string name="notification_background_work_channel_name">Background Work</string>
-  <string name="notification_background_work_channel_description">Notifications for Mastify working in the background</string>
+  <string name="notification_background_work_channel_name">Hintergrundarbeit</string>
+  <string name="notification_background_work_channel_description">Benachrichtigungen für Mastify arbeiten im Hintergrund</string>
   <!-- Settings screen -->
-  <string name="settings_title">Settings</string>
-  <string name="privacy_settings_title">Privacy</string>
-  <string name="firebase_crashlytics_settings_description">    Enabling this option will upload crash information to Google when you use the app.
-    \nIt helps developers analyze the causes of crashes and improve application stability.
-    \nIf you don\'t feel comfortable sharing your data, feel free to turn off this option.
+  <string name="settings_title">Einstellungen</string>
+  <string name="privacy_settings_title">Datenschutz</string>
+  <string name="firebase_crashlytics_settings_description">    Wenn Sie diese Option aktivieren, werden Absturzinformationen zu Google hochgeladen, wenn Sie die App verwenden.
+    \nEs hilft Entwicklern, die Ursachen von Abstürzen zu analysieren und die Anwendungsstabilität zu verbessern.
+    \nWenn Sie sich nicht wohl fühlen, Ihre Daten zu teilen, deaktivieren Sie diese Option.
   </string>
 </resources>
