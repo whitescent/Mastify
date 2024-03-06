@@ -55,7 +55,7 @@
   <string name="mute_account">Masquer %s</string>
   <string name="block_account">Bloquer %s</string>
   <string name="report">Signaler</string>
-  <string name="many_posts_title">Plusieurs postes</string>
+  <string name="many_posts_title">Plusieurs posts</string>
   <plurals name="new_post">
     <item quantity="one">%d nouveau post</item>
     <item quantity="other">%d nouveaux postes</item>
