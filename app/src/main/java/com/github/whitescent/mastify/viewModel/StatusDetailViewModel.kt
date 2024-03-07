@@ -18,8 +18,8 @@
 package com.github.whitescent.mastify.viewModel
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.text2.input.TextFieldState
-import androidx.compose.foundation.text2.input.clearText
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -102,63 +102,6 @@ class StatusDetailViewModel @Inject constructor(
       initialValue = navArgs.status.toUiData()
     )
 
-  fun onStatusAction(action: StatusAction, id: String) = viewModelScope.launch {
-    uiState = uiState.copy(
-      statusList = updateStatusListActions(uiState.statusList, action, id).toImmutableList()
-    )
-    timelineUseCase.onStatusAction(action)?.let {
-      if (action is VotePoll && it.isSuccess) {
-        val targetStatus = it.getOrNull()!!
-        uiState = uiState.copy(
-          statusList = updatePollOfStatusList(
-            statusList = uiState.statusList,
-            targetId = targetStatus.id,
-            poll = targetStatus.poll!!
-          ).toImmutableList()
-        )
-      }
-    }
-    updateStatusInDatabase()
-  }
-
-  fun updateStatusFromDetailScreen(newStatus: StatusBackResult) {
-    uiState = uiState.copy(
-      statusList = uiState.statusList.updateStatusActionData(newStatus).toImmutableList()
-    )
-  }
-
-  fun replyToStatus() {
-    if (uiState.postState == PostState.Posting) return
-    uiState = uiState.copy(postState = PostState.Posting)
-    viewModelScope.launch {
-      statusRepository.createStatus(
-        content = when (uiState.threadList.size) {
-          1 -> "${navArgs.status.account.fullname} ${replyField.text}"
-          else -> "${uiState.threadList.joinToString(separator = " "){ it.account.fullname }} ${replyField.text}"
-        },
-        inReplyToId = navArgs.status.actionableId,
-      )
-        .catch {
-          it.printStackTrace()
-          uiState = uiState.copy(postState = PostState.Failure(it))
-        }
-        .collect { response ->
-          uiState = uiState.copy(
-            postState = PostState.Success,
-            statusList = uiState.statusList.toMutableList().also {
-              it.add(
-                index = it.indexOfFirst { item -> item.id == navArgs.status.id } + 1,
-                element = response.toUiData()
-              )
-            }.toImmutableList(),
-          )
-          replyField.clearText()
-          delay(50)
-          uiState = uiState.copy(postState = PostState.Idle)
-        }
-    }
-  }
-
   init {
     uiState = uiState.copy(
       threadList = listOf(
@@ -221,6 +164,63 @@ class StatusDetailViewModel @Inject constructor(
             updateStatusInDatabase()
           }
       }
+    }
+  }
+
+  fun onStatusAction(action: StatusAction, id: String) = viewModelScope.launch {
+    uiState = uiState.copy(
+      statusList = updateStatusListActions(uiState.statusList, action, id).toImmutableList()
+    )
+    timelineUseCase.onStatusAction(action)?.let {
+      if (action is VotePoll && it.isSuccess) {
+        val targetStatus = it.getOrNull()!!
+        uiState = uiState.copy(
+          statusList = updatePollOfStatusList(
+            statusList = uiState.statusList,
+            targetId = targetStatus.id,
+            poll = targetStatus.poll!!
+          ).toImmutableList()
+        )
+      }
+    }
+    updateStatusInDatabase()
+  }
+
+  fun updateStatusFromDetailScreen(newStatus: StatusBackResult) {
+    uiState = uiState.copy(
+      statusList = uiState.statusList.updateStatusActionData(newStatus).toImmutableList()
+    )
+  }
+
+  fun replyToStatus() {
+    if (uiState.postState == PostState.Posting) return
+    uiState = uiState.copy(postState = PostState.Posting)
+    viewModelScope.launch {
+      statusRepository.createStatus(
+        content = when (uiState.threadList.size) {
+          1 -> "${navArgs.status.account.fullname} ${replyField.text}"
+          else -> "${uiState.threadList.joinToString(separator = " "){ it.account.fullname }} ${replyField.text}"
+        },
+        inReplyToId = navArgs.status.actionableId,
+      )
+        .catch {
+          it.printStackTrace()
+          uiState = uiState.copy(postState = PostState.Failure(it))
+        }
+        .collect { response ->
+          uiState = uiState.copy(
+            postState = PostState.Success,
+            statusList = uiState.statusList.toMutableList().also {
+              it.add(
+                index = it.indexOfFirst { item -> item.id == navArgs.status.id } + 1,
+                element = response.toUiData()
+              )
+            }.toImmutableList(),
+          )
+          replyField.clearText()
+          delay(50)
+          uiState = uiState.copy(postState = PostState.Idle)
+        }
     }
   }
 

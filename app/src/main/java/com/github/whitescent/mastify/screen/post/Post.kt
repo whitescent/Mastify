@@ -42,8 +42,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text2.BasicTextField2
-import androidx.compose.foundation.text2.input.insert
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.insert
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -51,6 +51,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -113,7 +114,7 @@ fun Post(
   var isEditorFocused by remember { mutableStateOf(false) }
 
   val pollOptionList = remember { mutableStateListOf(TextFieldValue(), TextFieldValue()) }
-  var focusedPollOptionIndex by remember { mutableStateOf(0) }
+  var focusedPollOptionIndex by remember { mutableIntStateOf(0) }
 
   val keyboard = LocalSoftwareKeyboardController.current
   val context = LocalContext.current
@@ -183,9 +184,14 @@ fun Post(
         .padding(horizontal = 16.dp)
         .background(AppTheme.colors.background),
     ) {
-      Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+      Column(
+        Modifier
+          .weight(1f)
+          .verticalScroll(rememberScrollState())) {
         activeAccount?.let {
-          Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+          Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)) {
             CenterRow {
               CircleShapeAsyncImage(
                 model = it.profilePictureUrl,
@@ -252,7 +258,7 @@ fun Post(
           )
           HeightSpacer(value = 10.dp)
         }
-        BasicTextField2(
+        BasicTextField(
           state = textFieldState,
           modifier = Modifier
             .fillMaxSize()
@@ -449,10 +455,15 @@ private fun PostAlbumPanel(
           onCancelImage = { removeImage(media.uri) },
           modifier = Modifier
             .let { modifier ->
-              if (index > 0) modifier.widthIn(max = 150.dp) else {
-                if (mediaList.size > 1) {
-                  modifier.widthIn(max = 300.dp)
-                } else modifier.widthIn(max = maxWidth)
+              when (index > 0) {
+                true -> modifier.widthIn(max = 150.dp)
+                false -> {
+                  if (mediaList.size > 1) {
+                    modifier.widthIn(max = 300.dp)
+                  } else {
+                    modifier.widthIn(max = maxWidth)
+                  }
+                }
               }
             }
         )

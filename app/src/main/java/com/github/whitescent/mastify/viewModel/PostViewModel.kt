@@ -21,7 +21,7 @@ import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.text2.input.TextFieldState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -86,8 +86,8 @@ class PostViewModel @Inject constructor(
     ) { medias, text, uiState ->
 
       val isMediaPrepared = medias.none { it.ids == null }
-      val isTextValid = text.isNotEmpty() && (text.length <=
-        (uiState.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT))
+      val isTextValid = text.isNotEmpty() && text.length <=
+        (uiState.instance?.maximumTootCharacters ?: DEFAULT_CHARACTER_LIMIT)
       val pollListModel = uiState.pollListModel
 
       when {

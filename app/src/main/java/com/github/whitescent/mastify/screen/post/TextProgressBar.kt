@@ -19,8 +19,6 @@ package com.github.whitescent.mastify.screen.post
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -29,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.TextUnit
@@ -54,25 +51,13 @@ fun TextProgressBar(
     }
   )
   CenterRow(Modifier.animateContentSize()) {
-    Box {
-      Canvas(
-        modifier = modifier.size(24.dp)
-      ) {
-        val stroke = Stroke(width = 2.dp.toPx())
-        val radius = (size.minDimension - stroke.width) / 2
-        drawCircle(
-          color = Color(0xFFD9D9D9),
-          radius = radius,
-          style = stroke
-        )
-      }
-      CircularProgressIndicator(
-        progress = { progress },
-        modifier = modifier.size(24.dp),
-        color = colorAnimation,
-        strokeCap = StrokeCap.Round
-      )
-    }
+    CircularProgressIndicator(
+      progress = { progress },
+      modifier = modifier.size(24.dp),
+      color = colorAnimation,
+      strokeCap = StrokeCap.Round,
+      trackColor = Color(0xFFD9D9D9)
+    )
     WidthSpacer(value = 4.dp)
     Text(
       text = buildAnnotatedString {

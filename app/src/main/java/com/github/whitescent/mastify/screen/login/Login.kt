@@ -39,8 +39,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text2.BasicTextField2
-import androidx.compose.foundation.text2.input.TextFieldLineLimits.SingleLine
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -146,9 +146,9 @@ fun Login(
         letterSpacing = 1.5.sp
       )
       HeightSpacer(value = 50.dp)
-      BasicTextField2(
+      BasicTextField(
         state = viewModel.loginInput,
-        lineLimits = SingleLine,
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
           .clip(SmoothCornerShape(14.dp))
           .background(if (isSystemInDarkTheme()) Color(0xFF575B7A) else Color.White)
@@ -190,11 +190,13 @@ fun Login(
         }
       )
       AnimatedVisibility(
-        visible = (viewModel.instanceLocalError && viewModel.loginInput.text.isNotEmpty()) ||
+        visible = viewModel.instanceLocalError && viewModel.loginInput.text.isNotEmpty() ||
           state.loginStatus is Failure,
         enter = fadeIn(),
         exit = fadeOut(),
-        modifier = Modifier.align(Alignment.Start).padding(vertical = 12.dp)
+        modifier = Modifier
+          .align(Alignment.Start)
+          .padding(vertical = 12.dp)
       ) {
         Text(
           text = if (state.loginStatus is Failure)
@@ -214,7 +216,9 @@ fun Login(
           disabledContainerColor = Color.Gray.copy(.5f),
           disabledContentColor = Color.White.copy(.5f)
         ),
-        modifier = Modifier.fillMaxWidth().testTag("login button"),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("login button"),
         enabled = !viewModel.instanceLocalError
       ) {
         when (state.loginStatus) {
@@ -224,22 +228,24 @@ fun Login(
                 true -> stringResource(R.string.log_in_title)
                 else -> stringResource(R.string.log_in_to, viewModel.loginInput.text)
               },
-              modifier = Modifier.padding(vertical = 6.dp).animateContentSize(),
+              modifier = Modifier
+                .padding(vertical = 6.dp)
+                .animateContentSize(),
               fontSize = 18.sp,
               maxLines = 1,
               overflow = TextOverflow.Ellipsis,
             )
           }
-          LoginStatus.Loading -> {
-            CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-          }
+          LoginStatus.Loading -> CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
         }
       }
     }
     Text(
-      text = "${stringResource(id = R.string.app_name)}\n${BuildConfig.VERSION_NAME}  ${BuildConfig.BUILD_TYPE}",
+      text = "${stringResource(id = R.string.app_name)}\n" +
+        "${BuildConfig.VERSION_NAME}  ${BuildConfig.BUILD_TYPE}",
       fontSize = 14.sp,
-      modifier = Modifier.align(Alignment.BottomCenter)
+      modifier = Modifier
+        .align(Alignment.BottomCenter)
         .navigationBarsPadding()
         .padding(bottom = 8.dp),
       color = AppTheme.colors.primaryContent.copy(.35f),
