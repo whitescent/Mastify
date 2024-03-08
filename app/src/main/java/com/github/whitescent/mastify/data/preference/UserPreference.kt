@@ -18,12 +18,10 @@
 package com.github.whitescent.mastify.data.preference
 
 import androidx.compose.runtime.Immutable
-import com.meowool.mmkv.ktx.PersistDefaultValue
 import com.meowool.mmkv.ktx.Preferences
 
 @Immutable
 @Preferences
 data class UserPreference(
-  @PersistDefaultValue
   val enableFirebaseCrashlytics: Boolean = false
 )
