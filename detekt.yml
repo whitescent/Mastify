@@ -112,8 +112,7 @@ style:
     # For multiline, we want to keep the existing style
     multiLine: 'consistent'
   BracesOnWhenStatements:
-    active: true
-    multiLine: 'necessary'
+    active: false
   CanBeNonNullable:
     active: true
   ClassOrdering:
