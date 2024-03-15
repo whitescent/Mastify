@@ -65,6 +65,7 @@
   <string name="load_more_title">Load More</string>
   <string name="link_preview_title">Link Preview</string>
   <string name="replying_to_title">Replying to %s</string>
+  <string name="unsupported_media_files">Unsupported media files</string>
   <!-- status detail screen -->
   <string name="post_your_reply">post your reply</string>
   <string name="uncategorized_title">Uncategorized</string>
