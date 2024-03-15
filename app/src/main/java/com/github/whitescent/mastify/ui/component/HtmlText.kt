@@ -180,6 +180,16 @@ private fun AnnotatedString.Builder.renderNode(
   when (node) {
     is Element -> renderElement(node, urlSpanStyle, textStyle, filterMentionText)
     is TextNode -> {
+      val prevNode = node.previousSibling()
+      val isPrevHCardSpan = prevNode?.let {
+        it is Element && it.normalName() == "span" && it.hasClass("h-card")
+      } ?: false
+
+      if (isPrevHCardSpan && node.text().trim().isEmpty()) {
+        // Skip the space after @username
+        return
+      }
+
       if (filterMentionText) {
         renderText(if (node.shouldTrimStart()) node.wholeText.trimStart() else node.wholeText, textStyle)
       } else renderText(node.wholeText, textStyle)
@@ -266,7 +276,7 @@ private fun Node.shouldTrimStart(): Boolean {
   val prevHasATag = parentNode()?.childNodes()?.any {
     it is Element && it.normalName() == "a" && !it.hasClass("u-url mention")
   }
-  val prevHasText = (parentNode() is TextNode && parentNode()?.toString()?.isNotBlank() == true)
+  val prevHasText = parentNode() is TextNode && parentNode()?.toString()?.isNotBlank() == true
   return prevHasATag == false && !prevHasText
 }
 

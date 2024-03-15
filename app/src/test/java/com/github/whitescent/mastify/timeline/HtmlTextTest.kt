@@ -81,7 +81,7 @@ class HtmlTextTest {
     assertEquals(expected, buildPlainText(text, true))
     // with @username
     assertEquals(
-      "@0xabad1dea \n\nA float makes the bits not sink in water.",
+      "@0xabad1dea\n\nA float makes the bits not sink in water.",
       buildPlainText(text, false)
     )
   }
@@ -111,6 +111,13 @@ class HtmlTextTest {
   fun `test br label 3`() {
     val text = "<p><span class=\"h-card\" translate=\"no\"><a href=\"https://mastodon.ktachibana.party/@kt\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@<span>kt</span></a></span> <br>传说中的roadstreet么</p><p>-某群呆多了天天想回加-</p>"
     val expected = "传说中的roadstreet么\n\n-某群呆多了天天想回加-"
+    assertEquals(expected, buildPlainText(text, true))
+  }
+
+  @Test
+  fun `test br label 4`() {
+    val text = "<p><span class=\"h-card\"><a href=\"https://m.cmx.im/@francois\" class=\"u-url mention\" rel=\"nofollow noopener noreferrer\" target=\"_blank\">@<span>francois</span></a></span> <a href=\"https://www.sciencedirect.com/science/article/pii/S1930043324001298\" rel=\"nofollow noopener noreferrer\" target=\"_blank\"><span class=\"invisible\">https://www.</span><span class=\"ellipsis\">sciencedirect.com/science/arti</span><span class=\"invisible\">cle/pii/S1930043324001298</span></a></p>"
+    val expected = "https://www.sciencedirect.com/science/article/pii/S1930043324001298"
     assertEquals(expected, buildPlainText(text, true))
   }
 
