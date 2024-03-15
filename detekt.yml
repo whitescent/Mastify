@@ -106,7 +106,7 @@ style:
     # We never want to use wildcard imports in our code
     excludeImports: [ ]
   BracesOnIfStatements:
-    active: true
+    active: false
     # For single line if statements, we don't want to add braces
     singleLine: 'never'
     # For multiline, we want to keep the existing style
