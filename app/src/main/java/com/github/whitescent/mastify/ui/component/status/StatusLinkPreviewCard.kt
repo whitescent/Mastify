@@ -61,7 +61,9 @@ fun StatusLinkPreviewCard(
   val context = LocalContext.current
   if (card != null) {
     Card(
-      modifier = modifier.fillMaxWidth().height(IntrinsicSize.Min),
+      modifier = modifier
+        .fillMaxWidth()
+        .height(IntrinsicSize.Min),
       onClick = {
         launchCustomChromeTab(
           context = context,
@@ -75,13 +77,19 @@ fun StatusLinkPreviewCard(
       ),
       border = BorderStroke(1.dp, AppTheme.colors.divider)
     ) {
-      CenterRow(Modifier.fillMaxWidth().heightIn(min = 85.dp)) {
+      CenterRow(
+        modifier = Modifier
+          .fillMaxWidth()
+          .heightIn(min = 85.dp)
+      ) {
         if (!card.image.isNullOrEmpty()) {
           AsyncImage(
             model = card.image,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxHeight().width(100.dp)
+            modifier = Modifier
+              .fillMaxHeight()
+              .width(100.dp)
           )
           WidthSpacer(value = 6.dp)
         }
@@ -109,20 +117,24 @@ fun StatusLinkPreviewCard(
                 overflow = TextOverflow.Ellipsis
               )
             }
-            card.title.isNotBlank() -> Text(
-              text = card.title,
-              fontSize = 16.sp,
-              fontWeight = FontWeight.Bold,
-              maxLines = 2,
-              overflow = TextOverflow.Ellipsis,
-            )
-            card.description.isNotBlank() -> Text(
-              text = card.description,
-              fontSize = 12.sp,
-              color = AppTheme.colors.primaryContent.copy(0.6f),
-              maxLines = 3,
-              overflow = TextOverflow.Ellipsis
-            )
+            card.title.isNotBlank() -> {
+              Text(
+                text = card.title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+              )
+            }
+            card.description.isNotBlank() -> {
+              Text(
+                text = card.description,
+                fontSize = 12.sp,
+                color = AppTheme.colors.primaryContent.copy(0.6f),
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+              )
+            }
           }
           if (card.image.isNullOrEmpty()) {
             HeightSpacer(value = 4.dp)

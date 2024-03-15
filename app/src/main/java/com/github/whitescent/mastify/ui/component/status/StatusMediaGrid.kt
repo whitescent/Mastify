@@ -73,7 +73,7 @@ private fun gridLayoutMeasurePolicy(
 ) = remember(spacing) {
   MeasurePolicy { measurables, constraints ->
     val columns = ceil(sqrt(measurables.size.toDouble()))
-    val rows = ceil((measurables.size.toDouble() / columns))
+    val rows = ceil(measurables.size.toDouble() / columns)
     val infinityWidth = ((Constraints.Infinity - spacing * (columns - 1)) / columns).toInt()
     val itemWidth =
       ((constraints.maxWidth.toDouble() - spacing * (columns - 1)) / columns).toInt().coerceAtLeast(0)
