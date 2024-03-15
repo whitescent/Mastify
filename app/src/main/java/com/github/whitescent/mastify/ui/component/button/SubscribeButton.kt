@@ -90,7 +90,7 @@ fun SubscribeButton(
             tint = Color.White,
             modifier = Modifier.size(20.dp),
           )
-          WidthSpacer(value = 8.dp)
+          WidthSpacer(value = 6.dp)
           Text(
             text = stringResource(
               id = when (subscribed) {
