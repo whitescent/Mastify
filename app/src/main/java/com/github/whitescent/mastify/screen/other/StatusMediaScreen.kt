@@ -19,12 +19,10 @@ package com.github.whitescent.mastify.screen.other
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,11 +52,10 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.player.ExoPlayerLifecycleEvents
 import com.github.whitescent.mastify.ui.component.player.rememberExoPlayerInstance
 import com.github.whitescent.mastify.ui.component.player.rememberPositionState
-import com.github.whitescent.mastify.ui.component.status.MediaType
+import com.github.whitescent.mastify.ui.component.status.StatusMediaType
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.annotation.Destination
 
-@OptIn(ExperimentalFoundationApi::class)
 @AppNavGraph
 @SuppressLint("UnsafeOptInUsageError")
 @Destination
@@ -82,8 +79,8 @@ fun StatusMediaScreen(
     modifier = Modifier.fillMaxSize().background(Color.Black),
     pageContent = {
       val mediaItem = attachments[it]
-      when (MediaType.fromString(mediaItem.type)) {
-        MediaType.IMAGE -> {
+      when (StatusMediaType.fromString(mediaItem.type)) {
+        StatusMediaType.IMAGE -> {
           val painter = rememberAsyncImagePainter(
             model = ImageRequest.Builder(LocalContext.current)
               .data(mediaItem.url)
@@ -110,7 +107,7 @@ fun StatusMediaScreen(
             else -> Unit
           }
         }
-        MediaType.VIDEO -> {
+        StatusMediaType.VIDEO -> {
           Media(
             state = mediaState,
             resizeMode = ResizeMode.Fit,

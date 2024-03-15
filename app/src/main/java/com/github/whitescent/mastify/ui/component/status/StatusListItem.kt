@@ -84,7 +84,6 @@ import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.utils.statusLinkHandler
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.datetime.toInstant
 
 @Composable
@@ -109,7 +108,7 @@ fun StatusListItem(
     color = AppTheme.colors.background
   ) {
     Column {
-      if (hasUnloadedParent && (status.reblog == null)) {
+      if (hasUnloadedParent && status.reblog == null) {
         CenterRow(
           modifier = Modifier.padding(top = statusContentVerticalPadding)
         ) {
@@ -227,10 +226,7 @@ private fun StatusContent(
 ) {
   val context = LocalContext.current
   var hideSensitiveContent by rememberSaveable(statusUiData.sensitive, statusUiData.spoilerText) {
-    mutableStateOf(statusUiData.sensitive || (statusUiData.spoilerText.isNotEmpty()))
-  }
-  val displayAttachments by remember(statusUiData.attachments) {
-    mutableStateOf(statusUiData.attachments.filter { it.type != "unknown" })
+    mutableStateOf(statusUiData.sensitive || statusUiData.spoilerText.isNotEmpty())
   }
 
   var openMenuSheet by remember { mutableStateOf(false) }
@@ -353,7 +349,7 @@ private fun StatusContent(
                   if (statusUiData.hasVisibleText) {
                     HtmlText(
                       text = statusUiData.content,
-                      fontSize = (15.5).sp,
+                      fontSize = 15.5.sp,
                       maxLines = 11,
                       onLinkClick = { span ->
                         statusLinkHandler(
@@ -372,9 +368,10 @@ private fun StatusContent(
                   StatusPoll(statusUiData.poll) { id, choices ->
                     action(StatusAction.VotePoll(id, choices, statusUiData.actionable))
                   }
-                  if (displayAttachments.isNotEmpty()) {
+                  if (statusUiData.attachments.isNotEmpty()) {
                     StatusMedia(
-                      attachments = displayAttachments.toImmutableList(),
+                      avatar = statusUiData.avatar,
+                      attachments = statusUiData.attachments,
                       onClick = onClickMedia,
                     )
                   }

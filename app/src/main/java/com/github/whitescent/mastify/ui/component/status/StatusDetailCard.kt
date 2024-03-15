@@ -224,9 +224,10 @@ fun StatusDetailCard(
                 StatusPoll(status.poll) { id, choices ->
                   action(StatusAction.VotePoll(id, choices, status.actionable))
                 }
-                if (displayAttachments.isNotEmpty()) {
+                if (status.attachments.isNotEmpty()) {
                   StatusMedia(
-                    attachments = displayAttachments,
+                    avatar = status.avatar,
+                    attachments = status.attachments,
                     onClick = { targetIndex ->
                       navigateToMedia(displayAttachments, targetIndex)
                     },
