@@ -164,6 +164,7 @@ fun BasicEvent(
                 maxLines = 6,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(10.dp),
+                onLinkClick = { navigateToDetail(status.actionable) },
                 filterMentionText = status.isInReplyToSomeone
               )
             }
