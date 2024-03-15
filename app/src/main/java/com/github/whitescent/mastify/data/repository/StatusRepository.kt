@@ -18,16 +18,18 @@
 package com.github.whitescent.mastify.data.repository
 
 import at.connyduck.calladapter.networkresult.fold
-import at.connyduck.calladapter.networkresult.getOrThrow
 import com.github.whitescent.mastify.data.model.ui.StatusUiData.Visibility
 import com.github.whitescent.mastify.network.MastodonApi
 import com.github.whitescent.mastify.network.model.status.MediaAttribute
 import com.github.whitescent.mastify.network.model.status.NewPoll
 import com.github.whitescent.mastify.network.model.status.NewStatus
 import com.github.whitescent.mastify.network.model.status.Status
+import com.github.whitescent.mastify.utils.ResponseResult
+import com.github.whitescent.mastify.utils.ResponseThrowable
 import com.github.whitescent.mastify.utils.getOrThrow
+import com.github.whitescent.mastify.utils.onFailure
+import com.github.whitescent.mastify.utils.onSuccess
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
 import javax.inject.Inject
@@ -56,9 +58,11 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
             statusList.forEach { status ->
               if (status.isInReplyTo) {
                 getSingleStatus(status.inReplyToId!!)
-                  .catch { it.printStackTrace() }
-                  .collect { repliedStatus ->
+                  .onSuccess { repliedStatus ->
                     temp.add(temp.indexOf(status), repliedStatus)
+                  }
+                  .onFailure {
+                    it.printStackTrace()
                   }
               }
             }
@@ -103,15 +107,17 @@ class StatusRepository @Inject constructor(private val api: MastodonApi) {
     )
   }
 
-  suspend fun getSingleStatus(id: String) = flow {
-    try {
-      emit(api.status(id).getOrThrow())
+  suspend fun getSingleStatus(id: String): ResponseResult<Status> {
+    return try {
+      val response = api.status(id).getOrThrow()
+      ResponseResult.Success(response)
+    } catch (e: ResponseThrowable) {
+      e.printStackTrace()
+      ResponseResult.Error(e)
     } catch (e: Exception) {
-      throw e
+      ResponseResult.Error(ResponseThrowable(Int.MAX_VALUE, e.localizedMessage))
     }
   }
 
-  suspend fun getStatusContext(id: String) = flow {
-    emit(api.statusContext(id).getOrThrow())
-  }
+  suspend fun getStatusContext(id: String) = api.statusContext(id)
 }

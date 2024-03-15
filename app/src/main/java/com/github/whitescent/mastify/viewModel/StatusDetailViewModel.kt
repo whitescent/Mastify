@@ -28,6 +28,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import at.connyduck.calladapter.networkresult.onFailure
+import at.connyduck.calladapter.networkresult.onSuccess
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.data.model.ui.StatusUiData
 import com.github.whitescent.mastify.data.repository.InstanceRepository
@@ -46,13 +48,16 @@ import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
 import com.github.whitescent.mastify.utils.PostState
-import com.github.whitescent.mastify.utils.ResponseThrowable
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
+import com.github.whitescent.mastify.utils.onFailure
+import com.github.whitescent.mastify.utils.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
@@ -113,6 +118,7 @@ class StatusDetailViewModel @Inject constructor(
       )
     )
     var latestStatus = navArgs.status.toUiData()
+
     viewModelScope.launch {
       val accountId = accountDao.getActiveAccount()!!.accountId
       uiState = uiState.copy(
@@ -120,50 +126,55 @@ class StatusDetailViewModel @Inject constructor(
         statusList = persistentListOf(latestStatus),
         instanceEmojis = instanceRepository.getInstanceEmojis().toImmutableList(),
       )
-      launch {
+      val latestStatusDeferred = async(Dispatchers.IO) {
         statusRepository.getSingleStatus(navArgs.status.id)
-          .catch {
-            it.printStackTrace()
-            timelineUseCase.onStatusLoadError((it as? ResponseThrowable) ?: it)
-            if (it as? ResponseThrowable != null && it.code == 404) {
-              val dbId = accountDao.getActiveAccount()!!.id
-              val isInDb = timelineDao.getSingleStatusWithId(dbId, navArgs.status.id) != null
-              if (isInDb) timelineDao.clear(dbId, navArgs.status.id)
-            }
-          }
-          .collect {
-            latestStatus = it.toUiData()
-          }
-      }
-      launch {
+      }.await()
+
+      val statusContextDeferred = async(Dispatchers.IO) {
         statusRepository.getStatusContext(navArgs.status.id)
-          .catch {
-            uiState = uiState.copy(loading = false)
-            it.printStackTrace()
+      }.await()
+
+      latestStatusDeferred
+        .onSuccess {
+          latestStatus = it.toUiData()
+          updateStatusInDatabase(it)
+        }
+        .onFailure {
+          it.printStackTrace()
+          timelineUseCase.onStatusLoadError(it)
+          if (it.code == 404) {
+            val dbId = accountDao.getActiveAccount()!!.id
+            val isInDb = timelineDao.getSingleStatusWithId(dbId, navArgs.status.id) != null
+            if (isInDb) timelineDao.clear(dbId, navArgs.status.id)
           }
-          .collect { statusContext ->
-            val combinedList = (statusContext.ancestors.toUiData() +
-              latestStatus + reorderDescendants(statusContext.descendants)).toImmutableList()
-            val threadList = statusContext.ancestors
-              .filter { it.account.id != navArgs.status.account.id && it.account.id != accountId }
-              .reversed()
-              .distinctBy { it.account.id }
-              .map {
-                ReplyThread(
-                  content = generateHtmlContentWithEmoji(it.content, it.emojis),
-                  account = it.account,
-                  selected = false
-                )
-              }
-              .reversed() + uiState.threadList
-            uiState = uiState.copy(
-              loading = false,
-              statusList = combinedList,
-              threadList = threadList
-            )
-            updateStatusInDatabase()
-          }
-      }
+        }
+
+      statusContextDeferred
+        .onSuccess { statusContext ->
+          val combinedList = (statusContext.ancestors.toUiData() +
+            latestStatus + reorderDescendants(statusContext.descendants)).toImmutableList()
+          val threadList = statusContext.ancestors
+            .filter { it.account.id != navArgs.status.account.id && it.account.id != accountId }
+            .reversed()
+            .distinctBy { it.account.id }
+            .map {
+              ReplyThread(
+                content = generateHtmlContentWithEmoji(it.content, it.emojis),
+                account = it.account,
+                selected = false
+              )
+            }
+            .reversed() + uiState.threadList
+          uiState = uiState.copy(
+            loading = false,
+            statusList = combinedList,
+            threadList = threadList
+          )
+        }
+        .onFailure {
+          uiState = uiState.copy(loading = false)
+          it.printStackTrace()
+        }
     }
   }
 
@@ -199,7 +210,8 @@ class StatusDetailViewModel @Inject constructor(
       statusRepository.createStatus(
         content = when (uiState.threadList.size) {
           1 -> "${navArgs.status.account.fullname} ${replyField.text}"
-          else -> "${uiState.threadList.joinToString(separator = " "){ it.account.fullname }} ${replyField.text}"
+          else -> uiState.threadList.joinToString(separator = " ") { it.account.fullname } +
+            " ${replyField.text}"
         },
         inReplyToId = navArgs.status.actionableId,
       )
@@ -238,22 +250,30 @@ class StatusDetailViewModel @Inject constructor(
    * from detail screen, the status data in database will be outdated.
    * if we update the status data in database, the timeline screen will be the latest data when user
    * back to timeline screen
+   *
+   * @param status Update the source of the data. If it is empty,
+   * use part of the StatusUiData in the current memory.
    */
-  private fun updateStatusInDatabase() {
+  private fun updateStatusInDatabase(status: Status? = null) {
     // if origin status id is null, it means the current status if not from timeline screen
     // so we don't need to update the status in database
     if (navArgs.originStatusId == null) return
     viewModelScope.launch {
       val activeAccountId = accountDao.getActiveAccount()!!.id
       var savedStatus = timelineDao.getSingleStatusWithId(activeAccountId, navArgs.originStatusId)
-      val newStatus = navArgs.status.copy(
-        favorited = currentStatus.value.favorited,
-        favouritesCount = currentStatus.value.favouritesCount,
-        reblogged = currentStatus.value.reblogged,
-        reblogsCount = currentStatus.value.reblogsCount,
-        bookmarked = currentStatus.value.bookmarked,
-        poll = currentStatus.value.poll
-      )
+      val newStatus = when (status) {
+        null -> {
+          navArgs.status.copy(
+            favorited = currentStatus.value.favorited,
+            favouritesCount = currentStatus.value.favouritesCount,
+            reblogged = currentStatus.value.reblogged,
+            reblogsCount = currentStatus.value.reblogsCount,
+            bookmarked = currentStatus.value.bookmarked,
+            poll = currentStatus.value.poll
+          )
+        }
+        else -> status
+      }
       savedStatus?.let {
         savedStatus = when (it.reblog == null) {
           true -> newStatus

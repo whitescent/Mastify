@@ -48,11 +48,6 @@ import retrofit2.http.Query
 
 interface MastodonApi {
 
-  companion object {
-    const val DOMAIN_HEADER = "domain"
-    const val PLACEHOLDER_DOMAIN = "domain.placeholder"
-  }
-
   @GET("api/v1/instance")
   suspend fun fetchInstanceInfo(
     @Header(DOMAIN_HEADER) domain: String? = null
@@ -280,4 +275,9 @@ interface MastodonApi {
 
   @POST("api/v1/follow_requests/{id}/reject")
   suspend fun rejectFollowRequest(@Path("id") accountId: String): NetworkResult<Relationship>
+
+  companion object {
+    const val DOMAIN_HEADER = "domain"
+    const val PLACEHOLDER_DOMAIN = "domain.placeholder"
+  }
 }

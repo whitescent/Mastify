@@ -51,6 +51,21 @@ data class ResponseThrowable(
   override fun getLocalizedMessage(): String? = errorMessage
 }
 
+sealed class ResponseResult<out T> {
+  data class Success<T>(val data: T) : ResponseResult<T>()
+  data class Error<T>(val throwable: ResponseThrowable) : ResponseResult<T>()
+}
+
+inline fun <T> ResponseResult<T>.onSuccess(action: (T) -> Unit): ResponseResult<T> {
+  if (this is ResponseResult.Success) action(data)
+  return this
+}
+
+inline fun <T> ResponseResult<T>.onFailure(action: (ResponseThrowable) -> Unit): ResponseResult<T> {
+  if (this is ResponseResult.Error) action(this.throwable)
+  return this
+}
+
 fun <T> Response<T>.getOrThrow(): T {
   val responseBody = body()
   if (isSuccessful && responseBody != null) return body()!!
