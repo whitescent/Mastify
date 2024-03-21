@@ -75,7 +75,14 @@ jobs:
           api-level: 34
           arch: x86_64
           target: google_apis
-          script: ./gradlew app:benchmark:connectedBenchmarkAndroidTest
+          # Prefer a large screen; otherwise, buttons might not be visible on small screens.
+          profile: pixel_6_pro
+          # The adb commands force the emulator to stay awake and skip chrome's welcome screen.
+          script: |
+            adb shell svc power stayon usb
+            adb shell am set-debug-app --persistent com.android.chrome
+            adb shell 'echo "chrome --disable-fre --disable-startup-promos-for-testing --disable-default-browser-promo --no-default-browser-check --no-first-run --disable-features=NotificationPermissionVariant<MyStudy" > /data/local/tmp/chrome-command-line'
+            ./gradlew app:benchmark:connectedBenchmarkAndroidTest
 
       - name: Upload benchmark results if failed
         uses: actions/upload-artifact@v4
