@@ -8,8 +8,7 @@ on:
   push:
     branches:
       - main
-  # compared with pull_request, pull_request_target has access to secrets
-  pull_request_target:
+  pull_request:
     branches:
       - main
 
