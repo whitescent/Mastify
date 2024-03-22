@@ -1,0 +1,94 @@
+name: Build & Test
+
+env:
+  # The name of the main module repository
+  main_project_module: app
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Set Repository Name As Env Variable
+      - name: Set repository name as env variable
+        run: echo "repository_name=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
+
+      - name: Write value to Properties-file
+        env:
+          MASTODON_USERNAME: ${{ secrets.MASTODON_USERNAME }}
+          MASTODON_PASSWORD: ${{ secrets.MASTODON_PASSWORD }}
+          MASTODON_SITE: ${{ secrets.MASTODON_SITE }}
+        run: |
+          echo "MASTODON_USERNAME=$MASTODON_USERNAME" >> ./app/benchmark/mastodon.properties
+          echo "MASTODON_PASSWORD=$MASTODON_PASSWORD" >> ./app/benchmark/mastodon.properties
+          echo "MASTODON_SITE=$MASTODON_SITE" >> ./app/benchmark/mastodon.properties
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: "gradle"
+
+      # Required for Setting Up Benchmarks
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+
+      - name: Add google-services.json
+        run: mv app/google-services-sample.json app/google-services.json
+
+      # Run Build Project
+      - name: Build gradle project
+        run: ./gradlew app:assemble
+
+      # Run Tests Build
+      - name: Run gradle tests
+        run: ./gradlew app:testDebugUnitTest
+
+      # Setup benchmarks
+      - name: Run benchmarks
+        env:
+          MASTODON_USERNAME: ${{ secrets.MASTODON_USERNAME }}
+          MASTODON_PASSWORD: ${{ secrets.MASTODON_PASSWORD }}
+          MASTODON_SITE: ${{ secrets.MASTODON_SITE }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          # Prefer a large screen; otherwise, buttons might not be visible on small screens.
+          profile: pixel_6_pro
+          # The adb commands force the emulator to stay awake and skip chrome's welcome screen.
+          script: |
+            adb shell svc power stayon usb
+            adb shell am set-debug-app --persistent com.android.chrome
+            adb shell 'echo "chrome --disable-fre --disable-startup-promos-for-testing --disable-default-browser-promo --no-default-browser-check --no-first-run --disable-features=NotificationPermissionVariant<MyStudy" > /data/local/tmp/chrome-command-line'
+            ./gradlew app:benchmark:connectedBenchmarkAndroidTest
+
+      - name: Upload benchmark results if failed
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: Benchmark Results
+          path: app/benchmark/build/reports/androidTests/connected/benchmark
