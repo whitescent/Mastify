@@ -141,7 +141,7 @@ class HomeRepository @Inject constructor(
 
   suspend fun fetchTimeline(maxId: String? = null, limit: Int = FETCH_NUMBER): Result<List<Status>> {
     val response = api.homeTimeline(maxId = maxId, limit = limit)
-    return if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+    return if (response.isSuccessful && response.body() != null) {
       val body = response.body()!!
       Result.success(body)
     } else {
