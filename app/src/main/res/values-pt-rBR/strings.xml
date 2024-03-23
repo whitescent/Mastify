@@ -32,7 +32,7 @@
   <string name="user_boosted"></string>
   <string name="title_add_account">Adicionar Conta</string>
   <string name="title_profile">Perfil</string>
-  <string name="title_bookmarks">Bookmarks</string>
+  <string name="title_bookmarks">Marcadores</string>
   <string name="title_favorites">Favoritos</string>
   <string name="title_lists">Listas</string>
   <string name="title_draft">Rascunhos</string>
@@ -45,13 +45,13 @@
   <string name="show_more_replies">Exibir mais respostas</string>
   <string name="text_copied">Texto copiado para a área de transferência</string>
   <string name="link_copied">Link do post copiado para a área de transferência</string>
-  <string name="bookmarked_snackBar">Saved to your bookmarks</string>
+  <string name="bookmarked_snackBar">Salvo nos seus marcadores</string>
   <string name="load_post_error">Ocorreu um erro ao carregar a postagem</string>
   <string name="click_to_display_content">Clique para exibir o conteúdo</string>
   <string name="copy_text">Copiar Texto</string>
   <string name="copy_link">Copiar Link</string>
-  <string name="bookmark">Bookmark</string>
-  <string name="delete_bookmark">Delete Bookmark</string>
+  <string name="bookmark">Marcador</string>
+  <string name="delete_bookmark">Excluir Marcador</string>
   <string name="mute_account">Silenciar %s</string>
   <string name="block_account">Bloquear %s</string>
   <string name="report">Denunciar</string>
@@ -61,8 +61,9 @@
     <item quantity="other">%d novas postagens</item>
   </plurals>
   <string name="load_more_title">Carregar Mais</string>
-  <string name="link_preview_title">Link Preview</string>
+  <string name="link_preview_title">Pré-visualização de link</string>
   <string name="replying_to_title">Respondendo a %s</string>
+  <string name="unsupported_media_files">Unsupported media files</string>
   <!-- status detail screen -->
   <string name="post_your_reply">postar sua resposta</string>
   <string name="uncategorized_title">Sem categoria</string>
@@ -80,7 +81,7 @@
     <item quantity="other">%d Boosts</item>
   </plurals>
   <!--  profile screen-->
-  <string name="account_joined">Joined %s</string>
+  <string name="account_joined">Registou-se %s</string>
   <string name="post_title">Postagens</string>
   <plurals name="post_count">
     <item quantity="one">%d Postagem</item>
@@ -88,8 +89,8 @@
   </plurals>
   <string name="follow_title">Seguir</string>
   <string name="follow_pending_title">Pendente</string>
-  <string name="subscribe_title">Subscribe</string>
-  <string name="unsubscribe_title">Unsubscribe</string>
+  <string name="subscribe_title">Inscrever-se</string>
+  <string name="unsubscribe_title">Cancelar inscrição</string>
   <string name="following_title">Seguindo</string>
   <string name="follower_title">Seguidores</string>
   <string name="reply_title">Respostas</string>
@@ -104,8 +105,8 @@
   <string name="vote_poll_minutes">A votação termina em %d minutos</string>
   <string name="vote_poll_soon_ending">A votação está prestes a terminar</string>
   <string name="vote_poll_expired">A votação terminou</string>
-  <string name="vote_no_deadline">No voting deadline</string>
-  <string name="vote_poll_participants_count">%d voted</string>
+  <string name="vote_no_deadline">Sem prazo de votação</string>
+  <string name="vote_poll_participants_count">%d voto(s)</string>
   <string name="vote_title">Votar</string>
   <string name="vote_failed_title">Falha ao votar: %s</string>
   <plurals name="votes">
@@ -143,12 +144,12 @@
     <item quantity="other">%d participantes</item>
   </plurals>
   <plurals name="posts_week">
-    <item quantity="one">%d post this week</item>
-    <item quantity="other">%d posts this week</item>
+    <item quantity="one">%d post esta semana</item>
+    <item quantity="other">%d posts esta semana</item>
   </plurals>
   <plurals name="posts_today">
-    <item quantity="one">%d post today</item>
-    <item quantity="other">%d posts today</item>
+    <item quantity="one">%d post hoje</item>
+    <item quantity="other">%d posts hoje</item>
   </plurals>
   <string name="back_to_top">Voltar ao topo</string>
   <!--  Post screen-->
@@ -161,17 +162,17 @@
   <string name="change_post_visibility">Alterar visibilidade da postagem</string>
   <string name="visibility_description">Altere a visibilidade da sua postagem para garantir que apenas as pessoas que você deseja possam ver o seu conteúdo.</string>
   <string name="visibility_public">Público para todos</string>
-  <string name="visibility_unlisted">Hide in public timeline</string>
+  <string name="visibility_unlisted">Ocultar na timeline pública</string>
   <string name="visibility_private">Visível apenas para seguidores</string>
   <string name="visibility_direct">Visível apenas para os mencionados</string>
   <string name="attachments_exceeded">Você não pode enviar mais de 4 arquivos de mídia</string>
-  <string name="single_choice">Single</string>
-  <string name="multiple_choice">Multiple</string>
+  <string name="single_choice">Única</string>
+  <string name="multiple_choice">Múltiplas</string>
   <string name="poll_option">Opção %d</string>
   <string name="add_poll_option">Adicionar nova opção</string>
   <string name="poll_type">Tipo</string>
-  <string name="poll_deadlines">Setting deadlines</string>
-  <string name="duplicate_poll_option">duplicate option content</string>
+  <string name="poll_deadlines">Definir prazos</string>
+  <string name="duplicate_poll_option">opção de conteúdo duplicado</string>
   <string name="duration_5_min">5 minutos</string>
   <string name="duration_30_min">30 minutos</string>
   <string name="duration_1_hour">1 hora</string>
@@ -192,13 +193,13 @@
   <string name="someone_share_new_post">%s compartilhou uma nova postagem</string>
   <string name="someone_update_post">%s atualizou uma postagem</string>
   <string name="someone_poll_end">A enquete de %s terminou</string>
-  <string name="notification_background_work_channel_name">Background Work</string>
-  <string name="notification_background_work_channel_description">Notifications for Mastify working in the background</string>
+  <string name="notification_background_work_channel_name">Trabalho em Segundo Plano</string>
+  <string name="notification_background_work_channel_description">Notificações para Mastify trabalhando em segundo plano</string>
   <!-- Settings screen -->
-  <string name="settings_title">Settings</string>
-  <string name="privacy_settings_title">Privacy</string>
-  <string name="firebase_crashlytics_settings_description">    Enabling this option will upload crash information to Google when you use the app.
-    \nIt helps developers analyze the causes of crashes and improve application stability.
-    \nIf you don\'t feel comfortable sharing your data, feel free to turn off this option.
+  <string name="settings_title">Configurações</string>
+  <string name="privacy_settings_title">Privacidade</string>
+  <string name="firebase_crashlytics_settings_description">    Ativar esta opção fará upload de informações de falhas para o Google quando você usar o aplicativo.
+    \nIsso ajuda os desenvolvedores a analisar as causas das falhas e melhorar a estabilidade do aplicativo.
+    \nSe você não se sentir confortável em compartilhar seus dados, fique à vontade para desativar esta opção.
   </string>
 </resources>
