@@ -19,8 +19,15 @@ package com.github.whitescent.mastify.network.model.status
 
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.emoji.Emoji
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonObject
 
 @Serializable
 data class Status(
@@ -71,15 +78,41 @@ data class Status(
     val meta: Meta?
   )
 
-  @Serializable
-  data class Meta(
-    val original: Original,
-  ) {
+  @Serializable(with = MetaSerializer::class)
+  sealed class Meta {
+    abstract val original: Original
     @Serializable
     data class Original(
       val duration: Float?,
       val width: Int = 0,
       val height: Int = 0,
     )
+  }
+}
+
+@Serializable
+private data class MastodonMeta(override val original: Original) : Status.Meta()
+
+@Serializable
+private data class FirefishMeta(val width: Int, val height: Int, val duration: Float?) :
+  Status.Meta() {
+  override val original get() = Original(width = width, height = height, duration = duration)
+}
+
+private class MetaSerializer : KSerializer<Status.Meta> {
+  override val descriptor: SerialDescriptor
+    get() = PolymorphicSerializer(Status.Meta::class).descriptor
+
+  override fun deserialize(decoder: Decoder): Status.Meta {
+    require(decoder is JsonDecoder)
+    val element = decoder.decodeJsonElement()
+    if (element is JsonObject && "original" in element)
+      return decoder.json.decodeFromJsonElement(MastodonMeta.serializer(), element)
+    return decoder.json.decodeFromJsonElement(FirefishMeta.serializer(), element)
+  }
+
+  override fun serialize(encoder: Encoder, value: Status.Meta) = when (value) {
+    is MastodonMeta -> encoder.encodeSerializableValue(MastodonMeta.serializer(), value)
+    is FirefishMeta -> encoder.encodeSerializableValue(FirefishMeta.serializer(), value)
   }
 }
