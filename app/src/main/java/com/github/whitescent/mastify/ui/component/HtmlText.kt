@@ -42,6 +42,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle.Companion.Italic
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
@@ -79,7 +80,8 @@ fun HtmlText(
   style: TextStyle = LocalTextStyle.current.copy(
     color = color,
     fontSize = fontSize,
-    fontWeight = fontWeight
+    fontWeight = fontWeight,
+    textDirection = TextDirection.Content
   ),
   inlineContentSize: TextUnit = 20.sp,
   urlSpanStyle: SpanStyle = SpanStyle(

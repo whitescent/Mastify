@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.TextUnit
 import com.github.whitescent.mastify.mapper.toShortCode
@@ -54,7 +55,9 @@ fun TextWithEmoji(
   softWrap: Boolean = true,
   maxLines: Int = Int.MAX_VALUE,
   onTextLayout: (TextLayoutResult) -> Unit = {},
-  style: TextStyle = LocalTextStyle.current
+  style: TextStyle = LocalTextStyle.current.copy(
+    textDirection = TextDirection.Content
+  )
 ) = Text(
   text = buildAnnotatedString {
     annotateInlineEmojis(text, emojis.toShortCode())
