@@ -248,120 +248,122 @@ fun ProfileHeader(
         modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
       ) {
-        FlowRow(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(10.dp),
-          verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-          uiState.account.fieldsWithEmoji.forEach {
-            val parsedFieldValue = buildAnnotatedString {
-              append(buildPlainText((it.value), false))
-            }.text
-            val tooltipState = rememberTooltipState(isPersistent = true)
-            val colorScheme = rememberSaveable(saver = FieldChipColorScheme.saver) {
-              fieldChipColorScheme.random()
-            }
-            TooltipBox(
-              positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(14.dp),
-              tooltip = {
-                Box(
-                  modifier = Modifier
-                    .wrapContentWidth()
-                    .padding(horizontal = 14.dp)
-                    .border(1.dp, colorScheme.contentColor.copy(.4f), CircleShape)
-                    .clip(SmoothCornerShape(7.dp))
-                    .background(colorScheme.containerColor, CircleShape)
-                ) {
-                  CenterRow(
+        if (uiState.account.fieldsWithEmoji.isNotEmpty()) {
+          FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+          ) {
+            uiState.account.fieldsWithEmoji.forEach {
+              val parsedFieldValue = buildAnnotatedString {
+                append(buildPlainText(it.value, false))
+              }.text
+              val tooltipState = rememberTooltipState(isPersistent = true)
+              val colorScheme = rememberSaveable(saver = FieldChipColorScheme.saver) {
+                fieldChipColorScheme.random()
+              }
+              TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(14.dp),
+                tooltip = {
+                  Box(
                     modifier = Modifier
-                      .let {
-                        when (FormatFactory.isValidUrl(parsedFieldValue)) {
-                          true -> it.clickableWithoutIndication {
-                            launchCustomChromeTab(
-                              context = context,
-                              uri = Uri.parse(FormatFactory.ensureHttpPrefix(parsedFieldValue))
-                            )
-                          }
-                          false -> it
-                        }
-                      }
-                      .padding(horizontal = 20.dp, vertical = 8.dp)
+                      .wrapContentWidth()
+                      .padding(horizontal = 14.dp)
+                      .border(1.dp, colorScheme.contentColor.copy(.4f), CircleShape)
+                      .clip(SmoothCornerShape(7.dp))
+                      .background(colorScheme.containerColor, CircleShape)
                   ) {
-                    HtmlText(
-                      text = it.value,
-                      fontSize = 16.sp,
-                      fontWeight = FontWeight(450),
-                      overflow = TextOverflow.Ellipsis,
-                      onLinkClick = { url ->
-                        launchCustomChromeTab(
-                          context = context,
-                          uri = Uri.parse(url)
-                        )
-                      },
-                      color = colorScheme.contentColor,
-                      modifier = Modifier.weight(1f, false)
-                    )
-                    WidthSpacer(value = 4.dp)
-                    when (FormatFactory.isValidUrl(parsedFieldValue)) {
-                      true -> {
-                        Icon(
-                          painter = painterResource(id = R.drawable.link_simple),
-                          contentDescription = null,
-                          modifier = Modifier.size(24.dp),
-                          tint = colorScheme.contentColor
-                        )
-                      }
-                      else -> {
-                        Icon(
-                          painter = painterResource(id = R.drawable.copy_fill),
-                          contentDescription = null,
-                          modifier = Modifier
-                            .size(24.dp)
-                            .clickableWithoutIndication {
-                              clipManager.setText(
-                                buildAnnotatedString {
-                                  append(parsedFieldValue)
-                                }
+                    CenterRow(
+                      modifier = Modifier
+                        .let {
+                          when (FormatFactory.isValidUrl(parsedFieldValue)) {
+                            true -> it.clickableWithoutIndication {
+                              launchCustomChromeTab(
+                                context = context,
+                                uri = Uri.parse(FormatFactory.ensureHttpPrefix(parsedFieldValue))
                               )
-                              tooltipState.dismiss()
-                            },
-                          tint = colorScheme.contentColor
-                        )
+                            }
+                            false -> it
+                          }
+                        }
+                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                    ) {
+                      HtmlText(
+                        text = it.value,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight(450),
+                        overflow = TextOverflow.Ellipsis,
+                        onLinkClick = { url ->
+                          launchCustomChromeTab(
+                            context = context,
+                            uri = Uri.parse(url)
+                          )
+                        },
+                        color = colorScheme.contentColor,
+                        modifier = Modifier.weight(1f, false)
+                      )
+                      WidthSpacer(value = 4.dp)
+                      when (FormatFactory.isValidUrl(parsedFieldValue)) {
+                        true -> {
+                          Icon(
+                            painter = painterResource(id = R.drawable.link_simple),
+                            contentDescription = null,
+                            modifier = Modifier.size(24.dp),
+                            tint = colorScheme.contentColor
+                          )
+                        }
+                        else -> {
+                          Icon(
+                            painter = painterResource(id = R.drawable.copy_fill),
+                            contentDescription = null,
+                            modifier = Modifier
+                              .size(24.dp)
+                              .clickableWithoutIndication {
+                                clipManager.setText(
+                                  buildAnnotatedString {
+                                    append(parsedFieldValue)
+                                  }
+                                )
+                                tooltipState.dismiss()
+                              },
+                            tint = colorScheme.contentColor
+                          )
+                        }
                       }
                     }
                   }
-                }
-              },
-              state = tooltipState,
-            ) {
-              Box(
-                modifier = Modifier
-                  .clip(CircleShape)
-                  .background(colorScheme.containerColor, CircleShape)
-                  .border(1.dp, colorScheme.contentColor.copy(.4f), CircleShape)
-                  .height(30.dp)
-                  .clickable {
-                    scope.launch { tooltipState.show() }
-                  },
-                contentAlignment = Alignment.Center
+                },
+                state = tooltipState,
               ) {
-                CenterRow(
-                  modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                Box(
+                  modifier = Modifier
+                    .clip(CircleShape)
+                    .background(colorScheme.containerColor, CircleShape)
+                    .border(1.dp, colorScheme.contentColor.copy(.4f), CircleShape)
+                    .height(30.dp)
+                    .clickable {
+                      scope.launch { tooltipState.show() }
+                    },
+                  contentAlignment = Alignment.Center
                 ) {
-                  it.verifiedAt?.let {
-                    Icon(
-                      painter = painterResource(id = R.drawable.seal_check),
-                      contentDescription = null,
-                      modifier = Modifier.size(20.dp),
-                      tint = colorScheme.contentColor
+                  CenterRow(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                  ) {
+                    it.verifiedAt?.let {
+                      Icon(
+                        painter = painterResource(id = R.drawable.seal_check),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = colorScheme.contentColor
+                      )
+                      WidthSpacer(value = 4.dp)
+                    }
+                    HtmlText(
+                      text = it.name,
+                      color = colorScheme.contentColor,
+                      fontWeight = FontWeight.Medium
                     )
-                    WidthSpacer(value = 4.dp)
                   }
-                  HtmlText(
-                    text = it.name,
-                    color = colorScheme.contentColor,
-                    fontWeight = FontWeight.Medium
-                  )
                 }
               }
             }
