@@ -78,8 +78,8 @@ interface TimelineDao {
   @Query(
     """
     DELETE FROM timelineentity
-    WHERE id NOT IN (
-        SELECT id FROM timelineentity WHERE timelineUserId = :accountId
+    WHERE timelineUserId = :accountId AND id NOT IN (
+        SELECT id FROM timelineentity
         ORDER BY LENGTH(id) DESC, id DESC
         LIMIT :range
     )

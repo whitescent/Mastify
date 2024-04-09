@@ -37,7 +37,7 @@ class TimelineWork(
   override suspend fun doWork(): Result = try {
     val activeAccount = accountDao.getAccountList()
     activeAccount.forEach {
-      Log.d(TAG, "Pruning database using account ID: ${it.fullname}")
+      Log.d("Mastify workmanager", "Pruning database using account ID: ${it.fullname}")
       timelineDao.cleanupOldTimeline(it.id, MAX_TIMELINE_SIZE)
       val timelineIndex = it.firstVisibleItemIndex
       if (timelineIndex > MAX_TIMELINE_SIZE) {
