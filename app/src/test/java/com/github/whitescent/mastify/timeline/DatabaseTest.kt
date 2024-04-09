@@ -37,7 +37,6 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import androidx.work.testing.TestListenableWorkerBuilder
-import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -46,6 +45,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.io.IOException
 
 @RunWith(RobolectricTestRunner::class)
 class DatabaseTest {
@@ -166,7 +166,7 @@ private data class TimelineItem(
   version = 1,
   entities = [AccountItem::class, TimelineItem::class]
 )
-private abstract class TestAppDatabase() : RoomDatabase() {
+private abstract class TestAppDatabase : RoomDatabase() {
   abstract fun accountDao(): TestAccountDao
 
   abstract fun timelineDao(): TestTimelineDao
