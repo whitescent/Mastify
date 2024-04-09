@@ -105,20 +105,22 @@ fun BottomBar(
             }
           },
           unreadBubble = {
-            Box(
-              modifier = Modifier
-                .padding(4.dp)
-                .sizeIn(20.dp, 20.dp, maxHeight = 20.dp)
-                .clip(SmoothCornerShape(6.dp))
-                .background(AppTheme.colors.primaryGradient, SmoothCornerShape(5.dp)),
-              contentAlignment = Alignment.Center
-            ) {
-              Text(
-                text = appState.unreadNotifications.toString(),
-                color = Color.White,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(horizontal = 4.dp)
-              )
+            if (appState.unreadNotifications > 0 && screen == BottomBarItem.Notification) {
+              Box(
+                modifier = Modifier
+                  .padding(4.dp)
+                  .sizeIn(20.dp, 20.dp, maxHeight = 20.dp)
+                  .clip(SmoothCornerShape(6.dp))
+                  .background(AppTheme.colors.primaryGradient, SmoothCornerShape(5.dp)),
+                contentAlignment = Alignment.Center
+              ) {
+                Text(
+                  text = appState.unreadNotifications.toString(),
+                  color = Color.White,
+                  fontSize = 12.sp,
+                  modifier = Modifier.padding(horizontal = 4.dp)
+                )
+              }
             }
           },
           modifier = Modifier.padding(24.dp),
