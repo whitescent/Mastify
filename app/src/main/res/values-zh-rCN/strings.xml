@@ -62,7 +62,7 @@
   <string name="load_more_title">加载更多</string>
   <string name="link_preview_title">链接预览</string>
   <string name="replying_to_title">回复给 %s</string>
-  <string name="unsupported_media_files">Unsupported media files</string>
+  <string name="unsupported_media_files">不支持的媒体类型</string>
   <!-- status detail screen -->
   <string name="post_your_reply">发布你的回复</string>
   <string name="uncategorized_title">未分类</string>
