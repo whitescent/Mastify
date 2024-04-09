@@ -28,6 +28,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -196,7 +197,8 @@ fun Home(
               .drawVerticalScrollbar(lazyState)
               .semantics {
                 testTag = "home timeline"
-              }
+              },
+            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
           ) {
             itemsIndexed(
               items = timeline,
