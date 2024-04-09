@@ -20,6 +20,7 @@ package com.github.whitescent.mastify.utils
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -37,7 +38,7 @@ class AppState(
 
   var hideBottomBar by mutableStateOf(false)
 
-  var unreadNotifications by mutableStateOf(unread)
+  var unreadNotifications by mutableIntStateOf(unread)
 
   suspend fun scrollToTop() { scrollToTopChannel.emit(Unit) }
 

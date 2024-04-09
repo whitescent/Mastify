@@ -17,30 +17,45 @@
 
 package com.github.whitescent.mastify.ui.component
 
-import androidx.annotation.DrawableRes
+import android.view.animation.OvershootInterpolator
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.github.whitescent.mastify.screen.destinations.Destination
+import com.github.whitescent.mastify.ui.component.foundation.Text
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.ui.theme.shape.SmoothCornerShape
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.BottomBarItem
+import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.ramcosta.composedestinations.navigation.navigate
 
 @Composable
@@ -61,66 +76,94 @@ fun BottomBar(
     CenterRow(Modifier.navigationBarsPadding()) {
       BottomBarItem.entries.forEachIndexed { _, screen ->
         val selected = destination.route == screen.direction.route
-        NavigationBarItem(
-          selected = selected,
-          onClick = {
-            when (selected) {
-              true -> scrollToTop()
-              false -> {
-                navController.navigate(screen.direction) {
-                  popUpTo(destination.route) {
-                    saveState = true
-                    inclusive = true
-                  }
-                  restoreState = true
-                }
-              }
-            }
-          },
+        BottomBarIcon(
           icon = {
-            BadgedBox(
-              badge = {
-                if (appState.unreadNotifications > 0 && screen == BottomBarItem.Notification) {
-                  Badge(
-                    containerColor = Color(0xFFFF0000),
-                    contentColor = Color.White
-                  ) {
-                    Text("${appState.unreadNotifications}")
-                  }
-                }
-              }
-            ) {
-              BottomBarIcon(
-                icon = screen.icon,
-                selected = destination == screen.direction,
-                modifier = Modifier
+            AnimatedContent(
+              targetState = selected,
+              transitionSpec = {
+                ContentTransform(
+                  targetContentEnter = scaleIn(
+                    animationSpec = tween(
+                      durationMillis = 340,
+                      easing = overshootEasing()
+                    ),
+                  ),
+                  initialContentExit = fadeOut(tween(277)),
+                ).using(SizeTransform(clip = false))
+              },
+            ) { isSelected ->
+              Icon(
+                painter = painterResource(screen.icon),
+                contentDescription = null,
+                modifier = modifier
+                  .size(24.dp)
+                  .let {
+                    if (!isSelected) it.alpha(0.2f) else it
+                  },
+                tint = AppTheme.colors.primaryContent
               )
             }
           },
-          colors = NavigationBarItemDefaults.colors(
-            indicatorColor = Color.Transparent,
-            selectedIconColor = AppTheme.colors.primaryContent
-          ),
-        )
+          unreadBubble = {
+            Box(
+              modifier = Modifier
+                .padding(4.dp)
+                .sizeIn(20.dp, 20.dp, maxHeight = 20.dp)
+                .clip(SmoothCornerShape(6.dp))
+                .background(AppTheme.colors.primaryGradient, SmoothCornerShape(5.dp)),
+              contentAlignment = Alignment.Center
+            ) {
+              Text(
+                text = appState.unreadNotifications.toString(),
+                color = Color.White,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
+              )
+            }
+          },
+          modifier = Modifier.padding(24.dp),
+        ) {
+          when (selected) {
+            true -> scrollToTop()
+            false -> {
+              navController.navigate(screen.direction) {
+                popUpTo(destination.route) {
+                  saveState = true
+                  inclusive = true
+                }
+                restoreState = true
+              }
+            }
+          }
+        }
       }
     }
   }
 }
 
 @Composable
-private fun BottomBarIcon(
-  @DrawableRes icon: Int,
-  selected: Boolean,
-  modifier: Modifier = Modifier
+private fun RowScope.BottomBarIcon(
+  icon: @Composable () -> Unit,
+  unreadBubble: @Composable BoxScope.() -> Unit,
+  modifier: Modifier = Modifier,
+  onClick: () -> Unit
 ) {
-  Icon(
-    painter = painterResource(icon),
-    contentDescription = null,
+  Box(
     modifier = modifier
-      .size(24.dp)
-      .let {
-        if (!selected) it.alpha(0.2f) else it
+      .weight(1f)
+      .clickableWithoutIndication { onClick() },
+    contentAlignment = Alignment.Center
+  ) {
+    BadgedBox(
+      badge = {
+        unreadBubble()
       },
-    tint = AppTheme.colors.primaryContent
-  )
+    ) {
+      icon()
+    }
+  }
+}
+
+private fun overshootEasing(tension: Float = 1.9f) = Easing {
+  OvershootInterpolator(tension).getInterpolation(it)
 }
