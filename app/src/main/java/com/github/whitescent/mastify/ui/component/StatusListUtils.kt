@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +44,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.collections.immutable.ImmutableList
 
-@OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.statusComment(
   descendants: ImmutableList<StatusUiData>,
   action: (StatusAction, String) -> Unit,
@@ -71,7 +69,7 @@ fun LazyListScope.statusComment(
           navigateToMedia = navigateToMedia,
           navigateToProfile = navigateToProfile,
           navigateToTagInfo = navigateToTagInfo,
-          modifier = Modifier.fillMaxWidth().animateItemPlacement(),
+          modifier = Modifier.fillMaxWidth().animateItem()
         )
         if (replyChainType == Null || replyChainType == End) AppHorizontalDivider()
       }

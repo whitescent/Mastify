@@ -381,7 +381,7 @@ fun Post(
         when (isEditorFocused) {
           true -> {
             textFieldState.edit {
-              insert(selectionInChars.start, it)
+              insert(selection.start, it)
             }
           }
           false -> {
