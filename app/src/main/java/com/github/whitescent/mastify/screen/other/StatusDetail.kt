@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.screen.other
 
-import android.provider.SyncStateContract.Helpers.insert
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -226,7 +225,7 @@ fun StatusDetail(
       emojis = state.instanceEmojis,
       onSelectEmoji = {
         viewModel.replyField.edit {
-          insert(selectionInChars.start, it)
+          insert(selection.start, it)
         }
         scope.launch {
           sheetState.hide()

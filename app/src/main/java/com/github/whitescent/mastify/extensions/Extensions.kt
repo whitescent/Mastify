@@ -20,7 +20,6 @@ package com.github.whitescent.mastify.extensions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,6 +28,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.github.whitescent.mastify.data.model.StatusBackResult
@@ -104,17 +104,15 @@ fun List<Status>.updateStatusActionData(newStatus: StatusBackResult): List<Statu
           repliesCount = newStatus.repliesCount,
           bookmarked = newStatus.bookmarked,
           poll = newStatus.poll,
-          reblog = if (status.reblog != null) {
-            status.reblog.copy(
-              favorited = newStatus.favorited,
-              favouritesCount = newStatus.favouritesCount,
-              reblogged = newStatus.reblogged,
-              reblogsCount = newStatus.reblogsCount,
-              repliesCount = newStatus.repliesCount,
-              bookmarked = newStatus.bookmarked,
-              poll = newStatus.poll
-            )
-          } else null
+          reblog = status.reblog?.copy(
+            favorited = newStatus.favorited,
+            favouritesCount = newStatus.favouritesCount,
+            reblogged = newStatus.reblogged,
+            reblogsCount = newStatus.reblogsCount,
+            repliesCount = newStatus.repliesCount,
+            bookmarked = newStatus.bookmarked,
+            poll = newStatus.poll
+          )
         )
       }
     }
