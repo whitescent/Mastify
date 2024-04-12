@@ -62,7 +62,7 @@ jobs:
 
       # Run Tests Build
       - name: Run gradle tests
-        run: ./gradlew app:testDebugUnitTest
+        run: ./gradlew app:testGmsDebugUnitTest
 
       # Setup benchmarks
       # https://github.com/ReactiveCircus/android-emulator-runner/issues/161#issuecomment-1248757074
