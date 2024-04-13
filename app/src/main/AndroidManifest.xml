@@ -38,11 +38,9 @@
       android:shell="true"
       tools:targetApi="34"/>
 
-    <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
-
     <provider
       android:name="androidx.startup.InitializationProvider"
-      android:authorities="com.github.whitescent.mastify.androidx-startup"
+      android:authorities="${applicationId}.androidx-startup"
       android:exported="false"
       tools:node="merge">
       <meta-data
