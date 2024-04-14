@@ -48,6 +48,7 @@ import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.button.SwitchButton
 import com.github.whitescent.mastify.ui.component.foundation.Text
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.github.whitescent.mastify.utils.AppFlavorUtil
 import com.github.whitescent.mastify.viewModel.SettingsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -102,10 +103,12 @@ fun Settings(
         }
       }
       HeightSpacer(value = 6.dp)
-      PrivacySettings(
-        preference = preference,
-        onFirebaseCrashlyticsEnabledChange = viewModel::setFirebaseCrashlyticsEnabled
-      )
+      if (!AppFlavorUtil.IS_LIBRE_VARIANT) {
+        PrivacySettings(
+          preference = preference,
+          onFirebaseCrashlyticsEnabledChange = viewModel::setFirebaseCrashlyticsEnabled
+        )
+      }
     }
   }
 }

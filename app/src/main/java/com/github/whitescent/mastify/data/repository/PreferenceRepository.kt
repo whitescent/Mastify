@@ -20,13 +20,11 @@ package com.github.whitescent.mastify.data.repository
 import Mastify.codegen.PreferencesFactory
 import Mastify.codegen.update
 import com.github.whitescent.mastify.data.model.InstanceModel
-import com.google.firebase.Firebase
-import com.google.firebase.crashlytics.crashlytics
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PreferenceRepository @Inject constructor() {
+class PreferenceRepository @Inject constructor(private val firebaseRepository: FirebaseRepository) {
 
   val preference = PreferencesFactory()
 
@@ -42,6 +40,6 @@ class PreferenceRepository @Inject constructor() {
     preference.userPreference.update {
       it.enableFirebaseCrashlytics = enabled
     }
-    Firebase.crashlytics.setCrashlyticsCollectionEnabled(enabled)
+    firebaseRepository.setCrashlyticsCollectionEnabled(enabled)
   }
 }

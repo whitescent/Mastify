@@ -59,6 +59,19 @@ android {
       proguardFiles("benchmark-rules.pro")
     }
   }
+
+  flavorDimensions += "version"
+
+  productFlavors {
+    create("libre") {
+      dimension = "version"
+      applicationIdSuffix = ".libre"
+    }
+    create("gms") {
+      dimension = "version"
+    }
+  }
+
   kotlinOptions {
     jvmTarget = "17"
   }
@@ -91,6 +104,17 @@ android {
   }
   androidResources {
     generateLocaleConfig = true
+  }
+}
+
+// Disable gms plugin tasks on libre builds
+androidComponents {
+  beforeVariants(selector().withFlavor(dimension = "version", flavorName = "libre")) {
+    tasks.configureEach {
+      if (name.contains("GoogleServices") || name.contains("uploadCrashlyticsMapping")) {
+        enabled = false
+      }
+    }
   }
 }
 
@@ -164,8 +188,8 @@ dependencies {
   implementation(libs.work.runtime.ktx)
   implementation(libs.work.testing)
 
-  implementation(platform(libs.firebase.bom))
-  implementation(libs.firebase.crashlytics)
+  "gmsImplementation"(platform(libs.firebase.bom))
+  "gmsImplementation"(libs.firebase.crashlytics)
 
   implementation(libs.coil)
   implementation(libs.coil.compose)
