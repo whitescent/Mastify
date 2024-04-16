@@ -61,6 +61,7 @@ data class StatusUiData(
   val favouritesCount: Int,
   val favorited: Boolean,
   val inReplyToId: String?,
+  val inReplyToAccountId: String?,
   val hasUnloadedStatus: Boolean,
 ) {
 
@@ -70,7 +71,8 @@ data class StatusUiData(
   val isInReplyTo inline get() = inReplyToId != null
   val hasVisibleText: Boolean = buildPlainText(content, isInReplyToSomeone).trim().isNotEmpty()
 
-  val isInReplyToSomeone inline get() = mentions.size == 1 && isInReplyTo
+  val isInReplyToSomeone inline get() = mentions.size == 1 && isInReplyTo &&
+    inReplyToAccountId != accountId
 
   enum class ReplyChainType {
     Start, Continue, End, Null
@@ -82,7 +84,7 @@ data class StatusUiData(
     object Unlisted : Visibility()
     object Direct : Visibility()
 
-    val rebloggingAllowed get() = (this == Public || this == Unlisted)
+    val rebloggingAllowed get() = this == Public || this == Unlisted
 
     override fun toString(): String {
       return when (this) {

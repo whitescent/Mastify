@@ -65,6 +65,7 @@ fun Status.toUiData(): StatusUiData = StatusUiData(
   favouritesCount = reblog?.favouritesCount ?: favouritesCount,
   favorited = reblog?.favorited ?: favorited,
   inReplyToId = reblog?.inReplyToId ?: inReplyToId,
+  inReplyToAccountId = reblog?.inReplyToAccountId ?: inReplyToAccountId,
   poll = reblog?.poll ?: poll,
   // NOTE: make sure that you need to do a conversion from Status to StatusUiData
   // or update StatusUiData.actionable
