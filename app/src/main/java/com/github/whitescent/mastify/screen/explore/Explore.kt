@@ -85,6 +85,7 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
 import com.github.whitescent.mastify.ui.theme.AppTheme
@@ -153,13 +154,6 @@ fun Explore(
         ) {
           Column {
             CenterRow {
-              Text(
-                text = stringResource(id = R.string.explore_instance, activeAccount.domain),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.primaryContent,
-                modifier = Modifier.weight(1f),
-              )
               CircleShapeAsyncImage(
                 model = activeAccount.profilePictureUrl,
                 modifier = Modifier
@@ -171,6 +165,13 @@ fun Explore(
                     drawerState.open()
                   }
                 }
+              )
+              WidthSpacer(value = 6.dp)
+              Text(
+                text = stringResource(id = R.string.explore_instance, activeAccount.domain),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = AppTheme.colors.primaryContent
               )
             }
             HeightSpacer(value = 6.dp)

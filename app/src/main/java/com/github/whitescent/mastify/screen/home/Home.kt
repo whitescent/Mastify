@@ -183,7 +183,7 @@ fun Home(
               drawerState.open()
             }
           },
-          modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+          modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
         )
         HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
         Box {

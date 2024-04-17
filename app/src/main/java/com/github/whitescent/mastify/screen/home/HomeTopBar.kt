@@ -18,7 +18,7 @@
 package com.github.whitescent.mastify.screen.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
@@ -26,13 +26,13 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.github.whitescent.R
-import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
-import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 
 @Composable
@@ -41,32 +41,29 @@ fun HomeTopBar(
   modifier: Modifier = Modifier,
   openDrawer: () -> Unit
 ) {
-  CenterRow(
-    modifier = modifier.statusBarsPadding().fillMaxWidth()
+  Box(
+    modifier = modifier.statusBarsPadding().fillMaxWidth(),
+    contentAlignment = Alignment.Center
   ) {
+    CircleShapeAsyncImage(
+      model = avatar,
+      modifier = Modifier
+        .size(36.dp)
+        .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar)
+        .align(Alignment.CenterStart),
+      shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+      onClick = openDrawer
+    )
     Icon(
       painter = painterResource(id = R.drawable.logo_text),
       contentDescription = null,
       tint = AppTheme.colors.primaryContent,
-      modifier = Modifier.heightIn(max = 32.dp).wrapContentSize()
+      modifier = Modifier.heightIn(max = 28.dp).wrapContentSize().align(Alignment.Center)
     )
-    Spacer(modifier = Modifier.weight(1f))
-    CenterRow {
-      Image(
-        painter = painterResource(id = R.drawable.filter),
-        contentDescription = null,
-        modifier = Modifier.size(24.dp)
-      )
-      WidthSpacer(value = 8.dp)
-      CircleShapeAsyncImage(
-        model = avatar,
-        modifier = Modifier
-          .size(36.dp),
-        onClick = {
-          openDrawer()
-        },
-        shape = AppTheme.shape.betweenSmallAndMediumAvatar
-      )
-    }
+    Image(
+      painter = painterResource(id = R.drawable.filter),
+      contentDescription = null,
+      modifier = Modifier.size(24.dp).align(Alignment.CenterEnd)
+    )
   }
 }
