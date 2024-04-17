@@ -123,21 +123,23 @@ fun BottomBar(
               }
             }
           },
-          modifier = Modifier.padding(24.dp),
-        ) {
-          when (selected) {
-            true -> scrollToTop()
-            false -> {
-              navController.navigate(screen.direction) {
-                popUpTo(destination.route) {
-                  saveState = true
-                  inclusive = true
+          modifier = Modifier
+            .clickableWithoutIndication {
+              when (selected) {
+                true -> scrollToTop()
+                false -> {
+                  navController.navigate(screen.direction) {
+                    popUpTo(destination.route) {
+                      saveState = true
+                      inclusive = true
+                    }
+                    restoreState = true
+                  }
                 }
-                restoreState = true
               }
             }
-          }
-        }
+            .padding(24.dp),
+        )
       }
     }
   }
@@ -147,13 +149,10 @@ fun BottomBar(
 private fun RowScope.BottomBarIcon(
   icon: @Composable () -> Unit,
   unreadBubble: @Composable BoxScope.() -> Unit,
-  modifier: Modifier = Modifier,
-  onClick: () -> Unit
+  modifier: Modifier = Modifier
 ) {
   Box(
-    modifier = modifier
-      .weight(1f)
-      .clickableWithoutIndication { onClick() },
+    modifier = modifier.weight(1f),
     contentAlignment = Alignment.Center
   ) {
     BadgedBox(
