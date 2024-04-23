@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.viewModel
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.runtime.Immutable
@@ -69,7 +68,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalFoundationApi::class)
 class StatusDetailViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
   db: AppDatabase,

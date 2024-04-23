@@ -33,7 +33,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
@@ -81,7 +80,6 @@ import com.github.whitescent.mastify.utils.pollDurationList
 import com.github.whitescent.mastify.viewModel.VoteType
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewPollSheet(
   instanceData: InstanceEntity?,

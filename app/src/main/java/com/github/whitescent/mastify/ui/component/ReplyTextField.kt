@@ -21,7 +21,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -78,7 +77,6 @@ import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.utils.windowBottomEndCornerRadius
 import com.github.whitescent.mastify.utils.windowBottomStartCornerRadius
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReplyTextField(
   targetAccount: List<Account>,
@@ -244,7 +242,7 @@ private fun ReplyTitleBar(
   }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+
 @Composable
 private fun ReplyTextFieldWithToolBar(
   textFieldState: TextFieldState,

@@ -44,8 +44,6 @@ import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -60,7 +58,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class ExploreViewModel @Inject constructor(
   private val timelineUseCase: TimelineUseCase,
   private val exploreRepository: ExploreRepository,

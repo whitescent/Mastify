@@ -20,7 +20,6 @@ package com.github.whitescent.mastify.ui
 import android.app.Activity
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -40,7 +39,6 @@ import org.junit.Rule
 import org.junit.Test
 
 @HiltAndroidTest
-@OptIn(ExperimentalFoundationApi::class)
 class AppUiTest {
 
   @get:Rule

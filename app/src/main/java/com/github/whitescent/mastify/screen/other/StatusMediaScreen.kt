@@ -17,7 +17,7 @@
 
 package com.github.whitescent.mastify.screen.other
 
-import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -57,7 +57,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.ramcosta.composedestinations.annotation.Destination
 
 @AppNavGraph
-@SuppressLint("UnsafeOptInUsageError")
 @Destination
 @Composable
 fun StatusMediaScreen(

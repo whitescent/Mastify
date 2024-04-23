@@ -32,6 +32,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.navigation.NavBackStackEntry
 import com.github.whitescent.mastify.screen.appDestination
+import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.utils.isBottomBarScreen
 import com.ramcosta.composedestinations.spec.DestinationStyle
 
@@ -40,10 +41,13 @@ private const val scaleSize = 0.75f
 
 fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideIntoContainer(
   forward: Boolean = true
-): EnterTransition = when (forward) {
-  true -> slideIntoContainer(Start, tween(slideAnimationTween, easing = FastOutSlowInEasing))
-  false -> scaleIn(initialScale = scaleSize, animationSpec = tween(300, easing = EaseOutCubic)) +
-    fadeIn(animationSpec = tween(300, delayMillis = 80), initialAlpha = 0.15f)
+): EnterTransition {
+  return if (targetState.appDestination() == StatusMediaScreenDestination) EnterTransition.None
+  else when (forward) {
+    true -> slideIntoContainer(Start, tween(slideAnimationTween, easing = FastOutSlowInEasing))
+    false -> scaleIn(initialScale = scaleSize, animationSpec = tween(300, easing = EaseOutCubic)) +
+      fadeIn(animationSpec = tween(300, delayMillis = 80), initialAlpha = 0.15f)
+  }
 }
 
 fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
@@ -69,7 +73,7 @@ object BottomBarScreenTransitions : DestinationStyle.Animated {
     return if (initialState.destination == targetState.destination) {
       defaultSlideOutContainer()
     } else {
-      when (targetState.appDestination().isBottomBarScreen) {
+      when (targetState.appDestination().isBottomBarScreen || initialState.appDestination() == StatusMediaScreenDestination) {
         true -> ExitTransition.None
         else -> defaultSlideOutContainer()
       }

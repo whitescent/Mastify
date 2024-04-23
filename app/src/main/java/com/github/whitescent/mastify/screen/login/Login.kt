@@ -23,7 +23,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -84,7 +83,6 @@ import com.github.whitescent.mastify.viewModel.LoginStatus.Failure
 import com.github.whitescent.mastify.viewModel.LoginViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
-@OptIn(ExperimentalFoundationApi::class)
 @LoginNavGraph(start = true)
 @Destination(route = "login_route")
 @Composable

@@ -21,7 +21,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -61,7 +60,7 @@ import com.github.whitescent.mastify.utils.FormatFactory.getRelativeTimeSpanStri
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import kotlinx.datetime.toInstant
 
-@OptIn(ExperimentalLayoutApi::class)
+
 @Composable
 fun BasicEvent(
   event: Notification.Type.BasicEvent,

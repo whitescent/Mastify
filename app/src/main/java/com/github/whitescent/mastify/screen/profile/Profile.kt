@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
@@ -207,7 +206,7 @@ fun Profile(
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 private fun ProfileTabs(
   selectedTab: ProfileKind,

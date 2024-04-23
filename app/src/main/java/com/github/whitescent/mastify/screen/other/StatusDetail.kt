@@ -18,7 +18,6 @@
 package com.github.whitescent.mastify.screen.other
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.input.insert
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -96,7 +94,6 @@ data class StatusDetailNavArgs(
   val originStatusId: String?
 )
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @AppNavGraph
 @Destination(
   navArgsDelegate = StatusDetailNavArgs::class
@@ -282,6 +279,7 @@ fun StatusDetailTopBar(
     title()
   }
 }
+
 
 @Composable
 fun StatusDetailContent(

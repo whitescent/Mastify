@@ -20,7 +20,6 @@ package com.github.whitescent.mastify.viewModel
 import android.net.Uri
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -53,7 +52,6 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalFoundationApi::class)
 class PostViewModel @Inject constructor(
   db: AppDatabase,
   private val instanceRepository: InstanceRepository,

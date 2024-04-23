@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -179,7 +178,7 @@ fun SearchResult(
   }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun SearchResultTabBar(
   currentSearchType: SearchType,
