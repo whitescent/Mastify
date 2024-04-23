@@ -61,7 +61,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun <T : Any> LazyPagingList(
   paginator: Paginator,

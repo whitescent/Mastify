@@ -72,13 +72,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun LazyTimelinePagingList(
+  modifier: Modifier = Modifier,
   lazyListState: LazyListState = rememberLazyListState(),
   paginator: Paginator,
   pagingList: ImmutableList<StatusUiData>,
-  modifier: Modifier = Modifier,
   contentPadding: PaddingValues = PaddingValues(bottom = 100.dp),
   paginatorUiState: PaginatorUiState = rememberPaginatorUiState(paginator),
   pagePlaceholderType: PagePlaceholderType,

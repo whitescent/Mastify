@@ -57,7 +57,6 @@ import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 
-
 @Composable
 fun EmojiSheet(
   sheetState: SheetState,

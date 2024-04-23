@@ -280,7 +280,6 @@ fun StatusDetailTopBar(
   }
 }
 
-
 @Composable
 fun StatusDetailContent(
   currentStatusId: String,

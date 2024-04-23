@@ -206,7 +206,6 @@ fun Profile(
   }
 }
 
-
 @Composable
 private fun ProfileTabs(
   selectedTab: ProfileKind,

@@ -178,7 +178,6 @@ fun SearchResult(
   }
 }
 
-
 @Composable
 fun SearchResultTabBar(
   currentSearchType: SearchType,

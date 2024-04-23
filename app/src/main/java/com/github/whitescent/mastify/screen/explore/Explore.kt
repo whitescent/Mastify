@@ -318,7 +318,6 @@ fun Explore(
   }
 }
 
-
 @Composable
 fun ExploreTabBar(
   currentExploreKind: ExplorerKind,

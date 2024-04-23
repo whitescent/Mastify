@@ -242,7 +242,6 @@ private fun ReplyTitleBar(
   }
 }
 
-
 @Composable
 private fun ReplyTextFieldWithToolBar(
   textFieldState: TextFieldState,

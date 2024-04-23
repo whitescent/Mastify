@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -54,7 +53,6 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatusActionDrawer(
   sheetState: SheetState,
@@ -103,28 +101,28 @@ fun StatusActionDrawer(
     containerColor = AppTheme.colors.bottomSheetBackground,
     modifier = modifier,
     onDismissRequest = onDismissRequest
-    ) {
-      Column(Modifier.navigationBarsPadding()) {
-        actions.forEach {
-          StatusMenuListItem(
-            action = it,
-            targetActionFullname = when (it.textHasArgs) {
-              true -> statusUiData.fullname
-              else -> null
-            }
-          ) {
-            if (it.action is StatusAction.Bookmark) bookmarkState = !bookmarkState
-            scope.launch {
-              sheetState.hide()
-            }.invokeOnCompletion {
-              onDismissRequest()
-            }
-            actionHandler(it.action)
+  ) {
+    Column(Modifier.navigationBarsPadding()) {
+      actions.forEach {
+        StatusMenuListItem(
+          action = it,
+          targetActionFullname = when (it.textHasArgs) {
+            true -> statusUiData.fullname
+            else -> null
           }
-          if (it != actions.last()) AppHorizontalDivider()
+        ) {
+          if (it.action is StatusAction.Bookmark) bookmarkState = !bookmarkState
+          scope.launch {
+            sheetState.hide()
+          }.invokeOnCompletion {
+            onDismissRequest()
+          }
+          actionHandler(it.action)
         }
+        if (it != actions.last()) AppHorizontalDivider()
       }
     }
+  }
 }
 
 @Composable

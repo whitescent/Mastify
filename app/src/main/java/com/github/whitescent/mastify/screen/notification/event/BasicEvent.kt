@@ -60,7 +60,6 @@ import com.github.whitescent.mastify.utils.FormatFactory.getRelativeTimeSpanStri
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import kotlinx.datetime.toInstant
 
-
 @Composable
 fun BasicEvent(
   event: Notification.Type.BasicEvent,
