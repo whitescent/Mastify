@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -56,6 +57,8 @@ import com.github.whitescent.mastify.ui.component.AsyncBlurImage
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
+import com.github.whitescent.mastify.ui.component.LocalSharedTransitionScope
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.foundation.Text
 import com.github.whitescent.mastify.ui.component.player.rememberExoPlayerInstance
@@ -173,119 +176,129 @@ private fun StatusMediaItem(
   modifier: Modifier = Modifier,
   onClick: (() -> Unit)? = null
 ) {
-  when (StatusMediaType.fromString(media.type)) {
-    StatusMediaType.IMAGE -> {
-      AsyncBlurImage(
-        url = media.url,
-        blurHash = media.blurhash ?: "",
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = modifier
-          .fillMaxSize()
-          .clickable {
-            onClick?.invoke()
-          }
-      )
-    }
-    StatusMediaType.VIDEO -> {
-      rememberExoPlayerInstance()
-      // show thumbnail
-      Box(
-        modifier = modifier
-          .fillMaxSize()
-          .let {
-            if (media.type == "audio") {
-              it.background(AppTheme.colors.accent)
-            } else it
-          }
-          .clickable {
-            onClick?.invoke()
-          }
-      ) {
-        when (media.type) {
-          "video" -> {
-            AsyncBlurImage(
-              url = media.previewUrl,
-              blurHash = media.blurhash ?: "",
-              contentDescription = null,
-              contentScale = ContentScale.Crop,
-              modifier = Modifier.fillMaxSize()
-            )
-          }
-          "audio" -> {
-            CenterRow(
-              modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth()
-                .align(Alignment.TopStart)
-            ) {
-              Box(Modifier.weight(1f)) {
-                CircleShapeAsyncImage(
-                  model = avatar,
-                  contentScale = ContentScale.Crop,
-                  modifier = Modifier.size(48.dp),
-                  shape = CircleShape
-                )
-              }
-              Icon(
-                painter = painterResource(id = R.drawable.headphones_bold),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = Color.White
-              )
-            }
-          }
-        }
-        Image(
-          painter = painterResource(id = R.drawable.play_circle_fill),
+  val sharedTransitionScope = LocalSharedTransitionScope.current
+  val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+
+  sharedTransitionScope.apply {
+    when (StatusMediaType.fromString(media.type)) {
+      StatusMediaType.IMAGE -> {
+        AsyncBlurImage(
+          url = media.url,
+          blurHash = media.blurhash ?: "",
           contentDescription = null,
-          modifier = Modifier
-            .size(48.dp)
-            .align(Alignment.Center)
+          contentScale = ContentScale.Crop,
+          modifier = modifier
+            .fillMaxSize()
+            .clickable {
+              onClick?.invoke()
+            }
+            .sharedElement(
+              state = rememberSharedContentState(key = "image ${media.url}"),
+              animatedVisibilityScope = animatedVisibilityScope,
+              placeHolderSize = SharedTransitionScope.PlaceHolderSize.contentSize
+            )
         )
       }
-    }
-    StatusMediaType.UNKNOWN -> {
-      val context = LocalContext.current
-      Card(
-        modifier = modifier.fillMaxWidth(),
-        onClick = {
-          launchCustomChromeTab(
-            context = context,
-            uri = Uri.parse(media.remoteUrl)
-          )
-        },
-        colors = CardDefaults.elevatedCardColors(
-          containerColor = AppTheme.colors.cardBackground,
-          contentColor = AppTheme.colors.primaryContent,
-          disabledContainerColor = AppTheme.colors.cardBackground,
-          disabledContentColor = AppTheme.colors.primaryContent,
-        ),
-        enabled = media.remoteUrl != null
-      ) {
-        CenterRow(Modifier.padding(12.dp)) {
-          Box(Modifier.clip(CircleShape).background(AppTheme.colors.accent, CircleShape)) {
-            Icon(
-              painter = painterResource(id = R.drawable.files),
-              contentDescription = null,
-              tint = Color.White,
-              modifier = Modifier.padding(12.dp).size(28.dp)
-            )
-          }
-          WidthSpacer(value = 8.dp)
-          Column {
-            Text(
-              text = stringResource(id = R.string.unsupported_media_files),
-              fontSize = 18.sp,
-              fontWeight = FontWeight.SemiBold
-            )
-            if (media.remoteUrl != null) {
-              HeightSpacer(value = 2.dp)
-              Text(
-                text = media.remoteUrl,
-                color = AppTheme.colors.primaryContent.copy(.65f),
-                fontWeight = FontWeight.Medium
+      StatusMediaType.VIDEO -> {
+        rememberExoPlayerInstance()
+        // show thumbnail
+        Box(
+          modifier = modifier
+            .fillMaxSize()
+            .let {
+              if (media.type == "audio") {
+                it.background(AppTheme.colors.accent)
+              } else it
+            }
+            .clickable {
+              onClick?.invoke()
+            }
+        ) {
+          when (media.type) {
+            "video" -> {
+              AsyncBlurImage(
+                url = media.previewUrl,
+                blurHash = media.blurhash ?: "",
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
               )
+            }
+            "audio" -> {
+              CenterRow(
+                modifier = Modifier
+                  .padding(12.dp)
+                  .fillMaxWidth()
+                  .align(Alignment.TopStart)
+              ) {
+                Box(Modifier.weight(1f)) {
+                  CircleShapeAsyncImage(
+                    model = avatar,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(48.dp),
+                    shape = CircleShape
+                  )
+                }
+                Icon(
+                  painter = painterResource(id = R.drawable.headphones_bold),
+                  contentDescription = null,
+                  modifier = Modifier.size(24.dp),
+                  tint = Color.White
+                )
+              }
+            }
+          }
+          Image(
+            painter = painterResource(id = R.drawable.play_circle_fill),
+            contentDescription = null,
+            modifier = Modifier
+              .size(48.dp)
+              .align(Alignment.Center)
+          )
+        }
+      }
+      StatusMediaType.UNKNOWN -> {
+        val context = LocalContext.current
+        Card(
+          modifier = modifier.fillMaxWidth(),
+          onClick = {
+            launchCustomChromeTab(
+              context = context,
+              uri = Uri.parse(media.remoteUrl)
+            )
+          },
+          colors = CardDefaults.elevatedCardColors(
+            containerColor = AppTheme.colors.cardBackground,
+            contentColor = AppTheme.colors.primaryContent,
+            disabledContainerColor = AppTheme.colors.cardBackground,
+            disabledContentColor = AppTheme.colors.primaryContent,
+          ),
+          enabled = media.remoteUrl != null
+        ) {
+          CenterRow(Modifier.padding(12.dp)) {
+            Box(Modifier.clip(CircleShape).background(AppTheme.colors.accent, CircleShape)) {
+              Icon(
+                painter = painterResource(id = R.drawable.files),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.padding(12.dp).size(28.dp)
+              )
+            }
+            WidthSpacer(value = 8.dp)
+            Column {
+              Text(
+                text = stringResource(id = R.string.unsupported_media_files),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold
+              )
+              if (media.remoteUrl != null) {
+                HeightSpacer(value = 2.dp)
+                Text(
+                  text = media.remoteUrl,
+                  color = AppTheme.colors.primaryContent.copy(.65f),
+                  fontWeight = FontWeight.Medium
+                )
+              }
             }
           }
         }

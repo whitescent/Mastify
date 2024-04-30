@@ -18,7 +18,9 @@
 package com.github.whitescent.mastify.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -51,6 +53,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -92,6 +95,8 @@ import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestin
 import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
+import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
+import com.github.whitescent.mastify.ui.component.LocalSharedTransitionScope
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
@@ -114,189 +119,196 @@ import kotlinx.coroutines.launch
 @Destination(style = BottomBarScreenTransitions::class)
 @Composable
 fun Home(
+  sharedTransitionScope: SharedTransitionScope,
+  animatedVisibilityScope: AnimatedVisibilityScope,
   appState: AppState,
   drawerState: DrawerState,
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
-  val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
-  val uiState = viewModel.uiState
-  val density = LocalDensity.current
-
-  var refreshing by remember { mutableStateOf(false) }
-
-  val scope = rememberCoroutineScope()
-  val snackbarState = rememberStatusSnackBarState()
-
-  val pullRefreshState = rememberPullRefreshState(
-    refreshing = refreshing,
-    onRefresh = {
-      scope.launch {
-        refreshing = true
-        delay(500)
-        viewModel.refreshTimeline()
-        refreshing = false
-      }
-    }
-  )
-
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .background(AppTheme.colors.background)
-      .statusBarsPadding()
-      .padding(bottom = WindowInsets.navigationBars.getBottom(density).dp)
-      .pullRefresh(pullRefreshState)
-      .semantics {
-        testTagsAsResourceId = true
-      }
+  CompositionLocalProvider(
+    LocalSharedTransitionScope provides sharedTransitionScope,
+    LocalAnimatedVisibilityScope provides animatedVisibilityScope
   ) {
-    data?.let { homeData ->
-      val timeline = homeData.timeline
-      val timelinePosition = homeData.position
-      val activeAccount = homeData.activeAccount
+    val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
+    val uiState = viewModel.uiState
+    val density = LocalDensity.current
 
-      val lazyState = rememberSaveable(activeAccount.id, saver = LazyListState.Saver) {
-        LazyListState(timelinePosition.index, timelinePosition.offset)
-      }
+    var refreshing by remember { mutableStateOf(false) }
 
-      val firstVisibleIndex by remember(lazyState) {
-        derivedStateOf {
-          lazyState.firstVisibleItemIndex
+    val scope = rememberCoroutineScope()
+    val snackbarState = rememberStatusSnackBarState()
+
+    val pullRefreshState = rememberPullRefreshState(
+      refreshing = refreshing,
+      onRefresh = {
+        scope.launch {
+          refreshing = true
+          delay(500)
+          viewModel.refreshTimeline()
+          refreshing = false
         }
       }
+    )
 
-      val atTop by remember(lazyState) {
-        derivedStateOf {
-          lazyState.firstVisibleItemIndex == 0
+    Box(
+      modifier = Modifier
+        .fillMaxSize()
+        .background(AppTheme.colors.background)
+        .statusBarsPadding()
+        .padding(bottom = WindowInsets.navigationBars.getBottom(density).dp)
+        .pullRefresh(pullRefreshState)
+        .semantics {
+          testTagsAsResourceId = true
         }
-      }
-      Column {
-        HomeTopBar(
-          avatar = activeAccount.profilePictureUrl,
-          openDrawer = {
-            scope.launch {
-              drawerState.open()
-            }
-          },
-          modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
-        )
-        HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
-        Box {
-          LazyPagingList(
-            paginator = viewModel.paginator,
-            lazyListState = lazyState,
-            pagePlaceholderType = PagePlaceholderType.Home,
-            list = timeline,
-            modifier = Modifier
-              .fillMaxSize()
-              .drawVerticalScrollbar(lazyState)
-              .semantics {
-                testTag = "home timeline"
-              },
-            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
-          ) {
-            itemsIndexed(
-              items = timeline,
-              contentType = { _, _ -> StatusUiData },
-              key = { _, item -> item.id }
-            ) { index, status ->
-              val replyChainType by remember(status, timeline.size, index) {
-                mutableStateOf(timeline.getReplyChainType(index))
-              }
-              val hasUnloadedParent by remember(status, timeline.size, index) {
-                mutableStateOf(timeline.hasUnloadedParent(index))
-              }
-              StatusListItem(
-                status = status,
-                replyChainType = replyChainType,
-                hasUnloadedParent = hasUnloadedParent,
-                action = {
-                  viewModel.onStatusAction(it, status.actionable)
-                },
-                navigateToDetail = {
-                  navigator.navigate(
-                    StatusDetailDestination(
-                      status = status.actionable,
-                      originStatusId = status.id
-                    )
-                  )
-                },
-                navigateToMedia = { attachments, targetIndex ->
-                  navigator.navigate(
-                    StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                  )
-                },
-                navigateToTagInfo = {
-                  navigator.navigate(TagInfoDestination(it))
-                },
-                navigateToProfile = {
-                  navigator.navigate(ProfileDestination(it))
-                }
-              )
-              if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
-                AppHorizontalDivider()
-              if (status.hasUnloadedStatus)
-                LoadMorePlaceHolder(viewModel.loadMoreState) {
-                  viewModel.loadUnloadedStatus(status.id)
-                }
-            }
+    ) {
+      data?.let { homeData ->
+        val timeline = homeData.timeline
+        val timelinePosition = homeData.position
+        val activeAccount = homeData.activeAccount
+
+        val lazyState = rememberSaveable(activeAccount.id, saver = LazyListState.Saver) {
+          LazyListState(timelinePosition.index, timelinePosition.offset)
+        }
+
+        val firstVisibleIndex by remember(lazyState) {
+          derivedStateOf {
+            lazyState.firstVisibleItemIndex
           }
-          NewStatusToast(
-            visible = uiState.toastButton.showNewToastButton,
-            count = uiState.toastButton.newStatusCount,
-            limitExceeded = uiState.toastButton.showManyPost,
-            modifier = Modifier
-              .align(Alignment.TopCenter)
-              .padding(top = 12.dp)
-          ) {
-            scope.launch {
-              lazyState.scrollToItem(0)
-              viewModel.dismissButton()
-            }
+        }
+
+        val atTop by remember(lazyState) {
+          derivedStateOf {
+            lazyState.firstVisibleItemIndex == 0
           }
-          Column(Modifier.align(Alignment.BottomEnd)) {
-            Image(
-              painter = painterResource(id = R.drawable.edit),
-              contentDescription = null,
+        }
+        Column {
+          HomeTopBar(
+            avatar = activeAccount.profilePictureUrl,
+            openDrawer = {
+              scope.launch {
+                drawerState.open()
+              }
+            },
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+          )
+          HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
+          Box {
+            LazyPagingList(
+              paginator = viewModel.paginator,
+              lazyListState = lazyState,
+              pagePlaceholderType = PagePlaceholderType.Home,
+              list = timeline,
               modifier = Modifier
-                .padding(24.dp)
-                .align(Alignment.End)
-                .shadow(6.dp, CircleShape)
-                .background(AppTheme.colors.primaryGradient, CircleShape)
-                .clickable { navigator.navigate(PostDestination) }
-                .padding(16.dp)
-            )
-            StatusSnackBar(
-              snackbarState = snackbarState,
-              modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-            )
-          }
-        }
-      }
-
-      PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
-
-      appState.scrollToTopFlow.observeWithLifecycle {
-        lazyState.scrollToItem(0)
-      }
-
-      LaunchedEffect(activeAccount.id) {
-        launch {
-          snapshotFlow { firstVisibleIndex }
-            .debounce(500L)
-            .collectLatest {
-              viewModel.updateTimelinePosition(it, lazyState.firstVisibleItemScrollOffset)
+                .fillMaxSize()
+                .drawVerticalScrollbar(lazyState)
+                .semantics {
+                  testTag = "home timeline"
+                },
+              contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
+            ) {
+              itemsIndexed(
+                items = timeline,
+                contentType = { _, _ -> StatusUiData },
+                key = { _, item -> item.id }
+              ) { index, status ->
+                val replyChainType by remember(status, timeline.size, index) {
+                  mutableStateOf(timeline.getReplyChainType(index))
+                }
+                val hasUnloadedParent by remember(status, timeline.size, index) {
+                  mutableStateOf(timeline.hasUnloadedParent(index))
+                }
+                StatusListItem(
+                  status = status,
+                  replyChainType = replyChainType,
+                  hasUnloadedParent = hasUnloadedParent,
+                  action = {
+                    viewModel.onStatusAction(it, status.actionable)
+                  },
+                  navigateToDetail = {
+                    navigator.navigate(
+                      StatusDetailDestination(
+                        status = status.actionable,
+                        originStatusId = status.id
+                      )
+                    )
+                  },
+                  navigateToMedia = { attachments, targetIndex ->
+                    navigator.navigate(
+                      StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                    )
+                  },
+                  navigateToTagInfo = {
+                    navigator.navigate(TagInfoDestination(it))
+                  },
+                  navigateToProfile = {
+                    navigator.navigate(ProfileDestination(it))
+                  }
+                )
+                if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                  AppHorizontalDivider()
+                if (status.hasUnloadedStatus)
+                  LoadMorePlaceHolder(viewModel.loadMoreState) {
+                    viewModel.loadUnloadedStatus(status.id)
+                  }
+              }
             }
-        }
-        launch {
-          viewModel.snackBarFlow.collect {
-            snackbarState.show(it)
+            NewStatusToast(
+              visible = uiState.toastButton.showNewToastButton,
+              count = uiState.toastButton.newStatusCount,
+              limitExceeded = uiState.toastButton.showManyPost,
+              modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 12.dp)
+            ) {
+              scope.launch {
+                lazyState.scrollToItem(0)
+                viewModel.dismissButton()
+              }
+            }
+            Column(Modifier.align(Alignment.BottomEnd)) {
+              Image(
+                painter = painterResource(id = R.drawable.edit),
+                contentDescription = null,
+                modifier = Modifier
+                  .padding(24.dp)
+                  .align(Alignment.End)
+                  .shadow(6.dp, CircleShape)
+                  .background(AppTheme.colors.primaryGradient, CircleShape)
+                  .clickable { navigator.navigate(PostDestination) }
+                  .padding(16.dp)
+              )
+              StatusSnackBar(
+                snackbarState = snackbarState,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+              )
+            }
           }
         }
-      }
-      LaunchedEffect(atTop) {
-        if (atTop && uiState.toastButton.showNewToastButton) viewModel.dismissButton()
+
+        PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+
+        appState.scrollToTopFlow.observeWithLifecycle {
+          lazyState.scrollToItem(0)
+        }
+
+        LaunchedEffect(activeAccount.id) {
+          launch {
+            snapshotFlow { firstVisibleIndex }
+              .debounce(500L)
+              .collectLatest {
+                viewModel.updateTimelinePosition(it, lazyState.firstVisibleItemScrollOffset)
+              }
+          }
+          launch {
+            viewModel.snackBarFlow.collect {
+              snackbarState.show(it)
+            }
+          }
+        }
+        LaunchedEffect(atTop) {
+          if (atTop && uiState.toastButton.showNewToastButton) viewModel.dismissButton()
+        }
       }
     }
   }

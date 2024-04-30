@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.screen.other
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,97 +61,108 @@ import com.ramcosta.composedestinations.annotation.Destination
 @Destination
 @Composable
 fun StatusMediaScreen(
+  sharedTransitionScope: SharedTransitionScope,
+  animatedVisibilityScope: AnimatedVisibilityScope,
   attachments: Array<Attachment>,
   targetMediaIndex: Int,
 ) {
-  val pagerState = rememberPagerState(
-    initialPage = targetMediaIndex,
-    pageCount = { attachments.size }
-  )
-  val exoPlayer = rememberExoPlayerInstance()
-  val mediaState = rememberMediaState(exoPlayer)
-  val position = rememberPositionState(exoPlayer)
+  sharedTransitionScope.apply {
+    val pagerState = rememberPagerState(
+      initialPage = targetMediaIndex,
+      pageCount = { attachments.size }
+    )
+    val exoPlayer = rememberExoPlayerInstance()
+    val mediaState = rememberMediaState(exoPlayer)
+    val position = rememberPositionState(exoPlayer)
 
-  ExoPlayerLifecycleEvents(exoPlayer)
+    ExoPlayerLifecycleEvents(exoPlayer)
 
-  HorizontalPager(
-    state = pagerState,
-    modifier = Modifier.fillMaxSize().background(Color.Black),
-    pageContent = {
-      val mediaItem = attachments[it]
-      when (StatusMediaType.fromString(mediaItem.type)) {
-        StatusMediaType.IMAGE -> {
-          val painter = rememberAsyncImagePainter(
-            model = ImageRequest.Builder(LocalContext.current)
-              .data(mediaItem.url)
-              .size(Size.ORIGINAL)
-              .transformations()
-              .build()
-          )
-          when (painter.state) {
-            is AsyncImagePainter.State.Success -> {
-              ZoomImage(
-                painter = painter,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-              )
-            }
-            is AsyncImagePainter.State.Loading -> {
-              Box(Modifier.fillMaxSize()) {
-                CircularProgressIndicator(
-                  color = AppTheme.colors.accent,
-                  modifier = Modifier.align(Alignment.Center)
+    HorizontalPager(
+      state = pagerState,
+      modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black),
+      pageContent = {
+        val mediaItem = attachments[it]
+        when (StatusMediaType.fromString(mediaItem.type)) {
+          StatusMediaType.IMAGE -> {
+            val painter = rememberAsyncImagePainter(
+              model = ImageRequest.Builder(LocalContext.current)
+                .data(mediaItem.url)
+                .size(Size.ORIGINAL)
+                .transformations()
+                .build()
+            )
+            when (painter.state) {
+              is AsyncImagePainter.State.Success -> {
+                ZoomImage(
+                  painter = painter,
+                  contentDescription = null,
+                  modifier = Modifier
+                    .fillMaxSize()
+                    .sharedElement(
+                      state = rememberSharedContentState(key = "image ${attachments[targetMediaIndex].url}"),
+                      animatedVisibilityScope = animatedVisibilityScope
+                    )
                 )
               }
-            }
-            else -> Unit
-          }
-        }
-        StatusMediaType.VIDEO -> {
-          Media(
-            state = mediaState,
-            resizeMode = ResizeMode.Fit,
-            showBuffering = ShowBuffering.Always,
-            buffering = {
-              Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+              is AsyncImagePainter.State.Loading -> {
+                Box(Modifier.fillMaxSize()) {
+                  CircularProgressIndicator(
+                    color = AppTheme.colors.accent,
+                    modifier = Modifier.align(Alignment.Center)
+                  )
+                }
               }
-            },
-            surfaceType = SurfaceType.TextureView,
-          ) {
-            Crossfade(mediaState.isControllerShowing, Modifier.fillMaxSize()) { showing ->
-              when (showing) {
-                true -> {
-                  Box(
-                    modifier = Modifier
-                      .fillMaxSize()
-                      .padding(24.dp),
-                    contentAlignment = Alignment.BottomStart
-                  ) {
-                    CenterRow {
-                      Text(
-                        text = "position: $position",
-                        color = Color.White,
-                      )
+              else -> Unit
+            }
+          }
+          StatusMediaType.VIDEO -> {
+            Media(
+              state = mediaState,
+              resizeMode = ResizeMode.Fit,
+              showBuffering = ShowBuffering.Always,
+              buffering = {
+                Box(Modifier.fillMaxSize(), Alignment.Center) {
+                  CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+                }
+              },
+              surfaceType = SurfaceType.TextureView,
+            ) {
+              Crossfade(mediaState.isControllerShowing, Modifier.fillMaxSize()) { showing ->
+                when (showing) {
+                  true -> {
+                    Box(
+                      modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                      contentAlignment = Alignment.BottomStart
+                    ) {
+                      CenterRow {
+                        Text(
+                          text = "position: $position",
+                          color = Color.White,
+                        )
+                      }
                     }
                   }
+                  else -> Unit
                 }
-                else -> Unit
+              }
+            }
+            LaunchedEffect(Unit) {
+              exoPlayer.run {
+                repeatMode = Player.REPEAT_MODE_ONE
+                setMediaItem(
+                  MediaItem.Builder().setMediaId(mediaItem.url).setUri(mediaItem.url).build()
+                )
+                prepare()
               }
             }
           }
-          LaunchedEffect(Unit) {
-            exoPlayer.run {
-              repeatMode = Player.REPEAT_MODE_ONE
-              setMediaItem(
-                MediaItem.Builder().setMediaId(mediaItem.url).setUri(mediaItem.url).build()
-              )
-              prepare()
-            }
-          }
+          else -> Unit
         }
-        else -> Unit
-      }
-    },
-  )
+      },
+    )
+  }
 }
