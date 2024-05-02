@@ -98,7 +98,6 @@ import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
 import com.github.whitescent.mastify.ui.component.LocalSharedTransitionScope
 import com.github.whitescent.mastify.ui.component.WidthSpacer
-import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.StatusListItem
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
@@ -114,6 +113,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import my.nanihadesuka.compose.LazyColumnScrollbar
 
 @AppNavGraph(start = true)
 @Destination(style = BottomBarScreenTransitions::class)
@@ -194,63 +194,66 @@ fun Home(
           )
           HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
           Box {
-            LazyPagingList(
-              paginator = viewModel.paginator,
-              lazyListState = lazyState,
-              pagePlaceholderType = PagePlaceholderType.Home,
-              list = timeline,
-              modifier = Modifier
-                .fillMaxSize()
-                .drawVerticalScrollbar(lazyState)
-                .semantics {
-                  testTag = "home timeline"
-                },
-              contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
+            LazyColumnScrollbar(
+              state = lazyState
             ) {
-              itemsIndexed(
-                items = timeline,
-                contentType = { _, _ -> StatusUiData },
-                key = { _, item -> item.id }
-              ) { index, status ->
-                val replyChainType by remember(status, timeline.size, index) {
-                  mutableStateOf(timeline.getReplyChainType(index))
-                }
-                val hasUnloadedParent by remember(status, timeline.size, index) {
-                  mutableStateOf(timeline.hasUnloadedParent(index))
-                }
-                StatusListItem(
-                  status = status,
-                  replyChainType = replyChainType,
-                  hasUnloadedParent = hasUnloadedParent,
-                  action = {
-                    viewModel.onStatusAction(it, status.actionable)
+              LazyPagingList(
+                paginator = viewModel.paginator,
+                lazyListState = lazyState,
+                pagePlaceholderType = PagePlaceholderType.Home,
+                list = timeline,
+                modifier = Modifier
+                  .fillMaxSize()
+                  .semantics {
+                    testTag = "home timeline"
                   },
-                  navigateToDetail = {
-                    navigator.navigate(
-                      StatusDetailDestination(
-                        status = status.actionable,
-                        originStatusId = status.id
+                contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
+              ) {
+                itemsIndexed(
+                  items = timeline,
+                  contentType = { _, _ -> StatusUiData },
+                  key = { _, item -> item.id }
+                ) { index, status ->
+                  val replyChainType by remember(status, timeline.size, index) {
+                    mutableStateOf(timeline.getReplyChainType(index))
+                  }
+                  val hasUnloadedParent by remember(status, timeline.size, index) {
+                    mutableStateOf(timeline.hasUnloadedParent(index))
+                  }
+                  StatusListItem(
+                    status = status,
+                    replyChainType = replyChainType,
+                    hasUnloadedParent = hasUnloadedParent,
+                    action = {
+                      viewModel.onStatusAction(it, status.actionable)
+                    },
+                    navigateToDetail = {
+                      navigator.navigate(
+                        StatusDetailDestination(
+                          status = status.actionable,
+                          originStatusId = status.id
+                        )
                       )
-                    )
-                  },
-                  navigateToMedia = { attachments, targetIndex ->
-                    navigator.navigate(
-                      StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                    )
-                  },
-                  navigateToTagInfo = {
-                    navigator.navigate(TagInfoDestination(it))
-                  },
-                  navigateToProfile = {
-                    navigator.navigate(ProfileDestination(it))
-                  }
-                )
-                if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
-                  AppHorizontalDivider()
-                if (status.hasUnloadedStatus)
-                  LoadMorePlaceHolder(viewModel.loadMoreState) {
-                    viewModel.loadUnloadedStatus(status.id)
-                  }
+                    },
+                    navigateToMedia = { attachments, targetIndex ->
+                      navigator.navigate(
+                        StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                      )
+                    },
+                    navigateToTagInfo = {
+                      navigator.navigate(TagInfoDestination(it))
+                    },
+                    navigateToProfile = {
+                      navigator.navigate(ProfileDestination(it))
+                    }
+                  )
+                  if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                    AppHorizontalDivider()
+                  if (status.hasUnloadedStatus)
+                    LoadMorePlaceHolder(viewModel.loadMoreState) {
+                      viewModel.loadUnloadedStatus(status.id)
+                    }
+                }
               }
             }
             NewStatusToast(

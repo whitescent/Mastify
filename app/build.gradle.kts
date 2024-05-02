@@ -222,6 +222,7 @@ dependencies {
 
   implementation(libs.logcat)
   implementation(libs.jsoup)
+  implementation(libs.scrollbar)
   implementation(libs.zoomable)
   implementation(libs.lottie)
   implementation(libs.splash)

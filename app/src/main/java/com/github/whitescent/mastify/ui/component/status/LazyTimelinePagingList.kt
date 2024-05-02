@@ -61,7 +61,6 @@ import com.github.whitescent.mastify.paging.rememberPaginatorUiState
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
-import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
@@ -71,6 +70,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import my.nanihadesuka.compose.LazyColumnScrollbar
 
 @Composable
 fun LazyTimelinePagingList(
@@ -133,53 +133,57 @@ fun LazyTimelinePagingList(
             lazyListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
           }
         }
-        LazyColumn(
-          state = lazyListState,
-          modifier = modifier.drawVerticalScrollbar(lazyListState),
-          contentPadding = contentPadding
+        LazyColumnScrollbar(
+          state = lazyListState
         ) {
-          itemsIndexed(
-            items = pagingList,
-            contentType = { _, _ -> StatusUiData },
-            key = { _, item -> item.id }
-          ) { index, status ->
-            val replyChainType by remember(status, pagingList.size, index) {
-              mutableStateOf(pagingList.getReplyChainType(index))
-            }
-            val hasUnloadedParent by remember(status, pagingList.size, index) {
-              mutableStateOf(pagingList.hasUnloadedParent(index))
-            }
-            StatusListItem(
-              status = status,
-              action = {
-                action(it, status.actionable)
-              },
-              replyChainType = replyChainType,
-              hasUnloadedParent = hasUnloadedParent,
-              navigateToDetail = {
-                navigateToDetail(status.actionable)
-              },
-              navigateToProfile = navigateToProfile,
-              navigateToMedia = navigateToMedia,
-              navigateToTagInfo = navigateToTagInfo
-            )
-            if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
-              AppHorizontalDivider()
-          }
-          item {
-            when (paginatorUiState.loadState) {
-              is PageLoadState.Append -> StatusAppendingIndicator()
-              is Error -> {
-                // TODO Localization
-                Toast.makeText(
-                  context,
-                  paginatorUiState.loadState.throwable.localizedMessage,
-                  Toast.LENGTH_SHORT
-                ).show()
+          LazyColumn(
+            state = lazyListState,
+            modifier = modifier,
+            contentPadding = contentPadding
+          ) {
+            itemsIndexed(
+              items = pagingList,
+              contentType = { _, _ -> StatusUiData },
+              key = { _, item -> item.id }
+            ) { index, status ->
+              val replyChainType by remember(status, pagingList.size, index) {
+                mutableStateOf(pagingList.getReplyChainType(index))
               }
-              else -> Unit
+              val hasUnloadedParent by remember(status, pagingList.size, index) {
+                mutableStateOf(pagingList.hasUnloadedParent(index))
+              }
+              StatusListItem(
+                status = status,
+                action = {
+                  action(it, status.actionable)
+                },
+                replyChainType = replyChainType,
+                hasUnloadedParent = hasUnloadedParent,
+                navigateToDetail = {
+                  navigateToDetail(status.actionable)
+                },
+                navigateToProfile = navigateToProfile,
+                navigateToMedia = navigateToMedia,
+                navigateToTagInfo = navigateToTagInfo
+              )
+              if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                AppHorizontalDivider()
             }
-            if (paginatorUiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
+            item {
+              when (paginatorUiState.loadState) {
+                is PageLoadState.Append -> StatusAppendingIndicator()
+                is Error -> {
+                  // TODO Localization
+                  Toast.makeText(
+                    context,
+                    paginatorUiState.loadState.throwable.localizedMessage,
+                    Toast.LENGTH_SHORT
+                  ).show()
+                }
+                else -> Unit
+              }
+              if (paginatorUiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
+            }
           }
         }
         PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))

@@ -51,7 +51,6 @@ import com.github.whitescent.mastify.paging.PageLoadState.NotLoading
 import com.github.whitescent.mastify.paging.PageLoadState.Refresh
 import com.github.whitescent.mastify.ui.component.StatusAppendingIndicator
 import com.github.whitescent.mastify.ui.component.StatusEndIndicator
-import com.github.whitescent.mastify.ui.component.drawVerticalScrollbar
 import com.github.whitescent.mastify.ui.component.status.paging.EmptyStatusListPlaceholder
 import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderType
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
@@ -60,6 +59,8 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import my.nanihadesuka.compose.LazyColumnScrollbar
+import my.nanihadesuka.compose.ScrollbarSettings
 
 @Composable
 fun <T : Any> LazyPagingList(
@@ -131,36 +132,38 @@ fun <T : Any> LazyPagingList(
             lazyListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
           }
         }
-        LazyColumn(
+        LazyColumnScrollbar(
           state = lazyListState,
-          modifier = modifier
-            .let {
-              if (showScrollbar) it.drawVerticalScrollbar(lazyListState) else it
-            },
-          contentPadding = contentPadding,
-          reverseLayout = reverseLayout,
-          verticalArrangement = verticalArrangement,
-          horizontalAlignment = horizontalAlignment,
-          flingBehavior = flingBehavior,
-          userScrollEnabled = userScrollEnabled,
+          settings = ScrollbarSettings.Default.copy(alwaysShowScrollbar = showScrollbar)
         ) {
-          content()
-          if (footer != null) footer()
-          else {
-            item {
-              when (paginatorUiState.loadState) {
-                is PageLoadState.Append -> StatusAppendingIndicator()
-                is Error -> {
-                  // TODO Localization
-                  Toast.makeText(
-                    context,
-                    paginatorUiState.loadState.throwable.localizedMessage,
-                    Toast.LENGTH_SHORT
-                  ).show()
+          LazyColumn(
+            state = lazyListState,
+            modifier = modifier,
+            contentPadding = contentPadding,
+            reverseLayout = reverseLayout,
+            verticalArrangement = verticalArrangement,
+            horizontalAlignment = horizontalAlignment,
+            flingBehavior = flingBehavior,
+            userScrollEnabled = userScrollEnabled,
+          ) {
+            content()
+            if (footer != null) footer()
+            else {
+              item {
+                when (paginatorUiState.loadState) {
+                  is PageLoadState.Append -> StatusAppendingIndicator()
+                  is Error -> {
+                    // TODO Localization
+                    Toast.makeText(
+                      context,
+                      paginatorUiState.loadState.throwable.localizedMessage,
+                      Toast.LENGTH_SHORT
+                    ).show()
+                  }
+                  else -> Unit
                 }
-                else -> Unit
+                if (paginatorUiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
               }
-              if (paginatorUiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
             }
           }
         }

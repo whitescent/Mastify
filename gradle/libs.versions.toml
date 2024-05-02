@@ -57,6 +57,7 @@ jsoup = "1.16.1"
 zoomimage = "1.0.0-beta10"
 uiautomator = "2.3.0"
 benchmark-macro-junit4 = "1.2.4"
+scrollbar = "2.0.7"
 profileinstaller = "1.3.1"
 monitor = "1.6.1"
 junitKtx = "1.1.5"
@@ -111,6 +112,7 @@ ktsoup-core = { module = "org.drewcarlson:ktsoup-core", version.ref = "ktsoup" }
 ktsoup-fx = { module = "org.drewcarlson:ktsoup-fs", version.ref = "ktsoup" }
 
 constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
+scrollbar = { module = "com.github.nanihadesuka:LazyColumnScrollbar", version.ref = "scrollbar" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
