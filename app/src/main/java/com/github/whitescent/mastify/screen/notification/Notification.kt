@@ -52,8 +52,6 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LazyPagingList
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.UnreadEvent
-import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.notification.event.BasicEvent
 import com.github.whitescent.mastify.screen.notification.event.FollowEvent
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
@@ -66,13 +64,14 @@ import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
 import com.github.whitescent.mastify.viewModel.NotificationViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.generated.destinations.ProfileDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusDetailDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
-@Destination(style = BottomBarScreenTransitions::class)
-@AppNavGraph
+@Destination<AppNavGraph>(style = BottomBarScreenTransitions::class)
 @Composable
 fun Notification(
   activeAccount: AccountEntity,
@@ -101,7 +100,7 @@ fun Notification(
         dismissAllNotification = viewModel::dismissAllNotification
       ) {
         scope.launch {
-          drawerState.open()
+          // drawerState.open()
         }
       }
       NotificationList(

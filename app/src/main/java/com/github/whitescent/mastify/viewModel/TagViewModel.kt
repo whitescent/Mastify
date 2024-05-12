@@ -30,7 +30,6 @@ import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.TagPagingFactory
-import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.TagInfoNavArgs
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
@@ -38,6 +37,7 @@ import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.utils.PostState.Failure
 import com.github.whitescent.mastify.utils.PostState.Success
 import com.github.whitescent.mastify.utils.StatusAction
+import com.ramcosta.composedestinations.generated.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted

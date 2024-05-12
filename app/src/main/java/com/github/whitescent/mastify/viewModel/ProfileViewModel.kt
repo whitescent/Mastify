@@ -36,7 +36,6 @@ import com.github.whitescent.mastify.network.model.account.Relationship
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.ProfilePagingFactory
-import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.profile.ProfileNavArgs
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updatePollOfStatusList
@@ -46,6 +45,7 @@ import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithMedia
 import com.github.whitescent.mastify.viewModel.ProfileKind.StatusWithReply
+import com.ramcosta.composedestinations.generated.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers

@@ -52,11 +52,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.StatusBackResult
-import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
-import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
-import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.screen.explore.ExploreSearchBar
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
@@ -66,6 +61,12 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.viewModel.SearchType
 import com.github.whitescent.mastify.viewModel.SearchViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.ProfileDestination
+import com.ramcosta.composedestinations.generated.destinations.SearchResultDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusDetailDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusMediaScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagInfoDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
@@ -76,8 +77,8 @@ data class SearchResultNavArgs(
   val searchType: SearchNavigateType?
 )
 
-@Destination(
-  navArgsDelegate = SearchResultNavArgs::class
+@Destination<RootGraph>(
+  navArgs = SearchResultNavArgs::class
 )
 @Composable
 fun SearchResult(

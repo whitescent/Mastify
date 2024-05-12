@@ -72,11 +72,6 @@ import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.model.StatusBackResult
 import com.github.whitescent.mastify.database.model.AccountEntity
 import com.github.whitescent.mastify.extensions.observeWithLifecycle
-import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.destinations.SearchResultDestination
-import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
-import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Account
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType.Tags
 import com.github.whitescent.mastify.screen.search.SearchResultNavArgs
@@ -96,15 +91,17 @@ import com.github.whitescent.mastify.viewModel.ExplorerKind.News
 import com.github.whitescent.mastify.viewModel.ExplorerKind.PublicTimeline
 import com.github.whitescent.mastify.viewModel.ExplorerKind.Trending
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.generated.destinations.ProfileDestination
+import com.ramcosta.composedestinations.generated.destinations.SearchResultDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusDetailDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusMediaScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagInfoDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
+import com.ramcosta.composedestinations.result.onResult
 import kotlinx.coroutines.launch
 
-@AppNavGraph
-@Destination(
-  style = BottomBarScreenTransitions::class
-)
+@Destination<AppNavGraph>(style = BottomBarScreenTransitions::class)
 @Composable
 fun Explore(
   viewModel: ExploreViewModel = hiltViewModel(),
@@ -161,7 +158,7 @@ fun Explore(
                 shape = AppTheme.shape.betweenSmallAndMediumAvatar,
                 onClick = {
                   scope.launch {
-                    drawerState.open()
+                    // drawerState.open()
                   }
                 }
               )
@@ -310,11 +307,8 @@ fun Explore(
     }
   }
 
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
-    }
+  resultRecipient.onResult { result ->
+    viewModel.updateStatusFromDetailScreen(result)
   }
 }
 

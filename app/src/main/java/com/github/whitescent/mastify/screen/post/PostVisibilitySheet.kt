@@ -57,7 +57,7 @@ fun PostVisibilitySheet(
   ModalBottomSheet(
     onDismissRequest = onDismissRequest,
     sheetState = sheetState,
-    windowInsets = WindowInsets.statusBars,
+    // contentWindowInsets = { WindowInsets.statusBars },
     containerColor = AppTheme.colors.bottomSheetBackground,
   ) {
     Column(Modifier.padding(vertical = 10.dp).navigationBarsPadding()) {

@@ -48,21 +48,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.ui.component.foundation.Text
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.ui.theme.shape.SmoothCornerShape
 import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.BottomBarItem
 import com.github.whitescent.mastify.utils.clickableWithoutIndication
-import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.DestinationSpec
 
 @Composable
 fun BottomBar(
   appState: AppState,
-  navController: NavController,
-  destination: Destination,
+  navigator: DestinationsNavigator,
+  destination: DestinationSpec,
   scrollToTop: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
@@ -128,8 +127,8 @@ fun BottomBar(
               when (selected) {
                 true -> scrollToTop()
                 false -> {
-                  navController.navigate(screen.direction) {
-                    popUpTo(destination.route) {
+                  navigator.navigate(screen.direction) {
+                    popUpTo(destination) {
                       saveState = true
                       inclusive = true
                     }

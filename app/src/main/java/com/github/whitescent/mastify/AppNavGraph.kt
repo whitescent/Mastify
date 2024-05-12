@@ -18,16 +18,10 @@
 package com.github.whitescent.mastify
 
 import com.ramcosta.composedestinations.annotation.NavGraph
-import com.ramcosta.composedestinations.annotation.RootNavGraph
+import com.ramcosta.composedestinations.annotation.RootGraph
 
-@RootNavGraph(start = true)
-@NavGraph
-annotation class LoginNavGraph(
-  val start: Boolean = false
-)
+@NavGraph<RootGraph>(start = true)
+annotation class LoginNavGraph
 
-@RootNavGraph
-@NavGraph
-annotation class AppNavGraph(
-  val start: Boolean = false
-)
+@NavGraph<RootGraph>
+annotation class AppNavGraph

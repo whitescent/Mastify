@@ -100,8 +100,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
-@AppNavGraph
-@Destination
+@Destination<AppNavGraph>
 @Composable
 fun Post(
   viewModel: PostViewModel = hiltViewModel(),

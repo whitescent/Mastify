@@ -17,20 +17,19 @@
 
 package com.github.whitescent.mastify.utils
 
-import com.github.whitescent.mastify.screen.destinations.Destination
-import com.github.whitescent.mastify.screen.destinations.DirectMessageDestination
-import com.github.whitescent.mastify.screen.destinations.ExploreDestination
-import com.github.whitescent.mastify.screen.destinations.HomeDestination
-import com.github.whitescent.mastify.screen.destinations.LoginDestination
-import com.github.whitescent.mastify.screen.destinations.NotificationDestination
-import com.github.whitescent.mastify.screen.destinations.OauthDestination
+import com.ramcosta.composedestinations.generated.NavGraphs
+import com.ramcosta.composedestinations.generated.destinations.DirectMessageDestination
+import com.ramcosta.composedestinations.generated.destinations.ExploreDestination
+import com.ramcosta.composedestinations.generated.destinations.HomeDestination
+import com.ramcosta.composedestinations.generated.destinations.NotificationDestination
+import com.ramcosta.composedestinations.spec.DestinationSpec
 
-val Destination.isBottomBarScreen: Boolean
+val DestinationSpec.isBottomBarScreen: Boolean
   get() = this == HomeDestination || this == ExploreDestination || this == NotificationDestination ||
     this == DirectMessageDestination
 
-fun Destination.shouldShowScaffoldElements(): Boolean {
-  if (this is LoginDestination || this is OauthDestination) return false
+fun DestinationSpec.shouldShowScaffoldElements(): Boolean {
+  if (NavGraphs.login.destinations.contains(this)) return false
   else {
     BottomBarItem.entries.forEach {
       if (this == it.direction) return true

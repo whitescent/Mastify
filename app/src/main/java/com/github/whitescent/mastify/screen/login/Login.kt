@@ -83,8 +83,7 @@ import com.github.whitescent.mastify.viewModel.LoginStatus.Failure
 import com.github.whitescent.mastify.viewModel.LoginViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
-@LoginNavGraph(start = true)
-@Destination(route = "login_route")
+@Destination<LoginNavGraph>(route = "login_route", start = true)
 @Composable
 fun Login(
   viewModel: LoginViewModel = hiltViewModel()

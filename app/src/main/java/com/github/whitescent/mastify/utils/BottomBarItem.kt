@@ -19,10 +19,10 @@ package com.github.whitescent.mastify.utils
 
 import androidx.annotation.DrawableRes
 import com.github.whitescent.R
-import com.github.whitescent.mastify.screen.destinations.DirectMessageDestination
-import com.github.whitescent.mastify.screen.destinations.ExploreDestination
-import com.github.whitescent.mastify.screen.destinations.HomeDestination
-import com.github.whitescent.mastify.screen.destinations.NotificationDestination
+import com.ramcosta.composedestinations.generated.destinations.DirectMessageDestination
+import com.ramcosta.composedestinations.generated.destinations.ExploreDestination
+import com.ramcosta.composedestinations.generated.destinations.HomeDestination
+import com.ramcosta.composedestinations.generated.destinations.NotificationDestination
 import com.ramcosta.composedestinations.spec.DirectionDestinationSpec
 
 enum class BottomBarItem(

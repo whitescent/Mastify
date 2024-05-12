@@ -27,10 +27,10 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.SideEffect
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.ui.component.AppScaffold
 import com.github.whitescent.mastify.ui.theme.MastifyTheme
 import com.github.whitescent.mastify.viewModel.AppViewModel
+import com.ramcosta.composedestinations.generated.NavGraphs
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

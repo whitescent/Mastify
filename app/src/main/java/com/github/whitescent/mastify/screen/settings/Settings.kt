@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
+import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.data.preference.UserPreference
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -51,6 +52,7 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.AppFlavorUtil
 import com.github.whitescent.mastify.viewModel.SettingsViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 enum class PrivacySettings(
@@ -60,7 +62,7 @@ enum class PrivacySettings(
   FirebaseCrashlytics("Firebase Crashlytics", R.string.firebase_crashlytics_settings_description),
 }
 
-@Destination
+@Destination<RootGraph>
 @Composable
 fun Settings(
   viewModel: SettingsViewModel = hiltViewModel(),

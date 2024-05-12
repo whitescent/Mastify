@@ -39,7 +39,6 @@ import com.github.whitescent.mastify.mapper.toEntity
 import com.github.whitescent.mastify.mapper.toUiData
 import com.github.whitescent.mastify.network.model.emoji.Emoji
 import com.github.whitescent.mastify.network.model.status.Status
-import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.other.StatusDetailNavArgs
 import com.github.whitescent.mastify.ui.component.dialog.ReplyThread
 import com.github.whitescent.mastify.ui.component.generateHtmlContentWithEmoji
@@ -51,6 +50,7 @@ import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.utils.StatusAction.VotePoll
 import com.github.whitescent.mastify.utils.onFailure
 import com.github.whitescent.mastify.utils.onSuccess
+import com.ramcosta.composedestinations.generated.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

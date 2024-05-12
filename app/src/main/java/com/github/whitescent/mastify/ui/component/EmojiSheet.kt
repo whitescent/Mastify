@@ -68,7 +68,7 @@ fun EmojiSheet(
   val lazyGridState = rememberLazyGridState()
   ModalBottomSheet(
     sheetState = sheetState,
-    windowInsets = WindowInsets.statusBars,
+    // contentWindowInsets = { WindowInsets.statusBars },
     onDismissRequest = onDismissRequest,
     containerColor = AppTheme.colors.bottomSheetBackground
   ) {

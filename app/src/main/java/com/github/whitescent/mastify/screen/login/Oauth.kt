@@ -36,19 +36,17 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.whitescent.R
 import com.github.whitescent.mastify.LoginNavGraph
-import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.viewModel.OauthViewModel
-import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.parameters.DeepLink
+import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.navigation.popUpTo
 
 @Composable
-@LoginNavGraph
-@Destination(
+@Destination<LoginNavGraph>(
   deepLinks = [
     DeepLink(uriPattern = "mastify://oauth?code={code}")
   ]

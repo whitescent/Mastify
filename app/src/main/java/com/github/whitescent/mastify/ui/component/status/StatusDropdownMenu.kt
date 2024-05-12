@@ -97,7 +97,7 @@ fun StatusActionDrawer(
   }
   ModalBottomSheet(
     sheetState = sheetState,
-    windowInsets = WindowInsets.statusBars,
+    // contentWindowInsets = { WindowInsets.statusBars },
     containerColor = AppTheme.colors.bottomSheetBackground,
     modifier = modifier,
     onDismissRequest = onDismissRequest

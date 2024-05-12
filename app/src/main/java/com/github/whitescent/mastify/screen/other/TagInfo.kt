@@ -43,7 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -66,10 +66,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.whitescent.R
 import com.github.whitescent.mastify.data.model.StatusBackResult
-import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
-import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AnimatedVisibility
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.HeightSpacer
@@ -81,18 +77,22 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.rememberTimelineNestedScrollConnectionState
 import com.github.whitescent.mastify.viewModel.TagViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.RootGraph
+import com.ramcosta.composedestinations.generated.destinations.ProfileDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusDetailDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusMediaScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagInfoDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultRecipient
+import com.ramcosta.composedestinations.result.onResult
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 data class TagInfoNavArgs(val name: String)
 
-@Destination(
-  navArgsDelegate = TagInfoNavArgs::class
-)
+@Destination<RootGraph>(navArgs = TagInfoNavArgs::class)
 @Composable
 fun TagInfo(
   navigator: DestinationsNavigator,
@@ -102,7 +102,7 @@ fun TagInfo(
   val uiState = viewModel.uiState
   val timeline by viewModel.tagTimeline.collectAsStateWithLifecycle()
 
-  var headerHeight by remember { mutableStateOf(0f) }
+  var headerHeight by remember { mutableFloatStateOf(0f) }
 
   val scrollState = rememberTimelineNestedScrollConnectionState(
     scrollThreshold = headerHeight
@@ -304,10 +304,7 @@ fun TagInfo(
     }
   }
 
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
-    }
+  resultRecipient.onResult { result ->
+    viewModel.updateStatusFromDetailScreen(result)
   }
 }

@@ -59,10 +59,6 @@ import com.github.whitescent.mastify.data.model.ui.StatusUiData.ReplyChainType.S
 import com.github.whitescent.mastify.network.model.account.Account
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
-import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
-import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.ClickableIcon
@@ -81,10 +77,15 @@ import com.github.whitescent.mastify.ui.theme.AppTheme
 import com.github.whitescent.mastify.utils.StatusAction
 import com.github.whitescent.mastify.viewModel.StatusDetailViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.generated.destinations.ProfileDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusDetailDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusMediaScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagInfoDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import com.ramcosta.composedestinations.result.ResultRecipient
+import com.ramcosta.composedestinations.result.onResult
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
@@ -94,10 +95,7 @@ data class StatusDetailNavArgs(
   val originStatusId: String?
 )
 
-@AppNavGraph
-@Destination(
-  navArgsDelegate = StatusDetailNavArgs::class
-)
+@Destination<AppNavGraph>(navArgs = StatusDetailNavArgs::class)
 @Composable
 fun StatusDetail(
   resultNavigator: ResultBackNavigator<StatusBackResult>,
@@ -119,7 +117,10 @@ fun StatusDetail(
 
   val currentStatus by viewModel.currentStatus.collectAsStateWithLifecycle()
 
-  Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
+  Box(
+    Modifier
+      .fillMaxSize()
+      .background(AppTheme.colors.background)) {
     Column {
       Spacer(Modifier.statusBarsPadding())
       StatusDetailTopBar(
@@ -237,11 +238,8 @@ fun StatusDetail(
     )
   }
 
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
-    }
+  resultRecipient.onResult { result ->
+    viewModel.updateStatusFromDetailScreen(result)
   }
 
   BackHandler {

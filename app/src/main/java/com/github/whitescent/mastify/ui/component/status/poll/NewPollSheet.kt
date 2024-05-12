@@ -248,7 +248,7 @@ fun NewPollSheet(
       sheetState = deadlineSheetState,
       containerColor = AppTheme.colors.bottomSheetBackground,
       onDismissRequest = { openDeadlineSheet = false },
-      windowInsets = WindowInsets.statusBars
+      // contentWindowInsets = { WindowInsets.statusBars },
     ) {
       Column(Modifier.padding(vertical = 14.dp).navigationBarsPadding()) {
         CenterRow(Modifier.padding(horizontal = 14.dp)) {

@@ -35,11 +35,11 @@ import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.Paginator
 import com.github.whitescent.mastify.paging.factory.SearchPagingFactory
 import com.github.whitescent.mastify.screen.explore.SearchNavigateType
-import com.github.whitescent.mastify.screen.navArgs
 import com.github.whitescent.mastify.screen.search.SearchResultNavArgs
 import com.github.whitescent.mastify.usecase.TimelineUseCase
 import com.github.whitescent.mastify.usecase.TimelineUseCase.Companion.updateStatusListActions
 import com.github.whitescent.mastify.utils.StatusAction
+import com.ramcosta.composedestinations.generated.navArgs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

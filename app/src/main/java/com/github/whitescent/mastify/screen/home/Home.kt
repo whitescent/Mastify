@@ -17,6 +17,7 @@
 
 package com.github.whitescent.mastify.screen.home
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
@@ -88,11 +89,6 @@ import com.github.whitescent.mastify.extensions.getReplyChainType
 import com.github.whitescent.mastify.extensions.hasUnloadedParent
 import com.github.whitescent.mastify.extensions.observeWithLifecycle
 import com.github.whitescent.mastify.paging.LazyPagingList
-import com.github.whitescent.mastify.screen.destinations.PostDestination
-import com.github.whitescent.mastify.screen.destinations.ProfileDestination
-import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
-import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
-import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
@@ -108,6 +104,11 @@ import com.github.whitescent.mastify.utils.AppState
 import com.github.whitescent.mastify.utils.PostState
 import com.github.whitescent.mastify.viewModel.HomeViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.generated.destinations.PostDestination
+import com.ramcosta.composedestinations.generated.destinations.ProfileDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusDetailDestination
+import com.ramcosta.composedestinations.generated.destinations.StatusMediaScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.TagInfoDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -115,19 +116,18 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import my.nanihadesuka.compose.LazyColumnScrollbar
 
-@AppNavGraph(start = true)
-@Destination(style = BottomBarScreenTransitions::class)
+@Destination<AppNavGraph>(style = BottomBarScreenTransitions::class, start = true)
 @Composable
-fun Home(
-  sharedTransitionScope: SharedTransitionScope,
+fun SharedTransitionScope.Home(
   animatedVisibilityScope: AnimatedVisibilityScope,
   appState: AppState,
   drawerState: DrawerState,
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
 ) {
+  Log.d("mastify", "home composition")
   CompositionLocalProvider(
-    LocalSharedTransitionScope provides sharedTransitionScope,
+    LocalSharedTransitionScope provides this,
     LocalAnimatedVisibilityScope provides animatedVisibilityScope
   ) {
     val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()

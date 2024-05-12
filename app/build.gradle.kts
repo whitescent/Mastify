@@ -156,7 +156,6 @@ dependencies {
   implementation(libs.androidx.lifecycle.viewmodel.compose)
   implementation(libs.androidx.activity.compose)
   implementation(libs.androidx.startup.runtime)
-  implementation(libs.androidx.navigation.compose)
   implementation(libs.androidx.paging.compose)
   implementation(libs.androidx.paging.runtime)
   implementation(libs.androidx.monitor)
@@ -213,7 +212,7 @@ dependencies {
   implementation(libs.coil.video)
   implementation(libs.compose.media)
   implementation(libs.compose.shadow.plus)
-  implementation(libs.compose.destinations.animations.core)
+  implementation(libs.compose.destinations.core)
   ksp(libs.compose.destinations.ksp)
 
   implementation(libs.mmkv)
