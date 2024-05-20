@@ -18,22 +18,22 @@
 <resources>
   <!-- login screen -->
   <string name="app_name">Mastify</string>
-  <string name="app_description">A feature-rich Mastodon Android client</string>
-  <string name="instance_address_tip">e.g. mastodon.social</string>
+  <string name="app_description">Oprogramowanie klienckie Mastodon dla systemu Android o szerokiej funkcjonalności</string>
+  <string name="instance_address_tip">np. mastodon.social</string>
   <string name="log_in_title">Login</string>
-  <string name="log_in_to">Log in to %s</string>
+  <string name="log_in_to">Zaloguj się do %s</string>
   <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
   <string name="instance_verification_error">Error occurred during instance verification</string>
   <!-- oauth screen -->
-  <string name="title_connecting">Connecting…</string>
-  <string name="error_invalid_domain">Invalid domain entered</string>
+  <string name="title_connecting">Łączenie…</string>
+  <string name="error_invalid_domain">Błędna nazwa domeny</string>
   <!-- home screen -->
-  <string name="home_title">Home</string>
+  <string name="home_title">Strona główna</string>
   <string name="user_boosted">%s boosted</string>
   <string name="title_add_account">Add Account</string>
   <string name="title_profile">Profile</string>
   <string name="title_bookmarks">Bookmarks</string>
-  <string name="title_favorites">Favorites</string>
+  <string name="title_favorites">Ulubione</string>
   <string name="title_lists">Lists</string>
   <string name="title_draft">Drafts</string>
   <string name="title_settings">Settings</string>
@@ -43,7 +43,7 @@
   <string name="reply_a_post">replied a post</string>
   <string name="started_a_discussion_thread">Started a discussion thread</string>
   <string name="show_more_replies">Show more replies</string>
-  <string name="text_copied">Text copied to clipboard</string>
+  <string name="text_copied">Tekst skopiowany do schowka</string>
   <string name="link_copied">Post link copied to clipboard</string>
   <string name="bookmarked_snackBar">Saved to your bookmarks</string>
   <string name="load_post_error">An error occurred while loading post</string>
