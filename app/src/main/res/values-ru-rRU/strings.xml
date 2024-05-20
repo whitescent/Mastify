@@ -25,10 +25,10 @@
   <string name="failed_to_retrieve_instance">Failed to retrieve instance information</string>
   <string name="instance_verification_error">Error occurred during instance verification</string>
   <!-- oauth screen -->
-  <string name="title_connecting">Connecting…</string>
+  <string name="title_connecting">Подключение…</string>
   <string name="error_invalid_domain">Invalid domain entered</string>
   <!-- home screen -->
-  <string name="home_title">Home</string>
+  <string name="home_title">Главная</string>
   <string name="user_boosted">%s boosted</string>
   <string name="title_add_account">Add Account</string>
   <string name="title_profile">Profile</string>
