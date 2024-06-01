@@ -18,6 +18,7 @@
 package com.github.whitescent.mastify.ui.component.status
 
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +52,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.github.whitescent.R
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.AsyncBlurImage
@@ -93,75 +96,83 @@ fun StatusMedia(
       else -> null
     }
   }
-  Box(
-    modifier = modifier
-      .let {
-        if (mediaCount == 1) {
-          it.heightIn(max = DefaultMaxHeight)
-        } else {
-          it
-        }
-      }
-      .let {
-        boxAspectRatio?.let { ratio ->
-          it.aspectRatio(ratio)
-        } ?: it
-      }
-      .border(0.4.dp, Color.Gray, AppTheme.shape.normal)
-      .clip(AppTheme.shape.normal)
-  ) {
-    when (mediaCount) {
-      1 -> {
-        StatusMediaItem(
-          avatar = avatar,
-          media = attachments[0],
-          onClick = {
-            onClick?.invoke(0)
+  val sharedTransitionScope = LocalSharedTransitionScope.current
+  val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+  with(sharedTransitionScope) {
+    Box(
+      modifier = modifier
+        .let {
+          if (mediaCount == 1) {
+            it.heightIn(max = DefaultMaxHeight)
+          } else {
+            it
           }
-        )
-      }
-      3 -> {
-        Row {
+        }
+        .let {
+          boxAspectRatio?.let { ratio ->
+            it.aspectRatio(ratio)
+          } ?: it
+        }
+        .border(0.4.dp, Color.Gray, AppTheme.shape.normal)
+        .clip(AppTheme.shape.normal)
+    ) {
+      when (mediaCount) {
+        1 -> {
           StatusMediaItem(
+            animatedVisibilityScope = animatedVisibilityScope,
             avatar = avatar,
             media = attachments[0],
-            modifier = Modifier
-              .weight(1f)
-              .fillMaxSize(),
             onClick = {
               onClick?.invoke(0)
             }
           )
-          WidthSpacer(value = ImageGridSpacing)
-          Column(modifier = Modifier.weight(1f)) {
-            attachments.drop(1).forEachIndexed { index, media ->
-              StatusMediaItem(
-                avatar = avatar,
-                media = media,
-                modifier = Modifier
-                  .weight(1f)
-                  .fillMaxSize(),
-                onClick = {
-                  onClick?.invoke(index + 1)
+        }
+        3 -> {
+          Row {
+            StatusMediaItem(
+              animatedVisibilityScope = animatedVisibilityScope,
+              avatar = avatar,
+              media = attachments[0],
+              modifier = Modifier
+                .weight(1f)
+                .fillMaxSize(),
+              onClick = {
+                onClick?.invoke(0)
+              }
+            )
+            WidthSpacer(value = ImageGridSpacing)
+            Column(modifier = Modifier.weight(1f)) {
+              attachments.drop(1).forEachIndexed { index, media ->
+                StatusMediaItem(
+                  animatedVisibilityScope = animatedVisibilityScope,
+                  avatar = avatar,
+                  media = media,
+                  modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize(),
+                  onClick = {
+                    onClick?.invoke(index + 1)
+                  }
+                )
+                if (media != attachments.last()) {
+                  HeightSpacer(value = ImageGridSpacing)
                 }
-              )
-              if (media != attachments.last()) {
-                HeightSpacer(value = ImageGridSpacing)
               }
             }
           }
         }
-      }
-      else -> {
-        StatusMediaGrid(spacing = 2.dp) {
-          attachments.forEachIndexed { index, media ->
-            StatusMediaItem(
-              avatar = avatar,
-              media = media,
-              onClick = {
-                onClick?.invoke(index)
-              }
-            )
+        else -> {
+          StatusMediaGrid(spacing = 2.dp) {
+            attachments.forEachIndexed { index, media ->
+              StatusMediaItem(
+                animatedVisibilityScope = animatedVisibilityScope,
+                avatar = avatar,
+                media = media,
+                onClick = {
+                  onClick?.invoke(index)
+                }
+              )
+            }
           }
         }
       }
@@ -170,135 +181,132 @@ fun StatusMedia(
 }
 
 @Composable
-private fun StatusMediaItem(
+private fun SharedTransitionScope.StatusMediaItem(
+  animatedVisibilityScope: AnimatedVisibilityScope,
   avatar: String,
   media: Attachment,
   modifier: Modifier = Modifier,
   onClick: (() -> Unit)? = null
 ) {
-  val sharedTransitionScope = LocalSharedTransitionScope.current
-  val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
-
-  sharedTransitionScope.apply {
-    when (StatusMediaType.fromString(media.type)) {
-      StatusMediaType.IMAGE -> {
-        AsyncBlurImage(
-          url = media.url,
-          blurHash = media.blurhash ?: "",
-          contentDescription = null,
-          contentScale = ContentScale.Crop,
-          modifier = modifier
-            .fillMaxSize()
-            .clickable {
-              onClick?.invoke()
-            }
-            .sharedElement(
-              state = rememberSharedContentState(key = "image ${media.url}"),
-              animatedVisibilityScope = animatedVisibilityScope,
-              placeHolderSize = SharedTransitionScope.PlaceHolderSize.contentSize
+  when (StatusMediaType.fromString(media.type)) {
+    StatusMediaType.IMAGE -> {
+      AsyncImage(
+        model = ImageRequest.Builder(LocalContext.current)
+          .data(media.url)
+          .crossfade(true)
+          .placeholderMemoryCacheKey("image ${media.url}")
+          .memoryCacheKey("image ${media.url}")
+          .build(),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+          .fillMaxSize()
+          .clickable { onClick?.invoke() }
+          .sharedElement(
+            state = rememberSharedContentState(key = "image ${media.url}"),
+            animatedVisibilityScope = animatedVisibilityScope
+          )
+      )
+    }
+    StatusMediaType.VIDEO -> {
+      rememberExoPlayerInstance()
+      // show thumbnail
+      Box(
+        modifier = modifier
+          .fillMaxSize()
+          .let {
+            if (media.type == "audio") {
+              it.background(AppTheme.colors.accent)
+            } else it
+          }
+          .clickable {
+            onClick?.invoke()
+          }
+      ) {
+        when (media.type) {
+          "video" -> {
+            AsyncBlurImage(
+              url = media.previewUrl,
+              blurHash = media.blurhash ?: "",
+              contentDescription = null,
+              contentScale = ContentScale.Crop,
+              modifier = Modifier.fillMaxSize()
             )
-        )
-      }
-      StatusMediaType.VIDEO -> {
-        rememberExoPlayerInstance()
-        // show thumbnail
-        Box(
-          modifier = modifier
-            .fillMaxSize()
-            .let {
-              if (media.type == "audio") {
-                it.background(AppTheme.colors.accent)
-              } else it
-            }
-            .clickable {
-              onClick?.invoke()
-            }
-        ) {
-          when (media.type) {
-            "video" -> {
-              AsyncBlurImage(
-                url = media.previewUrl,
-                blurHash = media.blurhash ?: "",
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-              )
-            }
-            "audio" -> {
-              CenterRow(
-                modifier = Modifier
-                  .padding(12.dp)
-                  .fillMaxWidth()
-                  .align(Alignment.TopStart)
-              ) {
-                Box(Modifier.weight(1f)) {
-                  CircleShapeAsyncImage(
-                    model = avatar,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(48.dp),
-                    shape = CircleShape
-                  )
-                }
-                Icon(
-                  painter = painterResource(id = R.drawable.headphones_bold),
-                  contentDescription = null,
-                  modifier = Modifier.size(24.dp),
-                  tint = Color.White
+          }
+          "audio" -> {
+            CenterRow(
+              modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+                .align(Alignment.TopStart)
+            ) {
+              Box(Modifier.weight(1f)) {
+                CircleShapeAsyncImage(
+                  model = avatar,
+                  contentScale = ContentScale.Crop,
+                  modifier = Modifier.size(48.dp),
+                  shape = CircleShape
                 )
               }
+              Icon(
+                painter = painterResource(id = R.drawable.headphones_bold),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = Color.White
+              )
             }
           }
-          Image(
-            painter = painterResource(id = R.drawable.play_circle_fill),
-            contentDescription = null,
-            modifier = Modifier
-              .size(48.dp)
-              .align(Alignment.Center)
-          )
         }
+        Image(
+          painter = painterResource(id = R.drawable.play_circle_fill),
+          contentDescription = null,
+          modifier = Modifier
+            .size(48.dp)
+            .align(Alignment.Center)
+        )
       }
-      StatusMediaType.UNKNOWN -> {
-        val context = LocalContext.current
-        Card(
-          modifier = modifier.fillMaxWidth(),
-          onClick = {
-            launchCustomChromeTab(
-              context = context,
-              uri = Uri.parse(media.remoteUrl)
+    }
+    StatusMediaType.UNKNOWN -> {
+      val context = LocalContext.current
+      Card(
+        modifier = modifier.fillMaxWidth(),
+        onClick = {
+          launchCustomChromeTab(
+            context = context,
+            uri = Uri.parse(media.remoteUrl)
+          )
+        },
+        colors = CardDefaults.elevatedCardColors(
+          containerColor = AppTheme.colors.cardBackground,
+          contentColor = AppTheme.colors.primaryContent,
+          disabledContainerColor = AppTheme.colors.cardBackground,
+          disabledContentColor = AppTheme.colors.primaryContent,
+        ),
+        enabled = media.remoteUrl != null
+      ) {
+        CenterRow(Modifier.padding(12.dp)) {
+          Box(Modifier.clip(CircleShape).background(AppTheme.colors.accent, CircleShape)) {
+            Icon(
+              painter = painterResource(id = R.drawable.files),
+              contentDescription = null,
+              tint = Color.White,
+              modifier = Modifier.padding(12.dp).size(28.dp)
             )
-          },
-          colors = CardDefaults.elevatedCardColors(
-            containerColor = AppTheme.colors.cardBackground,
-            contentColor = AppTheme.colors.primaryContent,
-            disabledContainerColor = AppTheme.colors.cardBackground,
-            disabledContentColor = AppTheme.colors.primaryContent,
-          ),
-          enabled = media.remoteUrl != null
-        ) {
-          CenterRow(Modifier.padding(12.dp)) {
-            Box(Modifier.clip(CircleShape).background(AppTheme.colors.accent, CircleShape)) {
-              Icon(
-                painter = painterResource(id = R.drawable.files),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.padding(12.dp).size(28.dp)
-              )
-            }
-            WidthSpacer(value = 8.dp)
-            Column {
+          }
+          WidthSpacer(value = 8.dp)
+          Column {
+            Text(
+              text = stringResource(id = R.string.unsupported_media_files),
+              fontSize = 18.sp,
+              fontWeight = FontWeight.SemiBold
+            )
+            if (media.remoteUrl != null) {
+              HeightSpacer(value = 2.dp)
               Text(
-                text = stringResource(id = R.string.unsupported_media_files),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
+                text = media.remoteUrl,
+                color = AppTheme.colors.primaryContent.copy(.65f),
+                fontWeight = FontWeight.Medium
               )
-              if (media.remoteUrl != null) {
-                HeightSpacer(value = 2.dp)
-                Text(
-                  text = media.remoteUrl,
-                  color = AppTheme.colors.primaryContent.copy(.65f),
-                  fontWeight = FontWeight.Medium
-                )
-              }
             }
           }
         }

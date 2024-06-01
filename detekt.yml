@@ -1,19 +1,17 @@
 build:
   maxIssues: 0
   excludeCorrectable: false
-  excludes: &ExcludePatterns
-    - './third-party/**'
+#  excludes: &ExcludePatterns
+#    - './third-party/**'
 
 # https://detekt.dev/docs/rules/comments
 comments:
-  excludes: *ExcludePatterns
   OutdatedDocumentation:
     active: true
     allowParamOnConstructorProperties: true
 
 # https://detekt.dev/docs/rules/complexity
 complexity:
-  excludes: *ExcludePatterns
   ComplexCondition:
     threshold: 8
   LongMethod:
@@ -34,7 +32,6 @@ complexity:
 
 # https://detekt.dev/docs/rules/coroutines
 coroutines:
-  excludes: *ExcludePatterns
   GlobalCoroutineUsage:
     active: true
   SuspendFunSwallowedCancellation:
@@ -44,7 +41,6 @@ coroutines:
 
 # https://detekt.dev/docs/rules/exceptions
 exceptions:
-  excludes: *ExcludePatterns
   NotImplementedDeclaration:
     active: true
   ObjectExtendsThrowable:
@@ -54,7 +50,6 @@ exceptions:
 
 # https://detekt.dev/docs/rules/naming
 naming:
-  excludes: *ExcludePatterns
   FunctionNaming:
     ignoreAnnotated: [ 'Composable' ]
   BooleanPropertyNaming:
@@ -71,13 +66,11 @@ naming:
 
 # https://detekt.dev/docs/rules/performance
 performance:
-  excludes: *ExcludePatterns
   CouldBeSequence:
     active: true
 
 # https://detekt.dev/docs/rules/potential-bugs
 potential-bugs:
-  excludes: *ExcludePatterns
   CastToNullableType:
     active: true
   MissingPackageDeclaration:
@@ -96,7 +89,6 @@ potential-bugs:
 
 # https://detekt.dev/docs/rules/style
 style:
-  excludes: *ExcludePatterns
   MaxLineLength:
     # The best max line length is 100, but we can relax it a bit
     # to avoid some unexpected situations.
@@ -186,7 +178,6 @@ style:
 
 # https://detekt.dev/docs/rules/formatting
 formatting:
-  excludes: *ExcludePatterns
   Indentation:
     active: true
     indentSize: 2

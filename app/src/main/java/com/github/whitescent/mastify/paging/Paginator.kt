@@ -26,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.Exception
 
 /**
  * Simplified implementation of androidx Paging3
@@ -44,6 +43,15 @@ class Paginator(
 
   var pagingLoadState by mutableStateOf<PageLoadState>(NotLoading(false))
     private set
+
+
+  init {
+    if (initRefresh) {
+      coroutineScope.launch(Dispatchers.Main.immediate) {
+        refresh()
+      }
+    }
+  }
 
   override suspend fun append() {
     if (pagingLoadState == PageLoadState.Append) return
@@ -82,11 +90,4 @@ class Paginator(
     }
   }
 
-  init {
-    if (initRefresh) {
-      coroutineScope.launch(Dispatchers.Main.immediate) {
-        refresh()
-      }
-    }
-  }
 }

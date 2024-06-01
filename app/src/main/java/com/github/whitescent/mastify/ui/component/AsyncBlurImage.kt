@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.graphics.drawable.toDrawable
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
+import coil.compose.AsyncImagePainter.Companion.DefaultTransform
 import coil.request.ImageRequest
 import com.github.whitescent.mastify.utils.BlurHashDecoder
 
@@ -41,7 +42,7 @@ fun AsyncBlurImage(
   blurHash: String,
   contentDescription: String?,
   modifier: Modifier = Modifier,
-  transform: (AsyncImagePainter.State) -> AsyncImagePainter.State = AsyncImagePainter.DefaultTransform,
+  transform: (AsyncImagePainter.State) -> AsyncImagePainter.State = DefaultTransform,
   onState: ((AsyncImagePainter.State) -> Unit)? = null,
   alignment: Alignment = Alignment.Center,
   contentScale: ContentScale = ContentScale.Fit,
@@ -60,9 +61,7 @@ fun AsyncBlurImage(
   AsyncImage(
     ImageRequest.Builder(LocalContext.current)
       .data(url)
-      .placeholder(
-        blurPlaceholder
-      )
+      .placeholder(blurPlaceholder)
       .build(),
     contentDescription,
     modifier,

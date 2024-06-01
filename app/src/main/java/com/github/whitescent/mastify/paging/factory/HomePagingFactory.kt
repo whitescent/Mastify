@@ -21,6 +21,7 @@ import com.github.whitescent.mastify.data.repository.HomeRepository
 import com.github.whitescent.mastify.database.AppDatabase
 import com.github.whitescent.mastify.paging.LoadResult
 import com.github.whitescent.mastify.paging.PagingFactory
+import com.github.whitescent.mastify.utils.debug
 import com.github.whitescent.mastify.viewModel.HomeNewStatusToastModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,8 @@ class HomePagingFactory(
       val response = repository.fetchTimeline(limit = pageSize, maxId = timeline.lastOrNull()?.id)
         .getOrThrow()
       repository.appendTimelineFromApi(response)
-      LoadResult.Page(endReached = response.isEmpty())
+      debug { "Timeline append size ${response.size} endReached ${response.isEmpty()}" }
+      LoadResult.Page(endReached = response.isEmpty() || response.size < pageSize)
     }.await()
   }
 

@@ -19,7 +19,9 @@ package com.github.whitescent.mastify.screen.explore
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -45,6 +47,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,6 +87,8 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.CircleShapeAsyncImage
 import com.github.whitescent.mastify.ui.component.HeightSpacer
+import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
+import com.github.whitescent.mastify.ui.component.LocalSharedTransitionScope
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
 import com.github.whitescent.mastify.ui.component.status.rememberStatusSnackBarState
@@ -106,214 +111,230 @@ import kotlinx.coroutines.launch
   style = BottomBarScreenTransitions::class
 )
 @Composable
-fun Explore(
+fun SharedTransitionScope.Explore(
+  animatedVisibilityScope: AnimatedVisibilityScope,
   viewModel: ExploreViewModel = hiltViewModel(),
   appState: AppState,
   activeAccount: AccountEntity,
   drawerState: DrawerState,
   navigator: DestinationsNavigator,
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
-) {
-  val uiState = viewModel.uiState
-  val context = LocalContext.current
-  val density = LocalDensity.current
-  val keyboard = LocalSoftwareKeyboardController.current
-
-  val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
-
-  // when user focus on searchBar, we need hide content
-  var hideTitle by remember { mutableStateOf(false) }
-
-  val pagerState = rememberPagerState { ExplorerKind.entries.size }
-  val focusRequester = remember { FocusRequester() }
-
-  val scope = rememberCoroutineScope()
-  val snackbarState = rememberStatusSnackBarState()
-
-  val trendingStatusListState = rememberLazyListState()
-  val publicTimelineListState = rememberLazyListState()
-  val newsListState = rememberLazyListState()
-
-  val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
-
-  Box(
-    modifier = Modifier
-      .fillMaxSize()
-      .background(AppTheme.colors.background)
-      .systemBarsPadding()
+) = with(animatedVisibilityScope)  {
+  CompositionLocalProvider(
+    LocalSharedTransitionScope provides this@Explore,
+    LocalAnimatedVisibilityScope provides animatedVisibilityScope
   ) {
-    Column {
-      Column(Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
-        AnimatedVisibility(
-          visible = !hideTitle,
-          enter = slideInVertically {
-            with(density) { -40.dp.roundToPx() }
-          } + expandVertically(expandFrom = Alignment.Top) + fadeIn(initialAlpha = 0.3f),
-          exit = slideOutVertically() + shrinkVertically() + fadeOut()
+    val uiState = viewModel.uiState
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    val currentExploreKind by viewModel.currentExploreKind.collectAsStateWithLifecycle()
+
+    // when user focus on searchBar, we need hide content
+    var hideTitle by remember { mutableStateOf(false) }
+
+    val pagerState = rememberPagerState { ExplorerKind.entries.size }
+    val focusRequester = remember { FocusRequester() }
+
+    val scope = rememberCoroutineScope()
+    val snackbarState = rememberStatusSnackBarState()
+
+    val trendingStatusListState = rememberLazyListState()
+    val publicTimelineListState = rememberLazyListState()
+    val newsListState = rememberLazyListState()
+
+    val searchingResult by viewModel.searchPreviewResult.collectAsStateWithLifecycle()
+
+    Box(
+      modifier = Modifier
+        .fillMaxSize()
+        .background(AppTheme.colors.background)
+        .systemBarsPadding()
+    ) {
+      Column {
+        Column(
+          modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)
         ) {
-          Column {
-            CenterRow {
-              CircleShapeAsyncImage(
-                model = activeAccount.profilePictureUrl,
-                modifier = Modifier
-                  .size(36.dp)
-                  .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
-                shape = AppTheme.shape.betweenSmallAndMediumAvatar,
-                onClick = {
-                  scope.launch {
-                    drawerState.open()
-                  }
-                }
-              )
-              WidthSpacer(value = 6.dp)
-              Text(
-                text = stringResource(id = R.string.explore_instance, activeAccount.domain),
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = AppTheme.colors.primaryContent
-              )
-            }
-            HeightSpacer(value = 6.dp)
-          }
-        }
-        ExploreSearchBar(
-          text = uiState.text,
-          focusRequester = focusRequester,
-          onValueChange = viewModel::onValueChange,
-          clearText = viewModel::clearInputText,
-          onFocusChange = {
-            hideTitle = it
-            appState.hideBottomBar = it
-          },
-          navigateToSearchResult = {
-            navigator.navigate(SearchResultDestination(SearchResultNavArgs(uiState.text, null)))
-          }
-        )
-        HeightSpacer(value = 8.dp)
-      }
-      Crossfade(
-        targetState = hideTitle,
-        animationSpec = tween()
-      ) {
-        when (it) {
-          true -> {
-            ExploreSearchPreviewContent(
-              query = uiState.text,
-              searchingResult = searchingResult,
-              navigateToAccount = { account ->
-                keyboard?.hide()
-                navigator.navigate(ProfileDestination(account))
-              },
-              navigateToResult = {
-                keyboard?.hide()
-                navigator.navigate(
-                  SearchResultDestination(SearchResultNavArgs(uiState.text, null))
-                )
-              },
-              navigateToAccountInResult = {
-                keyboard?.hide()
-                navigator.navigate(
-                  SearchResultDestination(SearchResultNavArgs(uiState.text, Account))
-                )
-              },
-              navigateToTag = {
-                keyboard?.hide()
-                navigator.navigate(
-                  SearchResultDestination(SearchResultNavArgs(uiState.text, Tags))
-                )
-              },
-              navigateToTagInfo = { hashtag ->
-                navigator.navigate(TagInfoDestination(hashtag))
-              }
-            )
-          }
-          else -> {
+          AnimatedVisibility(
+            visible = !hideTitle,
+            enter = slideInVertically {
+              with(density) { -40.dp.roundToPx() }
+            } + expandVertically(expandFrom = Alignment.Top) + fadeIn(initialAlpha = 0.3f),
+            exit = slideOutVertically() + shrinkVertically() + fadeOut()
+          ) {
             Column {
-              ExploreTabBar(
-                currentExploreKind = currentExploreKind,
-                modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth()
-              ) { kind ->
-                viewModel.syncExploreKind(kind)
-                scope.launch {
-                  pagerState.scrollToPage(kind)
-                }
+              CenterRow {
+                CircleShapeAsyncImage(
+                  model = activeAccount.profilePictureUrl,
+                  modifier = Modifier
+                    .size(36.dp)
+                    .shadow(12.dp, AppTheme.shape.betweenSmallAndMediumAvatar),
+                  shape = AppTheme.shape.betweenSmallAndMediumAvatar,
+                  onClick = {
+                    scope.launch {
+                      drawerState.open()
+                    }
+                  }
+                )
+                WidthSpacer(value = 6.dp)
+                Text(
+                  text = stringResource(id = R.string.explore_instance, activeAccount.domain),
+                  fontSize = 24.sp,
+                  fontWeight = FontWeight.Bold,
+                  color = AppTheme.colors.primaryContent
+                )
               }
-              AppHorizontalDivider(thickness = 1.dp)
-              ExplorePager(
-                state = pagerState,
-                trendingStatusListState = trendingStatusListState,
-                publicTimelineListState = publicTimelineListState,
-                newsListState = newsListState,
-                viewModel = viewModel,
-                navigateToDetail = { targetStatus ->
+              HeightSpacer(value = 6.dp)
+            }
+          }
+          ExploreSearchBar(
+            text = uiState.text,
+            focusRequester = focusRequester,
+            onValueChange = viewModel::onValueChange,
+            clearText = viewModel::clearInputText,
+            onFocusChange = {
+              hideTitle = it
+              appState.hideBottomBar = it
+            },
+            navigateToSearchResult = {
+              navigator.navigate(SearchResultDestination(SearchResultNavArgs(uiState.text, null)))
+            }
+          )
+          HeightSpacer(value = 8.dp)
+        }
+        Crossfade(
+          targetState = hideTitle,
+          animationSpec = tween()
+        ) {
+          when (it) {
+            true -> {
+              ExploreSearchPreviewContent(
+                query = uiState.text,
+                searchingResult = searchingResult,
+                navigateToAccount = { account ->
+                  keyboard?.hide()
+                  navigator.navigate(ProfileDestination(account))
+                },
+                navigateToResult = {
+                  keyboard?.hide()
                   navigator.navigate(
-                    StatusDetailDestination(
-                      status = targetStatus,
-                      originStatusId = null
-                    )
+                    SearchResultDestination(SearchResultNavArgs(uiState.text, null))
                   )
                 },
-                navigateToMedia = { attachments, targetIndex ->
+                navigateToAccountInResult = {
+                  keyboard?.hide()
                   navigator.navigate(
-                    StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                    SearchResultDestination(SearchResultNavArgs(uiState.text, Account))
+                  )
+                },
+                navigateToTag = {
+                  keyboard?.hide()
+                  navigator.navigate(
+                    SearchResultDestination(SearchResultNavArgs(uiState.text, Tags))
                   )
                 },
                 navigateToTagInfo = { hashtag ->
                   navigator.navigate(TagInfoDestination(hashtag))
-                },
-                navigateToProfile = { targetAccount ->
-                  navigator.navigate(
-                    ProfileDestination(targetAccount)
-                  )
                 }
               )
-              LaunchedEffect(pagerState) {
-                snapshotFlow { pagerState.currentPage }.collect { page ->
-                  viewModel.syncExploreKind(page)
+            }
+            else -> {
+              Column {
+                ExploreTabBar(
+                  currentExploreKind = currentExploreKind,
+                  modifier = Modifier.padding(horizontal = 12.dp)
+                    .fillMaxWidth()
+                    .renderInSharedTransitionScopeOverlay(
+                      zIndexInOverlay = 1f
+                    )
+                    .animateEnterExit(
+                      enter = fadeIn(),
+                      exit = fadeOut()
+                    )
+                ) { kind ->
+                  viewModel.syncExploreKind(kind)
+                  scope.launch {
+                    pagerState.scrollToPage(kind)
+                  }
+                }
+                AppHorizontalDivider(thickness = 1.dp)
+                ExplorePager(
+                  state = pagerState,
+                  trendingStatusListState = trendingStatusListState,
+                  publicTimelineListState = publicTimelineListState,
+                  newsListState = newsListState,
+                  viewModel = viewModel,
+                  navigateToDetail = { targetStatus ->
+                    navigator.navigate(
+                      StatusDetailDestination(
+                        status = targetStatus,
+                        originStatusId = null
+                      )
+                    )
+                  },
+                  navigateToMedia = { attachments, targetIndex ->
+                    navigator.navigate(
+                      StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                    )
+                  },
+                  navigateToTagInfo = { hashtag ->
+                    navigator.navigate(TagInfoDestination(hashtag))
+                  },
+                  navigateToProfile = { targetAccount ->
+                    navigator.navigate(
+                      ProfileDestination(targetAccount)
+                    )
+                  }
+                )
+                LaunchedEffect(pagerState) {
+                  snapshotFlow { pagerState.currentPage }.collect { page ->
+                    viewModel.syncExploreKind(page)
+                  }
                 }
               }
             }
           }
         }
       }
+      StatusSnackBar(
+        snackbarState = snackbarState,
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .padding(
+            start = 12.dp,
+            end = 12.dp,
+            bottom = WindowInsets.navigationBars.getBottom(density).dp
+          )
+      )
     }
-    StatusSnackBar(
-      snackbarState = snackbarState,
-      modifier = Modifier
-        .align(Alignment.BottomCenter)
-        .padding(
-          start = 12.dp,
-          end = 12.dp,
-          bottom = WindowInsets.navigationBars.getBottom(density).dp
-        )
-    )
-  }
 
-  appState.scrollToTopFlow.observeWithLifecycle {
-    when (currentExploreKind) {
-      Trending -> trendingStatusListState.scrollToItem(0)
-      PublicTimeline -> publicTimelineListState.scrollToItem(0)
-      News -> newsListState.scrollToItem(0)
-    }
-  }
-
-  LaunchedEffect(Unit) {
-    launch {
-      viewModel.snackBarFlow.collect {
-        snackbarState.show(it)
+    appState.scrollToTopFlow.observeWithLifecycle {
+      when (currentExploreKind) {
+        Trending -> trendingStatusListState.scrollToItem(0)
+        PublicTimeline -> publicTimelineListState.scrollToItem(0)
+        News -> newsListState.scrollToItem(0)
       }
     }
-    launch {
-      viewModel.searchErrorFlow.collect {
-        Toast.makeText(context, "搜索失败", Toast.LENGTH_SHORT).show()
+
+    LaunchedEffect(Unit) {
+      launch {
+        viewModel.snackBarFlow.collect {
+          snackbarState.show(it)
+        }
+      }
+      launch {
+        viewModel.searchErrorFlow.collect {
+          Toast.makeText(context, "搜索失败", Toast.LENGTH_SHORT).show()
+        }
       }
     }
-  }
 
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+    resultRecipient.onNavResult { result ->
+      when (result) {
+        is NavResult.Canceled -> Unit
+        is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+      }
     }
   }
 }

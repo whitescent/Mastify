@@ -24,10 +24,14 @@ import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.OauthDestination
+import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 
 val Destination.isBottomBarScreen: Boolean
   get() = this == HomeDestination || this == ExploreDestination || this == NotificationDestination ||
     this == DirectMessageDestination
+
+val Destination.isSharedElementTransition: Boolean
+  get() = this == StatusMediaScreenDestination
 
 fun Destination.shouldShowScaffoldElements(): Boolean {
   if (this is LoginDestination || this is OauthDestination) return false

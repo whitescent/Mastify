@@ -19,9 +19,12 @@ package com.github.whitescent.mastify.ui.component
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -42,16 +45,12 @@ import com.github.whitescent.mastify.screen.NavGraphs
 import com.github.whitescent.mastify.screen.appCurrentDestinationAsState
 import com.github.whitescent.mastify.screen.destinations.Destination
 import com.github.whitescent.mastify.screen.destinations.ExploreDestination
-import com.github.whitescent.mastify.screen.destinations.HomeDestination
 import com.github.whitescent.mastify.screen.destinations.LoginDestination
 import com.github.whitescent.mastify.screen.destinations.NotificationDestination
 import com.github.whitescent.mastify.screen.destinations.ProfileDestination
 import com.github.whitescent.mastify.screen.destinations.SettingsDestination
-import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.screen.explore.Explore
-import com.github.whitescent.mastify.screen.home.Home
 import com.github.whitescent.mastify.screen.notification.Notification
-import com.github.whitescent.mastify.screen.other.StatusMediaScreen
 import com.github.whitescent.mastify.screen.startAppDestination
 import com.github.whitescent.mastify.ui.transitions.defaultSlideIntoContainer
 import com.github.whitescent.mastify.ui.transitions.defaultSlideOutContainer
@@ -64,10 +63,9 @@ import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultA
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.navigation.dependency
-import com.ramcosta.composedestinations.navigation.navigate
-import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.scope.resultRecipient
 import com.ramcosta.composedestinations.spec.Route
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
@@ -97,6 +95,7 @@ fun AppScaffold(
     )
   )
   val navController = engine.rememberNavController()
+  val navigator = navController.rememberDestinationsNavigator()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)
   val appState = rememberAppState()
@@ -118,21 +117,21 @@ fun AppScaffold(
               viewModel.changeActiveAccount(it)
             },
             navigateToLogin = {
-              navController.navigate(LoginDestination) {
+              navigator.navigate(LoginDestination) {
                 scope.launch {
                   drawerState.close()
                 }
               }
             },
             navigateToProfile = {
-              navController.navigate(ProfileDestination(it)) {
+              navigator.navigate(ProfileDestination(it)) {
                 scope.launch {
                   drawerState.close()
                 }
               }
             },
             navigateToSettings = {
-              navController.navigate(SettingsDestination) {
+              navigator.navigate(SettingsDestination) {
                 scope.launch {
                   drawerState.close()
                 }
@@ -150,10 +149,17 @@ fun AppScaffold(
     ) {
       Scaffold(
         bottomBar = {
-          if (destination.shouldShowScaffoldElements() && !appState.hideBottomBar) {
+          AnimatedVisibility (
+            visible = destination.shouldShowScaffoldElements() && !appState.hideBottomBar,
+            enter = slideInVertically { it },
+            exit = slideOutVertically { it },
+            modifier = Modifier.renderInSharedTransitionScopeOverlay(
+              zIndexInOverlay = 1f,
+            )
+          ) {
             BottomBar(
               appState = appState,
-              navController = navController,
+              navigator = navigator,
               destination = destination,
               scrollToTop = {
                 scope.launch { appState.scrollToTop() }
@@ -170,26 +176,21 @@ fun AppScaffold(
           navGraph = NavGraphs.root,
           startRoute = startRoute,
           dependenciesContainerBuilder = {
-            dependency(NavGraphs.app) { drawerState }
-            dependency(NavGraphs.app) { appState }
+            dependency(NavGraphs.app) {
+              dependency(drawerState)
+              dependency(appState)
+            }
+            dependency(this@SharedTransitionLayout)
           }
         ) {
-          composable(HomeDestination) {
-            Home(
-              appState = appState,
-              drawerState = drawerState,
-              navigator = destinationsNavigator,
-              sharedTransitionScope = this@SharedTransitionLayout,
-              animatedVisibilityScope = this,
-            )
-          }
           composable(ExploreDestination) {
             Explore(
               appState = appState,
               activeAccount = activeAccount!!,
               drawerState = drawerState,
               navigator = destinationsNavigator,
-              resultRecipient = resultRecipient()
+              resultRecipient = resultRecipient(),
+              animatedVisibilityScope = this
             )
           }
           composable(NotificationDestination) {
@@ -198,14 +199,6 @@ fun AppScaffold(
               drawerState = drawerState,
               appState = appState,
               navigator = destinationsNavigator
-            )
-          }
-          composable(StatusMediaScreenDestination) {
-            StatusMediaScreen(
-              sharedTransitionScope = this@SharedTransitionLayout,
-              animatedVisibilityScope = this,
-              attachments = navArgs.attachments,
-              targetMediaIndex = navArgs.targetMediaIndex,
             )
           }
         }

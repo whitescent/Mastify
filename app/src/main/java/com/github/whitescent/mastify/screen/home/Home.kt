@@ -38,7 +38,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -113,21 +112,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import my.nanihadesuka.compose.LazyColumnScrollbar
 
 @AppNavGraph(start = true)
-@Destination(style = BottomBarScreenTransitions::class)
+@Destination(
+  style = BottomBarScreenTransitions::class
+)
 @Composable
-fun Home(
-  sharedTransitionScope: SharedTransitionScope,
+fun SharedTransitionScope.Home(
   animatedVisibilityScope: AnimatedVisibilityScope,
   appState: AppState,
   drawerState: DrawerState,
   navigator: DestinationsNavigator,
   viewModel: HomeViewModel = hiltViewModel()
-) {
+) = with(animatedVisibilityScope) {
   CompositionLocalProvider(
-    LocalSharedTransitionScope provides sharedTransitionScope,
+    LocalSharedTransitionScope provides this@Home,
     LocalAnimatedVisibilityScope provides animatedVisibilityScope
   ) {
     val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
@@ -150,12 +149,10 @@ fun Home(
         }
       }
     )
-
-    Box(
+    Column(
       modifier = Modifier
         .fillMaxSize()
         .background(AppTheme.colors.background)
-        .statusBarsPadding()
         .padding(bottom = WindowInsets.navigationBars.getBottom(density).dp)
         .pullRefresh(pullRefreshState)
         .semantics {
@@ -182,7 +179,9 @@ fun Home(
             lazyState.firstVisibleItemIndex == 0
           }
         }
-        Column {
+        Column(
+          modifier = Modifier.background(AppTheme.colors.background)
+        ) {
           HomeTopBar(
             avatar = activeAccount.profilePictureUrl,
             openDrawer = {
@@ -193,103 +192,112 @@ fun Home(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
           )
           HorizontalDivider(thickness = 0.5.dp, color = AppTheme.colors.divider)
-          Box {
-            LazyColumnScrollbar(
-              state = lazyState
-            ) {
-              LazyPagingList(
-                paginator = viewModel.paginator,
-                lazyListState = lazyState,
-                pagePlaceholderType = PagePlaceholderType.Home,
-                list = timeline,
-                modifier = Modifier
-                  .fillMaxSize()
-                  .semantics {
-                    testTag = "home timeline"
-                  },
-                contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
-              ) {
-                itemsIndexed(
-                  items = timeline,
-                  contentType = { _, _ -> StatusUiData },
-                  key = { _, item -> item.id }
-                ) { index, status ->
-                  val replyChainType by remember(status, timeline.size, index) {
-                    mutableStateOf(timeline.getReplyChainType(index))
-                  }
-                  val hasUnloadedParent by remember(status, timeline.size, index) {
-                    mutableStateOf(timeline.hasUnloadedParent(index))
-                  }
-                  StatusListItem(
-                    status = status,
-                    replyChainType = replyChainType,
-                    hasUnloadedParent = hasUnloadedParent,
-                    action = {
-                      viewModel.onStatusAction(it, status.actionable)
-                    },
-                    navigateToDetail = {
-                      navigator.navigate(
-                        StatusDetailDestination(
-                          status = status.actionable,
-                          originStatusId = status.id
-                        )
-                      )
-                    },
-                    navigateToMedia = { attachments, targetIndex ->
-                      navigator.navigate(
-                        StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                      )
-                    },
-                    navigateToTagInfo = {
-                      navigator.navigate(TagInfoDestination(it))
-                    },
-                    navigateToProfile = {
-                      navigator.navigate(ProfileDestination(it))
-                    }
-                  )
-                  if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
-                    AppHorizontalDivider()
-                  if (status.hasUnloadedStatus)
-                    LoadMorePlaceHolder(viewModel.loadMoreState) {
-                      viewModel.loadUnloadedStatus(status.id)
-                    }
-                }
-              }
-            }
-            NewStatusToast(
-              visible = uiState.toastButton.showNewToastButton,
-              count = uiState.toastButton.newStatusCount,
-              limitExceeded = uiState.toastButton.showManyPost,
-              modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 12.dp)
-            ) {
-              scope.launch {
-                lazyState.scrollToItem(0)
-                viewModel.dismissButton()
-              }
-            }
-            Column(Modifier.align(Alignment.BottomEnd)) {
-              Image(
-                painter = painterResource(id = R.drawable.edit),
-                contentDescription = null,
-                modifier = Modifier
-                  .padding(24.dp)
-                  .align(Alignment.End)
-                  .shadow(6.dp, CircleShape)
-                  .background(AppTheme.colors.primaryGradient, CircleShape)
-                  .clickable { navigator.navigate(PostDestination) }
-                  .padding(16.dp)
-              )
-              StatusSnackBar(
-                snackbarState = snackbarState,
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-              )
-            }
-          }
         }
 
-        PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+        Box {
+          LazyPagingList(
+            paginator = viewModel.paginator,
+            lazyListState = lazyState,
+            pagePlaceholderType = PagePlaceholderType.Home,
+            list = timeline,
+            modifier = Modifier
+              .fillMaxSize()
+              .semantics {
+                testTag = "home timeline"
+              },
+            contentPadding = PaddingValues(
+              bottom = WindowInsets.navigationBars.getBottom(density).dp
+            )
+          ) {
+            itemsIndexed(
+              items = timeline,
+              contentType = { _, _ -> StatusUiData },
+              key = { _, item -> item.id }
+            ) { index, status ->
+              val replyChainType by remember(status, timeline.size, index) {
+                mutableStateOf(timeline.getReplyChainType(index))
+              }
+              val hasUnloadedParent by remember(status, timeline.size, index) {
+                mutableStateOf(timeline.hasUnloadedParent(index))
+              }
+              StatusListItem(
+                status = status,
+                replyChainType = replyChainType,
+                hasUnloadedParent = hasUnloadedParent,
+                action = {
+                  viewModel.onStatusAction(it, status.actionable)
+                },
+                navigateToDetail = {
+                  navigator.navigate(
+                    StatusDetailDestination(
+                      status = status.actionable,
+                      originStatusId = status.id
+                    )
+                  )
+                },
+                navigateToMedia = { attachments, targetIndex ->
+                  scope.launch {
+                    lazyState.animateScrollToItem(index)
+                  }.invokeOnCompletion {
+                    navigator.navigate(
+                      StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                    )
+                  }
+                },
+                navigateToTagInfo = {
+                  navigator.navigate(TagInfoDestination(it))
+                },
+                navigateToProfile = {
+                  navigator.navigate(ProfileDestination(it))
+                }
+              )
+              if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+                AppHorizontalDivider()
+              if (status.hasUnloadedStatus)
+                LoadMorePlaceHolder(viewModel.loadMoreState) {
+                  viewModel.loadUnloadedStatus(status.id)
+                }
+            }
+          }
+          NewStatusToast(
+            visible = uiState.toastButton.showNewToastButton,
+            count = uiState.toastButton.newStatusCount,
+            limitExceeded = uiState.toastButton.showManyPost,
+            modifier = Modifier
+              .align(Alignment.TopCenter)
+              .renderInSharedTransitionScopeOverlay(zIndexInOverlay = 2f)
+              .animateEnterExit(
+                enter = fadeIn(),
+                exit = fadeOut()
+              )
+              .padding(top = 12.dp)
+          ) {
+            scope.launch {
+              lazyState.scrollToItem(0)
+              viewModel.dismissButton()
+            }
+          }
+          Column(Modifier.align(Alignment.BottomEnd)) {
+            Image(
+              painter = painterResource(id = R.drawable.edit),
+              contentDescription = null,
+              modifier = Modifier
+                .padding(24.dp)
+                .align(Alignment.End)
+                .shadow(6.dp, CircleShape)
+                .background(AppTheme.colors.primaryGradient, CircleShape)
+                .clickable { navigator.navigate(PostDestination) }
+                .padding(16.dp)
+            )
+            StatusSnackBar(
+              snackbarState = snackbarState,
+              modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+            )
+          }
+
+          PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
+        }
+
 
         appState.scrollToTopFlow.observeWithLifecycle {
           lazyState.scrollToItem(0)

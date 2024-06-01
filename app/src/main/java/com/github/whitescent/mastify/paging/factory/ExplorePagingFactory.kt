@@ -21,6 +21,7 @@ import com.github.whitescent.mastify.data.repository.ExploreRepository
 import com.github.whitescent.mastify.network.model.status.Status
 import com.github.whitescent.mastify.paging.LoadResult
 import com.github.whitescent.mastify.paging.PagingFactory
+import com.github.whitescent.mastify.utils.debug
 import com.github.whitescent.mastify.viewModel.ExplorerKind
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -43,7 +44,8 @@ class ExplorePagingFactory<T>(
       ExplorerKind.News -> repository.getNews(pageSize, list.value.size)
     }
     list.emit(list.value + response as List<T>)
-    return LoadResult.Page(endReached = response.isEmpty())
+    debug { "response size ${response.size}" }
+    return LoadResult.Page(endReached = response.isEmpty() || response.size < pageSize)
   }
 
   override suspend fun refresh(pageSize: Int): LoadResult {

@@ -55,12 +55,16 @@ fun PostVisibilitySheet(
   onDismissRequest: () -> Unit,
 ) {
   ModalBottomSheet(
-    onDismissRequest = onDismissRequest,
+    onDismissRequest = {},
     sheetState = sheetState,
     windowInsets = WindowInsets.statusBars,
     containerColor = AppTheme.colors.bottomSheetBackground,
   ) {
-    Column(Modifier.padding(vertical = 10.dp).navigationBarsPadding()) {
+    Column(
+      Modifier
+        .padding(vertical = 10.dp)
+        .navigationBarsPadding()
+    ) {
       Text(
         text = stringResource(id = R.string.change_post_visibility),
         fontSize = 20.sp,

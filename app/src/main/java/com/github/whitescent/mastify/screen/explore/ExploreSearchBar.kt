@@ -59,6 +59,7 @@ import com.github.whitescent.mastify.utils.clickableWithoutIndication
 fun ExploreSearchBar(
   text: String,
   focusRequester: FocusRequester,
+  modifier: Modifier = Modifier,
   onValueChange: (String) -> Unit,
   clearText: () -> Unit,
   onFocusChange: (Boolean) -> Unit,
@@ -71,7 +72,7 @@ fun ExploreSearchBar(
     textStyle = TextStyle(fontSize = 16.sp, color = AppTheme.colors.primaryContent),
     singleLine = true,
     cursorBrush = SolidColor(AppTheme.colors.primaryContent),
-    modifier = Modifier
+    modifier = modifier
       .focusable()
       .focusRequester(focusRequester)
       .onFocusChanged {

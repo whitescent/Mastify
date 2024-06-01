@@ -18,6 +18,8 @@
 package com.github.whitescent.mastify.screen.other
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +35,7 @@ import androidx.compose.foundation.text.input.insert
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -67,6 +70,8 @@ import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.ClickableIcon
 import com.github.whitescent.mastify.ui.component.EmojiSheet
+import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
+import com.github.whitescent.mastify.ui.component.LocalSharedTransitionScope
 import com.github.whitescent.mastify.ui.component.ReplyTextField
 import com.github.whitescent.mastify.ui.component.WidthSpacer
 import com.github.whitescent.mastify.ui.component.dialog.InReplyToMultiSelectorDialog
@@ -99,170 +104,176 @@ data class StatusDetailNavArgs(
   navArgsDelegate = StatusDetailNavArgs::class
 )
 @Composable
-fun StatusDetail(
+fun SharedTransitionScope.StatusDetail(
+  animatedVisibilityScope: AnimatedVisibilityScope,
   resultNavigator: ResultBackNavigator<StatusBackResult>,
   navigator: DestinationsNavigator,
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>,
   viewModel: StatusDetailViewModel = hiltViewModel()
 ) {
-  var openEmojiSheet by remember { mutableStateOf(false) }
+  CompositionLocalProvider(
+    LocalSharedTransitionScope provides this,
+    LocalAnimatedVisibilityScope provides animatedVisibilityScope
+  ) {
+    var openEmojiSheet by remember { mutableStateOf(false) }
 
-  val lazyState = rememberLazyListState()
-  val sheetState = rememberModalBottomSheetState()
-  val scope = rememberCoroutineScope()
-  val snackbarState = rememberStatusSnackBarState()
-  val dialogState = rememberDialogState()
+    val lazyState = rememberLazyListState()
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    val snackbarState = rememberStatusSnackBarState()
+    val dialogState = rememberDialogState()
 
-  val keyboard = LocalSoftwareKeyboardController.current
+    val keyboard = LocalSoftwareKeyboardController.current
 
-  val state = viewModel.uiState
+    val state = viewModel.uiState
 
-  val currentStatus by viewModel.currentStatus.collectAsStateWithLifecycle()
+    val currentStatus by viewModel.currentStatus.collectAsStateWithLifecycle()
 
-  Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
-    Column {
-      Spacer(Modifier.statusBarsPadding())
-      StatusDetailTopBar(
-        navigationIcon = {
-          ClickableIcon(
-            painter = painterResource(id = R.drawable.arrow_left),
-            onClick = {
-              resultNavigator.navigateBack(
-                result = StatusBackResult(
-                  id = currentStatus.actionableId,
-                  favorited = currentStatus.favorited,
-                  favouritesCount = currentStatus.favouritesCount,
-                  reblogged = currentStatus.reblogged,
-                  reblogsCount = currentStatus.reblogsCount,
-                  repliesCount = currentStatus.repliesCount,
-                  bookmarked = currentStatus.bookmarked,
-                  poll = currentStatus.poll
+    Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
+      Column {
+        Spacer(Modifier.statusBarsPadding())
+        StatusDetailTopBar(
+          navigationIcon = {
+            ClickableIcon(
+              painter = painterResource(id = R.drawable.arrow_left),
+              onClick = {
+                resultNavigator.navigateBack(
+                  result = StatusBackResult(
+                    id = currentStatus.actionableId,
+                    favorited = currentStatus.favorited,
+                    favouritesCount = currentStatus.favouritesCount,
+                    reblogged = currentStatus.reblogged,
+                    reblogsCount = currentStatus.reblogsCount,
+                    repliesCount = currentStatus.repliesCount,
+                    bookmarked = currentStatus.bookmarked,
+                    poll = currentStatus.poll
+                  )
+                )
+              },
+              interactiveSize = 28.dp,
+              tint = AppTheme.colors.primaryContent
+            )
+          },
+          title = {
+            Text(
+              text = stringResource(id = R.string.home_title),
+              fontSize = 20.sp,
+              fontWeight = FontWeight.Medium,
+              color = AppTheme.colors.primaryContent,
+            )
+          },
+          modifier = Modifier.padding(12.dp)
+        )
+        AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
+        StatusDetailContent(
+          currentStatusId = viewModel.navArgs.status.id,
+          lazyState = lazyState,
+          statusList = state.statusList,
+          loading = state.loading,
+          action = { action, id ->
+            viewModel.onStatusAction(action, id)
+          },
+          navigateToDetail = {
+            if (it.id != viewModel.navArgs.status.id) {
+              navigator.navigate(
+                StatusDetailDestination(
+                  status = it,
+                  originStatusId = null
                 )
               )
-            },
-            interactiveSize = 28.dp,
-            tint = AppTheme.colors.primaryContent
-          )
-        },
-        title = {
-          Text(
-            text = stringResource(id = R.string.home_title),
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Medium,
-            color = AppTheme.colors.primaryContent,
-          )
-        },
-        modifier = Modifier.padding(12.dp)
-      )
-      AppHorizontalDivider(Modifier.padding(vertical = 6.dp))
-      StatusDetailContent(
-        currentStatusId = viewModel.navArgs.status.id,
-        lazyState = lazyState,
-        statusList = state.statusList,
-        loading = state.loading,
-        action = { action, id ->
-          viewModel.onStatusAction(action, id)
-        },
-        navigateToDetail = {
-          if (it.id != viewModel.navArgs.status.id) {
+            }
+          },
+          navigateToMedia = { attachments, index ->
             navigator.navigate(
-              StatusDetailDestination(
-                status = it,
-                originStatusId = null
+              StatusMediaScreenDestination(
+                attachments = attachments.toTypedArray(),
+                targetMediaIndex = index
               )
             )
+          },
+          navigateToProfile = {
+            navigator.navigate(ProfileDestination(it))
+          },
+          navigateToTagInfo = {
+            navigator.navigate(TagInfoDestination(it))
+          },
+          modifier = Modifier.weight(1f)
+        )
+        ReplyTextField(
+          targetAccount = when (currentStatus.isInReplyTo) {
+            true -> state.threadList.filter { it.selected }.map { it.account }
+            else -> listOf(viewModel.navArgs.status.account)
+          },
+          textFieldState = viewModel.replyField,
+          postState = state.postState,
+          replyToStatus = viewModel::replyToStatus,
+          openEmojiPicker = { openEmojiSheet = true },
+          showReplyUserButton = state.threadList.size > 1,
+          openReplyUserDialog = { dialogState.showDialog() }
+        )
+      }
+      StatusSnackBar(
+        snackbarState = snackbarState,
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .padding(start = 12.dp, end = 12.dp, bottom = 56.dp)
+      )
+    }
+
+    InReplyToMultiSelectorDialog(
+      dialogState = dialogState,
+      threads = state.threadList,
+      onClick = viewModel::updateThreads
+    )
+
+    if (openEmojiSheet) {
+      EmojiSheet(
+        sheetState = sheetState,
+        emojis = state.instanceEmojis,
+        onSelectEmoji = {
+          viewModel.replyField.edit {
+            insert(selection.start, it)
+          }
+          scope.launch {
+            sheetState.hide()
+          }.invokeOnCompletion {
+            keyboard?.show()
+            openEmojiSheet = false
           }
         },
-        navigateToMedia = { attachments, index ->
-          navigator.navigate(
-            StatusMediaScreenDestination(
-              attachments = attachments.toTypedArray(),
-              targetMediaIndex = index
-            )
-          )
-        },
-        navigateToProfile = {
-          navigator.navigate(ProfileDestination(it))
-        },
-        navigateToTagInfo = {
-          navigator.navigate(TagInfoDestination(it))
-        },
-        modifier = Modifier.weight(1f)
-      )
-      ReplyTextField(
-        targetAccount = when (currentStatus.isInReplyTo) {
-          true -> state.threadList.filter { it.selected }.map { it.account }
-          else -> listOf(viewModel.navArgs.status.account)
-        },
-        textFieldState = viewModel.replyField,
-        postState = state.postState,
-        replyToStatus = viewModel::replyToStatus,
-        openEmojiPicker = { openEmojiSheet = true },
-        showReplyUserButton = state.threadList.size > 1,
-        openReplyUserDialog = { dialogState.showDialog() }
-      )
-    }
-    StatusSnackBar(
-      snackbarState = snackbarState,
-      modifier = Modifier
-        .align(Alignment.BottomCenter)
-        .padding(start = 12.dp, end = 12.dp, bottom = 56.dp)
-    )
-  }
-
-  InReplyToMultiSelectorDialog(
-    dialogState = dialogState,
-    threads = state.threadList,
-    onClick = viewModel::updateThreads
-  )
-
-  if (openEmojiSheet) {
-    EmojiSheet(
-      sheetState = sheetState,
-      emojis = state.instanceEmojis,
-      onSelectEmoji = {
-        viewModel.replyField.edit {
-          insert(selection.start, it)
-        }
-        scope.launch {
-          sheetState.hide()
-        }.invokeOnCompletion {
-          keyboard?.show()
+        onDismissRequest = {
           openEmojiSheet = false
         }
-      },
-      onDismissRequest = {
-        openEmojiSheet = false
-      }
-    )
-  }
-
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
-    }
-  }
-
-  BackHandler {
-    // we need sync the latest status action data to previous screen
-    resultNavigator.navigateBack(
-      result = StatusBackResult(
-        id = viewModel.navArgs.status.id,
-        favorited = currentStatus.favorited,
-        favouritesCount = currentStatus.favouritesCount,
-        reblogged = currentStatus.reblogged,
-        reblogsCount = currentStatus.reblogsCount,
-        repliesCount = currentStatus.repliesCount,
-        bookmarked = currentStatus.bookmarked,
-        poll = currentStatus.poll
       )
-    )
-  }
+    }
 
-  LaunchedEffect(Unit) {
-    viewModel.snackBarFlow.collect {
-      snackbarState.show(it)
+    resultRecipient.onNavResult { result ->
+      when (result) {
+        is NavResult.Canceled -> Unit
+        is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+      }
+    }
+
+    BackHandler {
+      // we need sync the latest status action data to previous screen
+      resultNavigator.navigateBack(
+        result = StatusBackResult(
+          id = viewModel.navArgs.status.id,
+          favorited = currentStatus.favorited,
+          favouritesCount = currentStatus.favouritesCount,
+          reblogged = currentStatus.reblogged,
+          reblogsCount = currentStatus.reblogsCount,
+          repliesCount = currentStatus.repliesCount,
+          bookmarked = currentStatus.bookmarked,
+          poll = currentStatus.poll
+        )
+      )
+    }
+
+    LaunchedEffect(Unit) {
+      viewModel.snackBarFlow.collect {
+        snackbarState.show(it)
+      }
     }
   }
 }

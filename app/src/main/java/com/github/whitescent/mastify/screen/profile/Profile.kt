@@ -17,6 +17,8 @@
 
 package com.github.whitescent.mastify.screen.profile
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +31,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,6 +56,8 @@ import com.github.whitescent.mastify.screen.destinations.StatusDetailDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.screen.destinations.TagInfoDestination
 import com.github.whitescent.mastify.ui.component.AppHorizontalDivider
+import com.github.whitescent.mastify.ui.component.LocalAnimatedVisibilityScope
+import com.github.whitescent.mastify.ui.component.LocalSharedTransitionScope
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.ProfileLayout
 import com.github.whitescent.mastify.ui.component.profileCollapsingLayout.rememberProfileLayoutState
 import com.github.whitescent.mastify.ui.component.status.StatusSnackBar
@@ -73,135 +78,141 @@ data class ProfileNavArgs(val account: Account)
   navArgsDelegate = ProfileNavArgs::class
 )
 @Composable
-fun Profile(
+fun SharedTransitionScope.Profile(
+  animatedVisibilityScope: AnimatedVisibilityScope,
   navigator: DestinationsNavigator,
   viewModel: ProfileViewModel = hiltViewModel(),
   resultRecipient: ResultRecipient<StatusDetailDestination, StatusBackResult>
 ) {
-  val uiState = viewModel.uiState
-  val currentTab by viewModel.currentProfileKind.collectAsStateWithLifecycle()
+  CompositionLocalProvider(
+    LocalSharedTransitionScope provides this,
+    LocalAnimatedVisibilityScope provides animatedVisibilityScope
+  ) {
+    val uiState = viewModel.uiState
+    val currentTab by viewModel.currentProfileKind.collectAsStateWithLifecycle()
 
-  val scope = rememberCoroutineScope()
-  val snackbarState = rememberStatusSnackBarState()
-  val profileLayoutState = rememberProfileLayoutState()
-  val statusListState = rememberLazyListState()
-  val statusWithReplyListState = rememberLazyListState()
-  val statusWithMediaListState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val snackbarState = rememberStatusSnackBarState()
+    val profileLayoutState = rememberProfileLayoutState()
+    val statusListState = rememberLazyListState()
+    val statusWithReplyListState = rememberLazyListState()
+    val statusWithMediaListState = rememberLazyListState()
 
-  val atPageTop by remember {
-    derivedStateOf {
-      profileLayoutState.progress == 0f
-    }
-  }
-
-  Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
-    ProfileLayout(
-      state = profileLayoutState,
-      collapsingTop = {
-        ProfileHeader(
-          uiState = uiState,
-          profileLayoutState = profileLayoutState,
-          follow = viewModel::followAccount,
-          subscribe = { viewModel.followAccount(true, it) },
-          searchAccount = viewModel::lookupAccount,
-          navigateToAccount = {
-            navigator.navigate(ProfileDestination(uiState.searchedAccount!!))
-          },
-          navigateToTagInfo = {
-            navigator.navigate(TagInfoDestination(it))
-          }
-        )
-      },
-      bodyContent = {
-        val pagerState = rememberPagerState { ProfileKind.entries.size }
-        Column {
-          ProfileTabs(currentTab) {
-            if (currentTab.ordinal == it) {
-              scope.launch {
-                when (it) {
-                  0 -> statusListState.scrollToItem(0)
-                  1 -> statusWithReplyListState.scrollToItem(0)
-                  else -> statusWithMediaListState.scrollToItem(0)
-                }
-              }.invokeOnCompletion { profileLayoutState.animatedToTop() }
-            }
-            viewModel.syncProfileTab(it)
-            scope.launch {
-              pagerState.scrollToPage(it)
-            }
-          }
-          if (uiState.isSelf != null) {
-            ProfilePager(
-              state = pagerState,
-              viewModel = viewModel,
-              statusListState = statusListState,
-              statusListWithReplyState = statusWithReplyListState,
-              statusListWithMediaState = statusWithMediaListState,
-              navigateToDetail = {
-                navigator.navigate(
-                  StatusDetailDestination(
-                    status = it,
-                    originStatusId = null
-                  )
-                )
-              },
-              navigateToTagInfo = {
-                navigator.navigate(TagInfoDestination(it))
-              },
-              navigateToMedia = { attachments, targetIndex ->
-                navigator.navigate(
-                  StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
-                )
-              },
-              navigateToProfile = {
-                navigator.navigate(
-                  ProfileDestination(it)
-                )
-              },
-            )
-          }
-        }
-        LaunchedEffect(pagerState) {
-          snapshotFlow { pagerState.currentPage }.collect { page ->
-            viewModel.syncProfileTab(page)
-          }
-        }
-      },
-      topBar = {
-        ProfileTopBar(
-          alpha = { profileLayoutState.progress },
-          account = uiState.account
-        )
-      },
-    )
-    StatusSnackBar(
-      snackbarState = snackbarState,
-      modifier = Modifier
-        .align(Alignment.BottomCenter)
-        .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
-    )
-  }
-
-  LaunchedEffect(atPageTop) {
-    if (atPageTop) {
-      scope.launch {
-        statusListState.scrollToItem(0)
-        statusWithReplyListState.scrollToItem(0)
-        statusWithMediaListState.scrollToItem(0)
+    val atPageTop by remember {
+      derivedStateOf {
+        profileLayoutState.progress == 0f
       }
     }
-  }
 
-  LaunchedEffect(Unit) {
-    viewModel.snackBarFlow.collect {
-      snackbarState.show(it)
+    Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
+      ProfileLayout(
+        state = profileLayoutState,
+        collapsingTop = {
+          ProfileHeader(
+            uiState = uiState,
+            profileLayoutState = profileLayoutState,
+            follow = viewModel::followAccount,
+            subscribe = { viewModel.followAccount(true, it) },
+            searchAccount = viewModel::lookupAccount,
+            navigateToAccount = {
+              navigator.navigate(ProfileDestination(uiState.searchedAccount!!))
+            },
+            navigateToTagInfo = {
+              navigator.navigate(TagInfoDestination(it))
+            }
+          )
+        },
+        bodyContent = {
+          val pagerState = rememberPagerState { ProfileKind.entries.size }
+          Column {
+            ProfileTabs(currentTab) {
+              if (currentTab.ordinal == it) {
+                scope.launch {
+                  when (it) {
+                    0 -> statusListState.scrollToItem(0)
+                    1 -> statusWithReplyListState.scrollToItem(0)
+                    else -> statusWithMediaListState.scrollToItem(0)
+                  }
+                }.invokeOnCompletion { profileLayoutState.animatedToTop() }
+              }
+              viewModel.syncProfileTab(it)
+              scope.launch {
+                pagerState.scrollToPage(it)
+              }
+            }
+            if (uiState.isSelf != null) {
+              ProfilePager(
+                state = pagerState,
+                viewModel = viewModel,
+                statusListState = statusListState,
+                statusListWithReplyState = statusWithReplyListState,
+                statusListWithMediaState = statusWithMediaListState,
+                navigateToDetail = {
+                  navigator.navigate(
+                    StatusDetailDestination(
+                      status = it,
+                      originStatusId = null
+                    )
+                  )
+                },
+                navigateToTagInfo = {
+                  navigator.navigate(TagInfoDestination(it))
+                },
+                navigateToMedia = { attachments, targetIndex ->
+                  navigator.navigate(
+                    StatusMediaScreenDestination(attachments.toTypedArray(), targetIndex)
+                  )
+                },
+                navigateToProfile = {
+                  navigator.navigate(
+                    ProfileDestination(it)
+                  )
+                },
+              )
+            }
+          }
+          LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.currentPage }.collect { page ->
+              viewModel.syncProfileTab(page)
+            }
+          }
+        },
+        topBar = {
+          ProfileTopBar(
+            alpha = { profileLayoutState.progress },
+            account = uiState.account
+          )
+        },
+      )
+      StatusSnackBar(
+        snackbarState = snackbarState,
+        modifier = Modifier
+          .align(Alignment.BottomCenter)
+          .padding(start = 12.dp, end = 12.dp, bottom = 36.dp)
+      )
     }
-  }
 
-  resultRecipient.onNavResult { result ->
-    when (result) {
-      is NavResult.Canceled -> Unit
-      is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+    LaunchedEffect(atPageTop) {
+      if (atPageTop) {
+        scope.launch {
+          statusListState.scrollToItem(0)
+          statusWithReplyListState.scrollToItem(0)
+          statusWithMediaListState.scrollToItem(0)
+        }
+      }
+    }
+
+    LaunchedEffect(Unit) {
+      viewModel.snackBarFlow.collect {
+        snackbarState.show(it)
+      }
+    }
+
+    resultRecipient.onNavResult { result ->
+      when (result) {
+        is NavResult.Canceled -> Unit
+        is NavResult.Value -> viewModel.updateStatusFromDetailScreen(result.value)
+      }
     }
   }
 }

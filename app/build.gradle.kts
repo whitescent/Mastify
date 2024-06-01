@@ -232,4 +232,6 @@ dependencies {
   implementation(libs.kotlinx.datetime)
   implementation(libs.kotlinx.collections)
   coreLibraryDesugaring(libs.android.desugar)
+
+  implementation(libs.zoomable)
 }

@@ -117,6 +117,7 @@ class HomeRepository @Inject constructor(
         Toast.makeText(context, it.localizedMessage, Toast.LENGTH_LONG).show()
       }
       .collect { response ->
+        if (response.isEmpty()) return@collect
         val list = response.toMutableList()
         // If the data in this request contains the first data from the database,
         // we need connect the data in this request with the data in the database

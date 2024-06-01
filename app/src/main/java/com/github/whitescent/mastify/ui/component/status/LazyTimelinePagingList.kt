@@ -32,12 +32,14 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -66,11 +68,12 @@ import com.github.whitescent.mastify.ui.component.status.paging.PagePlaceholderT
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoadError
 import com.github.whitescent.mastify.ui.component.status.paging.StatusListLoading
 import com.github.whitescent.mastify.utils.StatusAction
+import com.github.whitescent.mastify.utils.debug
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import my.nanihadesuka.compose.LazyColumnScrollbar
 
 @Composable
 fun LazyTimelinePagingList(
@@ -121,7 +124,9 @@ fun LazyTimelinePagingList(
           paginatorUiState.loadState is NotLoading && paginatorUiState.loadState.endReached ->
             EmptyStatusListPlaceholder(
               pagePlaceholderType = pagePlaceholderType,
-              modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+              modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
             )
           paginatorUiState.loadState is Refresh ->
             StatusListLoading(Modifier.fillMaxSize())
@@ -133,66 +138,74 @@ fun LazyTimelinePagingList(
             lazyListState.layoutInfo.visibleItemsInfo.fastMap { it.index }
           }
         }
-        LazyColumnScrollbar(
-          state = lazyListState
+        val loadNextPage by remember(pagingList.size) {
+          derivedStateOf {
+            paginatorUiState.canPaging && pagingList.size > 0 &&
+              visibleItemsIndex.contains(pagingList.size - 6)
+          }
+        }
+        LazyColumn(
+          state = lazyListState,
+          modifier = modifier,
+          contentPadding = contentPadding
         ) {
-          LazyColumn(
-            state = lazyListState,
-            modifier = modifier,
-            contentPadding = contentPadding
-          ) {
-            itemsIndexed(
-              items = pagingList,
-              contentType = { _, _ -> StatusUiData },
-              key = { _, item -> item.id }
-            ) { index, status ->
-              val replyChainType by remember(status, pagingList.size, index) {
-                mutableStateOf(pagingList.getReplyChainType(index))
-              }
-              val hasUnloadedParent by remember(status, pagingList.size, index) {
-                mutableStateOf(pagingList.hasUnloadedParent(index))
-              }
-              StatusListItem(
-                status = status,
-                action = {
-                  action(it, status.actionable)
-                },
-                replyChainType = replyChainType,
-                hasUnloadedParent = hasUnloadedParent,
-                navigateToDetail = {
+          itemsIndexed(
+            items = pagingList,
+            contentType = { _, _ -> StatusUiData },
+            key = { _, item -> item.id }
+          ) { index, status ->
+            val replyChainType by remember(status, pagingList.size, index) {
+              mutableStateOf(pagingList.getReplyChainType(index))
+            }
+            val hasUnloadedParent by remember(status, pagingList.size, index) {
+              mutableStateOf(pagingList.hasUnloadedParent(index))
+            }
+            StatusListItem(
+              status = status,
+              action = {
+                action(it, status.actionable)
+              },
+              replyChainType = replyChainType,
+              hasUnloadedParent = hasUnloadedParent,
+              navigateToDetail = {
+                scope.launch {
+                    lazyListState.animateScrollToItem(index)
+                }.invokeOnCompletion {
                   navigateToDetail(status.actionable)
-                },
-                navigateToProfile = navigateToProfile,
-                navigateToMedia = navigateToMedia,
-                navigateToTagInfo = navigateToTagInfo
-              )
-              if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
-                AppHorizontalDivider()
-            }
-            item {
-              when (paginatorUiState.loadState) {
-                is PageLoadState.Append -> StatusAppendingIndicator()
-                is Error -> {
-                  // TODO Localization
-                  Toast.makeText(
-                    context,
-                    paginatorUiState.loadState.throwable.localizedMessage,
-                    Toast.LENGTH_SHORT
-                  ).show()
                 }
-                else -> Unit
+              },
+              navigateToProfile = navigateToProfile,
+              navigateToMedia = navigateToMedia,
+              navigateToTagInfo = navigateToTagInfo
+            )
+            if (!status.hasUnloadedStatus && (replyChainType == End || replyChainType == Null))
+              AppHorizontalDivider()
+          }
+          item {
+            when (paginatorUiState.loadState) {
+              is PageLoadState.Append -> StatusAppendingIndicator()
+              is Error -> {
+                // TODO Localization
+                Toast.makeText(
+                  context,
+                  paginatorUiState.loadState.throwable.localizedMessage,
+                  Toast.LENGTH_SHORT
+                ).show()
               }
-              if (paginatorUiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
+              else -> Unit
             }
+            if (paginatorUiState.endReached) StatusEndIndicator(Modifier.padding(36.dp))
           }
         }
         PullRefreshIndicator(refreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
-        if (paginatorUiState.canPaging && pagingList.size > 0 &&
-          visibleItemsIndex.contains(pagingList.size - 6)
-        ) {
-          scope.launch(SupervisorJob()) {
-            paginator.append()
-          }
+        debug { "state is $loadNextPage" }
+        LaunchedEffect(Unit) {
+          snapshotFlow { loadNextPage }
+            .filter { it }
+            .collect {
+              debug { "collected" }
+              paginator.append()
+            }
         }
       }
     }
