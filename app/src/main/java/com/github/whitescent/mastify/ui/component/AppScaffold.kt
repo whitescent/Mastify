@@ -19,9 +19,9 @@ package com.github.whitescent.mastify.ui.component
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -31,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
@@ -55,21 +54,18 @@ import com.github.whitescent.mastify.utils.isBottomBarScreen
 import com.github.whitescent.mastify.utils.rememberAppState
 import com.github.whitescent.mastify.utils.shouldShowScaffoldElements
 import com.github.whitescent.mastify.viewModel.AppViewModel
-import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
 import com.ramcosta.composedestinations.manualcomposablecalls.composable
 import com.ramcosta.composedestinations.navigation.dependency
-import com.ramcosta.composedestinations.navigation.navigate
-import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.scope.resultRecipient
 import com.ramcosta.composedestinations.spec.Route
+import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterialNavigationApi::class, ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AppScaffold(
   startRoute: Route,
@@ -95,6 +91,7 @@ fun AppScaffold(
     )
   )
   val navController = engine.rememberNavController()
+  val navigator = navController.rememberDestinationsNavigator()
   val scope = rememberCoroutineScope()
   val drawerState = rememberDrawerState(DrawerValue.Closed)
   val appState = rememberAppState()
@@ -115,21 +112,21 @@ fun AppScaffold(
             viewModel.changeActiveAccount(it)
           },
           navigateToLogin = {
-            navController.navigate(LoginDestination) {
+            navigator.navigate(LoginDestination) {
               scope.launch {
                 drawerState.close()
               }
             }
           },
           navigateToProfile = {
-            navController.navigate(ProfileDestination(it)) {
+            navigator.navigate(ProfileDestination(it)) {
               scope.launch {
                 drawerState.close()
               }
             }
           },
           navigateToSettings = {
-            navController.navigate(SettingsDestination) {
+            navigator.navigate(SettingsDestination) {
               scope.launch {
                 drawerState.close()
               }
@@ -145,10 +142,14 @@ fun AppScaffold(
   ) {
     Scaffold(
       bottomBar = {
-        if (destination.shouldShowScaffoldElements() && !appState.hideBottomBar) {
+        AnimatedVisibility(
+          visible = destination.shouldShowScaffoldElements() && !appState.hideBottomBar,
+          enter = slideInVertically { it },
+          exit = slideOutVertically { it },
+        ) {
           BottomBar(
             appState = appState,
-            navController = navController,
+            navigator = navigator,
             destination = destination,
             scrollToTop = {
               scope.launch { appState.scrollToTop() }

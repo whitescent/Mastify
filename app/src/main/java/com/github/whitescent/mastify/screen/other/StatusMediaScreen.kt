@@ -17,8 +17,13 @@
 
 package com.github.whitescent.mastify.screen.other
 
-import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.navigation.NavBackStackEntry
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -45,7 +51,6 @@ import com.github.fengdai.compose.media.ResizeMode
 import com.github.fengdai.compose.media.ShowBuffering
 import com.github.fengdai.compose.media.SurfaceType
 import com.github.fengdai.compose.media.rememberMediaState
-import com.github.panpf.zoomimage.ZoomImage
 import com.github.whitescent.mastify.AppNavGraph
 import com.github.whitescent.mastify.network.model.status.Status.Attachment
 import com.github.whitescent.mastify.ui.component.CenterRow
@@ -54,10 +59,29 @@ import com.github.whitescent.mastify.ui.component.player.rememberExoPlayerInstan
 import com.github.whitescent.mastify.ui.component.player.rememberPositionState
 import com.github.whitescent.mastify.ui.component.status.StatusMediaType
 import com.github.whitescent.mastify.ui.theme.AppTheme
+import com.ramcosta.composedestinations.animations.defaults.DestinationSizeTransform
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.spec.DestinationStyle
+import net.engawapg.lib.zoomable.ScrollGesturePropagation
+import net.engawapg.lib.zoomable.rememberZoomState
+import net.engawapg.lib.zoomable.zoomable
 
+object StatusMediaTransition : DestinationStyle.Animated {
+
+  override val sizeTransform: DestinationSizeTransform
+    get() = DestinationSizeTransform {
+      SizeTransform { _, _ -> spring() }
+    }
+
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition() = fadeIn()
+
+  override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition() = fadeOut()
+}
+
+@Destination(
+  style = StatusMediaTransition::class
+)
 @AppNavGraph
-@Destination
 @Composable
 fun StatusMediaScreen(
   attachments: Array<Attachment>,
@@ -75,7 +99,9 @@ fun StatusMediaScreen(
 
   HorizontalPager(
     state = pagerState,
-    modifier = Modifier.fillMaxSize().background(Color.Black),
+    modifier = Modifier
+      .fillMaxSize()
+      .background(Color.Black),
     pageContent = {
       val mediaItem = attachments[it]
       when (StatusMediaType.fromString(mediaItem.type)) {
@@ -89,10 +115,15 @@ fun StatusMediaScreen(
           )
           when (painter.state) {
             is AsyncImagePainter.State.Success -> {
-              ZoomImage(
+              Image(
                 painter = painter,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                  .fillMaxSize()
+                  .zoomable(
+                    rememberZoomState(),
+                    scrollGesturePropagation = ScrollGesturePropagation.NotZoomed
+                  ),
               )
             }
             is AsyncImagePainter.State.Loading -> {

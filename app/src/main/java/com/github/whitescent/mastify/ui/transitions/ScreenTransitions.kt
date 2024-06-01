@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.ui.transitions
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.End
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
 import androidx.compose.animation.EnterTransition
@@ -34,12 +33,14 @@ import androidx.navigation.NavBackStackEntry
 import com.github.whitescent.mastify.screen.appDestination
 import com.github.whitescent.mastify.screen.destinations.StatusMediaScreenDestination
 import com.github.whitescent.mastify.utils.isBottomBarScreen
+import com.github.whitescent.mastify.utils.isSharedElementTransition
 import com.ramcosta.composedestinations.spec.DestinationStyle
+import androidx.compose.animation.AnimatedContentTransitionScope as TransitionScope
 
 private const val slideAnimationTween = 300
 private const val scaleSize = 0.75f
 
-fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideIntoContainer(
+fun TransitionScope<NavBackStackEntry>.defaultSlideIntoContainer(
   forward: Boolean = true
 ): EnterTransition {
   return if (targetState.appDestination() == StatusMediaScreenDestination) EnterTransition.None
@@ -50,7 +51,7 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideIntoContainer(
   }
 }
 
-fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
+fun TransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
   forward: Boolean = true
 ): ExitTransition = when (forward) {
   true -> scaleOut(targetScale = scaleSize, animationSpec = tween(400, easing = EaseInOutCubic)) +
@@ -59,33 +60,35 @@ fun AnimatedContentTransitionScope<NavBackStackEntry>.defaultSlideOutContainer(
 }
 
 object BottomBarScreenTransitions : DestinationStyle.Animated {
-  override fun AnimatedContentTransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
+  override fun TransitionScope<NavBackStackEntry>.enterTransition(): EnterTransition {
     return if (initialState.destination == targetState.destination) {
       defaultSlideIntoContainer() // transition when changing account
     } else {
-      when (initialState.appDestination().isBottomBarScreen) {
-        true -> EnterTransition.None
+      when {
+        initialState.appDestination().isBottomBarScreen ||
+          initialState.appDestination().isSharedElementTransition  -> EnterTransition.None
         else -> defaultSlideIntoContainer()
       }
     }
   }
-  override fun AnimatedContentTransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
+  override fun TransitionScope<NavBackStackEntry>.exitTransition(): ExitTransition {
     return if (initialState.destination == targetState.destination) {
       defaultSlideOutContainer()
     } else {
-      when (targetState.appDestination().isBottomBarScreen || initialState.appDestination() == StatusMediaScreenDestination) {
-        true -> ExitTransition.None
+      when {
+        targetState.appDestination().isBottomBarScreen ||
+          targetState.appDestination().isSharedElementTransition  -> ExitTransition.None
         else -> defaultSlideOutContainer()
       }
     }
   }
-  override fun AnimatedContentTransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
+  override fun TransitionScope<NavBackStackEntry>.popEnterTransition(): EnterTransition {
     return when (initialState.appDestination().isBottomBarScreen) {
       true -> EnterTransition.None
       else -> defaultSlideIntoContainer(forward = false)
     }
   }
-  override fun AnimatedContentTransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
+  override fun TransitionScope<NavBackStackEntry>.popExitTransition(): ExitTransition {
     return when (targetState.appDestination().isBottomBarScreen) {
       true -> ExitTransition.None
       else -> defaultSlideOutContainer(forward = false)
