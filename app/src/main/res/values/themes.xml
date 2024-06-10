@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright 2024 WhiteScent
-  ~
-  ~ This file is a part of Mastify.
-  ~
-  ~ This program is free software; you can redistribute it and/or modify it under the terms of the
-  ~ GNU General Public License as published by the Free Software Foundation; either version 3 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ Mastify is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-  ~ the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-  ~ Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public License along with Mastify; if not,
-  ~ see <http://www.gnu.org/licenses>.
-  -->
-
 <resources>
-  <style name="Theme.Mastify" parent="android:Theme.Material.Light.NoActionBar" />
-    <style name="Theme.Mastify.Splash" parent="Theme.SplashScreen">
-      <item name="windowSplashScreenBackground">@color/app_background</item>
-      <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
-      <item name="postSplashScreenTheme">@style/Theme.Mastify</item>>
-    </style>
+
+    <style name="Theme.MastifyX" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
