@@ -1,21 +1,35 @@
-*.iml
-.gradle
+### Gradle ###
+.gradle/
+build/
+gradle/build-logic/build/
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-.idea/*
+
+### Kotlin ###
+.kotlin/
+
+### Android ###
 /app/release
-/app/schemas/com.github.whitescent.mastify.timeline.TestAppDatabase/*
-google-services.json
-/app/benchmark/mastodon-sample.properties
-/app/benchmark/mastodon.properties
+
+### IntelliJ IDEA ###
+*.iws
+*.iml
+*.ipr
+
+## IDEA config files
+/.idea/**
+!/.idea/copyright/
+!/.idea/copyright/**
+!/.idea/codeStyles/
+!/.idea/codeStyles/**
+!/.idea/inspectionProfiles/
+!/.idea/inspectionProfiles/**
+!/.idea/runConfigurations/
+!/.idea/runConfigurations/**
+!/.idea/jsonSchemas.xml
+!/.idea/externalDependencies.xml
+!/.idea/ktlint-plugin.xml
+# Plugins
+!/.idea/detekt.xml
+
+### Mac OS ###
+.DS_Store
