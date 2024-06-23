@@ -23,6 +23,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,12 +32,14 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -66,26 +70,34 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.gigamole.composeshadowsplus.rsblur.rsBlurShadow
+import com.github.whitescent.mastify.core.common.compose.LaunchedValueEffect
 import com.github.whitescent.mastify.core.common.launchChromeTabs
 import com.github.whitescent.mastify.core.common.strings.CommonStrings
+import com.github.whitescent.mastify.core.navigation.Route
 import com.github.whitescent.mastify.core.ui.AppTheme
 import com.github.whitescent.mastify.core.ui.Color
 import com.github.whitescent.mastify.core.ui.component.CenterRow
 import com.github.whitescent.mastify.core.ui.component.HeightSpacer
 import com.github.whitescent.mastify.core.ui.component.WidthSpacer
+import com.github.whitescent.mastify.core.ui.component.rememberDialogState
 import com.github.whitescent.mastify.core.ui.shape.SmoothCornerShape
 
 @Composable
-fun Login(viewModel: LoginViewModel = hiltViewModel()) {
+internal fun Login(
+  navController: NavController,
+  viewModel: LoginViewModel = hiltViewModel()
+) {
   val context = LocalContext.current
   val state = viewModel.uiState
   val instanceVerifyErrorMsg = stringResource(id = CommonStrings.instance_verification_error)
+  val dialogState = rememberDialogState()
 
   Box(
     modifier = Modifier
       .fillMaxSize()
-      .consumeWindowInsets(PaddingValues(bottom = 300.dp))
+      .consumeWindowInsets(PaddingValues(bottom = 200.dp))
       .background(AppTheme.colors.bottomSheetBackground),
   ) {
     Image(
@@ -96,8 +108,8 @@ fun Login(viewModel: LoginViewModel = hiltViewModel()) {
     )
     Column(
       modifier = Modifier
-        .align(Alignment.BottomCenter)
-        .padding(bottom = 250.dp)
+        .align(Alignment.Center)
+        .imePadding()
         .padding(horizontal = 64.dp),
       horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -136,7 +148,6 @@ fun Login(viewModel: LoginViewModel = hiltViewModel()) {
         state = viewModel.loginInput,
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
-          .imePadding()
           .clip(SmoothCornerShape(14.dp))
           .background(if (isSystemInDarkTheme()) Color(0xFF575B7A) else Color.White)
           .border(1.3.dp, Color(0xFF79B2FF), SmoothCornerShape(14.dp))
@@ -179,21 +190,22 @@ fun Login(viewModel: LoginViewModel = hiltViewModel()) {
       AnimatedVisibility(
         visible = viewModel.instanceLocalError && viewModel.loginInput.text.isNotEmpty() ||
           state.loginStatus is LoginStatus.Failure,
-        enter = fadeIn(),
-        exit = fadeOut(),
+        enter = slideInVertically { -it } + fadeIn(),
+        exit = slideOutVertically { -it } + fadeOut(),
         modifier = Modifier
           .align(Alignment.Start)
-          .padding(vertical = 12.dp)
+          .padding(top = 24.dp)
       ) {
         Text(
           text = if (state.loginStatus is LoginStatus.Failure)
             stringResource(CommonStrings.failed_to_retrieve_instance)
           else stringResource(CommonStrings.error_invalid_domain),
           fontSize = 14.sp,
+          fontWeight = FontWeight.SemiBold,
           color = Color(0xFFFF3838).copy(.6f)
         )
       }
-      HeightSpacer(value = 16.dp)
+      HeightSpacer(value = 24.dp)
       Button(
         onClick = viewModel::checkInstance,
         shape = SmoothCornerShape(14.dp),
@@ -223,7 +235,11 @@ fun Login(viewModel: LoginViewModel = hiltViewModel()) {
               overflow = TextOverflow.Ellipsis,
             )
           }
-          LoginStatus.Loading -> CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
+          LoginStatus.Loading -> CircularProgressIndicator(
+            color = Color.White,
+            strokeWidth = 3.dp,
+            modifier = Modifier.size(32.dp)
+          )
           else -> Unit
         }
       }
@@ -234,13 +250,11 @@ fun Login(viewModel: LoginViewModel = hiltViewModel()) {
       fontSize = 14.sp,
       modifier = Modifier
         .align(Alignment.BottomCenter)
-        .navigationBarsPadding()
-        .padding(bottom = 8.dp),
+        .padding(WindowInsets.navigationBars.asPaddingValues()),
       color = AppTheme.colors.primaryContent.copy(.35f),
-      textAlign = TextAlign.Center
+      textAlign = TextAlign.Center,
     )
   }
-
   LaunchedEffect(state.authenticateError, state.clientId) {
     if (state.authenticateError) {
       Toast.makeText(context, instanceVerifyErrorMsg, Toast.LENGTH_LONG).show()
@@ -257,9 +271,20 @@ fun Login(viewModel: LoginViewModel = hiltViewModel()) {
       )
     }
   }
+  LoginDialog(dialogState)
+  LaunchedValueEffect(viewModel.code) {
+    if (it != null) dialogState.show()
+  }
+  LaunchedValueEffect(state.fetchedAccount) {
+    if (it != null) {
+      navController.navigate(Route.Foundation) {
+        popUpTo<Route.Login> {
+          inclusive = true
+        }
+      }
+    }
+  }
 }
 
-internal const val REDIRECT_URIS = "mastify://oauth"
-internal const val CLIENT_SCOPES = "read write push"
-internal const val APP_WEBSITE = "https://github.com/whitescent/Mastify"
-internal const val GRANT_TYPE = "authorization_code"
+private const val REDIRECT_URIS = "mastify://oauth"
+private const val CLIENT_SCOPES = "read write push"

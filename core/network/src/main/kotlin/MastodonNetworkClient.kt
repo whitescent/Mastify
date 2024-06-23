@@ -1,20 +1,16 @@
 package com.github.whitescent.mastify.core.network
 
-import com.github.whitescent.mastify.core.common.debug
 import com.github.whitescent.mastify.core.network.internal.requestCatching
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.http.ContentType
-import io.ktor.http.Parameters
 import io.ktor.http.contentType
-import io.ktor.http.parameters
 import io.ktor.http.withCharset
 import io.ktor.util.reflect.typeInfo
 
@@ -25,13 +21,13 @@ class MastodonNetworkClient(
 
   suspend inline fun <reified T> get(
     url: String,
-    headers: List<Pair<Any, Any>> = emptyList(),
+    headers: Map<Any, Any?> = emptyMap(),
   ): NetworkResult<T> = requestCatching {
     val type = typeInfo<NetworkResult<T>>()
     inner.get(url) {
       headers {
         headers.forEach {
-          append(it.first.toString(), it.second.toString())
+          append(it.key.toString(), it.value.toString())
         }
       }
     }.body(type)
@@ -39,19 +35,19 @@ class MastodonNetworkClient(
 
   suspend inline fun <reified T> get(
     url: String,
-    headers: List<Pair<Any, Any>> = emptyList(),
-    query: List<Pair<Any, Any>> = emptyList()
+    headers: Map<Any, Any?> = emptyMap(),
+    query: Map<Any, Any?> = emptyMap(),
   ): NetworkResult<T> = requestCatching {
     val type = typeInfo<NetworkResult<T>>()
     inner.get(url) {
       url {
         headers {
           headers.forEach {
-            append(it.first.toString(), it.second.toString())
+            append(it.key.toString(), it.value.toString())
           }
         }
         query.forEach {
-          encodedParameters.append(it.first.toString(), it.second.toString())
+          encodedParameters.append(it.key.toString(), it.value.toString())
         }
       }
     }.body(type)
@@ -59,23 +55,25 @@ class MastodonNetworkClient(
 
   suspend inline fun <reified T> post(
     url: String,
-    bodyConfiguration: BodyConfiguration.() -> Unit
-  ): NetworkResult<T> = requestCatching {
-    val type = typeInfo<NetworkResult<T>>()
-    val configuration = BodyConfiguration().url(url).apply(bodyConfiguration)
-    inner.post(configuration.requestBuilder).body(type)
-  }
-
-  suspend inline fun <reified T> form(
-    url: String,
-    bodyConfiguration: BodyConfiguration.() -> Unit
+    parameters: Map<Any, Any?> = emptyMap(),
+    formUrlEncoded: Boolean = false,
+    bodyConfiguration: BodyConfiguration.() -> Unit = {}
   ): NetworkResult<T> = requestCatching {
     val type = typeInfo<NetworkResult<T>>()
     val configuration = BodyConfiguration(
       requestBuilder = HttpRequestBuilder().apply {
-        contentType(ContentType.Application.FormUrlEncoded.withCharset(Charsets.UTF_8))
+        when (formUrlEncoded) {
+          true -> contentType(ContentType.Application.FormUrlEncoded.withCharset(Charsets.UTF_8))
+          false -> contentType(ContentType.Application.Json)
+        }
       }
-    ).url(url).apply(bodyConfiguration)
+    ).buildRequest(url).apply(bodyConfiguration).apply {
+      requestBuilder.url.parameters.apply {
+        parameters.forEach { (key, value) ->
+          if (value != null) append(key.toString(), value.toString())
+        }
+      }
+    }
     inner.post(configuration.requestBuilder).body(type)
   }
 
@@ -87,40 +85,11 @@ class MastodonNetworkClient(
     }
   ) {
     @PublishedApi
-    internal fun url(url: String): BodyConfiguration {
-      requestBuilder.apply {
-        url(url)
-      }
+    internal fun buildRequest(url: String): BodyConfiguration {
+      requestBuilder.url(url)
       return this
     }
 
     inline fun <reified T> body(data: T) = requestBuilder.setBody(data)
-
-    inline fun buildParameters(crossinline builder: ParametersBuilder.() -> Unit) {
-      requestBuilder.apply {
-        val parametersBuilder = ParametersBuilder()
-        body(
-          FormDataContent(parametersBuilder.buildParameters { builder(this) })
-        )
-      }
-    }
-
-    class ParametersBuilder {
-      private val parameters = mutableListOf<Pair<String, String>>()
-
-      fun append(name: String, value: String) {
-        parameters.add(Pair(name, value))
-      }
-
-      @PublishedApi
-      internal fun buildParameters(builder: ParametersBuilder.() -> Unit): Parameters {
-        builder()
-        val result = parameters {
-          parameters.forEach { append(it.first, it.second) }
-        }
-        debug { "result parameters is $result" }
-        return result
-      }
-    }
   }
 }
