@@ -9,10 +9,11 @@
 # Get rid of package names, makes file smaller
 -repackageclasses
 
-### region: Kotlin Serialization Rules ###
-
--keepclasseswithmembers class ** {
+# Avoid Kotlinx Serialization related members in object being removed
+-keepclassmembers class ** {
+    public static ** INSTANCE;
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-### endregion
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+-dontwarn android.os.SystemProperties
