@@ -26,6 +26,7 @@ dependencies {
     libs.work.runtime.ktx,
     projects.core.ui,
     projects.core.navigation,
-    projects.feature.login
+    projects.feature.login,
+    projects.feature.foundation
   ).forEach(::implementation)
 }

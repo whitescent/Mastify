@@ -18,6 +18,9 @@ pluginManagement {
 rootProject.name = "Mastify"
 include(":app")
 include(":feature:login")
+include(":feature:foundation")
+include(":feature:foundation:common")
+include(":feature:foundation:home")
 include(":core:data")
 include(":core:model")
 include(":core:ui")
