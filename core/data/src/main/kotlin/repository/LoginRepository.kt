@@ -40,14 +40,15 @@ class LoginRepository @Inject constructor(
   var loginSession: LoginSession? = null
     private set
 
+  val appData = preferenceRepository.getAppData()
+
   fun isInstanceCorrect(instance: String): Boolean = isUrlCorrect(instance)
 
-  fun saveLoginSession(loginSession: LoginSession) {
-    this.loginSession = loginSession
+  fun updateAppData(appData: AppData) = preferenceRepository.updateAppData(appData)
+
+  fun saveLoginSession(session: LoginSession) {
+    loginSession = session
   }
-
-  fun saveAccountToken(token: String) = preferenceRepository.updateAppData(AppData(token = token))
-
   suspend fun fetchInstanceInfo(name: String) = withContext(ioDispatcher) {
     networkClient.get<InstanceInfo>("https://$name/${MastodonApi.fetchInstanceInfo}")
   }

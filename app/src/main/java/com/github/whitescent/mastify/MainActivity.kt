@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify
 
+import Mastify.core.codegen.AppDataPreferences
 import android.graphics.Color.TRANSPARENT
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,9 +16,13 @@ import com.github.whitescent.mastify.core.ui.MastifyTheme
 import com.github.whitescent.mastify.feature.foundation.common.foundationNavGraph
 import com.github.whitescent.mastify.feature.login.loginNavGraph
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+  @Inject
+  lateinit var appData: AppDataPreferences
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
@@ -32,7 +37,10 @@ class MainActivity : ComponentActivity() {
         }
         NavHost(
           navController = navController,
-          startDestination = Route.Login
+          startDestination = when (appData.get().isLoggedIn) {
+            true -> Route.Foundation
+            false -> Route.Login
+          }
         ) {
           loginNavGraph(navController)
           foundationNavGraph(navController)

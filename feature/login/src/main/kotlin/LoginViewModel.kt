@@ -27,6 +27,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.core.common.debug
 import com.github.whitescent.mastify.core.data.repository.LoginRepository
+import com.github.whitescent.mastify.core.model.AppData
 import com.github.whitescent.mastify.core.model.network.response.Account
 import com.github.whitescent.mastify.core.model.session.LoginSession
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -77,7 +78,7 @@ class LoginViewModel @Inject constructor(
         }
         .onSuccess { credentials ->
           repository.saveLoginSession(
-            loginSession = LoginSession(
+            session = LoginSession(
               clientId = credentials.clientId,
               clientSecret = credentials.clientSecret,
               domain = loginInput.text.toString()
@@ -99,7 +100,7 @@ class LoginViewModel @Inject constructor(
       clientSecret = repository.loginSession!!.clientSecret,
       code = code!!
     ).onSuccess {
-      repository.saveAccountToken(it.accessToken)
+      repository.updateAppData(AppData(token = it.accessToken))
       fetchAccount()
     }.onFailure { }
   }
@@ -108,6 +109,7 @@ class LoginViewModel @Inject constructor(
     repository.fetchAccount()
       .onSuccess {
         uiState = uiState.copy(fetchedAccount = it)
+        repository.updateAppData(repository.appData.copy(instanceUrl = it.domain))
       }
       .onFailure {
         debug(it) { "fetch account failed" }
