@@ -27,6 +27,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.whitescent.mastify.core.common.debug
 import com.github.whitescent.mastify.core.data.repository.LoginRepository
+import com.github.whitescent.mastify.core.model.network.response.Account
+import com.github.whitescent.mastify.core.model.session.LoginSession
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,10 +36,17 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
   savedStateHandle: SavedStateHandle,
-  private val loginRepository: LoginRepository
+  private val repository: LoginRepository
 ) : ViewModel() {
 
-  private val code: String? = savedStateHandle["code"]
+  val code: String? = savedStateHandle["code"]
+
+  init {
+    if (code != null) {
+      val loginSession = repository.loginSession
+      if (loginSession != null) fetchAccessToken()
+    }
+  }
 
   var uiState by mutableStateOf(LoginUiState())
     private set
@@ -45,52 +54,72 @@ class LoginViewModel @Inject constructor(
   val loginInput by mutableStateOf(TextFieldState())
 
   val instanceLocalError by derivedStateOf {
-    !loginRepository.isInstanceCorrect(loginInput.text.toString())
+    !repository.isInstanceCorrect(loginInput.text.toString())
   }
 
   fun checkInstance() {
     viewModelScope.launch {
       uiState = uiState.copy(loginStatus = LoginStatus.Loading)
-      loginRepository.fetchInstanceInfo(loginInput.text.toString())
-        .onFailure {
-          uiState = uiState.copy(loginStatus = LoginStatus.Failure)
-        }
-        .onSuccess {
-          authenticateApp()
-        }
+      repository.fetchInstanceInfo(loginInput.text.toString())
+        .onFailure { uiState = uiState.copy(loginStatus = LoginStatus.Failure) }
+        .onSuccess { authenticateApp() }
     }
   }
 
   private fun authenticateApp() {
     viewModelScope.launch {
-      loginRepository.authenticateApp(loginInput.text.toString())
+      repository.authenticateApp(loginInput.text.toString())
         .onFailure {
           uiState = uiState.copy(
             authenticateError = true,
             loginStatus = LoginStatus.Idle
           )
         }
-        .onSuccess {
-          debug { "credentials is $it" }
-//          preferenceRepository.saveInstanceData(
-//            domain = loginInput.text.toString(),
-//            clientId = it.clientId,
-//            clientSecret = it.clientSecret
-//          )
+        .onSuccess { credentials ->
+          repository.saveLoginSession(
+            loginSession = LoginSession(
+              clientId = credentials.clientId,
+              clientSecret = credentials.clientSecret,
+              domain = loginInput.text.toString()
+            )
+          )
           uiState = uiState.copy(
             authenticateError = false,
             loginStatus = LoginStatus.Idle,
-            clientId = it.clientId
+            clientId = credentials.clientId
           )
         }
     }
+  }
+
+  private fun fetchAccessToken() = viewModelScope.launch {
+    repository.fetchOAuthToken(
+      domain = repository.loginSession!!.domain,
+      clientId = repository.loginSession!!.clientId,
+      clientSecret = repository.loginSession!!.clientSecret,
+      code = code!!
+    ).onSuccess {
+      repository.saveAccountToken(it.accessToken)
+      fetchAccount()
+    }.onFailure { }
+  }
+
+  private fun fetchAccount() = viewModelScope.launch {
+    repository.fetchAccount()
+      .onSuccess {
+        uiState = uiState.copy(fetchedAccount = it)
+      }
+      .onFailure {
+        debug(it) { "fetch account failed" }
+      }
   }
 }
 
 data class LoginUiState(
   val authenticateError: Boolean = false,
   val loginStatus: LoginStatus = LoginStatus.Idle,
-  val clientId: String = ""
+  val clientId: String = "",
+  val fetchedAccount: Account? = null
 )
 
 sealed class LoginStatus {

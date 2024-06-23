@@ -9,5 +9,5 @@ android {
 dependencies {
   implementation(libs.androidx.compose.material3)
   implementation(libs.jsoup)
-  implementation(libs.coil.compose)
+  api(libs.coil.compose)
 }
