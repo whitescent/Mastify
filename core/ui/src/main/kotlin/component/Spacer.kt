@@ -18,29 +18,18 @@
 package com.github.whitescent.mastify.core.ui.component
 
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 
-<<<<<<<< HEAD:core/ui/src/main/kotlin/component/Modifier.kt
-fun Modifier.clickableWithoutIndication(
-  enabled: Boolean = true,
-  onClick: () -> Unit
-) = this.clickable(
-  onClick = onClick,
-  enabled = enabled,
-  indication = null,
-  interactionSource = null,
-)
+@Composable
+fun HeightSpacer(
+  value: Dp
+) = Spacer(modifier = Modifier.height(value))
 
-inline fun Modifier.thenIf(
-  condition: Boolean,
-  modifier: Modifier.() -> Modifier,
-): Modifier = if (condition) modifier() else this
-========
 @Composable
 fun WidthSpacer(
   value: Dp
-) = Spacer(Modifier.padding(horizontal = value))
->>>>>>>> cc21888 (refactor: refactor the entire project into multiple modules):core/ui/src/main/kotlin/component/WidthSpacer.kt
+) = Spacer(Modifier.width(value))
