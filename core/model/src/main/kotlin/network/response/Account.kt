@@ -1,5 +1,6 @@
 package com.github.whitescent.mastify.core.model.network.response
 
+import com.github.whitescent.mastify.core.common.utils.FormatFactory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -31,7 +32,14 @@ data class Account(
   val source: Source?,
   @SerialName("fields")
   val fields: List<Fields>
-)
+) {
+  val domain inline get() = FormatFactory.getInstanceName(url)
+
+  // avoid null display name
+  val realDisplayName inline get() = displayName.ifEmpty { this.username }
+
+  val fullname inline get() = "@$username@$domain"
+}
 
 @Serializable
 data class Source(
