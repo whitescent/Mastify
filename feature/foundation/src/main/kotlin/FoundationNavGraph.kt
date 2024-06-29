@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.feature.foundation.common
+package com.github.whitescent.mastify.feature.foundation
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn

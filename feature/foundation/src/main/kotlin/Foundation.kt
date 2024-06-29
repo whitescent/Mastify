@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.feature.foundation.common
+package com.github.whitescent.mastify.feature.foundation
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize

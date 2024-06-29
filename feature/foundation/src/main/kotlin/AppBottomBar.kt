@@ -1,4 +1,4 @@
-package com.github.whitescent.mastify.feature.foundation.common
+package com.github.whitescent.mastify.feature.foundation
 
 import android.view.animation.OvershootInterpolator
 import androidx.compose.animation.AnimatedContent

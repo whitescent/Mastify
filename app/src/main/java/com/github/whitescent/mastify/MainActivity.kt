@@ -13,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.github.whitescent.mastify.core.navigation.Route
 import com.github.whitescent.mastify.core.ui.MastifyTheme
-import com.github.whitescent.mastify.feature.foundation.common.foundationNavGraph
+import com.github.whitescent.mastify.feature.foundation.foundationNavGraph
 import com.github.whitescent.mastify.feature.login.loginNavGraph
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
