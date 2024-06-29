@@ -26,7 +26,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.github.whitescent.mastify.core.common.compose.clickableWithoutRipple
 import com.github.whitescent.mastify.core.common.compose.thenIf
@@ -47,10 +46,10 @@ fun AppBottomBar(
   color = AppTheme.colors.bottomBarBackground,
 ) {
   val navBackStackEntry = navController.currentBackStackEntryAsState().value
-  val currentRoute = navBackStackEntry?.destination
+  val currentDestination = navBackStackEntry?.destination
   CenterRow(Modifier.navigationBarsPadding()) {
     Route.Foundation.entries.forEach { screen ->
-      val selected = currentRoute?.hierarchy?.any { it.hasRoute(screen.value::class) }
+      val selected = currentDestination?.hasRoute(screen.value::class)
       BottomBarIcon(
         icon = {
           AnimatedContent(
@@ -84,7 +83,7 @@ fun AppBottomBar(
             true -> scrollToTop()
             false -> {
               navController.navigate(screen.value) {
-                popUpTo(currentRoute!!.route!!) {
+                popUpTo(currentDestination!!.route!!) {
                   saveState = true
                   inclusive = true
                 }
