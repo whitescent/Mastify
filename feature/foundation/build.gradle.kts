@@ -7,5 +7,7 @@ android {
 }
 
 dependencies {
-  api(projects.feature.foundation.common)
+  arrayOf(
+    projects.feature.foundation.home
+  ).forEach(::api)
 }
