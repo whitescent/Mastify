@@ -15,11 +15,13 @@
  * see <http://www.gnu.org/licenses>.
  */
 
-import java.io.FileInputStream
 import java.util.Properties
 
 val mastodonProperties = Properties().apply {
-  load(FileInputStream(project.file("mastodon.properties")))
+  try {
+    load(project.file("mastodon.properties").inputStream())
+  } catch (ignored: Exception) {
+  }
 }
 
 @Suppress("DSL_SCOPE_VIOLATION") // TODO: Remove once KTIJ-19369 is fixed
@@ -72,9 +74,11 @@ android {
       signingConfig = getByName("debug").signingConfig
       matchingFallbacks += listOf("release")
 
-      buildConfigField("String", "MASTODON_USERNAME", "\"${mastodonProperties["MASTODON_USERNAME"]}\"")
-      buildConfigField("String", "MASTODON_PASSWORD", "\"${mastodonProperties["MASTODON_PASSWORD"]}\"")
-      buildConfigField("String", "MASTODON_SITE", "\"${mastodonProperties["MASTODON_SITE"]}\"")
+      if (mastodonProperties.isNotEmpty()) {
+        buildConfigField("String", "MASTODON_USERNAME", "\"${mastodonProperties["MASTODON_USERNAME"]}\"")
+        buildConfigField("String", "MASTODON_PASSWORD", "\"${mastodonProperties["MASTODON_PASSWORD"]}\"")
+        buildConfigField("String", "MASTODON_SITE", "\"${mastodonProperties["MASTODON_SITE"]}\"")
+      }
     }
   }
 
