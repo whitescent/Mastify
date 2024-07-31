@@ -23,10 +23,14 @@ import androidx.compose.ui.Modifier
 fun Modifier.clickableWithoutIndication(
   enabled: Boolean = true,
   onClick: () -> Unit
-) = Modifier.then(
-  if (enabled) clickable(
-    onClick = onClick,
-    indication = null,
-    interactionSource = null,
-  ) else Modifier
+) = this.clickable(
+  onClick = onClick,
+  enabled = enabled,
+  indication = null,
+  interactionSource = null,
 )
+
+inline fun Modifier.thenIf(
+  condition: Boolean,
+  modifier: Modifier.() -> Modifier,
+): Modifier = if (condition) modifier() else this
