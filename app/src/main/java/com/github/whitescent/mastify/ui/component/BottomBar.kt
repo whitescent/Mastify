@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,82 +63,79 @@ fun BottomBar(
   destination: Destination,
   scrollToTop: () -> Unit,
   modifier: Modifier = Modifier,
+) = Box(
+  modifier = Modifier.fillMaxWidth()
+    .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+    .background(AppTheme.colors.bottomBarBackground)
 ) {
-  Surface(
-    modifier = modifier
-      .fillMaxWidth()
-      .shadow(24.dp, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
-    shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-    color = AppTheme.colors.bottomBarBackground,
-  ) {
-    CenterRow(Modifier.navigationBarsPadding()) {
-      BottomBarItem.entries.forEachIndexed { _, screen ->
-        val selected = destination.route == screen.direction.route
-        BottomBarIcon(
-          icon = {
-            AnimatedContent(
-              targetState = selected,
-              transitionSpec = {
-                ContentTransform(
-                  targetContentEnter = scaleIn(
-                    animationSpec = tween(
-                      durationMillis = 340,
-                      easing = overshootEasing()
-                    ),
+  CenterRow(Modifier.navigationBarsPadding()) {
+    BottomBarItem.entries.forEachIndexed { _, screen ->
+      val selected = destination.route == screen.direction.route
+      BottomBarIcon(
+        icon = {
+          AnimatedContent(
+            targetState = selected,
+            transitionSpec = {
+              ContentTransform(
+                targetContentEnter = scaleIn(
+                  animationSpec = tween(
+                    durationMillis = 340,
+                    easing = overshootEasing()
                   ),
-                  initialContentExit = fadeOut(tween(277)),
-                ).using(SizeTransform(clip = false))
-              },
-            ) { isSelected ->
-              Icon(
-                painter = painterResource(screen.icon),
-                contentDescription = null,
-                modifier = modifier
-                  .size(24.dp)
-                  .let {
-                    if (!isSelected) it.alpha(0.2f) else it
-                  },
-                tint = AppTheme.colors.primaryContent
+                ),
+                initialContentExit = fadeOut(tween(277)),
+              ).using(SizeTransform(clip = false))
+            },
+          ) { isSelected ->
+            Icon(
+              painter = painterResource(screen.icon),
+              contentDescription = null,
+              modifier = modifier
+                .size(24.dp)
+                .let {
+                  if (!isSelected) it.alpha(0.2f) else it
+                },
+              tint = AppTheme.colors.primaryContent
+            )
+          }
+        },
+        unreadBubble = {
+          if (appState.unreadNotifications > 0 && screen == BottomBarItem.Notification) {
+            Box(
+              modifier = Modifier
+                .padding(4.dp)
+                .sizeIn(20.dp, 20.dp, maxHeight = 20.dp)
+                .clip(SmoothCornerShape(6.dp))
+                .background(AppTheme.colors.primaryGradient, SmoothCornerShape(5.dp)),
+              contentAlignment = Alignment.Center
+            ) {
+              Text(
+                text = appState.unreadNotifications.toString(),
+                color = Color.White,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
               )
             }
-          },
-          unreadBubble = {
-            if (appState.unreadNotifications > 0 && screen == BottomBarItem.Notification) {
-              Box(
-                modifier = Modifier
-                  .padding(4.dp)
-                  .sizeIn(20.dp, 20.dp, maxHeight = 20.dp)
-                  .clip(SmoothCornerShape(6.dp))
-                  .background(AppTheme.colors.primaryGradient, SmoothCornerShape(5.dp)),
-                contentAlignment = Alignment.Center
-              ) {
-                Text(
-                  text = appState.unreadNotifications.toString(),
-                  color = Color.White,
-                  fontSize = 12.sp,
-                  modifier = Modifier.padding(horizontal = 4.dp)
-                )
-              }
-            }
-          },
-          modifier = Modifier
-            .clickableWithoutIndication {
-              when (selected) {
-                true -> scrollToTop()
-                false -> {
-                  navigator.navigate(screen.direction) {
-                    popUpTo(destination) {
-                      saveState = true
-                      inclusive = true
-                    }
-                    restoreState = true
+          }
+        },
+        modifier = Modifier
+          .clickableWithoutIndication {
+            when (selected) {
+              true -> scrollToTop()
+              false -> {
+                navigator.navigate(screen.direction) {
+                  popUpTo(destination) {
+                    saveState = true
+                    inclusive = true
                   }
+                  restoreState = true
                 }
               }
             }
-            .padding(24.dp),
-        )
-      }
+          }
+          .padding(24.dp),
+      )
     }
   }
 }

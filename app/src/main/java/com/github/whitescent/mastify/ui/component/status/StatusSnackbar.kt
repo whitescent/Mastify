@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import com.github.whitescent.R
 import com.github.whitescent.mastify.ui.component.CenterRow
 import com.github.whitescent.mastify.ui.component.WidthSpacer
+import com.github.whitescent.mastify.utils.thenIf
 import kotlinx.coroutines.delay
 
 @Composable
@@ -60,7 +61,8 @@ fun StatusSnackBar(
         sizeTransform = null
       )
     },
-    modifier = modifier.fillMaxWidth()
+    modifier = Modifier.fillMaxWidth()
+      .thenIf(data != null) { modifier }
   ) {
     it?.let { type ->
       Surface(
@@ -73,7 +75,7 @@ fun StatusSnackBar(
         },
         contentColor = Color.White,
         shadowElevation = 4.dp,
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
       ) {
         CenterRow(Modifier.padding(horizontal = 22.dp, vertical = 16.dp)) {
           Icon(
