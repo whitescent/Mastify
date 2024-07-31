@@ -160,6 +160,7 @@ fun AppScaffold(
       containerColor = Color.Black,
       modifier = Modifier.fillMaxSize()
     ) {
+      appState.appPaddingValues = it
       DestinationsNavHost(
         engine = engine,
         navController = navController,

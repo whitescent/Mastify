@@ -19,6 +19,7 @@ package com.github.whitescent.mastify.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -28,12 +29,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -64,7 +62,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -121,7 +118,6 @@ fun Home(
 ) {
   val data by viewModel.homeCombinedFlow.collectAsStateWithLifecycle()
   val uiState = viewModel.uiState
-  val density = LocalDensity.current
 
   var refreshing by remember { mutableStateOf(false) }
 
@@ -145,7 +141,7 @@ fun Home(
       .fillMaxSize()
       .background(AppTheme.colors.background)
       .statusBarsPadding()
-      .padding(bottom = WindowInsets.navigationBars.getBottom(density).dp)
+      .padding(bottom = appState.appPaddingValues.calculateBottomPadding())
       .pullRefresh(pullRefreshState)
       .semantics {
         testTagsAsResourceId = true
@@ -193,8 +189,7 @@ fun Home(
               .drawVerticalScrollbar(lazyState)
               .semantics {
                 testTag = "home timeline"
-              },
-            contentPadding = PaddingValues(bottom = WindowInsets.navigationBars.getBottom(density).dp)
+              }
           ) {
             itemsIndexed(
               items = timeline,
@@ -255,12 +250,12 @@ fun Home(
               viewModel.dismissButton()
             }
           }
-          Column(Modifier.align(Alignment.BottomEnd)) {
+          Column(Modifier.align(Alignment.BottomEnd).animateContentSize()) {
             Image(
               painter = painterResource(id = R.drawable.edit),
               contentDescription = null,
               modifier = Modifier
-                .padding(24.dp)
+                .padding(16.dp)
                 .align(Alignment.End)
                 .shadow(6.dp, CircleShape)
                 .background(AppTheme.colors.primaryGradient, CircleShape)
