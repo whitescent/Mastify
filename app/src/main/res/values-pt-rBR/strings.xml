@@ -63,7 +63,7 @@
   <string name="load_more_title">Carregar Mais</string>
   <string name="link_preview_title">Pré-visualização de link</string>
   <string name="replying_to_title">Respondendo a %s</string>
-  <string name="unsupported_media_files">Unsupported media files</string>
+  <string name="unsupported_media_files">Arquivos de mídia não suportados</string>
   <!-- status detail screen -->
   <string name="post_your_reply">postar sua resposta</string>
   <string name="uncategorized_title">Sem categoria</string>
