@@ -20,8 +20,8 @@ internal fun BaseExtension.initCompose(project: Project) = with(project) {
     targetCompatibility(JavaToolchainVersion)
   }
   dependencies {
-    "implementation"(platform(libs.androidx.compose.bom))
     importShared(":core:common-compose")
+    "implementation"(platform(libs.androidx.compose.bom))
     "implementation"(libs.androidx.compose.ui)
     "implementation"(libs.androidx.compose.material3)
     "implementation"(libs.androidx.activity.compose)

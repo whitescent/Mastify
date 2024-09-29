@@ -49,6 +49,7 @@ class LoginRepository @Inject constructor(
   fun saveLoginSession(session: LoginSession) {
     loginSession = session
   }
+
   suspend fun fetchInstanceInfo(name: String) = withContext(ioDispatcher) {
     networkClient.get<InstanceInfo>("https://$name/${MastodonApi.fetchInstanceInfo}")
   }

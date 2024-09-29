@@ -48,10 +48,10 @@ internal fun BaseExtension.initAndroid(project: Project) = with(project) {
   }
   dependencies {
     "implementation"(libs.androidx.core.ktx)
-    importShared(":core:common")
     "coreLibraryDesugaring"(libs.android.desugar)
     // https://developer.android.com/jetpack/androidx/releases/test#declaring_dependencies
     "androidTestImplementation"(libs.bundles.androidx.test)
+    importShared(":core:common")
   }
   configureJvmToolchain()
 }
