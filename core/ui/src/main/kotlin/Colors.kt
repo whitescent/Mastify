@@ -17,7 +17,6 @@
 
 package com.github.whitescent.mastify.core.ui
 
-import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -149,22 +148,7 @@ val currentColorScheme: MastifyColorScheme
  */
 @Composable
 @ReadOnlyComposable
-fun Color(light: Color, dark: Color): Color = when (LocalColorScheme.current.isLight) {
+fun color(light: Color, dark: Color): Color = when (LocalColorScheme.current.isLight) {
   true -> light
   false -> dark
-}
-
-/**
- * Creates a color based on the current color scheme (light or dark).
- *
- * @param light The color value to use when the current color scheme is light.
- * @param dark The color value to use when the current color scheme is dark.
- * @return The appropriate color based on the current color scheme.
- */
-@Composable
-@ReadOnlyComposable
-@SuppressLint("ComposableNaming")
-fun Color(light: Long, dark: Long): Color = when (LocalColorScheme.current.isLight) {
-  true -> Color(light)
-  false -> Color(dark)
 }

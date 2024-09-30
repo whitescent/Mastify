@@ -1,11 +1,14 @@
 package com.github.whitescent.mastify.core.network
 
+import android.util.Log
 import com.github.whitescent.mastify.core.common.debug
 import com.github.whitescent.mastify.core.model.AppDataProvider
+import com.github.whitescent.mastify.core.network.api.createMastodonApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestRetry
@@ -50,7 +53,9 @@ class NetworkModule {
       level = LogLevel.ALL
       logger = MessageLengthLimitingLogger(
         delegate = object : Logger {
-          override fun log(message: String) = debug("HttpClient") { message }
+          override fun log(message: String) {
+            Log.v("HttpClient", message)
+          }
         }
       )
       sanitizeHeader { header -> header == HttpHeaders.Authorization }
@@ -62,18 +67,19 @@ class NetworkModule {
   fun provideMastodonNetworkClient(
     httpClient: HttpClient,
     appData: AppDataProvider,
-  ): MastodonNetworkClient = MastodonNetworkClient(
-    httpClient.config {
-      defaultRequest {
-        val data = appData.getAppData()
-        url.protocol = URLProtocol.HTTPS
-        data.instanceUrl?.let {
-          url.host = data.instanceUrl!!
-        }
-        data.token?.let {
-          bearerAuth(it)
+  ) = Ktorfit.Builder()
+    .httpClient(
+      httpClient.config {
+        defaultRequest {
+          url.protocol = URLProtocol.HTTPS
+          val data = appData.getAppData()
+          data.token?.let { bearerAuth(it) }
         }
       }
-    }
-  )
+    )
+    .build()
+
+  @Provides
+  @Singleton
+  fun provideMastodonApi(ktorfit: Ktorfit) = ktorfit.createMastodonApi()
 }

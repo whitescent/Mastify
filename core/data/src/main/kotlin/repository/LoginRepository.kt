@@ -19,12 +19,7 @@ package com.github.whitescent.mastify.core.data.repository
 
 import com.github.whitescent.mastify.core.common.ioDispatcher
 import com.github.whitescent.mastify.core.model.AppData
-import com.github.whitescent.mastify.core.model.network.response.AccessToken
-import com.github.whitescent.mastify.core.model.network.response.Account
-import com.github.whitescent.mastify.core.model.network.response.AppCredentials
-import com.github.whitescent.mastify.core.model.network.response.InstanceInfo
 import com.github.whitescent.mastify.core.model.session.LoginSession
-import com.github.whitescent.mastify.core.network.MastodonNetworkClient
 import com.github.whitescent.mastify.core.network.api.MastodonApi
 import com.github.whitescent.mastify.core.network.utils.isUrlCorrect
 import kotlinx.coroutines.withContext
@@ -34,7 +29,7 @@ import javax.inject.Singleton
 @Singleton
 class LoginRepository @Inject constructor(
   private val preferenceRepository: PreferenceRepository,
-  private val networkClient: MastodonNetworkClient
+  private val api: MastodonApi
 ) {
 
   var loginSession: LoginSession? = null
@@ -46,24 +41,19 @@ class LoginRepository @Inject constructor(
 
   fun updateAppData(appData: AppData) = preferenceRepository.updateAppData(appData)
 
-  fun saveLoginSession(session: LoginSession) {
-    loginSession = session
-  }
+  fun saveLoginSession(session: LoginSession) { loginSession = session }
 
-  suspend fun fetchInstanceInfo(name: String) = withContext(ioDispatcher) {
-    networkClient.get<InstanceInfo>("https://$name/${MastodonApi.fetchInstanceInfo}")
+  suspend fun fetchInstanceInfo(domain: String) = withContext(ioDispatcher) {
+    api.fetchInstanceInfo("https://$domain/api/v1/instance")
   }
 
   suspend fun authenticateApp(domain: String) = withContext(ioDispatcher) {
-    networkClient.post<AppCredentials>(
-      url = "https://$domain/${MastodonApi.authenticateApp}",
-      parameters = mapOf(
-        "client_name" to CLIENT_NAME,
-        "redirect_uris" to REDIRECT_URIS,
-        "scopes" to CLIENT_SCOPES,
-        "website" to APP_WEBSITE
-      ),
-      formUrlEncoded = true,
+    api.authenticateApp(
+      url = "https://$domain/api/v1/apps",
+      clientName = CLIENT_NAME,
+      redirectUris = REDIRECT_URIS,
+      scopes = CLIENT_SCOPES,
+      website = APP_WEBSITE
     )
   }
 
@@ -73,26 +63,21 @@ class LoginRepository @Inject constructor(
     clientSecret: String,
     code: String
   ) = withContext(ioDispatcher) {
-    networkClient.post<AccessToken>(
+    api.fetchOAuthToken(
       url = "https://$domain/oauth/token",
-      parameters = mapOf(
-        "client_id" to clientId,
-        "client_secret" to clientSecret,
-        "code" to code,
-        "grant_type" to GRANT_TYPE,
-        "redirect_uri" to REDIRECT_URIS
-      ),
-      formUrlEncoded = true
+      clientId = clientId,
+      clientSecret = clientSecret,
+      code = code,
+      grantType = GRANT_TYPE,
+      redirectUri = REDIRECT_URIS
     )
   }
 
   suspend fun fetchAccount() = withContext(ioDispatcher) {
-    networkClient.get<Account>(
-      url = "https://${loginSession!!.domain}/${MastodonApi.accountVerifyCredentials}"
-    )
+    api.accountVerifyCredentials("https://${loginSession!!.domain}/api/v1/accounts/verify_credentials")
   }
 
-  companion object {
+  private companion object {
     const val REDIRECT_URIS = "mastify://oauth"
     const val CLIENT_NAME = "Mastify"
     const val CLIENT_SCOPES = "read write push"

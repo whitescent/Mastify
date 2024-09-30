@@ -77,7 +77,7 @@ import com.github.whitescent.mastify.core.common.launchChromeTabs
 import com.github.whitescent.mastify.core.common.strings.CommonStrings
 import com.github.whitescent.mastify.core.navigation.Route
 import com.github.whitescent.mastify.core.ui.AppTheme
-import com.github.whitescent.mastify.core.ui.Color
+import com.github.whitescent.mastify.core.ui.color
 import com.github.whitescent.mastify.core.ui.component.CenterRow
 import com.github.whitescent.mastify.core.ui.component.HeightSpacer
 import com.github.whitescent.mastify.core.ui.component.WidthSpacer
@@ -211,7 +211,7 @@ internal fun Login(
         shape = SmoothCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(
           contentColor = Color.White,
-          containerColor = Color(Color(0xFF2890DC), Color(0xFF6094FA).copy(.44f)),
+          containerColor = color(Color(0xFF2890DC), Color(0xFF6094FA).copy(.44f)),
           disabledContainerColor = Color.Gray.copy(.5f),
           disabledContentColor = Color.White.copy(.5f)
         ),

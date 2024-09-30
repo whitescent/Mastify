@@ -3,6 +3,7 @@ plugins {
   id(androidHilt)
   id(androidUnitTest)
   id(kotlinSerialization)
+  alias(libs.plugins.ktorfit)
 }
 
 android {
@@ -17,5 +18,6 @@ dependencies {
     libs.ktor.mock,
     libs.ktor.logging,
     libs.ktor.content.negotiation,
+    libs.ktorfit.lib
   ).forEach(::implementation)
 }
