@@ -13,13 +13,12 @@ androidxBrowser = "1.8.0"
 androidxWindow = "1.3.0"
 androidDesugar = "2.1.2"
 
-compose = "1.7.0-beta01"
-composeCompiler = "1.5.14"
 composeShadowsPlus = "1.0.4"
 constraintlayoutCompose = "1.0.1"
 material3 = "1.3.0"
 okhttp3 = "4.12.0"
 ktor = "2.3.12"
+ktorfit = "2.1.0"
 retrofit2 = "2.11.0"
 room = "2.6.1"
 kotlinxSerializationConverter = "1.0.0"
@@ -44,7 +43,6 @@ mockitoKotlin = "5.1.0"
 lottie = "6.5.2"
 work = "2.9.1"
 leakcanary = "2.14"
-composeDestinations = "1.11.4-alpha"
 hilt = "2.52"
 haze = "0.7.1"
 paging3 = "3.3.2"
@@ -54,7 +52,6 @@ robolectric = "4.13"
 jsoup = "1.17.2"
 uiautomator = "2.3.0"
 benchmark-macro-junit4 = "1.3.1"
-scrollbar = "2.0.7"
 profileinstaller = "1.4.0"
 monitor = "1.7.2"
 junitKtx = "1.2.1"
@@ -77,7 +74,6 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
-androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 
 androidx-test-core = "androidx.test:core-ktx:1.6.1"
@@ -112,6 +108,7 @@ ktor-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
 ktor-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktor-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktorfit-lib = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref = "ktorfit" }
 
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
@@ -124,9 +121,6 @@ logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 
 ktsoup-core = { module = "org.drewcarlson:ktsoup-core", version.ref = "ktsoup" }
 ktsoup-fx = { module = "org.drewcarlson:ktsoup-fs", version.ref = "ktsoup" }
-
-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
-scrollbar = { module = "com.github.nanihadesuka:LazyColumnScrollbar", version.ref = "scrollbar" }
 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
@@ -151,11 +145,8 @@ mockk-agent = { module = "io.mockk:mockk-agent", version.ref = "mockk" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 compose-media = { module = "com.github.fengdai.compose:media", version.ref = "media" }
-#zoomable = { module = "io.github.panpf.zoomimage:zoomimage-compose-coil", version.ref = "zoomimage" }
 lottie = { module = "com.airbnb.android:lottie-compose", version.ref = "lottie" }
 leakcanary = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
-compose-destinations-animations-core = { module = "io.github.raamcosta.compose-destinations:animations-core", version.ref = "composeDestinations" }
-compose-destinations-ksp = { module = "io.github.raamcosta.compose-destinations:ksp", version.ref = "composeDestinations" }
 compose-shadowplus = { module = "com.github.GIGAMOLE:ComposeShadowsPlus", version.ref = "composeShadowsPlus" }
 
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
@@ -185,6 +176,7 @@ google-ksp-gradle-plugin = { module = "com.google.devtools.ksp:symbol-processing
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }
 
 [bundles]
 androidx-test = [
